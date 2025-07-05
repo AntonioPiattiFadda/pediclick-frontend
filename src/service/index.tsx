@@ -15,7 +15,6 @@ const storageUrl = "https://khpuigptjufryfxcnsrs.supabase.co/storage/v1/object/p
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-
 export const getAllProducts = async () => {
   const { data: products, error } = await supabase.from("products").select(`
     id,
@@ -193,3 +192,54 @@ export const deleteProduct = async (productId: string | number) => {
 
 //    return data;
 //  };
+
+
+
+
+
+export const getProductById = async (id) => {
+  let { data: products, error } = await supabase
+    .from('products')
+    .select(
+      `
+    id,
+name,
+description,
+slug,
+status,
+category_id,
+
+      product_images(
+      url,
+      sort_order  ),
+      product_prices(
+      quantity,
+      units(
+      name,
+      symbol),
+      price,
+      currency
+
+      )
+    `
+    )
+    .eq('id', id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return products;
+};
+
+export const uploadImage = async (file) => {
+  const { data, error } = await supabase.storage
+    .from('PediClick-panarce')
+    .upload(file.name, file);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};

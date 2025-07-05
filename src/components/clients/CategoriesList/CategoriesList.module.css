@@ -1,0 +1,56 @@
+.categories__container {
+  display: flex;
+  align-items: center;
+  width: calc(100vw - 20px);
+  height: 2.5rem;
+  border-radius: 1.875rem;
+  background: #efeeee;
+  overflow-x: auto;
+}
+.category {
+  display: flex;
+  height: 1.5625rem;
+  width: 24vw;
+  min-width: 24vw;
+  margin-left: 10px;
+  justify-content: center;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 1.875rem;
+  opacity: 0.3;
+  background: #fff;
+  text-decoration: none;
+}
+.activeLink {
+  display: flex;
+  height: 1.5625rem;
+  width: 24vw;
+  min-width: 24vw;
+  margin-left: 10px;
+  justify-content: center;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 1.875rem;
+  background: #fff;
+  text-decoration: none;
+}
+.link {
+  color: #000;
+  font-family: Inter;
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  opacity: 0.7;
+  text-decoration: none;
+}
+/* Estilos personalizados para el botón */
+button {
+  background-color: white; /* Color de fondo personalizado */
+  color: #fff; /* Color de texto personalizado */
+  border: none; /* Quita el borde predeterminado */
+  cursor: pointer; /* Cambia el cursor al pasar por encima */
+  /* Agrega cualquier otro estilo personalizado que desees */
+}
+
+/* Para quitar el estilo de resalte de clic en algunos navegadores */

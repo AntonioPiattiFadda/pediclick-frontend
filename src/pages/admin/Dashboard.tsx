@@ -1,11 +1,9 @@
-import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { StatsCards } from '@/components/dashboard/StatsCards';
-import { SalesChart } from '@/components/dashboard/SalesChart';
-import { TopProductsChart } from '@/components/dashboard/TopProductsChart';
-import { CategoriesChart } from '@/components/dashboard/CategoriesChart';
-import { LowStockTable } from '@/components/dashboard/LowStockTable';
+import { StatsCards } from '@/components/admin/dashboard/StatsCards';
+import { SalesChart } from '@/components/admin/dashboard/SalesChart';
+import { TopProductsChart } from '@/components/admin/dashboard/TopProductsChart';
+import { CategoriesChart } from '@/components/admin/dashboard/CategoriesChart';
+import { LowStockTable } from '@/components/admin/dashboard/LowStockTable';
 
 const Dashboard = () => {
   return (

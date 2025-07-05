@@ -93,7 +93,7 @@ const signIn = async (email: string, password: string) => {
 
     dispatch({ type: 'AUTH_SUCCESS', payload: currentUser });
 
-    window.location.href = '/home'; // Redirigir al inicio después de iniciar sesión
+    window.location.href = '/dashboard'; // Redirigir al inicio después de iniciar sesión
 
   } catch (error: any) {
     dispatch({ type: 'AUTH_ERROR', payload: error.message || 'Unknown error' });

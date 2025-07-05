@@ -1,0 +1,27 @@
+.itemList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(50vw - 40px), 1fr));
+  gap: 20px;
+  align-items: center;
+  justify-items: center;
+  max-height: 65vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.itemListCategorieTittle {
+  background-color: rgb(173, 216, 230);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 45px;
+  font-size: 20px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: calc(100%);
+  margin-bottom: 25px;
+  color: white;
+  white-space: nowrap;
+}
+
+@media screen and (max-width: 765px) {
+}

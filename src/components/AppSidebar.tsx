@@ -15,7 +15,7 @@ import {
 const menuItems = [
   {
     title: 'Dashboard',
-    url: '/home',
+    url: '/dashboard',
     icon: BarChart3,
   },
   {

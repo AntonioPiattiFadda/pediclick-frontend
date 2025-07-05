@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogIn, UserPlus, Shield, Zap, Users } from "lucide-react";
 
-const Index = () => {
+const AdminHome = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       {/* Header */}
@@ -121,4 +121,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default AdminHome;

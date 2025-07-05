@@ -1,0 +1,17 @@
+.itemListContainer {
+  width: calc(100vw - 20px);
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.ProductsTittle {
+  background-color: rgb(230, 173, 173);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 45px;
+  font-size: 20px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: calc(100%);
+  color: white;
+  white-space: nowrap;
+}

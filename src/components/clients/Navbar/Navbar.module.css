@@ -1,0 +1,56 @@
+.navbar__container {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px;
+}
+
+.navbar__firstLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.navbar__menuMobile {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 0.3125rem;
+  background: #fff;
+  box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.25);
+  display: grid;
+  place-content: center;
+}
+.navbar__menuMobile_icon {
+  width: 1.1875rem;
+  height: 0.8125rem;
+  flex-shrink: 0;
+  stroke-width: 2px;
+  stroke: #000;
+  opacity: 0.5;
+}
+.navbar__logo_container {
+  width: calc(100vw - 120px);
+  margin: 0 10px;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 0.3125rem;
+  background: var(--primary-color);
+  box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.25);
+  display: grid;
+  place-content: center;
+}
+.navbar__logo {
+  width: 2.3125rem;
+  height: 2.3125rem;
+  flex-shrink: 0;
+  /* Opcion para agregar la imagen
+  background: url(<path-to-image>), lightgray 50% / cover 
+  no-repeat; */
+}
+.LogoPrincipal {
+  width: 100%;
+  object-fit: cover;
+  /* Depende del Logo mucho */
+  border-radius: 50%;
+}
