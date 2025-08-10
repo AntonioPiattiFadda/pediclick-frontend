@@ -240,3 +240,21 @@ export interface WebsitePreference {
   created_at?: string;
   updated_at?: string;
 }
+
+
+export interface Store {
+  store_id: string;
+  store_name: string;
+  description: string;
+  address: string;
+  phone: string;
+  whatsapp: string;
+  email: string;
+  website: string;
+  social_links: SocialLinks;
+  opening_hours: OpeningHours;
+  updated_at?: string;
+  deleted_at: string | null;
+  created_by: string;
+  slug: string;
+}

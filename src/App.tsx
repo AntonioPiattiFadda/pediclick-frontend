@@ -21,6 +21,7 @@ import ItemListContainer from "./components/clients/ItemListContainer/ItemListCo
 import Footer from "./components/clients/Footer/Footer";
 import styles from "./App.module.css";
 import Navbar from "./components/clients/Navbar/Navbar";
+import Stores from "./pages/admin/Stores";
 
 const queryClient = new QueryClient();
 
@@ -98,6 +99,7 @@ const App = () => {
                   <Route element={<RequireAuth />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/products" element={<Products />} />
+                    <Route path="/stores" element={<Stores />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="*" element={<NotFound />} />
                   </Route>

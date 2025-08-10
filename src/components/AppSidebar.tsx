@@ -23,6 +23,11 @@ const menuItems = [
     url: '/products',
     icon: Package,
   },
+   {
+    title: 'Tiendas',
+    url: '/stores',
+    icon: Package,
+  },
   {
     title: 'Configuración',
     url: '/settings',
