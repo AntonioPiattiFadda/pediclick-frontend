@@ -10,7 +10,7 @@ import {
 import { useUserStoresContext } from "@/contexts/UserStoresContext";
 import { getUserStores } from "@/service";
 import { useEffect, useState } from "react";
-import NoStoreModal from "../header/noStoreModal";
+import NoStoreModal from "../header/NoStoreModal";
 
 const StoresSelector = () => {
   const { userStores, setUserStores, setSelectedStoreId, selectedStoreId } =

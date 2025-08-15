@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogIn, UserPlus, Shield, Zap, Users } from "lucide-react";
+import { LogIn, Shield, UserPlus, Users, Zap } from "lucide-react";
 
 const AdminHome = () => {
   return (

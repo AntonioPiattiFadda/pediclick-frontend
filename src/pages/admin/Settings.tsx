@@ -1,8 +1,7 @@
-import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AccountSecurityTab } from '@/components/admin/settings/AccountSecurityTab';
 import { BusinessProfileTab } from '@/components/admin/settings/BusinessProfileTab';
 import { SitePreferencesTab } from '@/components/admin/settings/SitePreferencesTab';
-import { AccountSecurityTab } from '@/components/admin/settings/AccountSecurityTab';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Settings = () => {
   return (

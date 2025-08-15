@@ -8,7 +8,6 @@ import Settings from "./pages/admin/Settings";
 import NotFound from "./pages/admin/NotFound";
 import RequireAuth from "./components/admin/auth/requireAuth";
 import { SignIn } from "./pages/admin/SignIn";
-import { AuthProvider } from "./contexts/AuthContext";
 import { SignUp } from "./pages/admin/SignUp";
 import { ForgotPassword } from "./pages/admin/ForgotPassword";
 import { ResetPassword } from "./pages/admin/ResetPassword";
@@ -90,7 +89,6 @@ const App = () => {
           </div>
         ) : (
           <UserStoresProvider>
-            <AuthProvider>
               <BrowserRouter>
                 <Layout>
                   <Routes>
@@ -109,7 +107,6 @@ const App = () => {
                       <Route path="/register" element={<ProfileRegister />} />
                     </Route>
 
-                    {/* <Route path="/register-team-member" element={<RegisterTeamMember />} /> */}
 
                     <Route element={<RequireAuth />}>
                       <Route path="/dashboard" element={<Dashboard />} />
@@ -122,7 +119,6 @@ const App = () => {
                   </Routes>
                 </Layout>
               </BrowserRouter>
-            </AuthProvider>
           </UserStoresProvider>
         )}
       </TooltipProvider>

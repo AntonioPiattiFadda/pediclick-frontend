@@ -1,9 +1,9 @@
-import React, { useState, useRef } from "react";
 import { Info } from "lucide-react";
+import { useRef, useState } from "react";
 
 const RolesInfoPopover = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const timeoutRef = useRef(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const roles = [
     {

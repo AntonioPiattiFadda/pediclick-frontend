@@ -1,7 +1,6 @@
-import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProductsTab } from '@/components/admin/products/ProductsTab';
 import { CategoriesTab } from '@/components/admin/products/CategoriesTab';
+import { ProductsTab } from '@/components/admin/products/ProductsTab';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Products = () => {
   return (

@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Plus, Search } from 'lucide-react';
-import { CategoriesTable } from './CategoriesTable';
-import { useQuery } from '@tanstack/react-query';
 import { getCategories } from '@/service';
+import { useQuery } from '@tanstack/react-query';
+import { Plus, Search } from 'lucide-react';
+import { useState } from 'react';
+import { CategoriesTable } from './CategoriesTable';
 import TableSkl from './ui/tableSkl';
 
 export const CategoriesTab = () => {
@@ -67,7 +67,7 @@ export const CategoriesTab = () => {
             </Select>
           </div>
 
-          <CategoriesTable categories={categories} />
+          <CategoriesTable categories={categories ?? []} />
         </CardContent>
       </Card>
     </div>

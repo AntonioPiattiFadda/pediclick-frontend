@@ -1,6 +1,5 @@
-import React from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { Bar, BarChart, XAxis, YAxis } from 'recharts';
 
 const topProducts = [
   { name: 'Laptop Gaming', sales: 125 },

@@ -1,6 +1,5 @@
-import React from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { Line, LineChart, XAxis, YAxis } from 'recharts';
 
 const generateSalesData = () => {
   const data = [];

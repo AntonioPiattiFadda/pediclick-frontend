@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/AuthContext';
+import { Eye, EyeOff, Lock } from 'lucide-react';
+import React, { useState } from 'react';
 import { AuthLayout } from './AuthLayout';
 
 export function ResetPassword() {
@@ -17,7 +16,6 @@ export function ResetPassword() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
   
-  const { resetPassword, loading, error, clearError } = useAuth();
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -40,11 +38,10 @@ export function ResetPassword() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
+
     
     if (!validateForm()) return;
     
-    await resetPassword(formData.code, formData.password);
     setSuccess(true);
   };
 
@@ -88,11 +85,11 @@ export function ResetPassword() {
       showBackToLogin
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
+        {/* {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
             {error}
           </div>
-        )}
+        )} */}
         
         <div className="space-y-2">
           <Label htmlFor="code" className="text-foreground font-medium">
@@ -172,7 +169,7 @@ export function ResetPassword() {
           )}
         </div>
         
-        <Button type="submit" className="w-full" disabled={loading}>
+        {/* <Button type="submit" className="w-full" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -181,7 +178,7 @@ export function ResetPassword() {
           ) : (
             'Actualizar Contraseña'
           )}
-        </Button>
+        </Button> */}
       </form>
     </AuthLayout>
   );

@@ -1,3 +1,5 @@
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -6,16 +8,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Edit, Trash2 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { deleteProduct } from "@/service";
 import type { Product } from "@/types";
 import { getCurrencySymbol } from "@/utils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Edit, Trash2 } from "lucide-react";
 import { Input } from "../../ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteProduct } from "@/service";
 
 interface ProductsTableProps {
   products: Product[];
@@ -24,21 +23,21 @@ interface ProductsTableProps {
 export const ProductsTable = ({ products }: ProductsTableProps) => {
   const queryClient = useQueryClient();
 
-  const getStatusBadge = (status: string, stock: number) => {
-    if (stock === 0) {
-      return <Badge variant="destructive">Sin Stock</Badge>;
-    }
-    switch (status) {
-      case "active":
-        return <Badge variant="default">Activo</Badge>;
-      case "draft":
-        return <Badge variant="secondary">Borrador</Badge>;
-      case "out_of_stock":
-        return <Badge variant="destructive">Sin Stock</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
+  // const getStatusBadge = (status: string, stock: number) => {
+  //   if (stock === 0) {
+  //     return <Badge variant="destructive">Sin Stock</Badge>;
+  //   }
+  //   switch (status) {
+  //     case "active":
+  //       return <Badge variant="default">Activo</Badge>;
+  //     case "draft":
+  //       return <Badge variant="secondary">Borrador</Badge>;
+  //     case "out_of_stock":
+  //       return <Badge variant="destructive">Sin Stock</Badge>;
+  //     default:
+  //       return <Badge variant="secondary">{status}</Badge>;
+  //   }
+  // };
 
   const deleteProductMutation = useMutation({
     mutationFn: async (productId: string | number) => {
@@ -68,11 +67,11 @@ export const ProductsTable = ({ products }: ProductsTableProps) => {
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Avatar className="w-10 h-10">
-                    <AvatarImage
+                    {/* <AvatarImage
                       className="object-cover"
                       src={product?.product_images[0]?.url}
                       alt={product.name}
-                    />
+                    /> */}
                     <AvatarFallback>{product.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
@@ -83,13 +82,13 @@ export const ProductsTable = ({ products }: ProductsTableProps) => {
                   </div>
                 </div>
               </TableCell>
-              <TableCell>{product.category}</TableCell>
+              <TableCell>{product.category_id}</TableCell>
               <TableCell className="text-right font-medium">
                 <div className="flex">
                   <div className="flex flex-col items-end gap-1">
                     {product.product_prices?.map((price, idx) => (
                       <span key={idx}>
-                        {getCurrencySymbol(price.currency)}{" "}
+                        {getCurrencySymbol(price.currency || '')}{" "}
                         {price.price.toFixed(2)} {price.units?.symbol}
                       </span>
                     ))}
@@ -110,13 +109,13 @@ export const ProductsTable = ({ products }: ProductsTableProps) => {
                         {product.product_prices?.map((price, idx) => (
                           <div key={idx} className="flex items-center gap-2">
                             <span className="w-6 text-muted-foreground">
-                              {getCurrencySymbol(price.currency)}
+                              {getCurrencySymbol(price.currency || '')}
                             </span>
                             <Input
                               type="number"
                               className="h-8"
                               defaultValue={price.price}
-                              onChange={(e) => {
+                              onChange={() => {
                                 // lógica para actualizar el precio
                               }}
                             />
@@ -132,16 +131,16 @@ export const ProductsTable = ({ products }: ProductsTableProps) => {
               </TableCell>
 
               <TableCell className="text-center">
-                <span
+                {/* <span
                   className={
                     product.stock <= 5 ? "text-red-600 font-semibold" : ""
                   }
                 >
                   {product.stock}
-                </span>
+                </span> */}
               </TableCell>
               <TableCell className="text-center">
-                {getStatusBadge(product.status, product.stock)}
+                {/* {getStatusBadge(product.status, product.stock)} */}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">

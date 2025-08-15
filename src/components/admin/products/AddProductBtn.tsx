@@ -250,7 +250,7 @@ export function AddProductBtn() {
             ) : (
               <select
                 className="w-full border rounded px-2 py-1"
-                value={formData.category}
+                value={formData.category_id}
                 onChange={(e) =>
                   setFormData({ ...formData, category_id: e.target.value })
                 }

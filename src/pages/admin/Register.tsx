@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
-import { User, Building, Phone, MapPin, FileText, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/contexts/AuthContext';
+import { Building, MapPin, Phone, User } from 'lucide-react';
+import React, { useState } from 'react';
 import { AuthLayout } from './AuthLayout';
 
 export function ProfileRegister() {
@@ -25,13 +23,12 @@ export function ProfileRegister() {
     }
   });
   
-  const { updateProfile, loading, error, clearError } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
+    // clearError();
     
-    await updateProfile(formData);
+    // await updateProfile(formData);
     // Redirect to dashboard or main app
     window.location.href = '/dashboard';
   };
@@ -76,11 +73,11 @@ export function ProfileRegister() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
+              {/* {error && (
                 <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
                   {error}
                 </div>
-              )}
+              )} */}
 
               {/* Información básica */}
               <div className="space-y-4">
@@ -240,7 +237,7 @@ export function ProfileRegister() {
                 </div>
               </div>
 
-              <div className="flex space-x-4 pt-6">
+              {/* <div className="flex space-x-4 pt-6">
                 <Button type="submit" className="flex-1" disabled={loading}>
                   {loading ? (
                     <>
@@ -254,7 +251,7 @@ export function ProfileRegister() {
                 <Button type="button" variant="outline" className="flex-1">
                   Completar después
                 </Button>
-              </div>
+              </div> */}
             </form>
           </CardContent>
         </Card>

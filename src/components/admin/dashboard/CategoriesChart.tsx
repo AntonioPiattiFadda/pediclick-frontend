@@ -1,6 +1,5 @@
-import React from 'react';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Cell, Pie, PieChart } from 'recharts';
 
 const categories = [
   { name: 'Electrónicos', count: 450, color: 'hsl(var(--primary))' },

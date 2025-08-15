@@ -174,18 +174,18 @@ export const getUserStores = async () => {
 };
 
 const getBusinessOwnerId = async (storeId: number) => {
-    const { data: store, error } = await supabase
-      .from("stores")
-      .select("business_owner_id")
-      .eq("store_id", storeId)
-      .single();
+  const { data: store, error } = await supabase
+    .from("stores")
+    .select("business_owner_id")
+    .eq("store_id", storeId)
+    .single();
 
-    if (error) {
-      throw new Error(error.message);
-    }
+  if (error) {
+    throw new Error(error.message);
+  }
 
-    return store?.business_owner_id;
-  };
+  return store?.business_owner_id;
+};
 
 export const getUserTeamMembers = async (storeId: number) => {
   const businessOwnerId = await getBusinessOwnerId(storeId);
@@ -203,7 +203,7 @@ export const getUserTeamMembers = async (storeId: number) => {
 };
 
 export const createTeamMember = async (newUserData: any) => {
-  const userId = await getUserId();
+  const userId = await getBusinessOwnerId(newUserData.store_id);
 
   const { error: createUserError, data: user } = await createNewUser(
     newUserData.email,

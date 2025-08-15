@@ -43,6 +43,10 @@ const emptyUser: TeamMember = {
   created_at: "",
   updated_at: "",
   deleted_at: "",
+  avatar_url: null,
+  is_verified: false,
+  parent_user_id: "",
+  job_position: null
 };
 
 export function AddTeamMemberBtn() {
@@ -272,9 +276,9 @@ export function AddTeamMemberBtn() {
           <div className="grid gap-2">
             <Label htmlFor="store">Punto de venta *</Label>
             <Select
-              value={formData.store_id}
+              value={formData.store_id.toString()}
               onValueChange={(value) =>
-                setFormData({ ...formData, store_id: value })
+                setFormData({ ...formData, store_id: Number(value) })
               }
             >
               <SelectTrigger>
@@ -295,7 +299,7 @@ export function AddTeamMemberBtn() {
             <Input
               id="job_position"
               placeholder="Descripción del puesto"
-              value={formData.job_position}
+              value={formData.job_position || ''}
               onChange={(e) =>
                 setFormData({ ...formData, job_position: e.target.value })
               }

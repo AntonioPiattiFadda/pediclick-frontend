@@ -69,7 +69,12 @@ export const ProductsTab = () => {
     queryKey: ["products"],
     queryFn: async () => {
       const response = await getAllProducts();
-      return response.products;
+      // Ensure each product has seller_id
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return response.products.map((product: any) => ({
+        seller_id: product.seller_id ?? "", // Provide a fallback or handle as needed
+        ...product,
+      }));
     },
   });
 
@@ -137,7 +142,7 @@ export const ProductsTab = () => {
             </Select>
           </div>
 
-          <ProductsTable products={products}  />
+          <ProductsTable products={products ?? []}  />
         </CardContent>
       </Card>
     </div>
