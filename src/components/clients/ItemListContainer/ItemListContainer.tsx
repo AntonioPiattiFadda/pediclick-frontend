@@ -3,7 +3,6 @@ import { SearchContext } from "../Context/SearchContext";
 import styles from "./ItemListContainer.module.css";
 // import NotFound from "../NoProductFound/NoProductFound";
 import { getAllProducts } from "@/service/products";
-import ItemList from "../ItemList/ItemList";
 // import { ProductsSkeleton } from "../../Utils/Skeletons";
 
 // const transformProductsData = (data) => {
@@ -21,29 +20,29 @@ import ItemList from "../ItemList/ItemList";
 //   }));
 // };
 
-const filterProducts = (products, searchString, searchedCategory) => {
-  let filteredProducts = products;
+// const filterProducts = (products, searchString, searchedCategory) => {
+//   let filteredProducts = products;
 
-  if (searchString) {
-    const searchText = searchString.toLowerCase();
-    filteredProducts = filteredProducts.filter((product) =>
-      product.name.toLowerCase().includes(searchText)
-    );
-  }
+//   if (searchString) {
+//     const searchText = searchString.toLowerCase();
+//     filteredProducts = filteredProducts.filter((product) =>
+//       product.name.toLowerCase().includes(searchText)
+//     );
+//   }
 
-  if (searchedCategory) {
-    filteredProducts = filteredProducts.filter(
-      (product) => product.category === searchedCategory
-    );
-  }
+//   if (searchedCategory) {
+//     filteredProducts = filteredProducts.filter(
+//       (product) => product.category === searchedCategory
+//     );
+//   }
 
-  return filteredProducts;
-};
+//   return filteredProducts;
+// };
 
 const ItemListContainer = () => {
   const { searchString, searchedCategory } = useContext(SearchContext);
   const [loading, setLoading] = useState(true);
-  const [items, setItems] = useState([]);
+  // const [items, setItems] = useState([]);
 
   useEffect(() => {
     getAllProducts()
@@ -51,18 +50,18 @@ const ItemListContainer = () => {
         setLoading(true);
         console.log("res", res);
         // const mappedProducts = transformProductsData(res);
-        const filteredProducts = filterProducts(
-          res.products,
-          searchString,
-          searchedCategory
-        );
-        if (filteredProducts.length === 0) {
-          setItems([]);
-          setLoading(false);
-        } else {
-          setItems(filteredProducts);
-          setLoading(false);
-        }
+        // const filteredProducts = filterProducts(
+        //   res.products,
+        //   searchString,
+        //   searchedCategory
+        // );
+        // if (filteredProducts.length === 0) {
+        //   setItems([]);
+        //   setLoading(false);
+        // } else {
+        //   setItems(filteredProducts);
+        //   setLoading(false);
+        // }
       })
       .catch((error) => {
         console.log(error);
@@ -70,10 +69,10 @@ const ItemListContainer = () => {
       });
   }, [searchString, searchedCategory]);
 
-  if (items.length === 0 && searchString !== "") {
-    // return <NotFound />;
-    return <h1>No encontramos tu producto</h1>
-  }
+  // if (items.length === 0 && searchString !== "") {
+  //   // return <NotFound />;
+  //   return <h1>No encontramos tu producto</h1>
+  // }
 
   return (
     <div className={styles.itemListContainer}>
@@ -84,7 +83,8 @@ const ItemListContainer = () => {
         </>
       ) : (
         <>
-          <ItemList items={items} />
+        <h1>Items list container</h1>
+          {/* <ItemList items={items} /> */}
         </>
       )}
     </div>

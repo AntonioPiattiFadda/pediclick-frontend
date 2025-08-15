@@ -1,4 +1,3 @@
-import React from 'react';
 import Lupa from '../../assets/svg/NotFoundMagnifyingGlass.svg';
 import styles from './NoProductFound.module.css';
 
@@ -14,4 +13,4 @@ const NoProductFound = () => {
   );
 };
 
-export default NotFound;
+export default NoProductFound;

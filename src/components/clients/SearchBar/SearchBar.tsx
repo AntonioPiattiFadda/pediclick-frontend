@@ -8,7 +8,7 @@ const SearchBar = () => {
   const { searchString, setSearchString, setSearchedCategory } =
     useContext(SearchContext);
 
-  const handleSearch = (value) => {
+  const handleSearch = (value: string) => {
     setSearchedCategory('');
     setSearchString(value);
   };

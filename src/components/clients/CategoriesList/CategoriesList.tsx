@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import  { useContext, useEffect, useState } from 'react';
 import style from './CategoriesList.module.css';
 import { SearchContext } from '../Context/SearchContext';
 import { getCategories } from '@/service';
 
 const CategoriesList = () => {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const { setSearchedCategory, searchedCategory } = useContext(SearchContext);
 
   useEffect(() => {
@@ -12,7 +13,7 @@ const CategoriesList = () => {
       .then((res) => {
         const newCategories = [
           'Todos',
-          ...res.map((category) => category.name),
+          ...(res.categories || []).map((category: { name: string; }) => category.name),
         ];
         setCategories(newCategories);
       })
@@ -21,7 +22,7 @@ const CategoriesList = () => {
       });
   }, []);
 
-  const handleChangeCategory = (category) => {
+  const handleChangeCategory = (category: any) => {
     if (category === 'Todos') {
       setSearchedCategory('');
       return;

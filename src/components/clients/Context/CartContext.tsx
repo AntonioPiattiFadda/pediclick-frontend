@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { createContext, useEffect, useState } from 'react';
 
-export const CartContext = createContext();
+export const CartContext = createContext({} as any);
 
-const CartContextProvider = ({ children }) => {
+const CartContextProvider = ({ children }:{
+  children: React.ReactNode
+}) => {
   const [cart, setCart] = useState([]);
   // JSON.parse(window.localStorage.getItem('CARRITO')) || []
   useEffect(() => {
@@ -10,85 +13,89 @@ const CartContextProvider = ({ children }) => {
     localStorage.setItem('CARRITO', JSON.stringify(newArray));
   }, [cart]);
 
-  const addUnitPriceToProduct = (product, unitPrice) => {
-    const updatedCart = [...cart];
-    const existingProductIndex = updatedCart.findIndex(
-      (item) => item.id === product.id
-    );
-    if (existingProductIndex !== -1) {
-      const existingUnitPriceIndex = updatedCart[
-        existingProductIndex
-      ].unit_price.findIndex((up) => up.id === unitPrice.id);
-      if (existingUnitPriceIndex !== -1) {
-        updatedCart[existingProductIndex].unit_price[
-          existingUnitPriceIndex
-        ].quantity = 0;
-      } else {
-        unitPrice.quantity = 1;
-        updatedCart[existingProductIndex].unit_price.push(unitPrice);
-      }
-    } else {
-      const newUnitPrice = {
-        ...unitPrice,
-        quantity: 1,
-      };
-      const newProduct = {
-        ...product,
-        unit_price: [newUnitPrice],
-      };
+  const addUnitPriceToProduct = (product: any, unitPrice: any) => {
+    console.log("addUnitPriceToProduct", product, unitPrice);
+    // const updatedCart = [...cart];
+    // const existingProductIndex = updatedCart.findIndex(
+    //   (item) => item.id === product.id
+    // );
+    // if (existingProductIndex !== -1) {
+    //   const existingUnitPriceIndex = updatedCart[
+    //     existingProductIndex
+    //   ].unit_price.findIndex((up) => up.id === unitPrice.id);
+    //   if (existingUnitPriceIndex !== -1) {
+    //     updatedCart[existingProductIndex].unit_price[
+    //       existingUnitPriceIndex
+    //     ].quantity = 0;
+    //   } else {
+    //     unitPrice.quantity = 1;
+    //     updatedCart[existingProductIndex].unit_price.push(unitPrice);
+    //   }
+    // } else {
+    //   const newUnitPrice = {
+    //     ...unitPrice,
+    //     quantity: 1,
+    //   };
+    //   const newProduct = {
+    //     ...product,
+    //     unit_price: [newUnitPrice],
+    //   };
 
-      updatedCart.push(newProduct);
-    }
-    setCart(updatedCart);
+    //   updatedCart.push(newProduct);
+    // }
+    // setCart(updatedCart);
   };
-  const addToCart = (selectedProduct) => {
-    let dobbleProduct = isInCart(selectedProduct.id);
-    if (dobbleProduct) {
-      let newArray = cart.map((product) => {
-        if (selectedProduct.id === product.id) {
-          return {
-            ...product,
-            quantity: product.quantity + 1,
-          };
-        }
-        return product;
-      });
-      setCart(newArray);
-    } else {
-      setCart([...cart, selectedProduct]);
-    }
-  };
-
-  const addOneUnitPriceQuantity = (product, unitPrice) => {
-    const updatedCart = [...cart];
-    const existingProductIndex = updatedCart.findIndex(
-      (item) => item.id === product.id
-    );
-    if (existingProductIndex !== -1) {
-      const existingUnitPriceIndex = updatedCart[
-        existingProductIndex
-      ].unit_price.findIndex((up) => up.id === unitPrice.id);
-      if (existingUnitPriceIndex !== -1) {
-        updatedCart[existingProductIndex].unit_price[
-          existingUnitPriceIndex
-        ].quantity += 1;
-      }
-    }
-
-    setCart(updatedCart);
+  const addToCart = (selectedProduct: any) => {
+    console.log("addToCart", selectedProduct);
+    // let dobbleProduct = isInCart(selectedProduct.id);
+    // if (dobbleProduct) {
+    //   let newArray = cart.map((product) => {
+    //     if (selectedProduct.id === product.id) {
+    //       return {
+    //         ...product,
+    //         quantity: product.quantity + 1,
+    //       };
+    //     }
+    //     return product;
+    //   });
+    //   setCart(newArray);
+    // } else {
+    //   setCart([...cart, selectedProduct]);
+    // }
   };
 
-  const addOneElement = (id) => {
-    let newArray = cart.map((product) => {
-      if (id === product.id) {
-        return {
-          ...product,
-          quantity: product.quantity + 1,
-        };
-      }
-      return product;
-    });
-    setCart(newArray);
+  const addOneUnitPriceQuantity = (product: any, unitPrice: any) => {
+    console.log("addOneUnitPriceQuantity", product, unitPrice);
+    // const updatedCart = [...cart];
+    // const existingProductIndex = updatedCart.findIndex(
+    //   (item) => item.id === product.id
+    // );
+    // if (existingProductIndex !== -1) {
+    //   const existingUnitPriceIndex = updatedCart[
+    //     existingProductIndex
+    //   ].unit_price.findIndex((up) => up.id === unitPrice.id);
+    //   if (existingUnitPriceIndex !== -1) {
+    //     updatedCart[existingProductIndex].unit_price[
+    //       existingUnitPriceIndex
+    //     ].quantity += 1;
+    //   }
+    // }
+
+    // setCart(updatedCart);
+  };
+
+  const addOneElement = (id: number) => {
+    console.log("addOneElement", id);
+    // let newArray = cart.map((product) => {
+    //   if (id === product.id) {
+    //     return {
+    //       ...product,
+    //       quantity: product.quantity + 1,
+    //     };
+    //   }
+    //   return product;
+    // });
+    // setCart(newArray);
   };
 
   const clearCart = () => {
@@ -96,154 +103,162 @@ const CartContextProvider = ({ children }) => {
   };
 
   const getCartQuantity = () => {
-    const total = cart.reduce((acc, element) => {
-      return acc + element.quantity;
-    }, 0);
-    return total;
+    // const total = cart.reduce((acc, element) => {
+    //   return acc + element.quantity;
+    // }, 0);
+    return 1;
   };
 
-  const getProductQuantityByID = (id) => {
-    const filteredProduct = cart.find((product) => product.id === id);
-    return filteredProduct?.quantity;
-  };
+  const getProductQuantityByID = (id: number) => {
+    console.log("getProductQuantityByID", id);
+  //   const filteredProduct = cart.find((product) => product.id === id);
+  //   return filteredProduct?.quantity;
+  // };
 
-  const getQuantityForUnitPrice = (product, unitPrice) => {
-    const productInCart = cart.find((item) => item.id === product.id);
-    if (productInCart) {
-      const unitPriceInProduct = productInCart.unit_price.find(
-        (up) => up.id === unitPrice.id
-      );
-      if (unitPriceInProduct) {
-        return unitPriceInProduct.quantity || 0;
-      }
-    }
+  // const getQuantityForUnitPrice = (product, unitPrice) => {
+  //   const productInCart = cart.find((item) => item.id === product.id);
+  //   if (productInCart) {
+  //     const unitPriceInProduct = productInCart.unit_price.find(
+  //       (up) => up.id === unitPrice.id
+  //     );
+  //     if (unitPriceInProduct) {
+  //       return unitPriceInProduct.quantity || 0;
+  //     }
+  //   }
     return 0;
   };
 
   const getCartTotalPrice = () => {
-    const totalPerProduct = cart.map((product) => {
-      const totalPerUnitPrice = product.unit_price.reduce((acc, unitPrice) => {
-        return acc + unitPrice.quantity * unitPrice.price;
-      }, 0);
-      return totalPerUnitPrice;
-    });
-    const totalAllProducts = totalPerProduct.reduce((acc, total) => {
-      return acc + total;
-    }, 0);
-    return totalAllProducts;
+    // const totalPerProduct = cart.map((product) => {
+    //   const totalPerUnitPrice = product.unit_price.reduce((acc, unitPrice) => {
+    //     return acc + unitPrice.quantity * unitPrice.price;
+    //   }, 0);
+    //   return totalPerUnitPrice;
+    // });
+    // const totalAllProducts = totalPerProduct.reduce((acc, total) => {
+    //   return acc + total;
+    // }, 0);
+    return 123;
   };
 
-  const minusOneElement = (id) => {
-    const filteredProduct = cart.find((product) => product.id === id);
-    if (filteredProduct.quantity > 0) {
-      let newArray = cart.map((product) => {
-        if (id === product.id) {
-          return {
-            ...product,
-            quantity: product.quantity - 1,
-          };
-        }
-        return product;
-      });
-      setCart(newArray);
-    }
+  const minusOneElement = (id:number) => {
+    console.log("minusOneElement", id);
+    // const filteredProduct = cart.find((product) => product.id === id);
+    // if (filteredProduct.quantity > 0) {
+    //   let newArray = cart.map((product) => {
+    //     if (id === product.id) {
+    //       return {
+    //         ...product,
+    //         quantity: product.quantity - 1,
+    //       };
+    //     }
+    //     return product;
+    //   });
+    //   setCart(newArray);
+    // }
   };
 
-  const isInCart = (id) => {
-    return cart.some((elemento) => elemento.id === id);
+  // const isInCart = (id: number) => {
+  //   return cart.some((elemento) => elemento.id === id);
+  // };
+
+  const removeProduct = (id: number) => {
+    console.log("removeProduct", id);
+    // const deletedProductIndex = cart.findIndex((product) => product.id === id);
+    // const newArray = [...cart];
+    // newArray.splice(deletedProductIndex, 1);
+    // setCart(newArray);
   };
 
-  const removeProduct = (id) => {
-    const deletedProductIndex = cart.findIndex((product) => product.id === id);
-    const newArray = [...cart];
-    newArray.splice(deletedProductIndex, 1);
-    setCart(newArray);
+  const removeUnitPriceFromProduct = (product: any, unitPrice: any) => {
+    console.log("removeUnitPriceFromProduct", product, unitPrice);
+    // const updatedCart = [...cart];
+    // const existingProductIndex = updatedCart.findIndex(
+    //   (item) => item.id === product.id
+    // );
+
+    // if (existingProductIndex !== -1) {
+    //   const existingUnitPriceIndex = updatedCart[
+    //     existingProductIndex
+    //   ].unit_price.findIndex((up) => up.id === unitPrice.id);
+
+    //   if (existingUnitPriceIndex !== -1) {
+    //     updatedCart[existingProductIndex].unit_price.splice(
+    //       existingUnitPriceIndex,
+    //       1
+    //     );
+
+    //     if (updatedCart[existingProductIndex].unit_price.length === 0) {
+    //       updatedCart.splice(existingProductIndex, 1);
+    //     }
+
+    //     setCart(updatedCart);
+    //   }
+    // }
   };
 
-  const removeUnitPriceFromProduct = (product, unitPrice) => {
-    const updatedCart = [...cart];
-    const existingProductIndex = updatedCart.findIndex(
-      (item) => item.id === product.id
-    );
-
-    if (existingProductIndex !== -1) {
-      const existingUnitPriceIndex = updatedCart[
-        existingProductIndex
-      ].unit_price.findIndex((up) => up.id === unitPrice.id);
-
-      if (existingUnitPriceIndex !== -1) {
-        updatedCart[existingProductIndex].unit_price.splice(
-          existingUnitPriceIndex,
-          1
-        );
-
-        if (updatedCart[existingProductIndex].unit_price.length === 0) {
-          updatedCart.splice(existingProductIndex, 1);
-        }
-
-        setCart(updatedCart);
-      }
-    }
+  const isUnitPriceInCart = (id: number, unitPrice: any) => {
+    console.log("isUnitPriceInCart", id, unitPrice);
+    // return cart.some((cartItem) => {
+    //   return (
+    //     cartItem.id === id &&
+    //     cartItem.unit_price.some((cartUnitPrice) => {
+    //       return (
+    //         cartUnitPrice.unit === unitPrice.unit && cartUnitPrice.quantity > 0
+    //       );
+    //     })
+    //   );
+    // });
   };
 
-  const isUnitPriceInCart = (id, unitPrice) => {
-    return cart.some((cartItem) => {
-      return (
-        cartItem.id === id &&
-        cartItem.unit_price.some((cartUnitPrice) => {
-          return (
-            cartUnitPrice.unit === unitPrice.unit && cartUnitPrice.quantity > 0
-          );
-        })
-      );
-    });
+  const minusOneUnitPriceQuantity = (product: any, unitPrice: any) => {
+    console.log("minusOneUnitPriceQuantity", product, unitPrice);
+    // const updatedCart = [...cart];
+    // const existingProductIndex = updatedCart.findIndex(
+    //   (item) => item.id === product.id
+    // );
+    // if (existingProductIndex !== -1) {
+    //   const existingUnitPriceIndex = updatedCart[
+    //     existingProductIndex
+    //   ].unit_price.findIndex((up) => up.id === unitPrice.id);
+    //   if (existingUnitPriceIndex !== -1) {
+    //     if (
+    //       updatedCart[existingProductIndex].unit_price[existingUnitPriceIndex]
+    //         .quantity === 1
+    //     ) {
+    //       return;
+    //     }
+    //     updatedCart[existingProductIndex].unit_price[
+    //       existingUnitPriceIndex
+    //     ].quantity -= 1;
+    //   }
+    // }
+    // setCart(updatedCart);
   };
 
-  const minusOneUnitPriceQuantity = (product, unitPrice) => {
-    const updatedCart = [...cart];
-    const existingProductIndex = updatedCart.findIndex(
-      (item) => item.id === product.id
-    );
-    if (existingProductIndex !== -1) {
-      const existingUnitPriceIndex = updatedCart[
-        existingProductIndex
-      ].unit_price.findIndex((up) => up.id === unitPrice.id);
-      if (existingUnitPriceIndex !== -1) {
-        if (
-          updatedCart[existingProductIndex].unit_price[existingUnitPriceIndex]
-            .quantity === 1
-        ) {
-          return;
-        }
-        updatedCart[existingProductIndex].unit_price[
-          existingUnitPriceIndex
-        ].quantity -= 1;
-      }
-    }
-    setCart(updatedCart);
-  };
+  const removeUnitPrice = (product: any, unitPrice: any) => {
 
-  const removeUnitPrice = (product, unitPrice) => {
-    const updatedCart = [...cart];
-    const existingProductIndex = updatedCart.findIndex(
-      (item) => item.id === product.id
-    );
-    if (existingProductIndex !== -1) {
-      const existingUnitPriceIndex = updatedCart[
-        existingProductIndex
-      ].unit_price.findIndex((up) => up.id === unitPrice.id);
+    console.log("removeUnitPrice", product, unitPrice);
+    // const updatedCart = [...cart];
+    // const existingProductIndex = updatedCart.findIndex(
+    //   (item) => item.id === product.id
+    // );
+    // if (existingProductIndex !== -1) {
+    //   const existingUnitPriceIndex = updatedCart[
+    //     existingProductIndex
+    //   ].unit_price.findIndex((up) => up.id === unitPrice.id);
 
-      if (existingUnitPriceIndex !== -1) {
-        updatedCart[existingProductIndex].unit_price.splice(
-          existingUnitPriceIndex,
-          1
-        );
-      }
-      if (updatedCart[existingProductIndex].unit_price.length === 0) {
-        updatedCart.splice(existingProductIndex, 1);
-      }
-    }
-    setCart(updatedCart);
+    //   if (existingUnitPriceIndex !== -1) {
+    //     updatedCart[existingProductIndex].unit_price.splice(
+    //       existingUnitPriceIndex,
+    //       1
+    //     );
+    //   }
+    //   if (updatedCart[existingProductIndex].unit_price.length === 0) {
+    //     updatedCart.splice(existingProductIndex, 1);
+    //   }
+    // }
+    // setCart(updatedCart);
   };
 
   const data = {
@@ -259,7 +274,7 @@ const CartContextProvider = ({ children }) => {
     addUnitPriceToProduct,
     removeUnitPriceFromProduct,
     isUnitPriceInCart,
-    getQuantityForUnitPrice,
+    // getQuantityForUnitPrice,
     addOneUnitPriceQuantity,
     minusOneUnitPriceQuantity,
     removeUnitPrice,

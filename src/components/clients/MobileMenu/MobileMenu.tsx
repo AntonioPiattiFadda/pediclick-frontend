@@ -6,7 +6,10 @@ import ContactIcon from '@/assets/svg/ContactoMobileMenuIcon.svg';
 import SocialIcon from '@/assets/svg/RedesMobileMenuIcon.svg';
 import CerrarIcon from '@/assets/svg/CerrarMenuMobileIcon.svg';
 
-const MobileMenu = ({ openMenu, setOpenMenu }) => {
+const MobileMenu = ({ openMenu, setOpenMenu }: {
+  openMenu: boolean;
+  setOpenMenu: (open: boolean) => void;
+}) => {
   const handleCloseMenu = () => {
     setOpenMenu(false);
   };

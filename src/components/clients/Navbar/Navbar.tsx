@@ -50,7 +50,7 @@ const Navbar = () => {
 
         <div className={styles.navbar__logo_container}>
           <div className={styles.navbar__logo}>
-            <Link href="/">
+            <Link to="/">
               <img
                 src="https://cstqhybxydgcazbgjqrd.supabase.co/storage/v1/object/public/PediClick-panarce/Panarse_Logo%201x1_1.png"
                 alt="Logo"

@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import styles from './Item.module.css';
 import { Link } from 'react-router-dom';
 
-const Item = ({ element }) => {
+const Item = ({ element }:{
+  element: any
+}) => {
   // const bestPrice = element.product_prices.reduce((minPrice, currentPrice) => {
   //   return currentPrice.value < minPrice.value ? currentPrice : minPrice;
   // }, element.unit_price[0]);
@@ -15,7 +18,7 @@ const Item = ({ element }) => {
     <>
       <Link
         className={styles.cardContainer}
-        to={noStockAtAll ? undefined : `/itemDetail/${element.id}`}
+        to={noStockAtAll ? '' : `/itemDetail/${element.id}`}
       >
         <div className={styles.cardInfo}>
           <span className={styles.cardName}>{element.name}</span>
