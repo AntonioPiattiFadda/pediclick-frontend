@@ -1,5 +1,5 @@
 import { BarChart3, Package, Settings, Home } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -26,6 +26,11 @@ const menuItems = [
    {
     title: 'Tiendas',
     url: '/stores',
+    icon: Package,
+  },
+   {
+    title: 'Personal',
+    url: '/team-members',
     icon: Package,
   },
   {
@@ -75,10 +80,10 @@ export function AppSidebar() {
                           : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
                       }`}
                     >
-                      <a href={item.url} className="flex items-center gap-3 px-3 py-2">
+                      <Link to={item.url} className="flex items-center gap-3 px-3 py-2">
                         <item.icon className="w-4 h-4" />
                         <span>{item.title}</span>
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

@@ -1,31 +1,35 @@
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getUserStores } from "@/service";
+import { getUserTeamMembers } from "@/service";
 import { useQuery } from "@tanstack/react-query";
-import TableSkl from "./ui/tableSkl";
+import TableSkl from "../stores/ui/tableSkl";
+import { TeamMemberTable } from "./TeamMemberTable";
+import { AddTeamMemberBtn } from "./AddTeamMemberBtn";
+import { useUserStoresContext } from "@/contexts/UserStoresContext";
 
-export const StoresTab = () => {
+export const TeamMemberContainer = () => {
   // const [searchTerm, setSearchTerm] = useState("");
   // const [selectedCategory, setSelectedCategory] = useState("all");
   // const [selectedStatus, setSelectedStatus] = useState("all");
+  const { selectedStoreId } = useUserStoresContext();
 
   const {
-    data: stores = [],
+    data: teamMembers = [],
     isLoading,
     // isError,
   } = useQuery({
-    queryKey: ["stores"],
+    queryKey: ["team-members"],
     queryFn: async () => {
-      const response = await getUserStores();
-      return response.stores;
+      const response = await getUserTeamMembers(Number(selectedStoreId));
+      return response.teamMembers;
     },
+    enabled: selectedStoreId !== null,
   });
-
-  console.log("stores", stores);
 
   if (isLoading) {
     return <TableSkl />;
@@ -37,20 +41,16 @@ export const StoresTab = () => {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <CardTitle>Tiendas</CardTitle>
-              <CardDescription>Gestiona tus tiendas</CardDescription>
+              <CardTitle>Personal</CardTitle>
+              <CardDescription>Gestiona tus personal</CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
-              {/* <Button variant="outline" className="gap-2">
-                <Upload className="w-4 h-4" />
-                Importar Excel
-              </Button> */}
-              {/* <AddProductBtn /> */}
+              <AddTeamMemberBtn />
             </div>
           </div>
         </CardHeader>
-        {/* <CardContent className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
+        <CardContent className="space-y-4">
+          {/* <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
@@ -85,10 +85,10 @@ export const StoresTab = () => {
                 <SelectItem value="out_of_stock">Sin stock</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
 
-          <StoresTable products={products}  />
-        </CardContent> */}
+          <TeamMemberTable teamMembers={teamMembers} />
+        </CardContent>
       </Card>
     </div>
   );

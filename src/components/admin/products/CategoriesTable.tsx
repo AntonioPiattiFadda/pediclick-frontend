@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2 } from 'lucide-react';
 import type { Category } from '@/types';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '../../ui/avatar';
 
 interface CategoriesTableProps {
   categories: Category[];

@@ -11,7 +11,6 @@ const Item = ({ element }) => {
   // const noStockAtAll = element.unit_price.every((price) => price.stock === 0);
   const noStockAtAll = false;
 
-  console.log(element);
   return (
     <>
       <Link

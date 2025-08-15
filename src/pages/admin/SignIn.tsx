@@ -1,23 +1,41 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/AuthContext';
-import { AuthLayout } from './AuthLayout';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { AuthLayout } from "./AuthLayout";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { signIn } from "@/service/auth";
 
 export function SignIn() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  
-  const { signIn, loading, error, clearError } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+
+  const loginMutation = useMutation({
+    mutationFn: async (credentials: { email: string; password: string }) => {
+      return await signIn(credentials.email, credentials.password);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      setError(null);
+      window.location.href = "/dashboard"; 
+    },
+    onError: (err: any) => {
+      setError(err.message || "Error al iniciar sesión");
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
-    await signIn(email, password);
+    loginMutation.mutate({ email, password });
   };
+
+  const loading = loginMutation.isLoading;
 
   return (
     <AuthLayout
@@ -30,7 +48,7 @@ export function SignIn() {
             {error}
           </div>
         )}
-        
+
         <div className="space-y-2">
           <Label htmlFor="email" className="text-foreground font-medium">
             Correo electrónico
@@ -45,10 +63,11 @@ export function SignIn() {
               className="pl-10"
               placeholder="ejemplo@correo.com"
               required
+              autoComplete="email"
             />
           </div>
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="password" className="text-foreground font-medium">
             Contraseña
@@ -57,7 +76,7 @@ export function SignIn() {
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               id="password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="pl-10 pr-10"
@@ -69,11 +88,15 @@ export function SignIn() {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <input
@@ -92,7 +115,7 @@ export function SignIn() {
             ¿Olvidaste tu contraseña?
           </a>
         </div>
-        
+
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? (
             <>
@@ -100,13 +123,16 @@ export function SignIn() {
               Iniciando sesión...
             </>
           ) : (
-            'Iniciar Sesión'
+            "Iniciar Sesión"
           )}
         </Button>
-        
+
         <div className="text-center text-sm text-muted-foreground">
-          ¿No tienes una cuenta?{' '}
-          <a href="/sign-up" className="text-blue-600 hover:text-blue-800 font-medium">
+          ¿No tienes una cuenta?{" "}
+          <a
+            href="/sign-up"
+            className="text-blue-600 hover:text-blue-800 font-medium"
+          >
             Regístrate aquí
           </a>
         </div>

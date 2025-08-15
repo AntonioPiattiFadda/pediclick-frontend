@@ -22,6 +22,9 @@ import Footer from "./components/clients/Footer/Footer";
 import styles from "./App.module.css";
 import Navbar from "./components/clients/Navbar/Navbar";
 import Stores from "./pages/admin/Stores";
+import TeamMembers from "./pages/admin/TeamMembers";
+import { UserStoresProvider } from "./contexts/UserStoresContext";
+import PublicRoutesAuthCheck from "./components/admin/auth/publicRoutesAuthCheck";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +35,7 @@ export const PUBLIC_ROUTES = [
   "/forgot-password",
   "/reset-password",
   "/register",
+  "/register-team-member",
 ];
 
 const App = () => {
@@ -85,28 +89,41 @@ const App = () => {
             </div>
           </div>
         ) : (
-          <AuthProvider>
-            <BrowserRouter>
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<AdminHome />} />
-                  <Route path="/sign-in" element={<SignIn />} />
-                  <Route path="/sign-up" element={<SignUp />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/register" element={<ProfileRegister />} />
+          <UserStoresProvider>
+            <AuthProvider>
+              <BrowserRouter>
+                <Layout>
+                  <Routes>
+                    <Route element={<PublicRoutesAuthCheck />}>
+                      <Route path="/" element={<AdminHome />} />
+                      <Route path="/sign-in" element={<SignIn />} />
+                      <Route path="/sign-up" element={<SignUp />} />
+                      <Route
+                        path="/forgot-password"
+                        element={<ForgotPassword />}
+                      />
+                      <Route
+                        path="/reset-password"
+                        element={<ResetPassword />}
+                      />
+                      <Route path="/register" element={<ProfileRegister />} />
+                    </Route>
 
-                  <Route element={<RequireAuth />}>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/products" element={<Products />} />
-                    <Route path="/stores" element={<Stores />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Route>
-                </Routes>
-              </Layout>
-            </BrowserRouter>
-          </AuthProvider>
+                    {/* <Route path="/register-team-member" element={<RegisterTeamMember />} /> */}
+
+                    <Route element={<RequireAuth />}>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/products" element={<Products />} />
+                      <Route path="/stores" element={<Stores />} />
+                      <Route path="/team-members" element={<TeamMembers />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Route>
+                  </Routes>
+                </Layout>
+              </BrowserRouter>
+            </AuthProvider>
+          </UserStoresProvider>
         )}
       </TooltipProvider>
     </QueryClientProvider>

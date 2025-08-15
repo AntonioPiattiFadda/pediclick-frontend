@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from "react";
-import styles from "./ItemListContainer.module.css";
 import { SearchContext } from "../Context/SearchContext";
-import { getAllProducts } from "@/service";
+import styles from "./ItemListContainer.module.css";
 // import NotFound from "../NoProductFound/NoProductFound";
+import { getAllProducts } from "@/service/products";
 import ItemList from "../ItemList/ItemList";
 // import { ProductsSkeleton } from "../../Utils/Skeletons";
 

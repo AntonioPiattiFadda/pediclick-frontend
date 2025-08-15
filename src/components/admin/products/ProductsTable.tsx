@@ -12,8 +12,8 @@ import { Edit, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Product } from "@/types";
 import { getCurrencySymbol } from "@/utils";
-import { Input } from "../ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Input } from "../../ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteProduct } from "@/service";
 

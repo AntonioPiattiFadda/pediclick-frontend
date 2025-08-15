@@ -1,14 +1,20 @@
-import React from 'react';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { LogOut } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { signOut } from "@/service/auth";
+import { useMutation } from "@tanstack/react-query";
+import { LogOut } from "lucide-react";
+import StoresSelector from "./admin/stores/StoresSelector";
 
 export const Header = () => {
-  const handleLogout = () => {
-    console.log('Logout clicked');
-    // Aquí se implementará la lógica de logout con Supabase
-  };
+  const signOutMutation = useMutation({
+    mutationFn: async () => {
+      return await signOut();
+    },
+    onSuccess: () => {
+      window.location.href = "/sign-in"; 
+    },
+  });
 
   return (
     <header className="border-b border-border bg-card shadow-sm">
@@ -24,24 +30,26 @@ export const Header = () => {
             </p>
           </div>
         </div>
-        
+
+        <StoresSelector />
+
         <div className="flex items-center gap-3">
           <div className="hidden md:block text-right">
             <p className="text-sm font-medium text-foreground">Juan Pérez</p>
             <p className="text-xs text-muted-foreground">Administrador</p>
           </div>
-          
+
           <Avatar className="w-8 h-8">
             <AvatarImage src="/api/placeholder/32/32" alt="Usuario" />
             <AvatarFallback className="bg-primary text-primary-foreground text-sm">
               JP
             </AvatarFallback>
           </Avatar>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleLogout}
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => signOutMutation.mutate()}
             className="text-muted-foreground hover:text-foreground"
           >
             <LogOut className="w-4 h-4" />

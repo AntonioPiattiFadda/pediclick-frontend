@@ -258,3 +258,23 @@ export interface Store {
   created_by: string;
   slug: string;
 }
+
+export interface TeamMember {
+  id: string;
+  email: string;
+  password?: string;
+  full_name: string;
+  role: string;
+  avatar_url: string | null;
+  phone: string | null;
+  address: string | null;
+  is_verified: boolean;
+  parent_user_id: string;
+  store_id: number;
+  job_position: string | null;
+
+
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}

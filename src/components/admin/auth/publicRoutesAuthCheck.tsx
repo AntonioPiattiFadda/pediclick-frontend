@@ -1,22 +1,22 @@
 import { useUserSession } from "@/hooks/useUserSession";
 import { Navigate, Outlet } from "react-router-dom";
 
-const RequireAuth = () => {
+const PublicRoutesAuthCheck = () => {
   const { lookingForSession, userSession } = useUserSession();
 
   if (lookingForSession) {
     return null;
   }
 
-  return userSession ? (
+  return !userSession ? (
     <Outlet />
   ) : (
     <Navigate
-      to="/sign-in"
+      to="/dashboard"
       // state={{ from: location }}
       replace
     />
   );
 };
 
-export default RequireAuth;
+export default PublicRoutesAuthCheck;
