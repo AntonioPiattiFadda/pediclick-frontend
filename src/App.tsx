@@ -38,10 +38,12 @@ export const PUBLIC_ROUTES = [
 ];
 
 const App = () => {
-  const hostname = window.location.hostname;
-  const parts = hostname.split(".");
-  const subdomain = parts.length > 1 ? parts[0] : null;
-  const isInClientMode = subdomain;
+  // const hostname = window.location.hostname;
+  // const parts = hostname.split(".");
+  // const subdomain = parts.length > 1 ? parts[0] : null;
+  // const isInClientMode = subdomain;
+
+  const isInClientMode = false;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -89,36 +91,32 @@ const App = () => {
           </div>
         ) : (
           <UserStoresProvider>
-              <BrowserRouter>
-                <Layout>
-                  <Routes>
-                    <Route element={<PublicRoutesAuthCheck />}>
-                      <Route path="/" element={<AdminHome />} />
-                      <Route path="/sign-in" element={<SignIn />} />
-                      <Route path="/sign-up" element={<SignUp />} />
-                      <Route
-                        path="/forgot-password"
-                        element={<ForgotPassword />}
-                      />
-                      <Route
-                        path="/reset-password"
-                        element={<ResetPassword />}
-                      />
-                      <Route path="/register" element={<ProfileRegister />} />
-                    </Route>
+            <BrowserRouter>
+              <Layout>
+                <Routes>
+                  <Route element={<PublicRoutesAuthCheck />}>
+                    <Route path="/" element={<AdminHome />} />
+                    <Route path="/sign-in" element={<SignIn />} />
+                    <Route path="/sign-up" element={<SignUp />} />
+                    <Route
+                      path="/forgot-password"
+                      element={<ForgotPassword />}
+                    />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/register" element={<ProfileRegister />} />
+                  </Route>
 
-
-                    <Route element={<RequireAuth />}>
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/products" element={<Products />} />
-                      <Route path="/stores" element={<Stores />} />
-                      <Route path="/team-members" element={<TeamMembers />} />
-                      <Route path="/settings" element={<Settings />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Route>
-                  </Routes>
-                </Layout>
-              </BrowserRouter>
+                  <Route element={<RequireAuth />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/stores" element={<Stores />} />
+                    <Route path="/team-members" element={<TeamMembers />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Route>
+                </Routes>
+              </Layout>
+            </BrowserRouter>
           </UserStoresProvider>
         )}
       </TooltipProvider>
