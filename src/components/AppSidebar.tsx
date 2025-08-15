@@ -1,16 +1,16 @@
-import { BarChart3, Package, Settings, Home } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader,
 } from '@/components/ui/sidebar';
+import { BarChart3, Home, Package } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 const menuItems = [
   {
@@ -18,11 +18,11 @@ const menuItems = [
     url: '/dashboard',
     icon: BarChart3,
   },
-  {
-    title: 'Productos / Categorías',
-    url: '/products',
-    icon: Package,
-  },
+  // {
+  //   title: 'Productos / Categorías',
+  //   url: '/products',
+  //   icon: Package,
+  // },
    {
     title: 'Tiendas',
     url: '/stores',
@@ -33,11 +33,11 @@ const menuItems = [
     url: '/team-members',
     icon: Package,
   },
-  {
-    title: 'Configuración',
-    url: '/settings',
-    icon: Settings,
-  },
+  // {
+  //   title: 'Configuración',
+  //   url: '/settings',
+  //   icon: Settings,
+  // },
 ];
 
 export function AppSidebar() {
