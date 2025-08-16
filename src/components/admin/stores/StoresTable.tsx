@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -56,10 +57,7 @@ export const StoresTable = () => {
         <TableHeader>
           <TableRow>
             <TableHead>Tienda</TableHead>
-            <TableHead>Categoría</TableHead>
-            <TableHead className="text-right">Precio</TableHead>
-            <TableHead className="text-center">Stock</TableHead>
-            <TableHead className="text-center">Estado</TableHead>
+           
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -67,8 +65,10 @@ export const StoresTable = () => {
           {userStores.map((store) => (
             <TableRow key={store.store_id}>
               <TableCell>{store.store_name}</TableCell>
+              <TableCell className="text-right"> <Button>Editar</Button> <Button>Eliminar</Button></TableCell>
             </TableRow>
           ))}
+         
         </TableBody>
       </Table>
     </div>

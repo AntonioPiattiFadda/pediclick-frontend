@@ -28,7 +28,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useUserStoresContext } from "@/contexts/UserStoresContext";
 import type { TeamMember } from "@/types";
+import type { ZodIssue } from "zod";
+import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
 import RolesInfoPopover from "./RoleInfoPopover";
+
+  export const roles = [
+    { value: "MANAGER", label: "Encargado" },
+    { value: "EMPLOYEE", label: "Empleado" },
+  ];
 
 const emptyUser: TeamMember = {
   id: "",
@@ -36,7 +43,6 @@ const emptyUser: TeamMember = {
   password: "",
   role: "",
   full_name: "",
-  // avatar_url: "",
   address: "",
   phone: "",
   store_id: 0,
@@ -46,15 +52,14 @@ const emptyUser: TeamMember = {
   avatar_url: null,
   is_verified: false,
   parent_user_id: "",
-  job_position: null
+  job_position: null,
 };
 
 export function AddTeamMemberBtn() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { userStores } = useUserStoresContext();
-  // const [avatarPreview, setAvatarPreview] = useState<string>("");
-  // const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const [zErrors, setZErrors] = useState<ZodIssue[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState<TeamMember>(emptyUser);
 
   const queryClient = useQueryClient();
@@ -64,7 +69,6 @@ export function AddTeamMemberBtn() {
       return await createTeamMember(data.formData);
     },
     onSuccess: () => {
-      alert("todo bien");
       queryClient.invalidateQueries({ queryKey: ["team-members"] });
       setIsModalOpen(false);
       resetForm();
@@ -78,58 +82,26 @@ export function AddTeamMemberBtn() {
     },
     onError: (error: any) => {
       const errorMessage = error.message;
-      toast("Error al crear Miembro de equipo", {
-        description: errorMessage,
-        action: {
-          label: "Undo",
-          onClick: () => console.log("Undo"),
-        },
-      });
+      setErrorMessage(errorMessage);
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 3000);
     },
   });
 
   const resetForm = () => {
     setFormData(emptyUser);
-    // setAvatarPreview("");
+    setZErrors([]);
   };
-
-  // const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     const reader = new FileReader();
-  //     reader.onload = () => {
-  //       const result = reader.result as string;
-  //       setAvatarPreview(result);
-  //       setFormData({ ...formData, avatar_url: result });
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
-
-  // const removeAvatar = () => {
-  //   setAvatarPreview("");
-  //   setFormData({ ...formData, avatar_url: "" });
-  //   if (fileInputRef.current) {
-  //     fileInputRef.current.value = "";
-  //   }
-  // };
 
   const handleSubmit = () => {
     const validation = createTeamMemberSchema.safeParse(formData);
 
     if (!validation.success) {
-      const errors = validation.error.errors;
-      const errorMessages = errors
-        .map((error) => `${error.path.join(".")}: ${error.message}`)
-        .join(", ");
-
-      toast("Datos incompletos o incorrectos", {
-        description: errorMessages,
-        action: {
-          label: "Cerrar",
-          onClick: () => console.log("Close"),
-        },
-      });
+      setZErrors(validation.error.issues);
+      setTimeout(() => {
+        setZErrors([]);
+      }, 3000);
       return;
     }
 
@@ -138,10 +110,7 @@ export function AddTeamMemberBtn() {
     });
   };
 
-  const roles = [
-    { value: "MANAGER", label: "Encargado" },
-    { value: "EMPLOYEE", label: "Empleado" },
-  ];
+
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -160,98 +129,73 @@ export function AddTeamMemberBtn() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          {/* Avatar Upload */}
-          {/* <div className="grid gap-2">
-            <Label htmlFor="avatar">Avatar (opcional)</Label>
-            <div className="flex items-center gap-4">
-              {avatarPreview ? (
-                <div className="relative">
-                  <img
-                    src={avatarPreview}
-                    alt="Avatar preview"
-                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0"
-                    onClick={removeAvatar}
-                  >
-                    <X className="w-3 h-3" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300">
-                  <Upload className="w-6 h-6 text-gray-400" />
-                </div>
-              )}
-              <div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  {avatarPreview ? "Cambiar Avatar" : "Subir Avatar"}
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarUpload}
-                />
-              </div>
-            </div>
-          </div> */}
-
+        <div className="grid gap-4 py-4 relative">
           {/* Full Name */}
-          <div className="grid gap-2">
+          <div className="grid gap-2 relative">
             <Label htmlFor="full_name">Nombre Completo *</Label>
             <Input
               id="full_name"
               placeholder="Juan Pérez"
+              className={`border ${
+                zErrors?.find((error: any) => error.path.includes("full_name"))
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md p-2`}
               value={formData.full_name}
               onChange={(e) =>
                 setFormData({ ...formData, full_name: e.target.value })
               }
             />
+            <ValidationErrorMessage zErrors={zErrors} fieldName="full_name" />
           </div>
 
           {/* Email */}
-          <div className="grid gap-2">
+          <div className="grid gap-2 relative">
             <Label htmlFor="email">Email *</Label>
             <Input
               id="email"
               type="email"
               placeholder="juan@ejemplo.com"
+              className={`border ${
+                zErrors?.find((error: any) => error.path.includes("email"))
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md p-2`}
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
               }
             />
+            <ValidationErrorMessage zErrors={zErrors} fieldName="email" />
           </div>
 
           {/* Password */}
-          <div className="grid gap-2">
+          <div className="grid gap-2 relative">
             <Label htmlFor="password">Contraseña *</Label>
             <Input
               id="password"
               type="password"
               placeholder="Mínimo 6 caracteres"
+              className={`border ${
+                zErrors?.find((error: any) => error.path.includes("password"))
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md p-2`}
               value={formData.password}
               onChange={(e) =>
                 setFormData({ ...formData, password: e.target.value })
               }
             />
+            <ValidationErrorMessage zErrors={zErrors} fieldName="password" />
           </div>
 
           {/* Role */}
-          <div className="grid gap-2">
-            <Label htmlFor="role">Rol *</Label>
-            <div className=" w-5 h-5">
-              <RolesInfoPopover />
+          <div className="grid gap-2 relative">
+            <div className="flex gap-4">
+              <Label htmlFor="role">Rol *</Label>
+              <div className="w-5 h-5">
+                <RolesInfoPopover />
+              </div>
             </div>
             <Select
               value={formData.role}
@@ -259,7 +203,13 @@ export function AddTeamMemberBtn() {
                 setFormData({ ...formData, role: value })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger
+                className={`w-full ${
+                  zErrors?.find((error: any) => error.path.includes("role"))
+                    ? "border-red-500"
+                    : "border-gray-300"
+                }`}
+              >
                 <SelectValue placeholder="Seleccionar rol" />
               </SelectTrigger>
               <SelectContent>
@@ -270,69 +220,109 @@ export function AddTeamMemberBtn() {
                 ))}
               </SelectContent>
             </Select>
+            <ValidationErrorMessage zErrors={zErrors} fieldName="role" />
           </div>
 
           {/* Tienda */}
-          <div className="grid gap-2">
+          <div className="grid gap-2 relative">
             <Label htmlFor="store">Punto de venta *</Label>
             <Select
-              value={formData.store_id.toString()}
+              value={formData.store_id ? String(formData.store_id) : ""}
               onValueChange={(value) =>
                 setFormData({ ...formData, store_id: Number(value) })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger
+                className={` w-full ${
+                  zErrors?.find((error: any) => error.path.includes("store_id"))
+                    ? "border-red-500"
+                    : "border-gray-300"
+                }`}
+              >
                 <SelectValue placeholder="Seleccionar tienda" />
               </SelectTrigger>
               <SelectContent>
                 {userStores.map((store) => (
-                  <SelectItem key={store.store_id} value={store.store_id}>
+                  <SelectItem
+                    key={store.store_id}
+                    value={String(store.store_id)}
+                  >
                     {store.store_name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            <ValidationErrorMessage zErrors={zErrors} fieldName="store_id" />
           </div>
 
-          <div className="grid gap-2">
+          {/* Job Position */}
+          <div className="grid gap-2 relative">
             <Label htmlFor="job_position">Puesto de trabajo (opcional)</Label>
             <Input
               id="job_position"
               placeholder="Descripción del puesto"
-              value={formData.job_position || ''}
+              className={`border ${
+                zErrors?.find((error: any) =>
+                  error.path.includes("job_position")
+                )
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md p-2`}
+              value={formData.job_position || ""}
               onChange={(e) =>
                 setFormData({ ...formData, job_position: e.target.value })
               }
             />
+            <ValidationErrorMessage
+              zErrors={zErrors}
+              fieldName="job_position"
+            />
           </div>
 
           {/* Phone */}
-          <div className="grid gap-2">
+          <div className="grid gap-2 relative">
             <Label htmlFor="phone">Teléfono (opcional)</Label>
             <Input
               id="phone"
               type="tel"
               placeholder="+54 9 11 1234-5678"
+              className={`border ${
+                zErrors?.find((error: any) => error.path.includes("phone"))
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md p-2`}
               value={formData.phone || ""}
               onChange={(e) =>
                 setFormData({ ...formData, phone: e.target.value })
               }
             />
+            <ValidationErrorMessage zErrors={zErrors} fieldName="phone" />
           </div>
 
           {/* Address */}
-          <div className="grid gap-2">
+          <div className="grid gap-2 relative">
             <Label htmlFor="address">Dirección (opcional)</Label>
             <Textarea
               id="address"
               placeholder="Calle Ejemplo 123, Ciudad, Provincia"
+              className={`border ${
+                zErrors?.find((error: any) => error.path.includes("address"))
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-md`}
               value={formData.address || ""}
               onChange={(e) =>
                 setFormData({ ...formData, address: e.target.value })
               }
               rows={3}
             />
+            <ValidationErrorMessage zErrors={zErrors} fieldName="address" />
           </div>
+          {errorMessage && (
+            <div className="mt-2 text-sm text-red-500 absolute -bottom-4">
+              {errorMessage}
+            </div>
+          )}
         </div>
 
         <DialogFooter className="mt-4">

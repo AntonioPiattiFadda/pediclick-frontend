@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -56,11 +56,11 @@ export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Producto</TableHead>
-            <TableHead>Categoría</TableHead>
-            <TableHead className="text-right">Precio</TableHead>
-            <TableHead className="text-center">Stock</TableHead>
-            <TableHead className="text-center">Estado</TableHead>
+            <TableHead>Nombre</TableHead>
+            <TableHead>Email</TableHead>
+      
+            <TableHead className="text-center">Rol</TableHead>
+             <TableHead className="text-center">Punto de venta</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -68,12 +68,16 @@ export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
           {teamMembers.length > 0 ? (
             teamMembers.map((member) => (
               <TableRow key={member.id}>
-                <TableCell>
+                {/* <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="w-10 h-10">
                       <AvatarImage
                         className="object-cover"
-                        src={member.avatar_url ? member.avatar_url : "/default-avatar.png"}
+                        src={
+                          member.avatar_url
+                            ? member.avatar_url
+                            : "/default-avatar.png"
+                        }
                         alt={member.full_name}
                       />
                       <AvatarFallback>
@@ -81,14 +85,21 @@ export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      {/* <p className="font-medium">{member.name}</p> */}
+                     <p className="font-medium">{member.name}</p> 
                       <p className="text-sm text-muted-foreground">
-                        {/* {member.sku} */}
+                         {member.sku} 
                       </p>
                     </div>
                   </div>
+                </TableCell> */}
+                <TableCell>{member.full_name}</TableCell>
+                <TableCell>{member.email}</TableCell>
+                 <TableCell>{member.role}</TableCell>
+                 <TableCell>{member.store_id}</TableCell>
+                <TableCell className="text-right">
+                  {" "}
+                  <Button>Editar</Button> <Button>Eliminar</Button>
                 </TableCell>
-                <TableCell>{member.role}</TableCell>
               </TableRow>
             ))
           ) : (
