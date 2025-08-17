@@ -35,8 +35,8 @@ export const StoresContainer = () => {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <CardTitle>Tiendas</CardTitle>
-              <CardDescription>Gestiona tus tiendas</CardDescription>
+              <CardTitle>Puntos de Venta</CardTitle>
+              <CardDescription>Gestiona tus puntos de venta</CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
               {/* <Button variant="outline" className="gap-2">

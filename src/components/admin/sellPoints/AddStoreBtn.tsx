@@ -58,8 +58,8 @@ export function AddStoreBtn() {
       const newStore = Array.isArray(data) ? data[0] : data;
       setUserStores((prevStores) => [...prevStores, newStore as Store]);
       setSelectedStoreId(newStore.store_id);
-      toast("Tienda agregada exitosamente", {
-        description: "La tienda ha sido creada correctamente.",
+      toast("Punto de venta agregada exitosamente", {
+        description: "La punto de venta ha sido creada correctamente.",
         action: {
           label: "Undo",
           onClick: () => console.log("Undo"),
@@ -68,7 +68,7 @@ export function AddStoreBtn() {
     },
     onError: (error: any) => {
       const errorMessage = error.message;
-      toast("Error al crear tienda", {
+      toast("Error al crear punto de venta", {
         description: errorMessage,
         action: {
           label: "Undo",
@@ -115,24 +115,24 @@ export function AddStoreBtn() {
       <DialogTrigger asChild>
         <Button className="bg-primary text-accent" variant="outline">
           <Plus className="mr-2 h-4 w-4" />
-          Agregar Tienda
+          Agregar 
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Nueva Tienda</DialogTitle>
+          <DialogTitle>Nueva punto de venta</DialogTitle>
           <DialogDescription>
-            Completá la información de la nueva tienda que querés agregar.
+            Completá la información de la nueva punto de venta que querés agregar.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           {/* Store Name */}
           <div className="grid gap-2 relative">
-            <Label htmlFor="store_name">Nombre de la Tienda *</Label>
+            <Label htmlFor="store_name">Nombre del punto de venta *</Label>
             <Input
               id="store_name"
-              placeholder="Mi Tienda Local"
+              placeholder="Mi punto de venta"
               className={`border ${
                 zErrors?.find((error: any) => error.path.includes("store_name"))
                   ? "border-red-500"
@@ -151,7 +151,7 @@ export function AddStoreBtn() {
             <Label htmlFor="description">Descripción (opcional)</Label>
             <Textarea
               id="description"
-              placeholder="Descripción de tu tienda..."
+              placeholder="Descripción de tu punto de venta..."
               value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
@@ -217,7 +217,7 @@ export function AddStoreBtn() {
               <Input
                 id="email"
                 type="email"
-                placeholder="tienda@ejemplo.com"
+                placeholder="puntodeventa@ejemplo.com"
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
@@ -232,7 +232,7 @@ export function AddStoreBtn() {
               <Input
                 id="website"
                 type="url"
-                placeholder="https://mitienda.com"
+                placeholder="https://punto-de-venta.com"
                 value={formData.website}
                 onChange={(e) =>
                   setFormData({ ...formData, website: e.target.value })
@@ -288,7 +288,7 @@ export function AddStoreBtn() {
               }
             />
             <p className="text-sm text-muted-foreground">
-              Se usará para crear la URL amigable de tu tienda
+              Se usará para crear la URL amigable de tu punto de venta
             </p>
              <ValidationErrorMessage zErrors={zErrors} fieldName="slug" />
           </div>
@@ -308,7 +308,7 @@ export function AddStoreBtn() {
             disabled={createStoreMutation.isLoading}
             onClick={handleSubmit}
           >
-            {createStoreMutation.isLoading ? "Creando..." : "Crear Tienda"}
+            {createStoreMutation.isLoading ? "Creando..." : "Crear"}
           </Button>
         </DialogFooter>
       </DialogContent>

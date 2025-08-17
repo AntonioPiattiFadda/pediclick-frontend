@@ -24,7 +24,7 @@ const menuItems = [
   //   icon: Package,
   // },
    {
-    title: 'Tiendas',
+    title: 'Puntos de venta',
     url: '/stores',
     icon: Package,
   },

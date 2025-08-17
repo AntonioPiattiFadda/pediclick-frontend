@@ -83,7 +83,7 @@ export function EditStoreBtn({ id }: { id:  number }) {
       setIsModalOpen(false);
       resetForm();
       toast("Excelente!", {
-        description: "La tienda ha sido actualizada correctamente.",
+        description: "El punto de venta ha sido actualizada correctamente.",
       });
     },
     onError: (error: any) => {
@@ -123,9 +123,9 @@ export function EditStoreBtn({ id }: { id:  number }) {
       </DialogTrigger>
       <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Nueva Tienda</DialogTitle>
+          <DialogTitle>Nuevo punto de venta</DialogTitle>
           <DialogDescription>
-            Completá la información de la nueva tienda que querés agregar.
+            Completá la información de la nuevo punto de venta que querés agregar.
           </DialogDescription>
         </DialogHeader>
 
@@ -133,10 +133,10 @@ export function EditStoreBtn({ id }: { id:  number }) {
           <div className="grid gap-4 py-4">
             {/* Store Name */}
             <div className="grid gap-2 relative">
-              <Label htmlFor="store_name">Nombre de la Tienda *</Label>
+              <Label htmlFor="store_name">Nombre del punto de venta *</Label>
               <Input
                 id="store_name"
-                placeholder="Mi Tienda Local"
+                placeholder="Mi punto de venta"
                 className={`border ${
                   zErrors?.find((error: any) =>
                     error.path.includes("store_name")
@@ -160,7 +160,7 @@ export function EditStoreBtn({ id }: { id:  number }) {
               <Label htmlFor="description">Descripción (opcional)</Label>
               <Textarea
                 id="description"
-                placeholder="Descripción de tu tienda..."
+                placeholder="Descripción de tu punto de venta..."
                 value={formData?.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
@@ -296,7 +296,7 @@ export function EditStoreBtn({ id }: { id:  number }) {
               <Label htmlFor="slug">Slug de URL (opcional)</Label>
               <Input
                 id="slug"
-                placeholder="mi-tienda-local"
+                placeholder="mi-punto-de-venta"
                 value={formData?.slug}
                 onChange={(e) =>
                   setFormData({ ...formData, slug: e.target.value })
@@ -329,7 +329,7 @@ export function EditStoreBtn({ id }: { id:  number }) {
             </Button>
           </DialogClose>
           <Button disabled={editStoreMutation.isLoading} onClick={handleSubmit}>
-            {editStoreMutation.isLoading ? "Editando..." : "Editar Tienda"}
+            {editStoreMutation.isLoading ? "Editando..." : "Editar"}
           </Button>
         </DialogFooter>
       </DialogContent>

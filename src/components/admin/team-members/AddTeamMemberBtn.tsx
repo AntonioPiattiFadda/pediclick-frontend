@@ -239,7 +239,7 @@ export function AddTeamMemberBtn() {
                     : "border-gray-300"
                 }`}
               >
-                <SelectValue placeholder="Seleccionar tienda" />
+                <SelectValue placeholder="Seleccionar punto de venta" />
               </SelectTrigger>
               <SelectContent>
                 {userStores.map((store) => (

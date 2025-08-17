@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const createStoreSchema = z.object({
-  store_name: z.string().min(1, "Nombre de la Tienda es Obligatorio"),
+  store_name: z.string().min(1, "Nombre del punto de venta es Obligatorio"),
   description: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
@@ -14,7 +14,7 @@ export const createStoreSchema = z.object({
 });
 
 export const editStoreSchema = z.object({
-  store_name: z.string().min(1, "Nombre de la Tienda es Obligatorio"),
+  store_name: z.string().min(1, "Nombre del punto de venta es Obligatorio"),
   description: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),

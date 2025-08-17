@@ -17,7 +17,7 @@ export const StoresTable = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Tienda</TableHead>
+            <TableHead>Nombre</TableHead>
             <TableHead>Descripcion</TableHead>
             <TableHead>Direccion</TableHead>
             <TableHead>Telefono</TableHead>

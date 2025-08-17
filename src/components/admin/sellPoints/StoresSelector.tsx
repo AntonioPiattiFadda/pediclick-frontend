@@ -41,11 +41,11 @@ const StoresSelector = () => {
       {userStores.length === 0 && <NoStoreModal />}
       <Select onValueChange={setSelectedStoreId} value={selectedStoreId ? String(selectedStoreId) : ""}>
         <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Elige tu tienda" />
+          <SelectValue placeholder="Elige tu punto de venta" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectLabel>Tienda</SelectLabel>
+            <SelectLabel>Punto de Venta</SelectLabel>
             {userStores.map((store) => (
               <SelectItem key={store.store_id} value={store.store_id ? String(store.store_id) : ""}>
                 {store.store_name}

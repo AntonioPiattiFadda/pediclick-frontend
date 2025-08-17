@@ -9,7 +9,7 @@ export const createTeamMemberSchema = z.object({
   // address: z.string().optional().or(z.literal("")),
   // phone: z.string().optional().or(z.literal("")),
 
-  store_id: z.number().min(1, "La tienda a la que pertenece es requerida"),
+  store_id: z.number().min(1, "La punto de venta a la que pertenece es requerida"),
 
   //A que local pertenece
   //A que encargado pertenece si es empleado
@@ -22,7 +22,7 @@ export const editTeamMemberSchema = z.object({
   // avatar_url: z.string().optional().or(z.literal("")),
   // address: z.string().optional().or(z.literal("")),
   // phone: z.string().optional().or(z.literal("")),
-  store_id: z.number().min(1, "La tienda a la que pertenece es requerida"),
+  store_id: z.number().min(1, "La punto de venta a la que pertenece es requerida"),
 
 
 
