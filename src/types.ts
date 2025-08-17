@@ -43,17 +43,19 @@ export interface Attributes {
   [key: string]: string | number | boolean;
 }
 
-export interface SocialLinks {
-  facebook?: string;
-  instagram?: string;
-  tiktok?: string;
-  linkedin?: string;
-  [key: string]: string | undefined;
-}
+export type SocialLinks = string;
+// {
+//   facebook?: string;
+//   instagram?: string;
+//   tiktok?: string;
+//   linkedin?: string;
+//   [key: string]: string | undefined;
+// }
 
-export interface OpeningHours {
-  [day: string]: { from: string; to: string }[];
-}
+export type OpeningHours = string;
+// {
+//   [day: string]: { from: string; to: string }[];
+// }
 
 export interface HomepageLayoutSection {
   type: string;
@@ -62,8 +64,6 @@ export interface HomepageLayoutSection {
 }
 
 // Interfaces para tablas
-
-
 
 export interface Category {
   id: string;
@@ -237,7 +237,7 @@ export interface Store {
   opening_hours: OpeningHours;
   updated_at?: string;
   deleted_at: string | null;
-  created_by: string;
+  business_owner_id: string;
   slug: string;
 }
 

@@ -19,8 +19,8 @@ export function DeleteTableElement({
   endpoint,
   queryKey,
 }: {
-  id: string;
-  endpoint: (id: string) => Promise<void>;
+  id: string | number;
+  endpoint: (id: string | number) => Promise<void>;
   queryKey: string[];
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);

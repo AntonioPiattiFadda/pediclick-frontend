@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -8,48 +7,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useUserStoresContext } from "@/contexts/UserStoresContext";
-// import { Badge } from "@/components/ui/badge";
-// import { Button } from "@/components/ui/button";
-// import { Edit, Trash2 } from "lucide-react";
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// import type { Product } from "@/types";
-// import { getCurrencySymbol } from "@/utils";
-// import { Input } from "../ui/input";
-// import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-// import { useMutation, useQueryClient } from "@tanstack/react-query";
-// import { deleteProduct } from "@/service";
-
-
+import { EditStoreBtn } from "./EditStoreBtn";
 
 export const StoresTable = () => {
   const { userStores } = useUserStoresContext();
-
-  // const queryClient = useQueryClient();
-
-  // const getStatusBadge = (status: string, stock: number) => {
-  //   if (stock === 0) {
-  //     return <Badge variant="destructive">Sin Stock</Badge>;
-  //   }
-  //   switch (status) {
-  //     case "active":
-  //       return <Badge variant="default">Activo</Badge>;
-  //     case "draft":
-  //       return <Badge variant="secondary">Borrador</Badge>;
-  //     case "out_of_stock":
-  //       return <Badge variant="destructive">Sin Stock</Badge>;
-  //     default:
-  //       return <Badge variant="secondary">{status}</Badge>;
-  //   }
-  // };
-
-  // const deleteProductMutation = useMutation({
-  //   mutationFn: async (productId: string | number) => {
-  //     await deleteProduct(productId); // tu función para eliminar
-  //   },
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({ queryKey: ["products"] }); // refresca los productos
-  //   },
-  // });
 
   return (
     <div className="rounded-md">
@@ -57,7 +18,16 @@ export const StoresTable = () => {
         <TableHeader>
           <TableRow>
             <TableHead>Tienda</TableHead>
-           
+            <TableHead>Descripcion</TableHead>
+            <TableHead>Direccion</TableHead>
+            <TableHead>Telefono</TableHead>
+            <TableHead>Whatsapp</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Sitio Web</TableHead>
+            <TableHead>Redes sociales</TableHead>
+            <TableHead>Horarios</TableHead>
+            <TableHead>Nombre e-commerce</TableHead>
+
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -65,10 +35,28 @@ export const StoresTable = () => {
           {userStores.map((store) => (
             <TableRow key={store.store_id}>
               <TableCell>{store.store_name}</TableCell>
-              <TableCell className="text-right"> <Button>Editar</Button> <Button>Eliminar</Button></TableCell>
+              <TableCell>{store.description || "-"}</TableCell>
+              <TableCell>{store.address || "-"}</TableCell>
+              <TableCell>{store.phone || "-"}</TableCell>
+              <TableCell>{store.whatsapp || "-"}</TableCell>
+              <TableCell>{store.email || "-"}</TableCell>
+              <TableCell>{store.website || "-"}</TableCell>
+              <TableCell>{store.social_links || "-"}</TableCell>
+              <TableCell>{store.opening_hours || "-"}</TableCell>
+              <TableCell>{store.slug || "-"}</TableCell>
+              <TableCell className="text-right flex gap-2">
+                {" "}
+                <EditStoreBtn id={store.store_id} />
+                {/* <DeleteTableElement
+                  id={store.store_id}
+                  endpoint={async (id: string | number) => {
+                    await deleteTeamMember(id);
+                  }}
+                  queryKey={["stores"]}
+                /> */}
+              </TableCell>
             </TableRow>
           ))}
-         
         </TableBody>
       </Table>
     </div>

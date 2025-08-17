@@ -76,7 +76,7 @@ export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
                   <EditTeamMemberBtn id={member.id} />{" "}
                   <DeleteTableElement
                     id={member.id}
-                    endpoint={async (id: string) => { await deleteTeamMember(id); }}
+                    endpoint={async (id: string | number) => { await deleteTeamMember(String(id)); }}
                     queryKey={["team-members"]}
                     />
                 </TableCell>

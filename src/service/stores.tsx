@@ -33,3 +33,31 @@ export const getUserStores = async () => {
 
   return { stores, error };
 };
+
+export const getStoreByStoreId = async (storeId: string | number) => {
+  const { data: store, error } = await supabase
+    .from("stores")
+    .select("*")
+    .eq("store_id", storeId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { store, error };
+};
+
+export const editStore = async (storeId: string | number, formData: any) => {
+  const { data, error } = await supabase
+    .from("stores")
+    .update(formData)
+    .eq("store_id", storeId)
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
