@@ -1,4 +1,4 @@
-import { AddStoreBtn } from '../stores/AddStoreBtn'
+import { AddStoreBtn } from '../sellPoints/AddStoreBtn'
 
 const NoStoreModal = () => {
   return (

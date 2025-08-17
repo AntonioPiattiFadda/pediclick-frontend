@@ -5,12 +5,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getUserTeamMembers } from "@/service";
 import { useQuery } from "@tanstack/react-query";
-import TableSkl from "../stores/ui/tableSkl";
+import TableSkl from "../sellPoints/ui/tableSkl";
 import { TeamMemberTable } from "./TeamMemberTable";
 import { AddTeamMemberBtn } from "./AddTeamMemberBtn";
 import { useUserStoresContext } from "@/contexts/UserStoresContext";
+import { getUserTeamMembers } from "@/service/profiles";
 
 export const TeamMemberContainer = () => {
   // const [searchTerm, setSearchTerm] = useState("");

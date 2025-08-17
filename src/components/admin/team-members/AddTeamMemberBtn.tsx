@@ -22,22 +22,18 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { createTeamMember } from "@/service";
 import { createTeamMemberSchema } from "@/validator/teamMembers";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useUserStoresContext } from "@/contexts/UserStoresContext";
-import type { TeamMember } from "@/types";
 import type { ZodIssue } from "zod";
 import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
-import RolesInfoPopover from "./RoleInfoPopover";
+import RolesInfoPopover, { ROLES } from "./RoleInfoPopover";
+import { createTeamMember } from "@/service/profiles";
+import type { UserProfile } from "@/types";
+import PasswordInfoPopover from "./PasswordInfoPopover";
 
-  export const roles = [
-    { value: "MANAGER", label: "Encargado" },
-    { value: "EMPLOYEE", label: "Empleado" },
-  ];
-
-const emptyUser: TeamMember = {
+const emptyUser: UserProfile = {
   id: "",
   email: "",
   password: "",
@@ -60,7 +56,7 @@ export function AddTeamMemberBtn() {
   const { userStores } = useUserStoresContext();
   const [zErrors, setZErrors] = useState<ZodIssue[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [formData, setFormData] = useState<TeamMember>(emptyUser);
+  const [formData, setFormData] = useState<UserProfile>(emptyUser);
 
   const queryClient = useQueryClient();
 
@@ -110,14 +106,12 @@ export function AddTeamMemberBtn() {
     });
   };
 
-
-
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogTrigger asChild>
         <Button className="bg-primary text-accent" variant="outline">
           <Plus className="mr-2 h-4 w-4" />
-          Agregar Miembro del equipo
+          Agregar
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
@@ -171,7 +165,13 @@ export function AddTeamMemberBtn() {
 
           {/* Password */}
           <div className="grid gap-2 relative">
-            <Label htmlFor="password">Contraseña *</Label>
+            <div className="flex gap-4">
+              <Label htmlFor="password">Contraseña *</Label>
+              <div className="w-5 h-5">
+                <PasswordInfoPopover />
+              </div>
+            </div>
+
             <Input
               id="password"
               type="password"
@@ -198,7 +198,7 @@ export function AddTeamMemberBtn() {
               </div>
             </div>
             <Select
-              value={formData.role}
+              value={formData.role || ""}
               onValueChange={(value) =>
                 setFormData({ ...formData, role: value })
               }
@@ -213,7 +213,7 @@ export function AddTeamMemberBtn() {
                 <SelectValue placeholder="Seleccionar rol" />
               </SelectTrigger>
               <SelectContent>
-                {roles.map((role) => (
+                {ROLES.filter((rol) => rol.value !== "OWNER").map((role) => (
                   <SelectItem key={role.value} value={role.value}>
                     {role.label}
                   </SelectItem>

@@ -1,4 +1,5 @@
-import { insertNewAdminUser, supabase } from ".";
+import {  supabase } from ".";
+import { insertNewAdminUser } from "./profiles";
 
 export const signIn = async (email: string, password: string) => {
   const { data, error } = await supabase.auth.signInWithPassword({

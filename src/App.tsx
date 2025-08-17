@@ -24,6 +24,8 @@ import Stores from "./pages/admin/Stores";
 import TeamMembers from "./pages/admin/TeamMembers";
 import { UserStoresProvider } from "./contexts/UserStoresContext";
 import PublicRoutesAuthCheck from "./components/admin/auth/publicRoutesAuthCheck";
+import { Provider } from "react-redux";
+import { store } from "./stores/store";
 
 const queryClient = new QueryClient();
 
@@ -90,34 +92,39 @@ const App = () => {
             </div>
           </div>
         ) : (
-          <UserStoresProvider>
-            <BrowserRouter>
-              <Layout>
-                <Routes>
-                  <Route element={<PublicRoutesAuthCheck />}>
-                    <Route path="/" element={<AdminHome />} />
-                    <Route path="/sign-in" element={<SignIn />} />
-                    <Route path="/sign-up" element={<SignUp />} />
-                    <Route
-                      path="/forgot-password"
-                      element={<ForgotPassword />}
-                    />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/register" element={<ProfileRegister />} />
-                  </Route>
+          <Provider store={store}>
+            <UserStoresProvider>
+              <BrowserRouter>
+                <Layout>
+                  <Routes>
+                    <Route element={<PublicRoutesAuthCheck />}>
+                      <Route path="/" element={<AdminHome />} />
+                      <Route path="/sign-in" element={<SignIn />} />
+                      <Route path="/sign-up" element={<SignUp />} />
+                      <Route
+                        path="/forgot-password"
+                        element={<ForgotPassword />}
+                      />
+                      <Route
+                        path="/reset-password"
+                        element={<ResetPassword />}
+                      />
+                      <Route path="/register" element={<ProfileRegister />} />
+                    </Route>
 
-                  <Route element={<RequireAuth />}>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/products" element={<Products />} />
-                    <Route path="/stores" element={<Stores />} />
-                    <Route path="/team-members" element={<TeamMembers />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Route>
-                </Routes>
-              </Layout>
-            </BrowserRouter>
-          </UserStoresProvider>
+                    <Route element={<RequireAuth />}>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/products" element={<Products />} />
+                      <Route path="/stores" element={<Stores />} />
+                      <Route path="/team-members" element={<TeamMembers />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Route>
+                  </Routes>
+                </Layout>
+              </BrowserRouter>
+            </UserStoresProvider>
+          </Provider>
         )}
       </TooltipProvider>
     </QueryClientProvider>

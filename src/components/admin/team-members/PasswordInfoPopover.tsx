@@ -1,34 +1,9 @@
 import { Info } from "lucide-react";
 import { useRef, useState } from "react";
 
-
-
-export const ROLES = [
-    {
-      label: "Encargado",
-      value: "MANAGER",
-      descripcion:
-        "Tendra acceso a la creacion de empleados dentro del sistema y a la gestion de inventario",
-    },
-    {
-      label: "Empleado",
-      value: "EMPLOYEE",
-      descripcion:
-        "Solo podra acceder a la pantalla de vendedor. Sin permisos para ingresar a los datos del sistema",
-    },
-    {
-      label: "Propietario",
-      value: "OWNER",
-      descripcion:
-        "Tendra acceso total a todas las funcionalidades del sistema, incluyendo la gestion de usuarios y configuraciones.",
-    }
-  ];
-
-const RolesInfoPopover = () => {
+const PasswordInfoPopover = () => {
   const [isVisible, setIsVisible] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  
 
   const handleMouseEnter = () => {
     // Cancelar cualquier timeout pendiente
@@ -65,20 +40,19 @@ const RolesInfoPopover = () => {
           <div className="absolute -left-3 top-2 w-0 h-0 border-t-8 border-t-transparent border-b-8 border-b-transparent border-r-8 border-r-gray-200"></div>
 
           <h3 className="font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-2">
-            Roles Disponibles
+            Contraseña 
           </h3>
 
           <div className="space-y-3">
-            {ROLES.filter((rol) => rol.value !== "OWNER").map((rol, index) => (
-              <div key={index} className="border-l-4 border-l-blue-400 pl-3">
-                <div className="font-medium text-gray-700 text-sm">
-                  {rol.label}
-                </div>
-                <div className="text-gray-600 text-xs mt-1 leading-relaxed">
-                  {rol.descripcion}
-                </div>
+            <div className="border-l-4 border-l-blue-400 pl-3">
+              {/* <div className="font-medium text-gray-700 text-sm">
+                La contraseña debe tener al menos 6 caracteres, incluyendo
+                letras y números.
+              </div> */}
+              <div className="text-gray-600 text-xs mt-1 leading-relaxed">
+                La contraseña podrá ser cambiada más tarde a través del email del nuevo miembro del equipo.
               </div>
-            ))}
+            </div>
           </div>
         </div>
       )}
@@ -86,4 +60,4 @@ const RolesInfoPopover = () => {
   );
 };
 
-export default RolesInfoPopover;
+export default PasswordInfoPopover;

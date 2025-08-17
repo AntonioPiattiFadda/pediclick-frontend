@@ -1,4 +1,4 @@
-import { StoresContainer } from "@/components/admin/stores/StoresContainer";
+import { StoresContainer } from "@/components/admin/sellPoints/StoresContainer";
 const Stores = () => {
   return (
     <div className="space-y-6 p-6">

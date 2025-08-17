@@ -19,11 +19,11 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createStoreSchema } from "@/validator/stores";
-import { createStore } from "@/service";
 import { useUserStoresContext } from "@/contexts/UserStoresContext";
 import type { Store } from "@/types";
 import type { ZodIssue } from "zod";
 import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
+import { createStore } from "@/service/stores";
 
 export function AddStoreBtn() {
   const [isModalOpen, setIsModalOpen] = useState(false);

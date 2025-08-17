@@ -7,8 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useUserStoresContext } from "@/contexts/UserStoresContext";
-import { getUserStores } from "@/service";
+import { getUserStores } from "@/service/stores";
 import { useEffect, useState } from "react";
 import NoStoreModal from "../header/NoStoreModal";
 
@@ -24,7 +25,6 @@ const StoresSelector = () => {
       const { stores } = await getUserStores();
       setUserStores(stores);
       setComponentState("idle");
-      console.log("Tiendas obtenidas:", stores);
       if (stores.length > 0) {
         const firstStoreId = stores[0].store_id;
         setSelectedStoreId(firstStoreId);
@@ -34,12 +34,12 @@ const StoresSelector = () => {
     fetchUserStores();
   }, []);
 
-  if (componentState === "loading") return <div>Cargando tiendas...</div>;
+  if (componentState === "loading") return  <Skeleton className="h-8 w-48"/>;
 
   return (
     <>
       {userStores.length === 0 && <NoStoreModal />}
-      <Select onValueChange={setSelectedStoreId} value={selectedStoreId || ""}>
+      <Select onValueChange={setSelectedStoreId} value={selectedStoreId ? String(selectedStoreId) : ""}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Elige tu tienda" />
         </SelectTrigger>
@@ -47,7 +47,7 @@ const StoresSelector = () => {
           <SelectGroup>
             <SelectLabel>Tienda</SelectLabel>
             {userStores.map((store) => (
-              <SelectItem key={store.store_id} value={store.store_id}>
+              <SelectItem key={store.store_id} value={store.store_id ? String(store.store_id) : ""}>
                 {store.store_name}
               </SelectItem>
             ))}

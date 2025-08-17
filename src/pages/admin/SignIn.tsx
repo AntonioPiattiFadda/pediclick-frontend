@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { AuthLayout } from "./AuthLayout";
-import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { signIn } from "@/service/auth";
+import type { AppDispatch } from "@/stores/store";
+import { setUser } from "@/stores/userSlice";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { AuthLayout } from "./AuthLayout";
 
 export function SignIn() {
   const [email, setEmail] = useState("");
@@ -14,6 +17,9 @@ export function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
+
+  // const user = useSelector((state: RootState) => state.user);
+  const dispatch = useDispatch<AppDispatch>();
 
 
   const loginMutation = useMutation({
@@ -23,6 +29,8 @@ export function SignIn() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
       setError(null);
+      //Buscar al usuario en base de datos para ponerlo en la app
+      dispatch(setUser({ email, full_name: "", role: "user", id: "1", avatar_url: null, phone: null, address: null, is_verified: false, parent_user_id: "", store_id: 0, job_position: null, created_at: "", updated_at: "", deleted_at: null }));
       window.location.href = "/dashboard"; 
     },
     onError: (err: any) => {

@@ -1,24 +1,36 @@
 // Enums
-export type UserRoleEnum = 'buyer' | 'seller' | 'admin' | 'moderator';
+export type UserRoleEnum = "buyer" | "seller" | "admin" | "moderator";
 
-export type UnitTypeEnum = 'weight' | 'volume' | 'quantity' | 'length' | 'area' | 'custom';
+export type UnitTypeEnum =
+  | "weight"
+  | "volume"
+  | "quantity"
+  | "length"
+  | "area"
+  | "custom";
 
-export type ProductStatusEnum = 'draft' | 'active' | 'inactive' | 'out_of_stock' | 'discontinued';
+export type ProductStatusEnum =
+  | "draft"
+  | "active"
+  | "inactive"
+  | "out_of_stock"
+  | "discontinued";
 
-export type PromotionTypeEnum = 'product' | 'category' | 'store' | 'shipping';
+export type PromotionTypeEnum = "product" | "category" | "store" | "shipping";
 
-export type DiscountTypeEnum = 'percentage' | 'fixed_amount';
+export type DiscountTypeEnum = "percentage" | "fixed_amount";
 
 // Helpers para campos JSONB
-export interface Address {
-  street?: string;
-  city?: string;
-  province?: string;
-  country?: string;
-  postal_code?: string;
-  references?: string;
-  [key: string]: unknown;
-}
+export type Address = string;
+// {
+//   street?: string;
+//   city?: string;
+//   province?: string;
+//   country?: string;
+//   postal_code?: string;
+//   references?: string;
+//   [key: string]: unknown;
+// }
 
 export interface Dimensions {
   length?: number;
@@ -51,21 +63,7 @@ export interface HomepageLayoutSection {
 
 // Interfaces para tablas
 
-export interface UserProfile {
-  id: string; // UUID
-  email: string;
-  full_name?: string;
-  avatar_url?: string;
-  phone?: string;
-  address?: Address; // JSONB
-  user_type: UserRoleEnum;
-  is_verified?: boolean;
-  tax_id?: string;
-  business_name?: string;
-  created_at?: string; // ISO Date string
-  updated_at?: string;
-  deleted_at?: string | null;
-}
+
 
 export interface Category {
   id: string;
@@ -118,17 +116,17 @@ export interface Product {
   product_prices?: ProductPrice[];
 }
 
-export interface ProductVariant {
-  id: string;
-  product_id: string;
-  name: string;
-  sku?: string;
-  attributes: Attributes;
-  sort_order?: number;
-  created_at?: string;
-  updated_at?: string;
-  deleted_at?: string | null;
-}
+// export interface ProductVariant {
+//   id: string;
+//   product_id: string;
+//   name: string;
+//   sku?: string;
+//   attributes: Attributes;
+//   sort_order?: number;
+//   created_at?: string;
+//   updated_at?: string;
+//   deleted_at?: string | null;
+// }
 
 export interface ProductPrice {
   id: string;
@@ -148,31 +146,31 @@ export interface ProductPrice {
   units?: Unit;
 }
 
-export interface PriceHistory {
-  id: string;
-  product_price_id: string;
-  old_price: number;
-  new_price: number;
-  currency: string;
-  changed_by?: string;
-  reason?: string;
-  created_at?: string;
-}
+// export interface PriceHistory {
+//   id: string;
+//   product_price_id: string;
+//   old_price: number;
+//   new_price: number;
+//   currency: string;
+//   changed_by?: string;
+//   reason?: string;
+//   created_at?: string;
+// }
 
-export interface Inventory {
-  id: string;
-  product_id: string;
-  variant_id?: string | null;
-  unit_id: string;
-  stock_quantity: number;
-  reserved_quantity: number;
-  low_stock_threshold?: number;
-  track_inventory?: boolean;
-  allow_backorder?: boolean;
-  location?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+// export interface Inventory {
+//   id: string;
+//   product_id: string;
+//   variant_id?: string | null;
+//   unit_id: string;
+//   stock_quantity: number;
+//   reserved_quantity: number;
+//   low_stock_threshold?: number;
+//   track_inventory?: boolean;
+//   allow_backorder?: boolean;
+//   location?: string;
+//   created_at?: string;
+//   updated_at?: string;
+// }
 
 export interface ProductImage {
   id: string;
@@ -185,46 +183,31 @@ export interface ProductImage {
   created_at?: string;
 }
 
-export interface Promotion {
-  id: string;
-  name: string;
-  description?: string;
-  promotion_type: PromotionTypeEnum;
-  discount_type: DiscountTypeEnum;
-  discount_value: number;
-  min_purchase_amount?: number;
-  max_discount_amount?: number;
-  usage_limit?: number;
-  usage_count?: number;
-  is_active?: boolean;
-  starts_at: string;
-  ends_at: string;
-  created_by?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+// export interface Promotion {
+//   id: string;
+//   name: string;
+//   description?: string;
+//   promotion_type: PromotionTypeEnum;
+//   discount_type: DiscountTypeEnum;
+//   discount_value: number;
+//   min_purchase_amount?: number;
+//   max_discount_amount?: number;
+//   usage_limit?: number;
+//   usage_count?: number;
+//   is_active?: boolean;
+//   starts_at: string;
+//   ends_at: string;
+//   created_by?: string;
+//   created_at?: string;
+//   updated_at?: string;
+// }
 
-export interface PromotionProduct {
-  id: string;
-  promotion_id: string;
-  product_id: string;
-  created_at?: string;
-}
-
-export interface BusinessProfile {
-  id: string;
-  business_name: string;
-  description?: string;
-  address?: Address;
-  phone?: string;
-  whatsapp?: string;
-  email?: string;
-  website?: string;
-  social_links?: SocialLinks;
-  opening_hours?: OpeningHours;
-  created_at?: string;
-  updated_at?: string;
-}
+// export interface PromotionProduct {
+//   id: string;
+//   promotion_id: string;
+//   product_id: string;
+//   created_at?: string;
+// }
 
 export interface WebsitePreference {
   id: string;
@@ -241,12 +224,11 @@ export interface WebsitePreference {
   updated_at?: string;
 }
 
-
 export interface Store {
-  store_id: string;
+  store_id: number;
   store_name: string;
   description: string;
-  address: string;
+  address: Address;
   phone: string;
   whatsapp: string;
   email: string;
@@ -259,7 +241,7 @@ export interface Store {
   slug: string;
 }
 
-export interface TeamMember {
+export interface UserProfile {
   id: string;
   email: string;
   password?: string;
@@ -267,12 +249,11 @@ export interface TeamMember {
   role: string;
   avatar_url: string | null;
   phone: string | null;
-  address: string | null;
+  address: Address | null;
   is_verified: boolean;
   parent_user_id: string;
   store_id: number;
   job_position: string | null;
-
 
   created_at: string;
   updated_at: string;

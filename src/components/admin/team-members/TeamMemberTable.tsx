@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -7,49 +6,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { TeamMember } from "@/types";
-// import { Badge } from "@/components/ui/badge";
-// import { Button } from "@/components/ui/button";
-// import { Edit, Trash2 } from "lucide-react";
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// import type { Product } from "@/types";
-// import { getCurrencySymbol } from "@/utils";
-// import { Input } from "../ui/input";
-// import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-// import { useMutation, useQueryClient } from "@tanstack/react-query";
-// import { deleteProduct } from "@/service";
+import { useUserStoresContext } from "@/contexts/UserStoresContext";
+import type { UserProfile } from "@/types";
+import { DeleteTableElement } from "./DeleteTeamMemberBtn";
+import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
+import { ROLES } from "./RoleInfoPopover";
+import { deleteTeamMember } from "@/service/profiles";
 
 interface TeamMemberTableProps {
-  teamMembers: TeamMember[];
+  teamMembers: UserProfile[];
 }
 
 export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
-  // const queryClient = useQueryClient();
-
-  // const getStatusBadge = (status: string, stock: number) => {
-  //   if (stock === 0) {
-  //     return <Badge variant="destructive">Sin Stock</Badge>;
-  //   }
-  //   switch (status) {
-  //     case "active":
-  //       return <Badge variant="default">Activo</Badge>;
-  //     case "draft":
-  //       return <Badge variant="secondary">Borrador</Badge>;
-  //     case "out_of_stock":
-  //       return <Badge variant="destructive">Sin Stock</Badge>;
-  //     default:
-  //       return <Badge variant="secondary">{status}</Badge>;
-  //   }
-  // };
-
-  // const deleteProductMutation = useMutation({
-  //   mutationFn: async (productId: string | number) => {
-  //     await deleteProduct(productId); // tu función para eliminar
-  //   },
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({ queryKey: ["products"] }); // refresca los productos
-  //   },
-  // });
+  const { userStores } = useUserStoresContext();
 
   return (
     <div className="rounded-md">
@@ -58,9 +27,9 @@ export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
           <TableRow>
             <TableHead>Nombre</TableHead>
             <TableHead>Email</TableHead>
-      
-            <TableHead className="text-center">Rol</TableHead>
-             <TableHead className="text-center">Punto de venta</TableHead>
+
+            <TableHead>Rol</TableHead>
+            <TableHead>Punto de venta</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -94,11 +63,22 @@ export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
                 </TableCell> */}
                 <TableCell>{member.full_name}</TableCell>
                 <TableCell>{member.email}</TableCell>
-                 <TableCell>{member.role}</TableCell>
-                 <TableCell>{member.store_id}</TableCell>
+                <TableCell>
+                  {ROLES.find((role) => role.value === member.role)?.label}
+                </TableCell>
+                <TableCell>
+                  {userStores.find(
+                    (store) => store.store_id === member.store_id
+                  )?.store_name}
+                </TableCell>
                 <TableCell className="text-right">
                   {" "}
-                  <Button>Editar</Button> <Button>Eliminar</Button>
+                  <EditTeamMemberBtn id={member.id} />{" "}
+                  <DeleteTableElement
+                    id={member.id}
+                    endpoint={async (id: string) => { await deleteTeamMember(id); }}
+                    queryKey={["team-members"]}
+                    />
                 </TableCell>
               </TableRow>
             ))
