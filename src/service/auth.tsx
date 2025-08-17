@@ -1,5 +1,5 @@
-import {  supabase } from ".";
-import { insertNewAdminUser } from "./profiles";
+import { supabase } from ".";
+import { checkUserExists, insertNewAdminUser } from "./profiles";
 
 export const signIn = async (email: string, password: string) => {
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -23,6 +23,15 @@ export const signOut = async () => {
 };
 
 export const signUp = async (email: string, password: string) => {
+  const { userExists } = await checkUserExists(email);
+
+  if (userExists) {
+    const error = new Error("");
+    error.message = "El email ya está en uso.";
+    error.name = "ConflictError";
+    throw error;
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,

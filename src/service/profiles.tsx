@@ -26,7 +26,7 @@ export const insertNewAdminUser = async (email: string, userUid: string) => {
   return { data };
 };
 
-const checkUserExists = async (email: string) => {
+export const checkUserExists = async (email: string) => {
   const { data } = await supabase
     .from("users")
     .select("id")

@@ -26,6 +26,7 @@ import { UserStoresProvider } from "./contexts/UserStoresContext";
 import PublicRoutesAuthCheck from "./components/admin/auth/publicRoutesAuthCheck";
 import { Provider } from "react-redux";
 import { store } from "./stores/store";
+import RolesAuth from "./components/admin/auth/rolesAuth";
 
 const queryClient = new QueryClient();
 
@@ -113,12 +114,14 @@ const App = () => {
                     </Route>
 
                     <Route element={<RequireAuth />}>
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/products" element={<Products />} />
-                      <Route path="/stores" element={<Stores />} />
-                      <Route path="/team-members" element={<TeamMembers />} />
-                      <Route path="/settings" element={<Settings />} />
-                      <Route path="*" element={<NotFound />} />
+                      <Route element={<RolesAuth />}>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/products" element={<Products />} />
+                        <Route path="/stores" element={<Stores />} />
+                        <Route path="/team-members" element={<TeamMembers />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Route>
                     </Route>
                   </Routes>
                 </Layout>

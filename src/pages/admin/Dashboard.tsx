@@ -1,11 +1,27 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { StatsCards } from '@/components/admin/dashboard/StatsCards';
-import { SalesChart } from '@/components/admin/dashboard/SalesChart';
-import { TopProductsChart } from '@/components/admin/dashboard/TopProductsChart';
-import { CategoriesChart } from '@/components/admin/dashboard/CategoriesChart';
-import { LowStockTable } from '@/components/admin/dashboard/LowStockTable';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { StatsCards } from "@/components/admin/dashboard/StatsCards";
+import { SalesChart } from "@/components/admin/dashboard/SalesChart";
+import { TopProductsChart } from "@/components/admin/dashboard/TopProductsChart";
+import { CategoriesChart } from "@/components/admin/dashboard/CategoriesChart";
+import { LowStockTable } from "@/components/admin/dashboard/LowStockTable";
+import { useAppSelector } from "@/hooks/useUserData";
+import EmployeeDashboard from "./EmployeeDashboard";
 
 const Dashboard = () => {
+  const { role } = useAppSelector((state) => state.user);
+
+  console.log(role);
+
+  if (role === "EMPLOYEE") {
+    return <EmployeeDashboard/>;
+  }
+
   return (
     <div className="space-y-6 p-6">
       <div>
@@ -21,9 +37,7 @@ const Dashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Ventas Diarias</CardTitle>
-            <CardDescription>
-              Ingresos de los últimos 30 días
-            </CardDescription>
+            <CardDescription>Ingresos de los últimos 30 días</CardDescription>
           </CardHeader>
           <CardContent>
             <SalesChart />
@@ -33,9 +47,7 @@ const Dashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Productos Más Vendidos</CardTitle>
-            <CardDescription>
-              Top 10 productos del mes
-            </CardDescription>
+            <CardDescription>Top 10 productos del mes</CardDescription>
           </CardHeader>
           <CardContent>
             <TopProductsChart />
@@ -47,9 +59,7 @@ const Dashboard = () => {
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Distribución por Categorías</CardTitle>
-            <CardDescription>
-              Productos por categoría
-            </CardDescription>
+            <CardDescription>Productos por categoría</CardDescription>
           </CardHeader>
           <CardContent>
             <CategoriesChart />

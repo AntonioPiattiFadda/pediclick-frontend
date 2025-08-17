@@ -8,30 +8,35 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@/components/ui/sidebar';
-import { BarChart3, Home, Package } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+} from "@/components/ui/sidebar";
+import { useAppSelector } from "@/hooks/useUserData";
+import { BarChart3, Home, Package } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import SideBarSkeleton from "./sideBarSkeleton";
 
-const menuItems = [
+export const MENU_ITEMS = [
   {
-    title: 'Dashboard',
-    url: '/dashboard',
+    title: "Dashboard",
+    url: "/dashboard",
     icon: BarChart3,
+    roles: ["OWNER", "MANAGER", "EMPLOYEE"],
   },
   // {
   //   title: 'Productos / Categorías',
   //   url: '/products',
   //   icon: Package,
   // },
-   {
-    title: 'Puntos de venta',
-    url: '/stores',
+  {
+    title: "Puntos de venta",
+    url: "/stores",
     icon: Package,
+    roles: ["OWNER"],
   },
-   {
-    title: 'Personal',
-    url: '/team-members',
+  {
+    title: "Personal",
+    url: "/team-members",
     icon: Package,
+    roles: ["OWNER", "MANAGER"],
   },
   // {
   //   title: 'Configuración',
@@ -42,6 +47,20 @@ const menuItems = [
 
 export function AppSidebar() {
   const location = useLocation();
+
+  const { role } = useAppSelector((state) => state.user);
+
+  const userRoleMenuItems = MENU_ITEMS.filter((item) =>
+    item.roles.includes(role)
+  );
+
+  if (!role) {
+    return null;
+  }
+
+  if (role === "EMPLOYEE") {
+    return null;
+  }
 
   return (
     <Sidebar className="border-r border-sidebar-border bg-foreground">
@@ -60,27 +79,32 @@ export function AppSidebar() {
           </div>
         </div>
       </SidebarHeader>
-      
-      <SidebarContent >
+
+      <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/70 font-medium">
             Navegación
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => {
+              {!role && <SideBarSkeleton />}
+
+              {userRoleMenuItems.map((item) => {
                 const isActive = location.pathname === item.url;
                 return (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      asChild 
+                    <SidebarMenuButton
+                      asChild
                       className={`transition-all duration-200 ${
-                        isActive 
-                          ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' 
-                          : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
+                        isActive
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
                       }`}
                     >
-                      <Link to={item.url} className="flex items-center gap-3 px-3 py-2">
+                      <Link
+                        to={item.url}
+                        className="flex items-center gap-3 px-3 py-2"
+                      >
                         <item.icon className="w-4 h-4" />
                         <span>{item.title}</span>
                       </Link>
