@@ -21,11 +21,12 @@ export const MENU_ITEMS = [
     icon: BarChart3,
     roles: ["OWNER", "MANAGER", "EMPLOYEE"],
   },
-  // {
-  //   title: 'Productos / Categorías',
-  //   url: '/products',
-  //   icon: Package,
-  // },
+  {
+    title: "Stock",
+    url: "/products",
+    icon: Package,
+    roles: ["OWNER", "MANAGER"],
+  },
   {
     title: "Puntos de venta",
     url: "/stores",

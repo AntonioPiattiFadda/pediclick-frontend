@@ -10,9 +10,9 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import StoresSelector from "./admin/sellPoints/StoresSelector";
-import { ROLES } from "./admin/team-members/RoleInfoPopover";
-import { Skeleton } from "./ui/skeleton";
+import StoresSelector from "../sellPoints/StoresSelector";
+import { ROLES } from "../team-members/RoleInfoPopover";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Header = () => {
 

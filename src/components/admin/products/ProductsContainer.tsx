@@ -7,21 +7,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { getAllProducts } from "@/service/products";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Upload } from "lucide-react";
 import { useState } from "react";
-import { AddProductBtn } from "./AddProductBtn";
 import { ProductsTable } from "./ProductsTable";
 import TableSkl from "./ui/tableSkl";
-
 
 // const mockProducts = [
 //   {
@@ -56,10 +47,10 @@ import TableSkl from "./ui/tableSkl";
 //   },
 // ];
 
-export const ProductsTab = () => {
+export const ProductsContainer = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
+  // const [selectedCategory, setSelectedCategory] = useState("all");
+  // const [selectedStatus, setSelectedStatus] = useState("all");
 
   const {
     data: products = [],
@@ -72,12 +63,29 @@ export const ProductsTab = () => {
       // Ensure each product has seller_id
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return response.products.map((product: any) => ({
-        seller_id: product.seller_id ?? "", // Provide a fallback or handle as needed
+        // seller_id: product.seller_id ?? "", // Provide a fallback or handle as needed
         ...product,
       }));
     },
   });
 
+ 
+
+  const filteredProducts = products.filter((product) => {
+    const matchesSearchTerm = product.product_name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    // const matchesCategory =
+    //   selectedCategory === "all" ||
+    //   product.category_id === selectedCategory;
+
+    // const matchesStatus =
+    //   selectedStatus === "all" || product.status === selectedStatus;
+
+    // return matchesSearchTerm && matchesCategory && matchesStatus;
+    return matchesSearchTerm;
+  });
 
 
   if (isLoading) {
@@ -100,7 +108,7 @@ export const ProductsTab = () => {
                 <Upload className="w-4 h-4" />
                 Importar Excel
               </Button>
-              <AddProductBtn />
+              {/* <AddProductBtn /> */}
             </div>
           </div>
         </CardHeader>
@@ -115,7 +123,7 @@ export const ProductsTab = () => {
                 className="pl-10"
               />
             </div>
-            <Select
+            {/* <Select
               value={selectedCategory}
               onValueChange={setSelectedCategory}
             >
@@ -139,10 +147,10 @@ export const ProductsTab = () => {
                 <SelectItem value="draft">Borrador</SelectItem>
                 <SelectItem value="out_of_stock">Sin stock</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
           </div>
 
-          <ProductsTable products={products ?? []}  />
+          <ProductsTable products={filteredProducts ?? []} />
         </CardContent>
       </Card>
     </div>

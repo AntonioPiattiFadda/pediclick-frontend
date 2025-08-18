@@ -1,4 +1,4 @@
-import { MENU_ITEMS } from "@/components/AppSidebar";
+import { _ITEMS } from "@/components/admin/sidebar/AppSidebar";
 import { useAppSelector } from "@/hooks/useUserData";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 

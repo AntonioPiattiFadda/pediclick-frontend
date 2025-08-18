@@ -1,15 +1,13 @@
 import React from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
-import { Header } from "@/components/Header";
+import { AppSidebar } from "@/components/admin/sidebar/AppSidebar";
 import { useLocation } from "react-router-dom";
 import { PUBLIC_ROUTES } from "@/App";
+import { Header } from "./admin/header/Header";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
-
-
 
 export const Layout = ({ children }: LayoutProps) => {
   const pathName = useLocation().pathname;

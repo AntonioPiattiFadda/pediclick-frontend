@@ -5,12 +5,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 // import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import type { Category } from '@/types';
-import { Edit, Trash2 } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '../../ui/avatar';
+import { Button } from "@/components/ui/button";
+import type { Category } from "@/types";
+import { Edit, Trash2 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 
 interface CategoriesTableProps {
   categories: Category[];
@@ -28,7 +28,6 @@ export const CategoriesTable = ({ categories }: CategoriesTableProps) => {
   //   }
   // };
 
-
   return (
     <div className="rounded-md">
       <Table>
@@ -44,15 +43,20 @@ export const CategoriesTable = ({ categories }: CategoriesTableProps) => {
         </TableHeader>
         <TableBody>
           {categories.map((category) => (
-            <TableRow key={category.id}>
+            <TableRow key={category.category_id}>
               <TableCell>
-              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3">
                   <Avatar className="w-10 h-10">
-                    <AvatarImage src={category.image_url} alt={category.name} />
-                    <AvatarFallback>{category.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage
+                      src={category.image_url}
+                      alt={category.category_name}
+                    />
+                    <AvatarFallback>
+                      {category.category_name.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{category.name}</p>
+                    <p className="font-medium">{category.category_name}</p>
                     {/* <p className="text-sm text-muted-foreground">{category.sku}</p> */}
                   </div>
                 </div>
@@ -68,7 +72,8 @@ export const CategoriesTable = ({ categories }: CategoriesTableProps) => {
                 )}
               </TableCell> */}
               <TableCell className="text-center font-medium">
-                {/* {category.productsCount}  */} Aggregar el conteo de productos
+                {/* {category.productsCount}  */} Aggregar el conteo de
+                productos
               </TableCell>
               {/* <TableCell className="text-center">
                 {getStatusBadge(category.status)}

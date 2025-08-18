@@ -66,8 +66,8 @@ export interface HomepageLayoutSection {
 // Interfaces para tablas
 
 export interface Category {
-  id: string;
-  name: string;
+  category_id: string;
+  category_name: string;
   slug: string;
   description?: string;
   parent_id?: string | null;
@@ -77,7 +77,7 @@ export interface Category {
   created_at?: string;
   updated_at?: string;
   deleted_at?: string | null;
-  created_by?: string;
+  store_id?: string | null;
 }
 
 export interface Unit {
@@ -93,12 +93,17 @@ export interface Unit {
 }
 
 export interface Product {
-  id: string;
-  seller_id: string;
+  product_id: string;
   category_id: string;
-  name: string;
+  product_name: string;
   slug: string;
   description?: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+  product_images?: ProductImage[];
+  product_prices?: ProductPrice[];
+
   short_description?: string;
   sku?: string;
   brand?: string;
@@ -109,11 +114,6 @@ export interface Product {
   tags?: string[];
   seo_title?: string;
   seo_description?: string;
-  created_at?: string;
-  updated_at?: string;
-  deleted_at?: string | null;
-  product_images?: ProductImage[];
-  product_prices?: ProductPrice[];
 }
 
 // export interface ProductVariant {
@@ -173,14 +173,8 @@ export interface ProductPrice {
 // }
 
 export interface ProductImage {
-  id: string;
-  product_id: string;
-  variant_id?: string | null;
   url: string;
-  alt_text?: string;
   sort_order?: number;
-  is_primary?: boolean;
-  created_at?: string;
 }
 
 // export interface Promotion {

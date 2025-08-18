@@ -63,7 +63,7 @@ export const ProductsTable = ({ products }: ProductsTableProps) => {
         </TableHeader>
         <TableBody>
           {products.map((product) => (
-            <TableRow key={product.id}>
+            <TableRow key={product.product_id}>
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Avatar className="w-10 h-10">
@@ -72,10 +72,10 @@ export const ProductsTable = ({ products }: ProductsTableProps) => {
                       src={product?.product_images[0]?.url}
                       alt={product.name}
                     /> */}
-                    <AvatarFallback>{product.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback>{product.product_name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{product.name}</p>
+                    <p className="font-medium">{product.product_name}</p>
                     <p className="text-sm text-muted-foreground">
                       {product.sku}
                     </p>
@@ -173,7 +173,7 @@ export const ProductsTable = ({ products }: ProductsTableProps) => {
                           variant="outline"
                           disabled={deleteProductMutation.isLoading}
                           onClick={() =>
-                            deleteProductMutation.mutate(product.id)
+                            deleteProductMutation.mutate(product.product_id)
                           }
                         >
                           {deleteProductMutation.isLoading ? "Deleting..." : "Delete"}

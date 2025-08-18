@@ -1,28 +1,39 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getCategories } from '@/service';
-import { useQuery } from '@tanstack/react-query';
-import { Plus, Search } from 'lucide-react';
-import { useState } from 'react';
-import { CategoriesTable } from './CategoriesTable';
-import TableSkl from './ui/tableSkl';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { getCategories } from "@/service";
+import { useQuery } from "@tanstack/react-query";
+import { Plus, Search } from "lucide-react";
+import { useState } from "react";
+import { CategoriesTable } from "./CategoriesTable";
+import TableSkl from "./ui/tableSkl";
 
-export const CategoriesTab = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  
-  
-   const { data: categories, isLoading } = useQuery({
-      queryKey: ["categories"],
-      queryFn: async () => {
-        const response = await getCategories();
-        return response.categories;
-      },
-    });
+export const CategoriesContainer = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
 
-   
+  const { data: categories, isLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await getCategories();
+      return response.categories;
+    },
+  });
+
+
   if (isLoading) {
     return <TableSkl />;
   }

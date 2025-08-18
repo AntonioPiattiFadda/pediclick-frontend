@@ -8,9 +8,18 @@ import {
 } from "@/components/ui/table";
 import { useUserStoresContext } from "@/contexts/UserStoresContext";
 import { EditStoreBtn } from "./EditStoreBtn";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const StoresTable = () => {
   const { userStores } = useUserStoresContext();
+
+  if (userStores.length === 0) {
+    return (
+      <div>
+        <Skeleton className="h-8 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-md">

@@ -1,12 +1,14 @@
-import { CategoriesTab } from '@/components/admin/products/CategoriesTab';
-import { ProductsTab } from '@/components/admin/products/ProductsTab';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CategoriesContainer } from "@/components/admin/products/CategoriesContainer";
+import { ProductsContainer } from "@/components/admin/products/ProductsContainer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Products = () => {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Gestión de Productos</h1>
+        <h1 className="text-3xl font-bold text-foreground">
+          Gestión de Productos
+        </h1>
         <p className="text-muted-foreground">
           Administra tu catálogo de productos y categorías
         </p>
@@ -14,16 +16,16 @@ const Products = () => {
 
       <Tabs defaultValue="products" className="space-y-6">
         <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="products">Productos</TabsTrigger>
           <TabsTrigger value="categories">Categorías</TabsTrigger>
+          <TabsTrigger value="products">Productos</TabsTrigger>
         </TabsList>
 
         <TabsContent value="products" className="space-y-6">
-          <ProductsTab />
+          <ProductsContainer />
         </TabsContent>
 
         <TabsContent value="categories" className="space-y-6">
-          <CategoriesTab />
+          <CategoriesContainer />
         </TabsContent>
       </Tabs>
     </div>
