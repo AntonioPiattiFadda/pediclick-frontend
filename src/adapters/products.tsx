@@ -1,0 +1,85 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Product } from "@/types";
+
+const convertStringLocalDateToISOString = (date: string): string | null => {
+  if (!date) return null;
+  const localDate = new Date(date);
+  const isoDate = localDate.toISOString();
+  return isoDate;
+};
+
+function formatDateOnly(isoString: string): string {
+  if (!isoString) return "";
+  return isoString.split("T")[0];
+}
+
+export const adaptProductForDb = (
+  product: any,
+  selectedStoreId: number
+): Product => {
+  return {
+    product_name: product.product_name,
+    store_id: selectedStoreId,
+    allow_stock_control: product.allow_stock_control,
+    category_id: Number(product.category_id) || null,
+    sub_category_id: Number(product.sub_category_id) || null,
+    short_code: Number(product.short_code) || null,
+    sale_unit_id: Number(product.sale_unit_id) || null,
+    barcode: Number(product.barcode) || null,
+    brand_id: Number(product.brand_id) || null,
+    lot_control: product.lot_control || null,
+    public_image_id: product.public_image_id || null,
+
+    lots: product.lots.map((lot: any) => ({
+      ...lot,
+      expiration_date:
+        lot.expiration_date === ""
+          ? null
+          : convertStringLocalDateToISOString(lot.expiration_date),
+      provider_id: Number(lot.provider_id) || null,
+    })),
+  };
+};
+
+export const adaptProductsForClient = (products: any): Product[] => {
+  return products.map((product: any) => ({
+    product_id: product.product_id,
+    short_code: product.short_code,
+    product_name: product.product_name,
+    category_id: product.category_id,
+    sub_category_id: product.sub_category_id,
+    brand_id: product.brand_id,
+    sale_unit_id: product.sale_unit_id,
+    barcode: product.barcode,
+    public_image_id: product.public_image_id,
+    store_id: product.store_id,
+    allow_stock_control: product.allow_stock_control,
+    lot_control: product.lot_control,
+    product_lots: product.product_lots.map((lot: any) => ({
+      ...lot,
+      expiration_date: formatDateOnly(lot.expiration_date),
+      provider_id: Number(lot.provider_id) || null,
+    })),
+    public_images: product.public_images,
+    categories: product.categories,
+    sub_categories: product.sub_categories,
+    brands: product.brands,
+    sale_units: product.sale_units,
+    // public_images?: {
+    //   public_image_src: string;
+    // };
+    // categories?: {
+    //   category_name: string;
+    // };
+    // sub_categories?: {
+    //   sub_category_name: string;
+    // };
+
+    // brands?: {
+    //   brand_name: string;
+    // };
+    // sale_units?: {
+    //   sale_unit_name: string;
+    // };
+  }));
+};

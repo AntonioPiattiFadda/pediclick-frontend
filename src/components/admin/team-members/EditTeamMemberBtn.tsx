@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import type { ZodIssue } from "zod";
 import PasswordInfoPopover from "./PasswordInfoPopover";
 import RolesInfoPopover, { ROLES } from "./RoleInfoPopover";
+import { Edit } from "lucide-react";
 
 const emptyUser: UserProfile = {
   id: "",
@@ -112,7 +113,6 @@ export function EditTeamMemberBtn({ id }: { id: string }) {
       return;
     }
 
-    // ✅ aseguramos que siempre se mande el id correcto
     editTeamMemberMutation.mutate({
       formData: { ...formData, id },
     });
@@ -121,9 +121,9 @@ export function EditTeamMemberBtn({ id }: { id: string }) {
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogTrigger asChild>
-        <Button className="cursor-pointer" variant="ghost">
-          Editar
-        </Button>
+           <button >
+              <Edit className="mr-2 h-4 w-4" />
+            </button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
         <DialogHeader>

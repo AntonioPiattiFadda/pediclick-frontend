@@ -17,7 +17,6 @@ export const insertNewAdminUser = async (email: string, userUid: string) => {
     .select()
     .single();
 
-  console.log("createNewAdminUser data:", data, "error:", error);
 
   if (error) {
     return { error };
@@ -117,6 +116,27 @@ export async function createNewUser(email: string, password: string) {
   }
 }
 
+export const getParentUserId = async (userId: string) => {
+  const { data: user, error } = await supabase
+    .from("users")
+    .select("parent_user_id")
+    .eq("id", userId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return user?.parent_user_id;
+};
+
+export const getBusinessOwnerIdByRole = async (userRole: string) => {
+  const userId = await getUserId();
+  const businessOwnerId =
+    userRole === "OWNER" ? userId : await getParentUserId(userId || "");
+  return businessOwnerId;
+};
+
 const getBusinessOwnerId = async (storeId: number) => {
   const { data: store, error } = await supabase
     .from("stores")
@@ -137,7 +157,8 @@ export const getUserTeamMembers = async (storeId: number) => {
   const { data: teamMembers, error } = await supabase
     .from("users")
     .select("*")
-    .eq("parent_user_id", businessOwnerId);
+    .eq("parent_user_id", businessOwnerId)
+    .is("deleted_at", null);
 
   if (error) {
     throw new Error(error.message);
@@ -237,7 +258,7 @@ export const editTeamMember = async (newUserData: any) => {
 };
 
 export const deleteTeamMember = async (id: string) => {
- const { data, error } = await supabase
+  const { data, error } = await supabase
     .from("users")
     .update({ deleted_at: new Date() })
     .eq("id", id)

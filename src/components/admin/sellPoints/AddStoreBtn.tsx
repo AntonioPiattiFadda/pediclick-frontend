@@ -25,23 +25,25 @@ import type { ZodIssue } from "zod";
 import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
 import { createStore } from "@/service/stores";
 
+const emptyStore = {
+  store_name: "",
+  description: "",
+  address: "",
+  phone: "",
+  whatsapp: "",
+  email: "",
+  website: "",
+  social_links: "",
+  opening_hours: "",
+  slug: "",
+};
+
 export function AddStoreBtn() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { setUserStores, setSelectedStoreId } = useUserStoresContext();
   const [zErrors, setZErrors] = useState<ZodIssue[]>([]);
 
-  const [formData, setFormData] = useState({
-    store_name: "",
-    description: "",
-    address: "",
-    phone: "",
-    whatsapp: "",
-    email: "",
-    website: "",
-    social_links: "",
-    opening_hours: "",
-    slug: "",
-  });
+  const [formData, setFormData] = useState(emptyStore);
 
   const queryClient = useQueryClient();
 
@@ -79,18 +81,7 @@ export function AddStoreBtn() {
   });
 
   const resetForm = () => {
-    setFormData({
-      store_name: "",
-      description: "",
-      address: "",
-      phone: "",
-      whatsapp: "",
-      email: "",
-      website: "",
-      social_links: "",
-      opening_hours: "",
-      slug: "",
-    });
+    setFormData(emptyStore);
   };
 
   const handleSubmit = () => {
@@ -115,14 +106,15 @@ export function AddStoreBtn() {
       <DialogTrigger asChild>
         <Button className="bg-primary text-accent" variant="outline">
           <Plus className="mr-2 h-4 w-4" />
-          Agregar 
+          Agregar
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Nueva punto de venta</DialogTitle>
           <DialogDescription>
-            Completá la información de la nueva punto de venta que querés agregar.
+            Completá la información de la nueva punto de venta que querés
+            agregar.
           </DialogDescription>
         </DialogHeader>
 
@@ -158,7 +150,7 @@ export function AddStoreBtn() {
               }
               rows={3}
             />
-             <ValidationErrorMessage zErrors={zErrors} fieldName="description" />
+            <ValidationErrorMessage zErrors={zErrors} fieldName="description" />
           </div>
 
           {/* Address */}
@@ -256,11 +248,14 @@ export function AddStoreBtn() {
               }
               rows={3}
             />
-             <ValidationErrorMessage zErrors={zErrors} fieldName="social_links" />
+            <ValidationErrorMessage
+              zErrors={zErrors}
+              fieldName="social_links"
+            />
           </div>
 
           {/* Opening Hours */}
-         <div className="grid gap-2 relative">
+          <div className="grid gap-2 relative">
             <Label htmlFor="opening_hours">
               Horarios de Atención (opcional)
             </Label>
@@ -273,11 +268,14 @@ export function AddStoreBtn() {
               }
               rows={3}
             />
-               <ValidationErrorMessage zErrors={zErrors} fieldName="opening_hours" />
+            <ValidationErrorMessage
+              zErrors={zErrors}
+              fieldName="opening_hours"
+            />
           </div>
 
           {/* Slug */}
-              <div className="grid gap-2 relative">
+          {/* <div className="grid gap-2 relative">
             <Label htmlFor="slug">Slug de URL (opcional)</Label>
             <Input
               id="slug"
@@ -291,7 +289,7 @@ export function AddStoreBtn() {
               Se usará para crear la URL amigable de tu punto de venta
             </p>
              <ValidationErrorMessage zErrors={zErrors} fieldName="slug" />
-          </div>
+          </div> */}
         </div>
 
         <DialogFooter className="mt-4">

@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,43 +8,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { getAllProducts } from "@/service/products";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Upload } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState } from "react";
+import { AddProductBtn } from "./addEditProduct/AddProductBtn";
 import { ProductsTable } from "./ProductsTable";
 import TableSkl from "./ui/tableSkl";
-
-// const mockProducts = [
-//   {
-//     id: 1,
-//     name: 'Laptop Gaming ASUS ROG',
-//     sku: 'LG-ASUS-001',
-//     category: 'Electrónicos',
-//     price: 1299.99,
-//     stock: 15,
-//     status: 'active',
-//     image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853',
-//   },
-//   {
-//     id: 2,
-//     name: 'iPhone 15 Pro Max',
-//     sku: 'IP-15PM-001',
-//     category: 'Smartphones',
-//     price: 1199.99,
-//     stock: 8,
-//     status: 'active',
-//     image: 'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd',
-//   },
-//   {
-//     id: 3,
-//     name: 'Samsung Galaxy S24',
-//     sku: 'SGS-24-001',
-//     category: 'Smartphones',
-//     price: 899.99,
-//     stock: 0,
-//     status: 'out_of_stock',
-//     image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9',
-//   },
-// ];
 
 export const ProductsContainer = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,24 +36,23 @@ export const ProductsContainer = () => {
     },
   });
 
- 
+  console.log("Products:", products);
 
   const filteredProducts = products.filter((product) => {
     const matchesSearchTerm = product.product_name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
 
-    // const matchesCategory =
-    //   selectedCategory === "all" ||
-    //   product.category_id === selectedCategory;
+    const matchesShortCode = product.short_code
+      ?.toString()
+      .includes(searchTerm);
 
-    // const matchesStatus =
-    //   selectedStatus === "all" || product.status === selectedStatus;
+       const matchesBarcode = product.barcode
+      ?.toString()
+      .includes(searchTerm);
 
-    // return matchesSearchTerm && matchesCategory && matchesStatus;
-    return matchesSearchTerm;
+    return matchesSearchTerm || matchesShortCode || matchesBarcode;
   });
-
 
   if (isLoading) {
     return <TableSkl />;
@@ -104,11 +70,11 @@ export const ProductsContainer = () => {
               </CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
-              <Button variant="outline" className="gap-2">
+              {/* <Button variant="outline" className="gap-2">
                 <Upload className="w-4 h-4" />
                 Importar Excel
-              </Button>
-              {/* <AddProductBtn /> */}
+              </Button> */}
+              <AddProductBtn />
             </div>
           </div>
         </CardHeader>
@@ -117,7 +83,7 @@ export const ProductsContainer = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
-                placeholder="Buscar productos por nombre, SKU..."
+                placeholder="Buscar productos por nombre, código corto o código de barras"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -150,7 +116,7 @@ export const ProductsContainer = () => {
             </Select> */}
           </div>
 
-          <ProductsTable products={filteredProducts ?? []} />
+          <ProductsTable products={filteredProducts ?? []} isSearchingTerm={searchTerm.length > 0} />
         </CardContent>
       </Card>
     </div>

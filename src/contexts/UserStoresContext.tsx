@@ -10,8 +10,8 @@ import {
 const UserStoresContext = createContext<{
   userStores: Store[];
   setUserStores: React.Dispatch<React.SetStateAction<Store[]>>;
-  selectedStoreId: string | null;
-  setSelectedStoreId: React.Dispatch<React.SetStateAction<string | null>>;
+  selectedStoreId: number | null;
+  setSelectedStoreId: React.Dispatch<React.SetStateAction<number | null>>;
   selectedStoreIndex: number;
 }>({
   userStores: [],
@@ -23,9 +23,9 @@ const UserStoresContext = createContext<{
 
 export const UserStoresProvider = ({ children }: { children: ReactNode }) => {
   const [userStores, setUserStores] = useState<Store[]>([]);
-  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+  const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
   const selectedStoreIndex = userStores.findIndex(
-    store => String(store.store_id) === (selectedStoreId ?? "")
+    store => store.store_id === (selectedStoreId ?? 0)
   );
 
   return (

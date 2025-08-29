@@ -1,18 +1,31 @@
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { ArrowLeft, Mail } from 'lucide-react';
-import React, { useState } from 'react';
-import { AuthLayout } from './AuthLayout';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Loader2, Mail } from "lucide-react";
+import React, { useState } from "react";
+import { AuthLayout } from "./AuthLayout";
+import { supabase } from "@/service";
+import { toast } from "sonner";
 
 export function ForgotPassword() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
-  
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-   
+
+    setLoading(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) {
+      console.error("Error al enviar el correo:", error);
+      toast.error("Error al enviar el correo");
+      setLoading(false);
+      return;
+    }
+    toast.success("Correo enviado exitosamente");
+
     setSent(true);
   };
 
@@ -32,7 +45,8 @@ export function ForgotPassword() {
               Hemos enviado un enlace de recuperación a <strong>{email}</strong>
             </p>
             <p className="text-sm text-muted-foreground">
-              Revisa tu bandeja de entrada y sigue las instrucciones para restablecer tu contraseña.
+              Revisa tu bandeja de entrada y sigue las instrucciones para
+              restablecer tu contraseña.
             </p>
           </div>
           <Button
@@ -60,7 +74,7 @@ export function ForgotPassword() {
             {error}
           </div>
         )} */}
-        
+
         <div className="space-y-2">
           <Label htmlFor="email" className="text-foreground font-medium">
             Correo electrónico
@@ -81,17 +95,17 @@ export function ForgotPassword() {
             Te enviaremos un enlace para restablecer tu contraseña
           </p>
         </div>
-        
-        {/* <Button type="submit" className="w-full" disabled={loading}>
+
+        <Button type="submit" className="w-full" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Enviando...
             </>
           ) : (
-            'Enviar instrucciones'
+            "Enviar instrucciones"
           )}
-        </Button> */}
+        </Button>
       </form>
     </AuthLayout>
   );

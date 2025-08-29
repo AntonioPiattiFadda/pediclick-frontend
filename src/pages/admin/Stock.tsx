@@ -1,8 +1,8 @@
-import { CategoriesContainer } from "@/components/admin/products/CategoriesContainer";
-import { ProductsContainer } from "@/components/admin/products/ProductsContainer";
+import { CategoriesContainer } from "@/components/admin/stock/CategoriesContainer";
+import { ProductsContainer } from "@/components/admin/stock/ProductsContainer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const Products = () => {
+const Stock = () => {
   return (
     <div className="space-y-6 p-6">
       <div>
@@ -32,4 +32,4 @@ const Products = () => {
   );
 };
 
-export default Products;
+export default Stock;

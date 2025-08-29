@@ -24,6 +24,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { ZodIssue } from "zod";
 import { useUserStoresContext } from "@/contexts/UserStoresContext";
+import { Edit } from "lucide-react";
 
 const emptyStore = {
   store_id: 0,
@@ -119,7 +120,7 @@ export function EditStoreBtn({ id }: { id:  number }) {
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost">Editar</Button>
+        <Button variant="ghost"><Edit/></Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
         <DialogHeader>

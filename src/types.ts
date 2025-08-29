@@ -68,16 +68,25 @@ export interface HomepageLayoutSection {
 export interface Category {
   category_id: string;
   category_name: string;
-  slug: string;
+  slug?: string;
   description?: string;
-  parent_id?: string | null;
   image_url?: string;
-  is_active?: boolean;
-  sort_order?: number;
   created_at?: string;
   updated_at?: string;
   deleted_at?: string | null;
-  store_id?: string | null;
+  business_owner_id: string | null;
+}
+
+export interface SubCategory {
+  sub_category_id: string;
+  sub_category_name: string;
+  slug?: string;
+  description?: string;
+  image_url?: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+  business_owner_id: string | null;
 }
 
 export interface Unit {
@@ -92,116 +101,75 @@ export interface Unit {
   created_at?: string;
 }
 
-export interface Product {
-  product_id: string;
-  category_id: string;
-  product_name: string;
-  slug: string;
-  description?: string;
-  created_at?: string;
-  updated_at?: string;
-  deleted_at?: string | null;
-  product_images?: ProductImage[];
-  product_prices?: ProductPrice[];
+export type Price = {
+  price: string;
+  quantity: string;
+  type: "PRIMARY" | "SECONDARY"; // Asumiendo que puede haber otros tipos además de PRIMARY
+};
 
-  short_description?: string;
-  sku?: string;
-  brand?: string;
-  status?: ProductStatusEnum;
-  is_digital?: boolean;
-  weight?: number;
-  dimensions?: Dimensions;
-  tags?: string[];
-  seo_title?: string;
-  seo_description?: string;
-}
-
-// export interface ProductVariant {
-//   id: string;
-//   product_id: string;
-//   name: string;
-//   sku?: string;
-//   attributes: Attributes;
-//   sort_order?: number;
-//   created_at?: string;
-//   updated_at?: string;
-//   deleted_at?: string | null;
-// }
-
-export interface ProductPrice {
-  id: string;
-  product_id: string;
-  variant_id?: string | null;
-  unit_id: string;
+export type Stock = {
   quantity: number;
-  price: number;
-  currency?: string;
-  compare_at_price?: number;
-  cost_price?: number;
-  is_active?: boolean;
-  valid_from?: string;
-  valid_until?: string | null;
-  created_at?: string;
-  updated_at?: string;
-  units?: Unit;
+  min: number;
+  max: number;
+};
+
+export type BaseLot = {
+  expiration_date: string;
+  expiration_date_notification: boolean;
+  lot: string;
+  bulk: string;
+  waste: string;
+  provider_id: number | null;
+
+  providers?: {
+    provider_name: string;
+  };
+
+  prices: Price[];
+};
+
+export type LotWithControl = BaseLot & {
+  lot_control: true;
+  stock: Stock;
+};
+
+export type LotWithoutControl = BaseLot & {
+  lot_control: false;
+};
+
+export type Lot = LotWithControl | LotWithoutControl;
+
+export interface Product {
+  short_code: number | null;
+  product_name: string;
+  category_id: number | null;
+  sub_category_id: number | null;
+  brand_id: number | null;
+  sale_unit_id: number | null;
+  barcode: number | null;
+  public_image_id: number | null;
+  store_id: number | null;
+  allow_stock_control: boolean;
+  lot_control: boolean;
+  lots: Lot[];
+
+  public_images?: {
+    public_image_src: string;
+  };
+  categories?: {
+    category_name: string;
+  };
+  sub_categories?: {
+    sub_category_name: string;
+  };
+  
+  brands?: {
+    brand_name: string;
+  };
+  sale_units?: {
+    sale_unit_name: string;
+  };
 }
-
-// export interface PriceHistory {
-//   id: string;
-//   product_price_id: string;
-//   old_price: number;
-//   new_price: number;
-//   currency: string;
-//   changed_by?: string;
-//   reason?: string;
-//   created_at?: string;
-// }
-
-// export interface Inventory {
-//   id: string;
-//   product_id: string;
-//   variant_id?: string | null;
-//   unit_id: string;
-//   stock_quantity: number;
-//   reserved_quantity: number;
-//   low_stock_threshold?: number;
-//   track_inventory?: boolean;
-//   allow_backorder?: boolean;
-//   location?: string;
-//   created_at?: string;
-//   updated_at?: string;
-// }
-
-export interface ProductImage {
-  url: string;
-  sort_order?: number;
-}
-
-// export interface Promotion {
-//   id: string;
-//   name: string;
-//   description?: string;
-//   promotion_type: PromotionTypeEnum;
-//   discount_type: DiscountTypeEnum;
-//   discount_value: number;
-//   min_purchase_amount?: number;
-//   max_discount_amount?: number;
-//   usage_limit?: number;
-//   usage_count?: number;
-//   is_active?: boolean;
-//   starts_at: string;
-//   ends_at: string;
-//   created_by?: string;
-//   created_at?: string;
-//   updated_at?: string;
-// }
-
-// export interface PromotionProduct {
-//   id: string;
-//   promotion_id: string;
-//   product_id: string;
-//   created_at?: string;
-// }
 
 export interface WebsitePreference {
   id: string;
@@ -252,4 +220,31 @@ export interface UserProfile {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+}
+
+export interface Provider {
+  provider_id: string;
+  provider_name: string;
+  business_owner_id: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+}
+
+export interface Brand {
+  brand_id: string;
+  brand_name: string;
+  business_owner_id: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+}
+
+export interface SaleUnit {
+  sale_unit_id: string;
+  sale_unit_name: string;
+  business_owner_id: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
 }

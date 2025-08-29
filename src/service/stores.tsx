@@ -1,4 +1,5 @@
 import { getUserId, supabase } from ".";
+import { getBusinessOwnerIdByRole } from "./profiles";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const createStore = async (formData: any) => {
@@ -19,13 +20,14 @@ export const createStore = async (formData: any) => {
   return data;
 };
 
+export const getUserStores = async (userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
 
-export const getUserStores = async () => {
-  const userId = await getUserId();
   const { data: stores, error } = await supabase
     .from("stores")
     .select("*")
-    .eq("business_owner_id", userId);
+    .eq("business_owner_id", businessOwnerId)
+    .is("deleted_at", null);
 
   if (error) {
     throw new Error(error.message);
@@ -52,6 +54,20 @@ export const editStore = async (storeId: string | number, formData: any) => {
   const { data, error } = await supabase
     .from("stores")
     .update(formData)
+    .eq("store_id", storeId)
+    .select();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const deleteStore = async (storeId: string | number) => {
+  const { data, error } = await supabase
+    .from("stores")
+    .update({ deleted_at: new Date() })
     .eq("store_id", storeId)
     .select();
 

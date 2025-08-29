@@ -7,26 +7,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 // import { Badge } from '@/components/ui/badge';
-import { Button } from "@/components/ui/button";
 import type { Category } from "@/types";
-import { Edit, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 
 interface CategoriesTableProps {
   categories: Category[];
+ 
 }
 
 export const CategoriesTable = ({ categories }: CategoriesTableProps) => {
-  // const getStatusBadge = (status: string) => {
-  //   switch (status) {
-  //     case 'active':
-  //       return <Badge variant="default">Activa</Badge>;
-  //     case 'inactive':
-  //       return <Badge variant="secondary">Inactiva</Badge>;
-  //     default:
-  //       return <Badge variant="secondary">{status}</Badge>;
-  //   }
-  // };
+
 
   return (
     <div className="rounded-md">
@@ -34,10 +24,6 @@ export const CategoriesTable = ({ categories }: CategoriesTableProps) => {
         <TableHeader>
           <TableRow>
             <TableHead>Nombre</TableHead>
-            {/* <TableHead>Descripción</TableHead> */}
-            {/* <TableHead>Categoría Padre</TableHead> */}
-            <TableHead className="text-center">Productos</TableHead>
-            {/* <TableHead className="text-center">Estado</TableHead> */}
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -61,35 +47,18 @@ export const CategoriesTable = ({ categories }: CategoriesTableProps) => {
                   </div>
                 </div>
               </TableCell>
-              {/* <TableCell>
-                <p className="text-sm">{category.description}</p>
-              </TableCell> */}
-              {/* <TableCell>
-                {category.parent ? (
-                  <Badge variant="outline">{category.parent}</Badge>
-                ) : (
-                  <span className="text-muted-foreground">-</span>
-                )}
-              </TableCell> */}
-              <TableCell className="text-center font-medium">
-                {/* {category.productsCount}  */} Aggregar el conteo de
-                productos
-              </TableCell>
-              {/* <TableCell className="text-center">
-                {getStatusBadge(category.status)}
-              </TableCell> */}
+           
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <Button size="sm" variant="outline">
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button size="sm" variant="outline">
+                
+                  {/* <Button size="sm" variant="outline">
                     <Trash2 className="w-4 h-4" />
-                  </Button>
+                  </Button> */}
                 </div>
               </TableCell>
             </TableRow>
           ))}
+
         </TableBody>
       </Table>
     </div>

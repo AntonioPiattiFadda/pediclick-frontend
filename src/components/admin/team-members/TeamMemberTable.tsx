@@ -8,10 +8,10 @@ import {
 } from "@/components/ui/table";
 import { useUserStoresContext } from "@/contexts/UserStoresContext";
 import type { UserProfile } from "@/types";
-import { DeleteTableElement } from "./DeleteTeamMemberBtn";
 import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
 import { ROLES } from "./RoleInfoPopover";
 import { deleteTeamMember } from "@/service/profiles";
+import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
 
 interface TeamMemberTableProps {
   teamMembers: UserProfile[];
@@ -25,18 +25,34 @@ export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Acciones</TableHead>
             <TableHead>Nombre</TableHead>
             <TableHead>Email</TableHead>
 
             <TableHead>Rol</TableHead>
             <TableHead>Punto de venta</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {teamMembers.length > 0 ? (
             teamMembers.map((member) => (
               <TableRow key={member.id}>
+                <TableCell>
+                  {" "}
+                  <EditTeamMemberBtn id={member.id} />{" "}
+                  <DeleteTableElementPopUp
+                    elementId={member.id}
+                    elementName={member.full_name}
+                    deleteFn={async (id: string | number) => {
+                      await deleteTeamMember(String(id));
+                    }}
+                    queryKey={["team-members"]}
+                    successMsgTitle="Miembro eliminado"
+                    successMsgDescription="El miembro de equipo ha sido eliminado correctamente."
+                    errorMsgTitle="Error al eliminar miembro"
+                    errorMsgDescription="No se pudo eliminar el miembro de equipo."
+                  />
+                </TableCell>
                 {/* <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="w-10 h-10">
@@ -67,18 +83,11 @@ export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
                   {ROLES.find((role) => role.value === member.role)?.label}
                 </TableCell>
                 <TableCell>
-                  {userStores.find(
-                    (store) => store.store_id === member.store_id
-                  )?.store_name}
-                </TableCell>
-                <TableCell className="text-right">
-                  {" "}
-                  <EditTeamMemberBtn id={member.id} />{" "}
-                  <DeleteTableElement
-                    id={member.id}
-                    endpoint={async (id: string | number) => { await deleteTeamMember(String(id)); }}
-                    queryKey={["team-members"]}
-                    />
+                  {
+                    userStores.find(
+                      (store) => store.store_id === member.store_id
+                    )?.store_name
+                  }
                 </TableCell>
               </TableRow>
             ))

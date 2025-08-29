@@ -6,35 +6,37 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { getCategories } from "@/service";
+import { getCategories, getSubCategories } from "@/service";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { Plus } from "lucide-react";
 import { CategoriesTable } from "./CategoriesTable";
 import TableSkl from "./ui/tableSkl";
+import { useAppSelector } from "@/hooks/useUserData";
+import { SubCategoriesTable } from "./addEditProduct/SubCategoriesTable ";
 
 export const CategoriesContainer = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("all");
+  // const [searchTerm, setSearchTerm] = useState("");
+  // const [selectedStatus, setSelectedStatus] = useState("all");
+
+  const { role } = useAppSelector((state) => state.user);
 
   const { data: categories, isLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const response = await getCategories();
+      const response = await getCategories(role);
       return response.categories;
     },
   });
 
+  const { data: subCategories, isLoading: isLoadingSub } = useQuery({
+    queryKey: ["sub-categories"],
+    queryFn: async () => {
+      const response = await getSubCategories(role);
+      return response.categories;
+    },
+  });
 
-  if (isLoading) {
+  if (isLoading || isLoadingSub) {
     return <TableSkl />;
   }
 
@@ -44,19 +46,19 @@ export const CategoriesContainer = () => {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <CardTitle>Categorías</CardTitle>
+              <CardTitle>Rubros</CardTitle>
               <CardDescription>
-                Organiza tus productos en categorías
+                Organiza tus productos en rubros
               </CardDescription>
             </div>
-            <Button className="gap-2">
+            {/* <Button className="gap-2">
               <Plus className="w-4 h-4" />
-              Nueva Categoría
-            </Button>
+              Nuevo Rubro
+            </Button> */}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
+          {/* <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
@@ -76,9 +78,26 @@ export const CategoriesContainer = () => {
                 <SelectItem value="inactive">Inactiva</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
+          </div> */}
+          {/* <CategoriesTable categories={subCategories ?? []} /> */}
           <CategoriesTable categories={categories ?? []} />
+        </CardContent>
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <CardTitle>Categorías</CardTitle>
+              <CardDescription>
+                Organiza tus productos en categorías
+              </CardDescription>
+            </div>
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              Nueva Categoría
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <SubCategoriesTable subCategories={subCategories ?? []} />
         </CardContent>
       </Card>
     </div>

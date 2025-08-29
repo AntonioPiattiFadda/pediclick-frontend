@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { createClient } from "@supabase/supabase-js";
+import { getBusinessOwnerIdByRole } from "./profiles";
 
 const supabaseUrl = import.meta.env.VITE_APP_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_APP_SUPABASE_ANON_KEY;
 
-const storageUrl =
-  "https://khpuigptjufryfxcnsrs.supabase.co/storage/v1/object/public/";
+// const storageUrl =
+//   "https://khpuigptjufryfxcnsrs.supabase.co/storage/v1/object/public/";
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error("Missing Supabase URL or Anon Key in environment variables");
@@ -52,16 +53,120 @@ export const getUserId = async () => {
 //   return { products, error };
 // };
 
-export const getCategories = async () => {
+export const getCategories = async (userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
   const { data: categories, error } = await supabase
     .from("categories")
-    .select("*");
+    .select("*")
+    .eq("business_owner_id", businessOwnerId);
 
   if (error) {
     throw new Error(error.message);
   }
 
   return { categories, error };
+};
+
+export const createCategory = async (name: string, userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  const { data, error } = await supabase
+    .from("categories")
+    .insert({ category_name: name, business_owner_id: businessOwnerId })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const createSubCategory = async (name: string, userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  const { data, error } = await supabase
+    .from("sub_categories")
+    .insert({ sub_category_name: name, business_owner_id: businessOwnerId })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const getSubCategories = async (userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  const { data: categories, error } = await supabase
+    .from("sub_categories")
+    .select("*")
+    .eq("business_owner_id", businessOwnerId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { categories, error };
+};
+
+export const getProviders = async (userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  const { data: providers, error } = await supabase
+    .from("providers")
+    .select("*")
+    .eq("business_owner_id", businessOwnerId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { providers, error };
+};
+
+export const createProvider = async (name: string, userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  const { data, error } = await supabase
+    .from("providers")
+    .insert({ provider_name: name, business_owner_id: businessOwnerId })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const getBrands = async (userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  const { data: brands, error } = await supabase
+    .from("brands")
+    .select("*")
+    .eq("business_owner_id", businessOwnerId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { brands, error };
+};
+
+export const createBrand = async (name: string, userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  const { data, error } = await supabase
+    .from("brands")
+    .insert({ brand_name: name, business_owner_id: businessOwnerId })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 };
 
 export const fetchUnits = async () => {
@@ -98,90 +203,59 @@ export const fetchUnits = async () => {
 //   return products;
 // };
 
-export const createProduct = async (product: any, prices: any, images: any) => {
-  const userId = await getUserId();
-  const newProductForDb = {
-    ...product,
-    seller_id: userId,
-  };
+export const createProduct = async (product: any) => {
+  const { lots, ...productWithoutLots } = product;
+
+  console.log("Creating product with lots:", productWithoutLots);
+
+  const { data: newLots, error: lotsError } = await supabase
+    .from("lots")
+    .insert(lots)
+    .select();
+
+  if (lotsError) {
+    console.error("lotsError", lotsError);
+    throw new Error("Error al crear los lotes");
+  }
 
   const { data: newProduct, error: productError } = await supabase
     .from("products")
-    .insert(newProductForDb)
+    .insert({
+      ...productWithoutLots,
+    })
     .select()
     .single();
 
   if (productError) {
-    console.log("productError", productError);
+    console.error("productError", productError);
     throw new Error("Error al crear el producto");
   }
 
-  const newProductPricesForDb = prices.map((price: any) => ({
-    ...price,
-    product_id: newProduct.id, // Asegúrate de que el id del producto esté disponible
+  const productLots = newLots.map((lot: any) => ({
+    product_id: newProduct.product_id,
+    lot_id: lot.lot_id,
   }));
 
-  console.log("newProductPricesForDb", newProductPricesForDb);
+  const { error: productLotsError } = await supabase
+    .from("product_lots")
+    .insert(productLots);
 
-  const { error: pricesError } = await supabase
-    .from("product_prices")
-    .insert(newProductPricesForDb)
-    .select();
-
-  if (pricesError) {
-    console.log("pricesError", pricesError);
-    throw new Error("Error al crear los precios del producto");
+  if (productLotsError) {
+    console.error("productLotsError", productLotsError);
+    throw new Error("Error al crear relaciones producto-lote");
   }
 
-  //Primero cargar las imagense en el storage de supabase
-  const imageUploads = await Promise.all(
-    images.map(async (image: any) => {
-      const { data, error } = await supabase.storage
-        .from("product-images")
-        .upload(`${userId}/products/${newProduct.id}/${image.name}`, image);
-
-      console.log("data", data, error);
-      if (error) throw new Error("Error al subir la imagen del producto");
-      return {
-        url: `${storageUrl}${data.fullPath}`, // Asegúrate de que este sea el campo correcto para la URL
-      };
-    })
-  );
-
-  console.log("imageUploads", imageUploads);
-
-  const { data: newProductImages, error: imagesError } = await supabase
-    .from("product_images")
-    .insert(
-      imageUploads.map((image) => ({
-        ...image,
-        product_id: newProduct.id, // Asegúrate de que el id del producto esté disponible
-      }))
-    )
-    .select();
-
-  console.log("newProductImages", newProductImages, imagesError);
-
-  //   const { data: images, error: imagesError } = await supabase
-  //     .from("product_images")
-  //     .insert(
-  //       productData.product_images.map((image) => ({
-  //         ...image,
-  //         product_id: product.id,
-  //       }))
-  //     )
-  //     .select();
-
-  //   if (imagesError) throw new Error("Error al crear las imágenes del producto");
-
-  //   return { product, prices, images };
+  return {
+    ...newProduct,
+    lots: newLots,
+  };
 };
 
 export const deleteProduct = async (productId: string | number) => {
   const { error } = await supabase
     .from("products")
-    .delete()
-    .eq("id", productId);
+    .update({ deleted_at: new Date() })
+    .eq("product_id", productId);
 
   if (error) {
     throw new Error(error.message);
@@ -247,4 +321,40 @@ export const uploadImage = async (file: File) => {
   }
 
   return data;
+};
+
+export const getSaleUnits = async (userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  const { data: saleUnits, error } = await supabase
+    .from("sale_units")
+    .select("*")
+    .eq("business_owner_id", businessOwnerId);
+
+  const { data: publicUnits, error: publicUnitError } = await supabase
+    .from("sale_units")
+    .select("*")
+    .is("business_owner_id", null);
+
+  if (error || publicUnitError) {
+    throw new Error(
+      error?.message || publicUnitError?.message || "Unknown error"
+    );
+  }
+
+  return { saleUnits: [...(saleUnits ?? []), ...(publicUnits ?? [])], error };
+};
+
+export const createSaleUnit = async (name: string, userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  const { data: saleUnits, error } = await supabase
+    .from("sale_units")
+    .insert({ sale_unit_name: name, business_owner_id: businessOwnerId })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return saleUnits;
 };

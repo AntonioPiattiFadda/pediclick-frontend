@@ -1,54 +1,66 @@
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, Lock } from 'lucide-react';
-import React, { useState } from 'react';
-import { AuthLayout } from './AuthLayout';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import React, { useState } from "react";
+import { AuthLayout } from "./AuthLayout";
+import { supabase } from "@/service";
+import { toast } from "sonner";
 
 export function ResetPassword() {
   const [formData, setFormData] = useState({
-    code: '',
-    password: '',
-    confirmPassword: ''
+    email: "",
+    code: "",
+    password: "",
+    confirmPassword: "",
   });
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
-  
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (formData.code.length !== 6) {
-      newErrors.code = 'El código debe tener 6 caracteres';
-    }
-    
-    if (formData.password.length < 6) {
-      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
-    }
-    
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Las contraseñas no coinciden';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  // const validateForm = () => {
+  //   const newErrors: Record<string, string> = {};
+
+  //   if (formData.code.length !== 6) {
+  //     newErrors.code = 'El código debe tener 6 caracteres';
+  //   }
+
+  //   if (formData.password.length < 6) {
+  //     newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+  //   }
+
+  //   if (formData.password !== formData.confirmPassword) {
+  //     newErrors.confirmPassword = 'Las contraseñas no coinciden';
+  //   }
+
+  //   setErrors(newErrors);
+  //   return Object.keys(newErrors).length === 0;
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    
-    if (!validateForm()) return;
-    
-    setSuccess(true);
+    const { data, error } = await supabase.auth.updateUser({
+      email: formData.email,
+      password: formData.password,
+    });
+    console.log(data, error);
+    if (!error) {
+      setLoading(false);
+      setSuccess(true);
+    } else {
+      toast.error("Error al actualizar la contraseña");
+    }
+    // if (!validateForm()) return;
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -90,8 +102,8 @@ export function ResetPassword() {
             {error}
           </div>
         )} */}
-        
-        <div className="space-y-2">
+
+        {/* <div className="space-y-2">
           <Label htmlFor="code" className="text-foreground font-medium">
             Código de verificación
           </Label>
@@ -111,8 +123,29 @@ export function ResetPassword() {
           <p className="text-xs text-muted-foreground">
             Ingresa el código de 6 dígitos que recibiste por email
           </p>
+        </div> */}
+
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-foreground font-medium">
+            Email
+          </Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange("email", e.target.value)}
+              className="pl-10 pr-10"
+              placeholder="Ingresa tu email"
+              required
+            />
+          </div>
+          {errors.email && (
+            <p className="text-red-500 text-xs">{errors.email}</p>
+          )}
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="password" className="text-foreground font-medium">
             Nueva contraseña
@@ -121,9 +154,9 @@ export function ResetPassword() {
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               id="password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={formData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
+              onChange={(e) => handleInputChange("password", e.target.value)}
               className="pl-10 pr-10"
               placeholder="Mínimo 6 caracteres"
               required
@@ -133,25 +166,34 @@ export function ResetPassword() {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
           {errors.password && (
             <p className="text-red-500 text-xs">{errors.password}</p>
           )}
         </div>
-        
+
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-foreground font-medium">
+          <Label
+            htmlFor="confirmPassword"
+            className="text-foreground font-medium"
+          >
             Confirmar nueva contraseña
           </Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               id="confirmPassword"
-              type={showConfirmPassword ? 'text' : 'password'}
+              type={showConfirmPassword ? "text" : "password"}
               value={formData.confirmPassword}
-              onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("confirmPassword", e.target.value)
+              }
               className="pl-10 pr-10"
               placeholder="Repite tu nueva contraseña"
               required
@@ -161,24 +203,28 @@ export function ResetPassword() {
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showConfirmPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
           {errors.confirmPassword && (
             <p className="text-red-500 text-xs">{errors.confirmPassword}</p>
           )}
         </div>
-        
-        {/* <Button type="submit" className="w-full" disabled={loading}>
+
+        <Button type="submit" className="w-full" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Actualizando...
             </>
           ) : (
-            'Actualizar Contraseña'
+            "Actualizar Contraseña"
           )}
-        </Button> */}
+        </Button>
       </form>
     </AuthLayout>
   );

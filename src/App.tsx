@@ -3,7 +3,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout";
-import Products from "./pages/admin/Products";
+import Stock from "./pages/admin/Stock";
 import Settings from "./pages/admin/Settings";
 import NotFound from "./pages/admin/NotFound";
 import RequireAuth from "./components/admin/auth/requireAuth";
@@ -35,7 +35,6 @@ export const PUBLIC_ROUTES = [
   "/sign-in",
   "/sign-up",
   "/forgot-password",
-  "/reset-password",
   "/register",
   "/register-team-member",
 ];
@@ -106,17 +105,21 @@ const App = () => {
                         path="/forgot-password"
                         element={<ForgotPassword />}
                       />
-                      <Route
-                        path="/reset-password"
-                        element={<ResetPassword />}
-                      />
                       <Route path="/register" element={<ProfileRegister />} />
                     </Route>
 
                     <Route element={<RequireAuth />}>
+                      <Route
+                        path="/reset-password"
+                        element={<ResetPassword />}
+                      />
+                      <Route
+                        path="/auth/v1/verify"
+                        element={<ResetPassword />}
+                      />
                       <Route element={<RolesAuth />}>
                         <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/products" element={<Products />} />
+                        <Route path="/stock" element={<Stock />} />
                         <Route path="/stores" element={<Stores />} />
                         <Route path="/team-members" element={<TeamMembers />} />
                         <Route path="/settings" element={<Settings />} />

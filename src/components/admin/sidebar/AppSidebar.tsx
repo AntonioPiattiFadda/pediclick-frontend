@@ -23,7 +23,7 @@ export const MENU_ITEMS = [
   },
   {
     title: "Stock",
-    url: "/products",
+    url: "/stock",
     icon: Package,
     roles: ["OWNER", "MANAGER"],
   },

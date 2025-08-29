@@ -9,9 +9,27 @@ import {
 import { useUserStoresContext } from "@/contexts/UserStoresContext";
 import { EditStoreBtn } from "./EditStoreBtn";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
+import { deleteStore } from "@/service/stores";
 
 export const StoresTable = () => {
-  const { userStores } = useUserStoresContext();
+  const { userStores, setUserStores, setSelectedStoreId, selectedStoreId } =
+    useUserStoresContext();
+
+  const handleDeleteStore = async (id: string | number) => {
+    try {
+      await deleteStore(id);
+      const remainingStores = userStores.filter(
+        (store) => store.store_id !== id
+      );
+      setUserStores(remainingStores);
+      if (id === selectedStoreId) {
+        setSelectedStoreId(remainingStores[0]?.store_id || null);
+      }
+    } catch (error) {
+      console.error("Error deleting store:", error);
+    }
+  };
 
   if (userStores.length === 0) {
     return (
@@ -26,6 +44,7 @@ export const StoresTable = () => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead >Acciones</TableHead>
             <TableHead>Nombre</TableHead>
             <TableHead>Descripcion</TableHead>
             <TableHead>Direccion</TableHead>
@@ -37,12 +56,27 @@ export const StoresTable = () => {
             <TableHead>Horarios</TableHead>
             <TableHead>Nombre e-commerce</TableHead>
 
-            <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {userStores.map((store) => (
             <TableRow key={store.store_id}>
+                <TableCell className="text-right flex gap-2">
+                {" "}
+                <EditStoreBtn id={store.store_id} />
+                <DeleteTableElementPopUp
+                  elementId={store.store_id}
+                  elementName={store.store_name}
+                  deleteFn={async (id: string | number) => {
+                    await handleDeleteStore(id);
+                  }}
+                  queryKey={["stores"]}
+                  successMsgTitle="Punto de venta eliminado"
+                  successMsgDescription="El punto de venta ha sido eliminado correctamente."
+                  errorMsgTitle="Error al eliminar punto de venta"
+                  errorMsgDescription="Ha ocurrido un error al eliminar el punto de venta."
+                />
+              </TableCell>
               <TableCell>{store.store_name}</TableCell>
               <TableCell>{store.description || "-"}</TableCell>
               <TableCell>{store.address || "-"}</TableCell>
@@ -53,17 +87,7 @@ export const StoresTable = () => {
               <TableCell>{store.social_links || "-"}</TableCell>
               <TableCell>{store.opening_hours || "-"}</TableCell>
               <TableCell>{store.slug || "-"}</TableCell>
-              <TableCell className="text-right flex gap-2">
-                {" "}
-                <EditStoreBtn id={store.store_id} />
-                {/* <DeleteTableElement
-                  id={store.store_id}
-                  endpoint={async (id: string | number) => {
-                    await deleteTeamMember(id);
-                  }}
-                  queryKey={["stores"]}
-                /> */}
-              </TableCell>
+            
             </TableRow>
           ))}
         </TableBody>

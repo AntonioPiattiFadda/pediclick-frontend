@@ -9,7 +9,7 @@ const CategoriesList = () => {
   const { setSearchedCategory, searchedCategory } = useContext(SearchContext);
 
   useEffect(() => {
-    getCategories()
+    getCategories('ads')
       .then((res) => {
         const newCategories = [
           'Todos',
