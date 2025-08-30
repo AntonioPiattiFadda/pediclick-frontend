@@ -27,6 +27,8 @@ import PublicRoutesAuthCheck from "./components/admin/auth/publicRoutesAuthCheck
 import { Provider } from "react-redux";
 import { store } from "./stores/store";
 import RolesAuth from "./components/admin/auth/rolesAuth";
+import LoadOrders from "./pages/admin/LoadOrders";
+import NewLoadOrders from "./pages/admin/NewLoadOrder";
 
 const queryClient = new QueryClient();
 
@@ -122,9 +124,11 @@ const App = () => {
                         <Route path="/stock" element={<Stock />} />
                         <Route path="/stores" element={<Stores />} />
                         <Route path="/team-members" element={<TeamMembers />} />
+                        <Route path="/load-orders" element={<LoadOrders />} />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="*" element={<NotFound />} />
                       </Route>
+                        <Route path="/new-load-order" element={<NewLoadOrders />} />
                     </Route>
                   </Routes>
                 </Layout>

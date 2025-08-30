@@ -14,6 +14,7 @@ import { BarChart3, Home, Package } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import SideBarSkeleton from "./sideBarSkeleton";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const MENU_ITEMS = [
   {
     title: "Dashboard",
@@ -36,6 +37,12 @@ export const MENU_ITEMS = [
   {
     title: "Personal",
     url: "/team-members",
+    icon: Package,
+    roles: ["OWNER", "MANAGER"],
+  },
+  {
+    title: "Remitos",
+    url: "/load-orders",
     icon: Package,
     roles: ["OWNER", "MANAGER"],
   },

@@ -248,3 +248,11 @@ export interface SaleUnit {
   updated_at?: string;
   deleted_at?: string | null;
 }
+
+
+export interface LoadOrder {
+  id: string
+  order_number: string
+  status: string
+  created_at: string
+}
