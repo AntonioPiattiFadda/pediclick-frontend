@@ -2,7 +2,7 @@
 import  { useContext, useEffect, useState } from 'react';
 import style from './CategoriesList.module.css';
 import { SearchContext } from '../Context/SearchContext';
-import { getCategories } from '@/service';
+import { getCategories } from '@/service/categories';
 
 const CategoriesList = () => {
   const [categories, setCategories] = useState<string[]>([]);

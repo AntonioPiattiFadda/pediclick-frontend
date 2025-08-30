@@ -140,6 +140,7 @@ export type LotWithoutControl = BaseLot & {
 export type Lot = LotWithControl | LotWithoutControl;
 
 export interface Product {
+  product_id?: number;
   short_code: number | null;
   product_name: string;
   category_id: number | null;

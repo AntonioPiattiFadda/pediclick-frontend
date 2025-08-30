@@ -12,13 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  createProduct,
-  getCategories,
-  getProviders,
-  getSaleUnits,
-  getSubCategories,
-} from "@/service";
+
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useState } from "react";
@@ -38,86 +32,42 @@ import PricesSelector from "./PricesSelector";
 import { ProviderSelector } from "./ProvidersSelector";
 import { SaleUnitSelector } from "./SaleUnitsSelector";
 import { SubCategorySelector } from "./SubCategorySelector";
+import { emptyLotWithLotControl, emptyLotWithoutControl, emptyProduct } from "./emptyFormData";
+import { getProviders } from "@/service/providers";
+import { getCategories } from "@/service/categories";
+import { getSubCategories } from "@/service/subCategories";
+import { createProduct } from "@/service/products";
+import { getSaleUnits } from "@/service/saleUnits";
 
-export const emptyLotWithoutControl = {
-  provider_id: "",
-  expiration_date: "",
-  expiration_date_notification: false,
-  lot: "NO CONTROL LOT",
-  lot_control: false,
-  stock: {
-    quantity: 0,
-    min: 0,
-    max: 0,
-  },
-  bulk: "",
-  waste: "",
-  prices: [{ price: "", quantity: "", type: "PRIMARY" }],
-};
-
-export const emptyLotWithLotControl = {
-  provider_id: "",
-  expiration_date: "",
-  expiration_date_notification: false,
-  lot: "Lote 1",
-  lot_control: true,
-  stock: {
-    quantity: 0,
-    min: 0,
-    max: 0,
-  },
-  bulk: "",
-  waste: "",
-  prices: [{ price: "", quantity: "", type: "PRIMARY" }],
-};
-
-export const emptyProduct = {
-  short_code: "",
-  product_name: "",
-  category_id: "",
-  sub_category_id: "",
-  brand_id: "",
-  sale_unit_id: "",
-  barcode: "",
-  public_image_id: "",
-
-  allow_stock_control: false,
-  lot_control: false,
-
-  lots: [
-    emptyLotWithoutControl,
-    emptyLotWithLotControl,
-  ] as (typeof emptyLotWithoutControl)[], // array vacío que contendrá lotes
-};
 
 export function AddProductBtn() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tab, setTab] = useState("info");
   const [formData, setFormData] = useState(emptyProduct);
-
+  
   const [selectedLotIndex, setSelectedLotIndex] = useState<number | null>(0);
-
+  
   const currentLot =
-    selectedLotIndex !== null
-      ? formData.lots[selectedLotIndex]
-      : emptyLotWithoutControl;
-
+  selectedLotIndex !== null
+  ? formData.lots[selectedLotIndex]
+  : emptyLotWithoutControl;
+  
   const updateCurrentLot = (updatedLot: typeof emptyLotWithoutControl) => {
     if (selectedLotIndex === null) return;
     const newLots = [...formData.lots];
     newLots[selectedLotIndex] = updatedLot;
     setFormData({ ...formData, lots: newLots });
   };
-
+  
   const handleUpdateLotPrices = (updatedPrices: any[]) => {
     updateCurrentLot({ ...currentLot, prices: updatedPrices });
   };
-
+  
   const queryClient = useQueryClient();
 
   const { role } = useAppSelector((state) => state.user);
   const { selectedStoreId } = useUserStoresContext();
-
+  
   const { data: categories, isLoading: isCategoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -125,7 +75,7 @@ export function AddProductBtn() {
       return response.categories;
     },
   });
-
+  
   const { data: subCategories, isLoading: isLoadingSub } = useQuery({
     queryKey: ["sub-categories"],
     queryFn: async () => {
@@ -133,7 +83,7 @@ export function AddProductBtn() {
       return response.categories;
     },
   });
-
+  
   const { data: providers, isLoading: isLoadingProviders } = useQuery({
     queryKey: ["providers"],
     queryFn: async () => {
@@ -168,7 +118,7 @@ export function AddProductBtn() {
       });
     },
   });
-
+  
   const handleSubmit = () => {
     const completedInformation = adaptProductForDb(
       formData,
@@ -176,7 +126,7 @@ export function AddProductBtn() {
     );
 
     const validation = createProductSchema.safeParse(completedInformation);
-
+    
     if (!validation.success) {
       toast("Algunos datos fantantes ", {
         description: "Sunday, December 03, 2023 at 9:00 AM",
@@ -192,7 +142,7 @@ export function AddProductBtn() {
       completedInformation,
     });
   };
-
+  
   const { data: saleUnits, isLoading: isLoadingSaleUnits } = useQuery({
     queryKey: ["sale_units"],
     queryFn: async () => {
@@ -200,7 +150,8 @@ export function AddProductBtn() {
       return response.saleUnits;
     },
   });
-
+  
+  
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogTrigger asChild>
@@ -346,7 +297,7 @@ export function AddProductBtn() {
                 saleUnits={saleUnits || []}
                 selectedUnitId={formData.sale_unit_id}
                 lots={formData.lots}
-                currentLotIndex={selectedLotIndex}
+                currentLotIndex={selectedLotIndex ?? 0}
                 lotControl={formData.lot_control}
               />
 

@@ -21,12 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  getCategories,
-  getProviders,
-  getSaleUnits,
-  getSubCategories,
-} from "@/service";
+
 import { useQuery } from "@tanstack/react-query";
 import { Edit } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -45,9 +40,13 @@ import { ProviderSelector } from "./ProvidersSelector";
 import { SaleUnitSelector } from "./SaleUnitsSelector";
 import { SubCategorySelector } from "./SubCategorySelector";
 import { getProduct, updateProduct } from "@/service/products";
-import { emptyProduct, emptyLotWithoutControl, emptyLotWithLotControl } from "./AddProductBtn";
+import { emptyProduct, emptyLotWithoutControl, emptyLotWithLotControl } from "./emptyFormData";
 import PricesSelector from "./PricesSelector";
 import LotSelector from "./LotSelector";
+import { getCategories } from "@/service/categories";
+import { getSubCategories } from "@/service/subCategories";
+import { getProviders } from "@/service/providers";
+import { getSaleUnits } from "@/service/saleUnits";
 
 interface EditProductBtnProps {
   productId: number;
@@ -135,14 +134,14 @@ export function EditProductBtn({ productId }: EditProductBtnProps) {
 
 
       const initialData = {
-        short_code: productData.short_code || "",
+        short_code: productData.short_code !== undefined && productData.short_code !== null ? String(productData.short_code) : "",
         product_name: productData.product_name || "",
-        category_id: productData.category_id?.toString() || "",
-        sub_category_id: productData.sub_category_id?.toString() || "",
-        brand_id: productData.brand_id?.toString() || "",
-        sale_unit_id: productData.sale_unit_id?.toString() || "",
-        barcode: productData.barcode || "",
-        public_image_id: productData.public_image_id || "",
+        category_id: productData.category_id !== undefined && productData.category_id !== null ? String(productData.category_id) : "",
+        sub_category_id: productData.sub_category_id !== undefined && productData.sub_category_id !== null ? String(productData.sub_category_id) : "",
+        brand_id: productData.brand_id !== undefined && productData.brand_id !== null ? String(productData.brand_id) : "",
+        sale_unit_id: productData.sale_unit_id !== undefined && productData.sale_unit_id !== null ? String(productData.sale_unit_id) : "",
+        barcode: productData.barcode !== undefined && productData.barcode !== null ? String(productData.barcode) : "",
+        public_image_id: productData.public_image_id !== undefined && productData.public_image_id !== null ? String(productData.public_image_id) : "",
         allow_stock_control: productData.allow_stock_control ?? false,
         lot_control: productData.lot_control ?? false,
         lots: [emptyLotWithoutControl, emptyLotWithLotControl],
@@ -398,7 +397,7 @@ export function EditProductBtn({ productId }: EditProductBtnProps) {
                     saleUnits={saleUnits || []}
                     selectedUnitId={formData.sale_unit_id}
                     lots={formData.lots}
-                    currentLotIndex={selectedLotIndex}
+                    currentLotIndex={selectedLotIndex ?? 0}
                     lotControl={formData.lot_control}
                   />
 

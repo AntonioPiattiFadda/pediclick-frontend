@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAppSelector } from "@/hooks/useUserData";
-import { createBrand, getBrands } from "@/service";
+import { createBrand, getBrands } from "@/service/brands";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";

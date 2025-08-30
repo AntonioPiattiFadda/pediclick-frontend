@@ -14,7 +14,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/useUserData";
-import { createCategory } from "@/service";
+import { createCategory } from "@/service/categories";
 import type { Category } from "@/types";
 import { Trash2 } from "lucide-react";
 

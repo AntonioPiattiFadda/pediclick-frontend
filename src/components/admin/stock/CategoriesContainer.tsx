@@ -6,13 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getCategories, getSubCategories } from "@/service";
+import { getCategories } from "@/service/categories";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { CategoriesTable } from "./CategoriesTable";
 import TableSkl from "./ui/tableSkl";
 import { useAppSelector } from "@/hooks/useUserData";
 import { SubCategoriesTable } from "./addEditProduct/SubCategoriesTable ";
+import { getSubCategories } from "@/service/subCategories";
 
 export const CategoriesContainer = () => {
   // const [searchTerm, setSearchTerm] = useState("");

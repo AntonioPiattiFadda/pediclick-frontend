@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { deleteProduct } from "@/service";
+import { deleteProduct } from "@/service/products";
 import type { Product } from "@/types";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
 import { EditProductBtn } from "./addEditProduct/EditProductBtn";
@@ -107,15 +107,14 @@ export const ProductsTable = ({
 
               <TableCell>{product.categories?.category_name || "-"}</TableCell>
               <TableCell>{product.sub_categories?.sub_category_name || "-"}</TableCell>
-              <TableCell>{product.providers?.provider_name || "-"}</TableCell>
               <TableCell>{product.brands?.brand_name || "-"}</TableCell>
-              <TableCell>{product.lot || "-"}</TableCell>
+              {/* <TableCell>{product.lots || "-"}</TableCell> */}
               <TableCell>{product.sale_units?.sale_unit_name || "-"}</TableCell>
               <TableCell>{product.barcode || "-"}</TableCell>
 
               
 
-              <TableCell className="text-center flex flex-col">
+              {/* <TableCell className="text-center flex flex-col">
                 {product.stock?.quantity}
                 <span className="text-sm text-muted-foreground">
                   {" "}
@@ -152,7 +151,7 @@ export const ProductsTable = ({
               </TableCell>
 
               <TableCell>{product.bulk || "-"}</TableCell>
-              <TableCell>{product.waste || "-"}</TableCell>
+              <TableCell>{product.waste || "-"}</TableCell> */}
             </TableRow>
           ))}
         </TableBody>
