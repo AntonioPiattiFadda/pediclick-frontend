@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAppSelector } from "@/hooks/useUserData";
-import { createSubCategory } from "@/service";
+import { createSubCategory } from "@/service/subCategories";
 import type { SubCategory } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";

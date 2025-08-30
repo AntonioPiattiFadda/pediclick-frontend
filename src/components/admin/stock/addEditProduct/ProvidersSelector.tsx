@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAppSelector } from "@/hooks/useUserData";
-import { createProvider } from "@/service";
+import { createProvider } from "@/service/providers";
 import type { Provider } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";

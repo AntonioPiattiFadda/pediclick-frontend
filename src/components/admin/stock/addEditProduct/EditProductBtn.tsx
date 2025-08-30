@@ -21,12 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  getCategories,
-  getProviders,
-  getSaleUnits,
-  getSubCategories,
-} from "@/service";
+
 import { useQuery } from "@tanstack/react-query";
 import { Edit } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -48,6 +43,10 @@ import { getProduct, updateProduct } from "@/service/products";
 import { emptyProduct, emptyLotWithoutControl, emptyLotWithLotControl } from "./emptyFormData";
 import PricesSelector from "./PricesSelector";
 import LotSelector from "./LotSelector";
+import { getCategories } from "@/service/categories";
+import { getSubCategories } from "@/service/subCategories";
+import { getProviders } from "@/service/providers";
+import { getSaleUnits } from "@/service/saleUnits";
 
 interface EditProductBtnProps {
   productId: number;

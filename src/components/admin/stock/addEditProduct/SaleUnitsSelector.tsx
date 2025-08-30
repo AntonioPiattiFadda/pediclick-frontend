@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAppSelector } from "@/hooks/useUserData";
-import { createSaleUnit  } from "@/service"; 
+import { createSaleUnit  } from "@/service/saleUnits"; 
 import { useMutation,  useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";

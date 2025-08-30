@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { deleteProduct } from "@/service";
+import { deleteProduct } from "@/service/products";
 import type { Product } from "@/types";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
 import { EditProductBtn } from "./addEditProduct/EditProductBtn";
