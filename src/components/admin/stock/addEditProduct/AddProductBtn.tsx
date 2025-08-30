@@ -38,57 +38,9 @@ import PricesSelector from "./PricesSelector";
 import { ProviderSelector } from "./ProvidersSelector";
 import { SaleUnitSelector } from "./SaleUnitsSelector";
 import { SubCategorySelector } from "./SubCategorySelector";
+import { emptyLotWithLotControl, emptyLotWithoutControl, emptyProduct } from "./emptyFormData";
 
-export const emptyLotWithoutControl = {
-  provider_id: "",
-  expiration_date: "",
-  expiration_date_notification: false,
-  lot: "NO CONTROL LOT",
-  lot_control: false,
-  stock: {
-    quantity: 0,
-    min: 0,
-    max: 0,
-  },
-  bulk: "",
-  waste: "",
-  prices: [{ price: "", quantity: "", type: "PRIMARY" }],
-};
 
-export const emptyLotWithLotControl = {
-  provider_id: "",
-  expiration_date: "",
-  expiration_date_notification: false,
-  lot: "Lote 1",
-  lot_control: true,
-  stock: {
-    quantity: 0,
-    min: 0,
-    max: 0,
-  },
-  bulk: "",
-  waste: "",
-  prices: [{ price: "", quantity: "", type: "PRIMARY" }],
-};
-
-export const emptyProduct = {
-  short_code: "",
-  product_name: "",
-  category_id: "",
-  sub_category_id: "",
-  brand_id: "",
-  sale_unit_id: "",
-  barcode: "",
-  public_image_id: "",
-
-  allow_stock_control: false,
-  lot_control: false,
-
-  lots: [
-    emptyLotWithoutControl,
-    emptyLotWithLotControl,
-  ] as (typeof emptyLotWithoutControl)[], // array vacío que contendrá lotes
-};
 
 export function AddProductBtn() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -346,7 +298,7 @@ export function AddProductBtn() {
                 saleUnits={saleUnits || []}
                 selectedUnitId={formData.sale_unit_id}
                 lots={formData.lots}
-                currentLotIndex={selectedLotIndex}
+                currentLotIndex={selectedLotIndex ?? 0}
                 lotControl={formData.lot_control}
               />
 
