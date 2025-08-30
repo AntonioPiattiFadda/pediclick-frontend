@@ -4,22 +4,16 @@ import { Copy, Trash2 } from "lucide-react";
 import { useState } from "react";
 // Este es el type
 
-//   price: Number(price.price) || 0,
-//   type: price.type,
-//   quantity: Number(price.quantity) || 0,
-//   discount_percent: price.discount_percent
-//     ? Number(price.discount_percent)
-//     : 0,
 
 const CopyPriceSelector = ({
   selectedLotIndex,
-  setSelectedLotIndex,
+  onSelectLotIndex,
   lots,
   currentLotIndex,
   copyPricesFromLot,
 }: {
   selectedLotIndex: any;
-  setSelectedLotIndex: (index: number) => void;
+  onSelectLotIndex: any;
   lots: any[];
   currentLotIndex: number;
   copyPricesFromLot: () => void;
@@ -32,7 +26,7 @@ const CopyPriceSelector = ({
       <div className="flex items-center gap-2">
         <select
           value={selectedLotIndex}
-          onChange={(e) => setSelectedLotIndex(e.target.value)}
+          onChange={(e) => onSelectLotIndex(Number(e.target.value))}
           className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
         >
           <option value="">Seleccionar lote...</option>
@@ -247,10 +241,10 @@ const PricesSelector = ({
       <div className="border rounded-lg p-4 pt-6 relative">
         {lotControl && (
           <CopyPriceSelector
-            selectedLotIndex={selectedLotIndex}
-            setSelectedLotIndex={setSelectedLotIndex}
-            lots={lots}
-            currentLotIndex={currentLotIndex}
+          selectedLotIndex={selectedLotIndex}
+          lots={lots}
+          currentLotIndex={currentLotIndex}
+          onSelectLotIndex={setSelectedLotIndex}
             copyPricesFromLot={copyPricesFromLot}
           />
         )}

@@ -56,7 +56,7 @@ const StoresSelector = () => {
     <>
       {userStores.length === 0 && <NoStoreModal />}
       <Select
-        onValueChange={setSelectedStoreId}
+        onValueChange={(value) => setSelectedStoreId(value ? Number(value) : null)}
         value={selectedStoreId ? String(selectedStoreId) : ""}
       >
         <SelectTrigger className="w-[280px] relative">
