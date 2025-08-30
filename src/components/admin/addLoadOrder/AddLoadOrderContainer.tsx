@@ -10,29 +10,7 @@ import {
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 
 export const AddLoadOrderContainer = () => {
-  // const [searchTerm, setSearchTerm] = useState("");
-  // const [selectedCategory, setSelectedCategory] = useState("all");
-  // const [selectedStatus, setSelectedStatus] = useState("all");
-  //   const { selectedStoreId } = useUserStoresContext();
-
-  //   const { role } = useAppSelector((state) => state.user);
-
-  //   const {
-  //     data: dbLoadOrders,
-  //     isLoading,
-  //     isError,
-  //   } = useQuery({
-  //     queryKey: ["load-orders"],
-  //     queryFn: async () => {
-  //       const response = await getAllLoadOrdersMock(role);
-  //       return response.dbLoadOrders;
-  //     },
-  //     enabled: selectedStoreId !== null,
-  //   });
-
-  //   if (isLoading) {
-  //     return <TableSkl />;
-  //   }
+ 
 
   return (
     <div className="space-y-6">
@@ -44,7 +22,7 @@ export const AddLoadOrderContainer = () => {
               <CardDescription>Gestiona tus personal</CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
-                <Button>Agregar productos</Button>
+                <Button>Agregar ELEMENTO</Button>
             </div>
           </div>
         </CardHeader>
