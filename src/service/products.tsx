@@ -1,5 +1,5 @@
 import { adaptProductsForClient } from "@/adapters/products";
-import type { Product } from "@/types";
+import type { Product, ProductLot } from "@/types";
 import { supabase } from ".";
 
 export const getAllProducts = async () => {
@@ -76,4 +76,65 @@ export const updateProduct = async (
   }
 
   return { data, error };
+};
+
+export const createProduct = async (product: Product) => {
+  const { lots, ...productWithoutLots } = product;
+
+  console.log("Creating product with lots:", productWithoutLots);
+
+  const { data: newLots, error: lotsError } = await supabase
+    .from("lots")
+    .insert(lots)
+    .select();
+
+  if (lotsError) {
+    console.error("lotsError", lotsError);
+    throw new Error("Error al crear los lotes");
+  }
+
+  const { data: newProduct, error: productError } = await supabase
+    .from("products")
+    .insert({
+      ...productWithoutLots,
+    })
+    .select()
+    .single();
+
+  if (productError) {
+    console.error("productError", productError);
+    throw new Error("Error al crear el producto");
+  }
+
+  const productLots = newLots.map((lot: ProductLot) => ({
+    product_id: newProduct.product_id,
+    lot_id: lot.lot_id,
+  }));
+
+  const { error: productLotsError } = await supabase
+    .from("product_lots")
+    .insert(productLots);
+
+  if (productLotsError) {
+    console.error("productLotsError", productLotsError);
+    throw new Error("Error al crear relaciones producto-lote");
+  }
+
+  return {
+    ...newProduct,
+    lots: newLots,
+  };
+};
+
+export const deleteProduct = async (productId: string | number) => {
+  const { error } = await supabase
+    .from("products")
+    .update({ deleted_at: new Date() })
+    .eq("product_id", productId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { success: true };
 };

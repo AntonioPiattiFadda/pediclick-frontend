@@ -171,6 +171,15 @@ export interface Product {
   };
 }
 
+export interface ProductLot {
+  lot_id: number;
+  product_id: number;
+  quantity: number;
+  expiration_date: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface WebsitePreference {
   id: string;
   theme?: string;
