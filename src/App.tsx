@@ -105,7 +105,6 @@ const App = () => {
                         path="/forgot-password"
                         element={<ForgotPassword />}
                       />
-                      <Route path="/register" element={<ProfileRegister />} />
                     </Route>
 
                     <Route element={<RequireAuth />}>
