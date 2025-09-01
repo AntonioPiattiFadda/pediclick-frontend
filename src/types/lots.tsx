@@ -1,5 +1,10 @@
 import type { LotContainer } from "./lotContainers";
 
+type Location = {
+  id: number;
+  name: string;
+};
+
 export type Price = {
   price: string;
   quantity: string;
@@ -8,6 +13,7 @@ export type Price = {
 };
 
 export type Stock = {
+  lot_id: number;
   //It will be moving across al owner worlds
   quantity: number;
   min: number;
@@ -18,7 +24,7 @@ export type Stock = {
   stock_type: "STORE" | "WASTE" | "NOT ASSIGNED" | "SOLD" | "";
 
   //See how to represent the location, maybe by the id of each world
-  location: string | null;
+  location: Location | null;
 };
 
 export type StockMovement = {
@@ -27,6 +33,8 @@ export type StockMovement = {
   from: string | null;
   to: string | null;
 } | null;
+
+//Crear tabla intermedia entre producto y lote
 
 export type BaseLot = {
   lot: string | number;
@@ -48,6 +56,7 @@ export type BaseLot = {
     quantity: number | null;
     created_at: string | null;
     should_notify_owner: boolean;
+    location: Location | null;
   };
 
   providers?: {
