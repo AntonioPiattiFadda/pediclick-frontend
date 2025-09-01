@@ -8,6 +8,7 @@ import { AuthLayout } from "./AuthLayout";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { signUp } from "@/service/auth";
 import { toast } from "sonner";
+import SignUpSuccessMessage from "./SignUpSuccessMessage";
 
 export function SignUp() {
   const [formData, setFormData] = useState({
@@ -82,11 +83,15 @@ export function SignUp() {
 
   return (
     <AuthLayout
-      title="Crear Cuenta"
-      description="Completa los datos para crear tu nueva cuenta"
+      title={signUpSuccess ? "¡Cuenta creada con éxito! 🎉" : "Crear Cuenta"}
+      description={
+        signUpSuccess
+          ? "Revisa tu correo para activar tu cuenta"
+          : "Completa los datos para crear tu nueva cuenta"
+      }
     >
       {signUpSuccess ? (
-        <h1>Cuenta creada exitosamente</h1>
+        <SignUpSuccessMessage email={formData.email} />
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
