@@ -15,7 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import TableSkl from "../stock/ui/tableSkl";
-import { ShortProductSelector } from "./ShortProductSelector";
+import { ProductSelector } from "../shared/ProductSelector";
 import { emptyLoadOrder } from "./emptyFormData";
 
 export function AddLoadOrderBtn() {
@@ -45,6 +45,8 @@ export function AddLoadOrderBtn() {
     return <TableSkl />;
   }
 
+  
+
   console.log(loadOrderData);
 
   //   Formulario que llena todo
@@ -68,14 +70,14 @@ export function AddLoadOrderBtn() {
           </DialogDescription>
         </DialogHeader>
         <div>
-          <ShortProductSelector
+          <ProductSelector
             products={products}
             isLoading={false}
-            value={loadOrderData.lot[0].product_id}
+            value={loadOrderData.lots[0].product_id}
             onChange={(id) =>
               setLoadOrderData({
                 ...loadOrderData,
-                lot: [{ ...loadOrderData.lot[0], product_id: id }],
+                lots: [{ ...loadOrderData.lots[0], product_id: id }],
               })
             }
           />

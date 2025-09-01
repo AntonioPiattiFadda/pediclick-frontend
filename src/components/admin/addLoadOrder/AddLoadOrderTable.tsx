@@ -1,31 +1,46 @@
 import {
-    Table,
-    TableHead,
-    TableHeader,
-    TableRow
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
+import type { emptyLoadOrder } from "./emptyFormData";
 // import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
 // import { ROLES } from "./RoleInfoPopover";
 
 // interface TeamMemberTableProps {
 //   loadOrders: LoadOrder[];
 // }
+type AddLoadOrderTableProps = {
+  formData: typeof emptyLoadOrder;
+};
 
-export const AddLoadOrderTable = () => {
-
+export const AddLoadOrderTable = ({ formData }: AddLoadOrderTableProps) => {
   return (
     <div className="rounded-md">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Acciones</TableHead>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Email</TableHead>
-
-            <TableHead>Rol</TableHead>
+            <TableHead>Proveedor</TableHead>
+            <TableHead>Transportista</TableHead>
+            <TableHead>Número de factura</TableHead>
+            <TableHead>Lote</TableHead>
             <TableHead>Punto de venta</TableHead>
           </TableRow>
         </TableHeader>
+        <TableBody>
+          {formData.lots.map((lot, index) => (
+            <TableRow key={index}>
+              <TableCell>{formData.provider_id}</TableCell>
+              <TableCell>{formData.transporter_data.name}</TableCell>
+              <TableCell>{formData.invoice_number}</TableCell>
+              <TableCell>{lot.lot_id}</TableCell>
+              <TableCell>{formData.assigned_to}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
         {/* <TableBody>
           {loadOrders.length > 0 ? (
             loadOrders.map((member) => (
