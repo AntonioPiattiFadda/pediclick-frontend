@@ -40,7 +40,7 @@ import { createProduct } from "@/service/products";
 import { getSaleUnits } from "@/service/saleUnits";
 
 
-export function AddProductBtn() {
+export function AddProductBtn({shortAddBtn = false}: {shortAddBtn?: boolean}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tab, setTab] = useState("info");
   const [formData, setFormData] = useState(emptyProduct);
@@ -169,6 +169,7 @@ export function AddProductBtn() {
         </DialogHeader>
 
         <Tabs value={tab} onValueChange={setTab} className="w-full">
+          {!shortAddBtn && (
           <TabsList>
             <TabsTrigger value="info">Información</TabsTrigger>
             <TabsTrigger value="prices">Stock / Lotes</TabsTrigger>
@@ -178,6 +179,7 @@ export function AddProductBtn() {
 
             {/* <TabsTrigger value="seo">SEO</TabsTrigger> */}
           </TabsList>
+          )}
 
           <TabsContent value="info" className="space-y-4">
             <Label htmlFor="short_code">Código Corto</Label>

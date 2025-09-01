@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
@@ -8,6 +7,7 @@ import {
 } from "@/components/ui/card";
 // import TableSkl from "../sellPoints/ui/tableSkl";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
+import { AddLoadOrderBtn } from "./AddLoadOrderBtn";
 
 export const AddLoadOrderContainer = () => {
  
@@ -22,7 +22,7 @@ export const AddLoadOrderContainer = () => {
               <CardDescription>Gestiona tus personal</CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
-                <Button>Agregar ELEMENTO</Button>
+                <AddLoadOrderBtn />
             </div>
           </div>
         </CardHeader>

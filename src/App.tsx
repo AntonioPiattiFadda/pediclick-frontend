@@ -26,7 +26,6 @@ import Dashboard from "./pages/admin/Dashboard";
 import Stores from "./pages/admin/Stores";
 import TeamMembers from "./pages/admin/TeamMembers";
 import { store } from "./stores/store";
-import RolesAuth from "./components/admin/auth/rolesAuth";
 import LoadOrders from "./pages/admin/LoadOrders";
 import NewLoadOrders from "./pages/admin/NewLoadOrder";
 
