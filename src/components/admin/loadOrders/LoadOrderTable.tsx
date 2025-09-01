@@ -6,11 +6,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useUserStoresContext } from "@/contexts/UserStoresContext";
-import type { LoadOrder } from "@/types";
 // import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
 // import { ROLES } from "./RoleInfoPopover";
 import { deleteTeamMember } from "@/service/profiles";
+import type { LoadOrder } from "@/types/loadOrders";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
 
 interface TeamMemberTableProps {
@@ -18,7 +17,7 @@ interface TeamMemberTableProps {
 }
 
 export const LoadOrderTable = ({ loadOrders }: TeamMemberTableProps) => {
-  const { userStores } = useUserStoresContext();
+  // const { userStores } = useUserStoresContext();
 
   return (
     <div className="rounded-md">
@@ -36,13 +35,13 @@ export const LoadOrderTable = ({ loadOrders }: TeamMemberTableProps) => {
         <TableBody>
           {loadOrders.length > 0 ? (
             loadOrders.map((member) => ( 
-              <TableRow key={member.id}>
+              <TableRow key={member.load_order_id}>
                 <TableCell>
                   {" "}
                   {/* <EditTeamMemberBtn id={member.id} />{" "} */}
                   <DeleteTableElementPopUp
-                    elementId={member.id}
-                    elementName={member.full_name}
+                    elementId={member.load_order_id!}
+                    elementName={member.load_order_number}
                     deleteFn={async (id: string | number) => {
                       await deleteTeamMember(String(id));
                     }}
@@ -77,18 +76,18 @@ export const LoadOrderTable = ({ loadOrders }: TeamMemberTableProps) => {
                     </div>
                   </div>
                 </TableCell> */}
-                <TableCell>{member.full_name}</TableCell>
-                <TableCell>{member.email}</TableCell>
+                {/* <TableCell>{member.full_name}</TableCell>
+                <TableCell>{member.email}</TableCell> */}
                 {/* <TableCell>
                   {ROLES.find((role) => role.value === member.role)?.label}
                 </TableCell> */}
-                <TableCell>
+                {/* <TableCell>
                   {
                     userStores.find(
                       (store) => store.store_id === member.store_id
                     )?.store_name
                   }
-                </TableCell>
+                </TableCell> */}
               </TableRow>
             ))
           ) : (
