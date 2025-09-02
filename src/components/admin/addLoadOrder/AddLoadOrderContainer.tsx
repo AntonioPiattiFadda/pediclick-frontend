@@ -28,8 +28,6 @@ export const AddLoadOrderContainer = () => {
     },
   });
 
-  console.log(formData);
-
   return (
     <div className="space-y-6">
       <Card>

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,47 +9,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { getAllProducts } from "@/service/products";
-import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import TableSkl from "../stock/ui/tableSkl";
+import { ProductSelector } from "../shared/ProductSelector";
 import { emptyLoadOrder } from "./emptyFormData";
-import { ProductSelector } from "../shared/productSelector";
 
 export function AddLoadOrderBtn() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadOrderData, setLoadOrderData] = useState(emptyLoadOrder);
-
-  const {
-    data: products = [],
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["products"],
-    queryFn: async () => {
-      const response = await getAllProducts();
-
-      return response.products.map((product: any) => ({
-        ...product,
-      }));
-    },
-  });
-
-  if (isLoading) {
-    return <TableSkl />;
-  }
-
-  if (isError) {
-    return <TableSkl />;
-  }
-
-  
-
-  console.log(loadOrderData);
-
-  //   Formulario que llena todo
-  //     -eSTADOP VaultIcon
 
   // TODO: FORMULARIO DE REMITO (LOTE, ID PRODUCTO, PROVEEDOR ID ,)
 
@@ -71,13 +37,12 @@ export function AddLoadOrderBtn() {
         </DialogHeader>
         <div>
           <ProductSelector
-            products={products}
-            isLoading={false}
             value={loadOrderData.lots[0].product_id}
-            onChange={(id) =>
+            onChange={(lot) =>
               setLoadOrderData({
                 ...loadOrderData,
-                lots: [{ ...loadOrderData.lots[0], product_id: id }],
+                //Esto recibve en realidad un lote y lo carga en los lotes antesriores del remito
+                lots: [...loadOrderData.lots, lot],
               })
             }
           />

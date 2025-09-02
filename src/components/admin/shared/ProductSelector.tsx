@@ -17,13 +17,13 @@ import { AddProductBtn } from "../stock/addEditProduct/AddProductBtn";
 import { Input } from "@/components/ui/input";
 import { getProductsByName, getProductsByShortCode } from "@/service/products";
 import { useQuery } from "@tanstack/react-query";
-
+import type { Lot } from "@/types/lots";
 
 interface ProductSelectProps {
   products: Product[]; // se conserva para no romper, no se usa acá
   isLoading: boolean; // se conserva para no romper, no se usa acá
   value: string; // product_id seleccionado
-  onChange: (id: string) => void;
+  onChange: (lot: Lot) => void;
 }
 
 function useDebounce<T>(value: T, delay = 500) {
@@ -35,12 +35,7 @@ function useDebounce<T>(value: T, delay = 500) {
   return debounced;
 }
 
-export function ProductSelector({
-  products: _unused,
-  isLoading: _unusedLoading,
-  value,
-  onChange,
-}: ProductSelectProps) {
+export function ProductSelector({ value, onChange }: ProductSelectProps) {
   const [open, setOpen] = useState(false);
   const [codeQ, setCodeQ] = useState("");
   const [nameQ, setNameQ] = useState("");
@@ -85,8 +80,8 @@ export function ProductSelector({
   const codeSelectValue = codeHasValue ? value : "";
   const nameSelectValue = nameHasValue ? value : "";
 
-console.log(codeData, nameData);
-console.log(nameQ)
+  console.log(codeData, nameData);
+  console.log(nameQ);
 
   return (
     <div className="w-full space-y-3">
