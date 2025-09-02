@@ -18,7 +18,6 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { emptyLot } from "./emptyFormData";
-import CheckBoxesSelector from "./checkBoxesSelector";
 
 export function AddLotBtn() {
   const [isShortCreation, setIsShortCreation] = useState(false);
@@ -97,14 +96,14 @@ export function AddLotBtn() {
           </DialogDescription>
         </DialogHeader>
 
-        <CheckBoxesSelector
+        {/* <CheckBoxesSelector
           options={[
             { label: "Corto", value: true },
             { label: "Rapido", value: false },
           ]}
           selectedOption={}
           onSelectOption={(value) => setIsShortCreation(value)}
-        />
+        /> */}
 
         <div className="flex gap-4">
           <Label htmlFor="lot_number">Nro de Lote</Label>

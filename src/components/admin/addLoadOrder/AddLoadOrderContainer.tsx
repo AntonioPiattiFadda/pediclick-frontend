@@ -28,6 +28,8 @@ export const AddLoadOrderContainer = () => {
     },
   });
 
+  // NOTE Falta asignTo y receptor_id
+
   return (
     <div className="space-y-6">
       <Card>

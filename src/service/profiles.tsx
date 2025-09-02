@@ -17,7 +17,6 @@ export const insertNewAdminUser = async (email: string, userUid: string) => {
     .select()
     .single();
 
-
   if (error) {
     return { error };
   }
@@ -157,7 +156,7 @@ export const getUserTeamMembers = async (storeId: number) => {
   const { data: teamMembers, error } = await supabase
     .from("users")
     .select("*")
-    .eq("parent_user_id", businessOwnerId)
+    .eq("business_owner_id", businessOwnerId)
     .is("deleted_at", null);
 
   if (error) {

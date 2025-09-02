@@ -34,7 +34,7 @@ export const LoadOrderTable = ({ loadOrders }: TeamMemberTableProps) => {
         </TableHeader>
         <TableBody>
           {loadOrders.length > 0 ? (
-            loadOrders.map((member) => ( 
+            loadOrders.map((member) => (
               <TableRow key={member.load_order_id}>
                 <TableCell>
                   {" "}

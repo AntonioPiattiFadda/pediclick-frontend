@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { emptyLoadOrder } from "./emptyFormData";
-import { AddLoadOrderBtn } from "./AddloadOrderElementBtn";
+import { AddLotBtn } from "../shared/addLotBtn";
 // import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
 // import { ROLES } from "./RoleInfoPopover";
 
@@ -42,7 +42,7 @@ export const AddLoadOrderTable = ({ formData }: AddLoadOrderTableProps) => {
             </TableRow>
           ))}
           <TableRow>
-            <AddLoadOrderBtn />
+            <AddLotBtn />
           </TableRow>
         </TableBody>
         {/* <TableBody>

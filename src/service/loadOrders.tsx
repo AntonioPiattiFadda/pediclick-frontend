@@ -22,9 +22,9 @@ export const getAllLoadOrdersMock = async (userRole: string) => {
   const { data: dbLoadOrders, error } = await supabase
     .from("load_orders")
     .select("*")
-    .eq("business_owner_id", businessOwnerId)
-    
-console.log(dbLoadOrders)
+    .eq("business_owner_id", businessOwnerId);
+
+  console.log(dbLoadOrders);
 
   if (error) {
     throw new Error(error.message);

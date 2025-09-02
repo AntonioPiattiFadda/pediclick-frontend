@@ -15,7 +15,6 @@ import { ROLES } from "../team-members/RoleInfoPopover";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Header = () => {
-
   const dispatch = useDispatch();
 
   const signOutMutation = useMutation({
@@ -53,11 +52,12 @@ export const Header = () => {
   }
 
   return (
-    <header 
-    // style={{
-    //   borderBottom: `1px solid ${STORES_COLORS[selectedStoreIndex % STORES_COLORS.length]}`,
-    // }}
-     className="border-b border-border bg-card shadow-sm">
+    <header
+      // style={{
+      //   borderBottom: `1px solid ${STORES_COLORS[selectedStoreIndex % STORES_COLORS.length]}`,
+      // }}
+      className="border-b border-border bg-card shadow-sm"
+    >
       <div className="flex items-center justify-between px-4 md:px-6 py-4">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="md:hidden" />

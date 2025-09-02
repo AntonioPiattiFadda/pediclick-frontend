@@ -67,7 +67,7 @@ export function EditTeamMemberBtn({ id }: { id: string }) {
       const result = await getTeamMemberDataById(id);
       return result.data as UserProfile | null;
     },
-    enabled: !!id, 
+    enabled: !!id,
   });
 
   // ✅ sincronizamos formData con el resultado de la query
@@ -121,9 +121,9 @@ export function EditTeamMemberBtn({ id }: { id: string }) {
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogTrigger asChild>
-           <button >
-              <Edit className="mr-2 h-4 w-4" />
-            </button>
+        <button>
+          <Edit className="mr-2 h-4 w-4" />
+        </button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
         <DialogHeader>
@@ -175,9 +175,7 @@ export function EditTeamMemberBtn({ id }: { id: string }) {
               {/* Password */}
               <div className="grid gap-2 relative">
                 <div className="flex gap-4">
-                  <Label htmlFor="password">
-                    Contraseña *
-                  </Label>
+                  <Label htmlFor="password">Contraseña *</Label>
                   <div className="w-5 h-5">
                     <PasswordInfoPopover />
                   </div>
@@ -268,7 +266,9 @@ export function EditTeamMemberBtn({ id }: { id: string }) {
 
               {/* Job Position */}
               <div className="grid gap-2 relative">
-                <Label htmlFor="job_position">Puesto de trabajo (opcional)</Label>
+                <Label htmlFor="job_position">
+                  Puesto de trabajo (opcional)
+                </Label>
                 <Input
                   id="job_position"
                   placeholder="Descripción del puesto"
