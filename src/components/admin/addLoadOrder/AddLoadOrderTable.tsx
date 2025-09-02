@@ -7,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { emptyLoadOrder } from "./emptyFormData";
+import { AddLoadOrderBtn } from "./AddLoadOrderBtn";
 // import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
 // import { ROLES } from "./RoleInfoPopover";
 
@@ -23,7 +24,7 @@ export const AddLoadOrderTable = ({ formData }: AddLoadOrderTableProps) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Proveedor</TableHead>
+            <TableHead></TableHead>
             <TableHead>Transportista</TableHead>
             <TableHead>Número de factura</TableHead>
             <TableHead>Lote</TableHead>
@@ -40,6 +41,9 @@ export const AddLoadOrderTable = ({ formData }: AddLoadOrderTableProps) => {
               <TableCell>{formData.assigned_to}</TableCell>
             </TableRow>
           ))}
+          <TableRow>
+            <AddLoadOrderBtn />
+          </TableRow>
         </TableBody>
         {/* <TableBody>
           {loadOrders.length > 0 ? (

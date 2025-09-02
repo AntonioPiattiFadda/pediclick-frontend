@@ -15,8 +15,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import TableSkl from "../stock/ui/tableSkl";
-import { ProductSelector } from "../shared/ProductSelector";
 import { emptyLoadOrder } from "./emptyFormData";
+import { ProductSelector } from "../shared/productSelector";
 
 export function AddLoadOrderBtn() {
   const [isModalOpen, setIsModalOpen] = useState(false);

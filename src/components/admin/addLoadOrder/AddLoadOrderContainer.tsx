@@ -13,7 +13,6 @@ import { getProviders } from "@/service/providers";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ProviderSelector } from "../stock/addEditProduct/ProvidersSelector";
-import { AddLoadOrderBtn } from "./AddLoadOrderBtn";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 import { emptyLoadOrder } from "./emptyFormData";
 
@@ -40,9 +39,9 @@ export const AddLoadOrderContainer = () => {
               <CardTitle>Remito</CardTitle>
               <CardDescription>Gestiona tu remito</CardDescription>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2">
+            {/* <div className="flex flex-col sm:flex-row gap-2">
               <AddLoadOrderBtn />
-            </div>
+            </div> */}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -83,7 +82,13 @@ export const AddLoadOrderContainer = () => {
                 type="string"
                 value={formData.transporter_data.delivery_company}
                 onChange={(e) =>
-                  setFormData({ ...formData, delivery_date: e.target.value })
+                  setFormData({
+                    ...formData,
+                    transporter_data: {
+                      ...formData.transporter_data,
+                      delivery_company: e.target.value,
+                    },
+                  })
                 }
               />
             </div>
@@ -94,7 +99,13 @@ export const AddLoadOrderContainer = () => {
                 type="string"
                 value={formData.transporter_data.name}
                 onChange={(e) =>
-                  setFormData({ ...formData, delivery_date: e.target.value })
+                  setFormData({
+                    ...formData,
+                    transporter_data: {
+                      ...formData.transporter_data,
+                      name: e.target.value,
+                    },
+                  })
                 }
               />
             </div>
@@ -105,7 +116,13 @@ export const AddLoadOrderContainer = () => {
                 type="string"
                 value={formData.transporter_data.licence_plate}
                 onChange={(e) =>
-                  setFormData({ ...formData, delivery_date: e.target.value })
+                  setFormData({
+                    ...formData,
+                    transporter_data: {
+                      ...formData.transporter_data,
+                      licence_plate: e.target.value,
+                    },
+                  })
                 }
               />
             </div>
@@ -117,7 +134,7 @@ export const AddLoadOrderContainer = () => {
               type="number"
               value={formData.delivery_price}
               onChange={(e) =>
-                setFormData({ ...formData, delivery_date: e.target.value })
+                setFormData({ ...formData, delivery_price: e.target.value })
               }
             />
           </div>
@@ -128,7 +145,7 @@ export const AddLoadOrderContainer = () => {
               type="number"
               value={formData.invoice_number}
               onChange={(e) =>
-                setFormData({ ...formData, delivery_date: e.target.value })
+                setFormData({ ...formData, invoice_number: e.target.value })
               }
             />
           </div>

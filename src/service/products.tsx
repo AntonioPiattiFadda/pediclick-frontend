@@ -1,6 +1,6 @@
 import { adaptProductsForClient } from "@/adapters/products";
-import type { Product, ProductLot } from "@/types";
 import { supabase } from ".";
+import type { Product, ProductLot } from "@/types/products";
 
 export const getAllProducts = async () => {
   const { data: dbProducts, error } = await supabase
@@ -138,3 +138,47 @@ export const deleteProduct = async (productId: string | number) => {
 
   return { success: true };
 };
+
+export const getProductsByShortCode = async (shortCode: string) => {
+  const { data: dbProducts, error } = await supabase
+    .from("products")
+    .select(`
+      *,
+      public_images(public_image_src),
+      categories(category_name),
+      sub_categories(sub_category_name),
+      brands(brand_name),
+      sale_units(sale_unit_name),
+      product_lots ( lots(*) )
+    `)
+    // .is("deleted_at", null) // descomenta si usás borrado lógico
+    .ilike("short_code", `%${shortCode}%`)
+    .order("product_name", { ascending: true })
+
+  if (error) throw new Error(error.message)
+
+  const products = adaptProductsForClient(dbProducts || [])
+  return { products, error: null }
+}
+
+export const getProductsByName = async (name: string) => {
+  const { data: dbProducts, error } = await supabase
+    .from("products")
+    .select(`
+      *,
+      public_images(public_image_src),
+      categories(category_name),
+      sub_categories(sub_category_name),
+      brands(brand_name),
+      sale_units(sale_unit_name),
+      product_lots ( lots(*) )
+    `)
+    // .is("deleted_at", null)
+    .ilike("product_name", `%${name}%`)
+    .order("product_name", { ascending: true })
+
+  if (error) throw new Error(error.message)
+
+  const products = adaptProductsForClient(dbProducts || [])
+  return { products, error: null }
+}

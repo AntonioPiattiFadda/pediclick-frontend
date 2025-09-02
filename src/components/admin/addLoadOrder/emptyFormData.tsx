@@ -11,7 +11,7 @@ export const emptyLoadOrder = {
   },
   delivery_price: "",
   assigned_to: "",
-  invoice_number: 0,
+  invoice_number: "",
   //Aun no darle bola
   lots: [{
     lot_id: "",
