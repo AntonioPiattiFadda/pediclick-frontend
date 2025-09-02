@@ -7,11 +7,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useUserStoresContext } from "@/contexts/UserStoresContext";
-import type { UserProfile } from "@/types";
 import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
 import { ROLES } from "./RoleInfoPopover";
 import { deleteTeamMember } from "@/service/profiles";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
+import { AddLotBtn } from "../shared/addLotBtn";
+import type { UserProfile } from "@/types/users";
 
 interface TeamMemberTableProps {
   teamMembers: UserProfile[];
@@ -22,6 +23,7 @@ export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
 
   return (
     <div className="rounded-md">
+      <AddLotBtn />
       <Table>
         <TableHeader>
           <TableRow>

@@ -37,16 +37,26 @@ export type StockMovement = {
 //Crear tabla intermedia entre producto y lote
 
 export type BaseLot = {
-  lot: string | number;
+  //El lote es siempre un numero?
+  lot_number: string | number;
 
   expiration_date: string | null;
   expiration_date_notification: boolean;
-  bulk: string;
 
   //Vendra del remito porque el remito es quien crea los lotes.
   provider_id: number | null;
 
+  sale_units_equivalence: {
+    minor: {
+      quantity_in_base: 0;
+    };
+    mayor: {
+      quantity_in_base: 0;
+    };
+  };
+
   stock: Stock[] | null;
+  is_sold_out: boolean;
 
   stock_movement: StockMovement[] | null;
 
