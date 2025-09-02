@@ -5,6 +5,7 @@ export interface Product {
   business_owner_id: string;
   product_id?: number;
   product_name: string;
+  //I will overwrite the previous only if previous stock is finished
   short_code: number | null;
   product_description: string | null;
   category_id: number | null;

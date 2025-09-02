@@ -7,17 +7,17 @@ export const getAllProducts = async () => {
     .from("products")
     .select(
       `
-      *,
-      public_images(public_image_src),
-      categories(category_name),
-      sub_categories(sub_category_name),
-      brands(brand_name),
-      providers(provider_name),
-      sale_units(sale_unit_name),
-      product_lots (
-        lots (*)
+    *,
+    public_images(public_image_src),
+    categories(category_name),
+    sub_categories(sub_category_name),
+    brands(brand_name),
+    providers(provider_name),
+    sale_units(sale_unit_name),
+    product_lots (
+      lots (*)
       )
-    `
+      `
     )
     .is("deleted_at", null);
 
@@ -43,8 +43,8 @@ export const getProduct = async (productId: number) => {
       sale_units(sale_unit_name),
       product_lots (
         lots (*)
-      )
-    `
+        )
+        `
     )
     .eq("product_id", productId)
     .single();
