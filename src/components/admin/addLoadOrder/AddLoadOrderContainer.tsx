@@ -73,6 +73,17 @@ export const AddLoadOrderContainer = () => {
               setFormData({ ...formData, delivery_date: e.target.value })
             }
           />
+          <div className="flex gap-2 items-center">
+            <Label htmlFor="expiration_date">Empleado</Label>
+          </div>
+          <Input
+            placeholder=""
+            type="string"
+            value={formData.receptor_id}
+            onChange={(e) =>
+              setFormData({ ...formData, receptor_id: e.target.value })
+            }
+          />
           <Label className="mt-2">Transportista</Label>
           <div className="grid grid-cols-3 gap-4 mt-3">
             <div>
