@@ -44,102 +44,44 @@ export const AddLoadOrderContainer = () => {
             </div> */}
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2 items-center">
+        <CardContent className="space-y-4 grid grid-cols-4 gap-4">
+          <div className="flex flex-col gap-2 ">
             <Label htmlFor="expiration_date">Número de remito</Label>
-          </div>
-          <Input
-            type="number"
-            name="load_order_number"
-            value={formData.load_order_number}
-            onChange={(e) =>
-              setFormData({ ...formData, load_order_number: e.target.value })
-            }
-          />
-          <ProviderSelector
-            providers={providers || []}
-            isLoading={isLoadingProviders}
-            value={formData.provider_id}
-            onChange={(id) => ({ provider_id: id })}
-          />
-          <div className="flex gap-2 items-center">
-            <Label htmlFor="expiration_date">Fecha de entrega</Label>
-          </div>
-          <Input
-            placeholder="Fecha de entrega"
-            type="date"
-            value={formData.delivery_date}
-            onChange={(e) =>
-              setFormData({ ...formData, delivery_date: e.target.value })
-            }
-          />
-          <Label className="mt-2">Transportista</Label>
-          <div className="grid grid-cols-3 gap-4 mt-3">
-            <div>
-              <Label htmlFor="company">Compania</Label>
-              <Input
-                id="company"
-                type="string"
-                value={formData.transporter_data.delivery_company}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    transporter_data: {
-                      ...formData.transporter_data,
-                      delivery_company: e.target.value,
-                    },
-                  })
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="min">Nombre</Label>
-              <Input
-                id="min"
-                type="string"
-                value={formData.transporter_data.name}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    transporter_data: {
-                      ...formData.transporter_data,
-                      name: e.target.value,
-                    },
-                  })
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="max">Patente</Label>
-              <Input
-                id="max"
-                type="string"
-                value={formData.transporter_data.licence_plate}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    transporter_data: {
-                      ...formData.transporter_data,
-                      licence_plate: e.target.value,
-                    },
-                  })
-                }
-              />
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="max">Precio del transporte</Label>
             <Input
-              id="max"
               type="number"
-              value={formData.delivery_price}
+              name="load_order_number"
+              value={formData.load_order_number}
               onChange={(e) =>
-                setFormData({ ...formData, delivery_price: e.target.value })
+                setFormData({ ...formData, load_order_number: e.target.value })
               }
             />
           </div>
-          <div>
-            <Label htmlFor="max">Número de factura</Label>
+
+          <div className="flex flex-col gap-2 ">
+            <Label htmlFor="expiration_date">Fecha de entrega</Label>
+
+            <Input
+              placeholder="Fecha de entrega"
+              type="date"
+              value={formData.delivery_date}
+              onChange={(e) =>
+                setFormData({ ...formData, delivery_date: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="flex flex-col gap-2 -mt-2">
+            <Label className="mt-2">Proveedor</Label>
+            <ProviderSelector
+              providers={providers || []}
+              isLoading={isLoadingProviders}
+              value={formData.provider_id}
+              onChange={(id) => ({ provider_id: id })}
+            />
+          </div>
+
+          <div className="flex flex-col gap-2 ">
+            <Label htmlFor="max">Número de factura AFIP</Label>
             <Input
               id="max"
               type="number"
@@ -149,7 +91,102 @@ export const AddLoadOrderContainer = () => {
               }
             />
           </div>
-          <AddLoadOrderTable formData={formData} />
+
+          <div className="flex flex-col gap-2 relative col-span-2">
+            <Label className="mt-2 absolute -top-4">Transporte</Label>
+            <div className="grid grid-cols-4 gap-4 mt-3">
+              <div>
+                <Label className="text-xs" htmlFor="company">
+                  Compania
+                </Label>
+                <Input
+                  id="company"
+                  type="string"
+                  value={formData.transporter_data.delivery_company}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      transporter_data: {
+                        ...formData.transporter_data,
+                        delivery_company: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs" htmlFor="min">
+                  Nombre
+                </Label>
+                <Input
+                  id="min"
+                  type="string"
+                  value={formData.transporter_data.name}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      transporter_data: {
+                        ...formData.transporter_data,
+                        name: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs" htmlFor="licence_plate">
+                  Patente
+                </Label>
+                <Input
+                  id="max"
+                  type="string"
+                  value={formData.transporter_data.licence_plate}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      transporter_data: {
+                        ...formData.transporter_data,
+                        licence_plate: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs" htmlFor="licence_plate">
+                  Precio
+                </Label>
+                <Input
+                  id="max"
+                  type="number"
+                  value={formData.delivery_price}
+                  onChange={(e) =>
+                    setFormData({ ...formData, delivery_price: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+          </div>
+          {/* <div className="flex flex-col gap-2 ">
+            <Label htmlFor="max">Precio del transporte</Label>
+            <Input
+              id="max"
+              type="number"
+              value={formData.delivery_price}
+              onChange={(e) =>
+                setFormData({ ...formData, delivery_price: e.target.value })
+              }
+            />
+          </div> */}
+        </CardContent>
+        <CardContent>
+          <AddLoadOrderTable
+            formData={formData.lots}
+            providerId={formData.provider_id}
+          />
         </CardContent>
       </Card>
     </div>

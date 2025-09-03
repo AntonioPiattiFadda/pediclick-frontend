@@ -11,27 +11,31 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAppSelector } from "@/hooks/useUserData";
-import { createSubCategory } from "@/service/subCategories";
+import { createSubCategory, getSubCategories } from "@/service/subCategories";
 import type { SubCategory } from "@/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react"; // 👈 icono del tacho
 
 interface SubCategorySelectProps {
-  subCategories: SubCategory[];
-  isLoading: boolean;
   value: string;
   onChange: (id: string) => void;
 }
 
 export function SubCategorySelector({
-  subCategories,
-  isLoading,
   value,
   onChange,
 }: SubCategorySelectProps) {
   const queryClient = useQueryClient();
+
+  const { data: subCategories, isLoading: isLoading } = useQuery({
+    queryKey: ["sub-categories"],
+    queryFn: async () => {
+      const response = await getSubCategories(role);
+      return response.categories;
+    },
+  });
 
   const [newCategory, setNewCategory] = useState("");
   const [open, setOpen] = useState(false);

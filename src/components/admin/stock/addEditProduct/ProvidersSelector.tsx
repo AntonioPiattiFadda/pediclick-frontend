@@ -71,9 +71,9 @@ export function ProviderSelector({
   }
 
   return (
-    <div className="flex items-center gap-2 w-full mt-4">
+    <div className="flex items-center gap-2 w-full">
       <select
-        className="w-full border rounded px-2 py-2"
+        className="w-full border border-gray-200 rounded px-2 py-2"
         value={value}
         onChange={(e) => onChange(e.target.value)}
       >
@@ -100,7 +100,9 @@ export function ProviderSelector({
       {/* Botón para crear nuevo proveedor */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline">+ Nuevo</Button>
+          <Button className="border border-gray-200" variant="outline">
+            + Nuevo
+          </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>

@@ -12,19 +12,38 @@ export type Price = {
   quantity_discount: boolean;
 };
 
+//NOTE TIENE QUE SER TABLA
 export type Stock = {
   lot_id: number;
   //It will be moving across al owner worlds
-  quantity: number;
-  min: number;
-  // It almost never be used
-  max: number;
+  current_stock_quantity: number;
 
+  min_notification: number;
+  // It almost never be used
+  max_notification: number;
+
+  mother_stock: number | null;
   //Asignar mundos
-  stock_type: "STORE" | "WASTE" | "NOT ASSIGNED" | "SOLD" | "";
+
+  //FIXME Buscar la palabra deposito en ingles
+  stock_type:
+    | "STORE"
+    | "WASTE"
+    | "NOT ASSIGNED"
+    | "SOLD"
+    | "TRANSFORMED"
+    | "DEPOSITO";
+
+  store_id: number | null;
+  deposito_id: number | null;
+  transformed_product_id: number | null;
 
   //See how to represent the location, maybe by the id of each world
   location: Location | null;
+
+  transformed_stock_quantity: number;
+
+  original_product: string | null;
 };
 
 export type StockMovement = {
@@ -55,7 +74,6 @@ export type BaseLot = {
     };
   };
 
-  stock: Stock[] | null;
   is_sold_out: boolean;
 
   stock_movement: StockMovement[] | null;
@@ -69,11 +87,14 @@ export type BaseLot = {
     location: Location | null;
   };
 
+  initial_stock_quantity: number;
+
+  stock: Stock[] | null;
+  prices: Price[];
+
   providers?: {
     provider_name: string;
   };
-
-  prices: Price[];
 };
 
 export type LotWithControl = BaseLot & {

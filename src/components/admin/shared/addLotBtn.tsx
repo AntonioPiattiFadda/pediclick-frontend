@@ -1,9 +1,7 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -13,14 +11,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createLot } from "@/service/lots";
 import type { Lot } from "@/types/lots";
+import type { Product, SellMeasurementMode } from "@/types/products";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Barcode, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { emptyLot } from "./emptyFormData";
+import { emptyProduct } from "../stock/addEditProduct/emptyFormData";
+import { CategorySelector } from "../stock/CategorySelector";
 import CheckBoxesSelector from "./checkBoxesSelector";
-import { ProductSelector } from "./ProductSelector";
-import type { Product } from "@/types/products";
+import { emptyLot } from "./emptyFormData";
+import ProductSelectorV2 from "./productSelectorV2";
+import { SubCategorySelector } from "../stock/addEditProduct/SubCategorySelector";
+import { BrandSelector } from "../stock/addEditProduct/BrandsSelector";
+import { ImageSelector } from "../stock/addEditProduct/ImageSelector";
+import { Textarea } from "@/components/ui/textarea";
 
 type CreationMode = "SHORT" | "LONG";
 
@@ -29,13 +33,19 @@ const creationModeOptions = [
   { label: "Largo", value: "LONG" },
 ];
 
+const sellMeasurementModeOptions = [
+  { label: "Unidad", value: "QUANTITY" },
+  { label: "Kg", value: "WEIGHT" },
+];
+
 export function AddLotBtn() {
   const [creationMode, setCreationMode] = useState<CreationMode>("SHORT");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [selectedProduct, setSelectedProduct] = useState<Product>(
-    {} as Product
-  );
+  const [selectedProduct, setSelectedProduct] = useState<Product>(emptyProduct);
+
+  const isProductSelected = Boolean(selectedProduct.product_id);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [formData, setFormData] = useState<Lot>(emptyLot);
 
@@ -95,6 +105,14 @@ export function AddLotBtn() {
     });
   };
 
+  // const { data: subCategories, isLoading: isLoadingSub } = useQuery({
+  //   queryKey: ["sub-categories"],
+  //   queryFn: async () => {
+  //     const response = await getSubCategories(role);
+  //     return response.categories;
+  //   },
+  // });
+
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogTrigger asChild>
@@ -103,59 +121,237 @@ export function AddLotBtn() {
           Agregar elemento
         </Button>
       </DialogTrigger>
-      <DialogContent className=" w-[750px] overflow-y-auto max-h-[90vh]">
+      <DialogContent
+        className={`border-4  ${
+          isEditing ? " border-green-200 " : "border-transparent"
+        }  flex  flex-col gap-2 w-[750px] overflow-y-auto max-h-[90vh] min-h-[500px]`}
+      >
         <DialogHeader>
-          <DialogTitle>Nuevo elemento</DialogTitle>
-          <DialogDescription>
+          <DialogTitle>
+            {isEditing
+              ? "Editando producto"
+              : `${
+                  selectedProduct.product_name
+                    ? "Producto: " + selectedProduct.product_name
+                    : "Elegir producto"
+                }`}
+          </DialogTitle>
+          {/* <DialogDescription>
             Completá la información del nuevo elemento que querés publicar.
-          </DialogDescription>
+          </DialogDescription> */}
         </DialogHeader>
 
-        <ProductSelector
+        {!isEditing && (
+          <ProductSelectorV2
+            value={selectedProduct}
+            onChange={(value) =>
+              setSelectedProduct({ ...selectedProduct, ...value })
+            }
+          />
+        )}
+
+        {/* <ProductSelector
           value={selectedProduct.product_id || 0}
           onChange={setSelectedProduct}
-        />
+        /> */}
 
-        <CheckBoxesSelector
-          options={creationModeOptions}
-          selectedOption={creationMode}
-          onSelectOption={(value) => setCreationMode(value as CreationMode)}
-        />
+        {isProductSelected ? (
+          <>
+            <CheckBoxesSelector
+              options={creationModeOptions}
+              selectedOption={creationMode}
+              onSelectOption={(value) => setCreationMode(value as CreationMode)}
+              disabled={!isEditing}
+            />
 
-        <div className="flex gap-4">
-          <Label htmlFor="lot_number">Nro de Lote</Label>
-          <Input
-            placeholder="Nro de Lote"
-            type="number"
-            value={formData.lot_number}
-            onChange={(e) =>
-              setFormData({ ...formData, lot_number: e.target.value })
-            }
-          />
-        </div>
+            <div className="grid grid-cols-2 gap-4 w-full">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="lot_number">Código corto</Label>
+                <Input
+                  placeholder="Código corto"
+                  disabled={!isEditing}
+                  type="number"
+                  value={selectedProduct.short_code || ""}
+                  onChange={(e) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      short_code: e.target.value,
+                    })
+                  }
+                />
+              </div>
 
-        <div>
-          <Label htmlFor="lot_number">Nro de Lote</Label>
-          <Input
-            placeholder="Nro de Lote"
-            type="number"
-            value={formData.lot_number}
-            onChange={(e) =>
-              setFormData({ ...formData, lot_number: e.target.value })
-            }
-          />
-        </div>
+              <div className="flex flex-col gap-2">
+                <Label className="flex gap-2" htmlFor="barcode">
+                  Código de barras <Barcode height={14} />
+                </Label>
+                <Input
+                  placeholder="barcode"
+                  disabled={!isEditing}
+                  type="number"
+                  value={selectedProduct.barcode || ""}
+                  onChange={(e) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      barcode: e.target.value,
+                    })
+                  }
+                />
+              </div>
 
-        {/* <DialogFooter className="mt-4">
-          <DialogClose asChild>
+              <CategorySelector
+                value={selectedProduct.category_id}
+                onChange={(id) =>
+                  setSelectedProduct({ ...selectedProduct, category_id: id })
+                }
+              />
+
+              <SubCategorySelector
+                value={selectedProduct.sub_category_id}
+                onChange={(id) =>
+                  setSelectedProduct({
+                    ...selectedProduct,
+                    sub_category_id: id,
+                  })
+                }
+              />
+
+              <BrandSelector
+                value={selectedProduct.brand_id}
+                onChange={(id) =>
+                  setSelectedProduct({ ...selectedProduct, brand_id: id })
+                }
+              />
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="lot_number">Nombre</Label>
+                <Input
+                  placeholder="product_name"
+                  disabled={!isEditing}
+                  type="text"
+                  value={selectedProduct.product_name}
+                  onChange={(e) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      product_name: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="lot_number">Nro de Lote</Label>
+                <Input
+                  placeholder="Nro de Lote"
+                  disabled={!isEditing}
+                  type="number"
+                  value={formData.lot_number}
+                  onChange={(e) =>
+                    setFormData({ ...formData, lot_number: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label>Modo de venta</Label>
+
+                <CheckBoxesSelector
+                  options={sellMeasurementModeOptions}
+                  selectedOption={selectedProduct.sell_measurement_mode}
+                  onSelectOption={(value) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      sell_measurement_mode: value as SellMeasurementMode,
+                    })
+                  }
+                  disabled={!isEditing}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2 col-span-2">
+                <Label htmlFor="observations">Observaciones</Label>
+                <Textarea
+                  placeholder=""
+                  disabled={!isEditing}
+                  value={selectedProduct.observations || ""}
+                  onChange={(e) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      observations: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            {creationMode === "LONG" && (
+              <>
+                <div>
+                  <Label htmlFor="lot_number">Nro de Lote</Label>
+                  <Input
+                    placeholder="Nro de Lote"
+                    type="number"
+                    disabled={isEditing}
+                    value={formData.lot_number}
+                    onChange={(e) =>
+                      setFormData({ ...formData, lot_number: e.target.value })
+                    }
+                  />
+                </div>
+
+                <ImageSelector
+                  onImageSelect={(id) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      public_image_id: id ?? "",
+                    })
+                  }
+                  onImageRemove={() =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      public_image_id: "",
+                    })
+                  }
+                />
+              </>
+            )}
+          </>
+        ) : (
+          <div className="w-full h-full text-center  my-auto">
+            Seleccionar un producto
+          </div>
+        )}
+
+        <DialogFooter className="mt-auto ">
+          <span className="mr-auto h-full my-auto">
+            Ultima actualización: {selectedProduct.updated_at}
+          </span>
+          {/* <DialogClose asChild>
             <Button disabled={createLotMutation.isLoading} variant="outline">
               Cancelar
             </Button>
-          </DialogClose>
-          <Button disabled={createLotMutation.isLoading} onClick={handleSubmit}>
-            {createLotMutation.isLoading ? "Creando..." : "Crear producto"}
-          </Button>
-        </DialogFooter> */}
+          </DialogClose> */}
+          {Object.keys(selectedProduct).length > 0 && (
+            <>
+              {isEditing ? (
+                <Button variant={"outline"} onClick={() => setIsEditing(false)}>
+                  Cancelar
+                </Button>
+              ) : (
+                <Button onClick={() => setIsEditing(true)}>Modificar</Button>
+              )}
+
+              <Button
+                disabled={createLotMutation.isLoading}
+                onClick={handleSubmit}
+              >
+                {createLotMutation.isLoading
+                  ? "Agregando..."
+                  : "Agregar a remito"}
+              </Button>
+            </>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

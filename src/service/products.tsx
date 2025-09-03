@@ -3,7 +3,8 @@ import { supabase } from ".";
 import type { Product, ProductLot } from "@/types/products";
 import { getBusinessOwnerIdByRole } from "./profiles";
 
-export const getAllProducts = async () => {
+export const getAllProducts = async (userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
   const { data: dbProducts, error } = await supabase
     .from("products")
     .select(
@@ -20,6 +21,7 @@ export const getAllProducts = async () => {
       )
       `
     )
+    .eq("business_owner_id", businessOwnerId)
     .is("deleted_at", null);
 
   if (error) {
@@ -27,6 +29,7 @@ export const getAllProducts = async () => {
   }
 
   const products = adaptProductsForClient(dbProducts);
+  console.log("adaptedProducts", products);
 
   return { products, error };
 };
@@ -79,7 +82,9 @@ export const updateProduct = async (
   return { data, error };
 };
 
-export const createProduct = async (product: Product) => {
+export const createProduct = async (product: Product, userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  console.log("Creating product:", product);
   const { lots, ...productWithoutLots } = product;
 
   console.log("Creating product with lots:", productWithoutLots);
@@ -97,6 +102,7 @@ export const createProduct = async (product: Product) => {
   const { data: newProduct, error: productError } = await supabase
     .from("products")
     .insert({
+      business_owner_id: businessOwnerId,
       ...productWithoutLots,
     })
     .select()
@@ -120,6 +126,8 @@ export const createProduct = async (product: Product) => {
     console.error("productLotsError", productLotsError);
     throw new Error("Error al crear relaciones producto-lote");
   }
+
+  console.log("Created product:", newProduct, newLots);
 
   return {
     ...newProduct,
@@ -164,16 +172,66 @@ export const getProductsByShortCode = async (
   return { products, error: null };
 };
 
+// function escapeLike(s: string) {
+//   // evita que % y _ rompan el patrón ILIKE
+//   return s.replace(/[%_]/g, (m) => `\\${m}`);
+// }
+
 export const getProductsByName = async (name: string, userRole: string) => {
   const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
 
+  const q = name.trim();
+  const isNumeric = /^\d+$/.test(q);
+  // const safe = escapeLike(q);
+
+  if (isNumeric) {
+    const { data: dbProducts, error } = await supabase
+      .from("products")
+      .select(
+        `
+      *,
+      public_images(public_image_src),
+      categories(category_name),
+      sub_categories(sub_category_name),
+      brands(brand_name),
+      sale_units(sale_unit_name),
+      product_lots (
+        lots (*)
+        )
+        `
+      )
+      .is("deleted_at", null)
+      .eq("business_owner_id", businessOwnerId)
+      .eq("short_code", parseInt(q))
+      .order("product_name", { ascending: true })
+      .limit(10);
+
+    if (error) throw new Error(error.message);
+
+    const products = adaptProductsForClient(dbProducts || []);
+    return { products, error: null };
+  }
+
   const { data: dbProducts, error } = await supabase
     .from("products")
-    .select("*")
+    .select(
+      `
+      *,
+      public_images(public_image_src),
+      categories(category_name),
+      sub_categories(sub_category_name),
+      brands(brand_name),
+      sale_units(sale_unit_name),
+      product_lots (
+        lots (*)
+        )
+        `
+    )
     .is("deleted_at", null)
     .eq("business_owner_id", businessOwnerId)
     .ilike("product_name", `%${name}%`)
-    .order("product_name", { ascending: true });
+    .order("product_name", { ascending: true })
+    .limit(10);
 
   if (error) throw new Error(error.message);
 

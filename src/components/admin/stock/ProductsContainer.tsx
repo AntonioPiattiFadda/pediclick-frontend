@@ -13,11 +13,14 @@ import { useState } from "react";
 import { AddProductBtn } from "./addEditProduct/AddProductBtn";
 import { ProductsTable } from "./ProductsTable";
 import TableSkl from "./ui/tableSkl";
+import { useAppSelector } from "@/hooks/useUserData";
 
 export const ProductsContainer = () => {
   const [searchTerm, setSearchTerm] = useState("");
   // const [selectedCategory, setSelectedCategory] = useState("all");
   // const [selectedStatus, setSelectedStatus] = useState("all");
+
+  const { role } = useAppSelector((state) => state.user);
 
   const {
     data: products = [],
@@ -26,7 +29,7 @@ export const ProductsContainer = () => {
   } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const response = await getAllProducts();
+      const response = await getAllProducts(role);
       // Ensure each product has seller_id
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return response.products.map((product: any) => ({
@@ -47,9 +50,7 @@ export const ProductsContainer = () => {
       ?.toString()
       .includes(searchTerm);
 
-       const matchesBarcode = product.barcode
-      ?.toString()
-      .includes(searchTerm);
+    const matchesBarcode = product.barcode?.toString().includes(searchTerm);
 
     return matchesSearchTerm || matchesShortCode || matchesBarcode;
   });
@@ -116,7 +117,10 @@ export const ProductsContainer = () => {
             </Select> */}
           </div>
 
-          <ProductsTable products={filteredProducts ?? []} isSearchingTerm={searchTerm.length > 0} />
+          <ProductsTable
+            products={filteredProducts ?? []}
+            isSearchingTerm={searchTerm.length > 0}
+          />
         </CardContent>
       </Card>
     </div>

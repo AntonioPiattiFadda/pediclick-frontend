@@ -45,6 +45,12 @@ export const MENU_ITEMS = [
     url: "/load-orders",
     icon: Package,
     roles: ["OWNER", "MANAGER"],
+    subItems: [
+      {
+        title: "Agregar Remito +",
+        url: "/load-orders/add-load-order",
+      },
+    ],
   },
   // {
   //   title: 'Configuración',
@@ -117,6 +123,28 @@ export function AppSidebar() {
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
+
+                    {/* Subitems */}
+                    {item.subItems && (
+                      <div className="ml-6 mt-1 flex flex-col gap-1">
+                        {item.subItems.map((sub) => {
+                          const isSubActive = location.pathname === sub.url;
+                          return (
+                            <Link
+                              key={sub.title}
+                              to={sub.url}
+                              className={`text-sm px-3 py-1 ml-6 rounded-md transition-colors ${
+                                isSubActive
+                                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-sidebar-accent-foreground"
+                              }`}
+                            >
+                              {sub.title}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
                   </SidebarMenuItem>
                 );
               })}

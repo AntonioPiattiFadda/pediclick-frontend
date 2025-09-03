@@ -1,8 +1,10 @@
 import type { Lot } from "./lots";
 
+export type SellMeasurementMode = "QUANTITY" | "WEIGHT";
+
 export interface Product {
   // Todo pertenece al bussines owner id porque si esta en el limbo es ahi y despues lo asigno a donde yo quiero,
-  business_owner_id: string;
+  business_owner_id?: string;
   product_id?: number;
   product_name: string;
   //I will overwrite the previous only if previous stock is finished
@@ -21,7 +23,7 @@ export interface Product {
   //NOTE El rinde es por producto o por remito?
   //NOTE La comision es por lote o por remito?
 
-  sell_measurement_mode: "QUANTITY" | "WEIGHT";
+  sell_measurement_mode: SellMeasurementMode;
 
   //Darle una vuelta a esto
   equivalence_minor_mayor_selling: {

@@ -75,22 +75,6 @@ export function AddProductBtn({
   const { role } = useAppSelector((state) => state.user);
   const { selectedStoreId } = useUserStoresContext();
 
-  const { data: categories, isLoading: isCategoriesLoading } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const response = await getCategories(role);
-      return response.categories;
-    },
-  });
-
-  const { data: subCategories, isLoading: isLoadingSub } = useQuery({
-    queryKey: ["sub-categories"],
-    queryFn: async () => {
-      const response = await getSubCategories(role);
-      return response.categories;
-    },
-  });
-
   const { data: providers, isLoading: isLoadingProviders } = useQuery({
     queryKey: ["providers"],
     queryFn: async () => {
@@ -207,15 +191,11 @@ export function AddProductBtn({
             />
 
             <CategorySelector
-              categories={categories || []}
-              isLoading={isCategoriesLoading}
               value={formData.category_id}
               onChange={(id) => setFormData({ ...formData, category_id: id })}
             />
 
             <SubCategorySelector
-              subCategories={subCategories || []}
-              isLoading={isLoadingSub}
               value={formData.sub_category_id}
               onChange={(id) =>
                 setFormData({ ...formData, sub_category_id: id })

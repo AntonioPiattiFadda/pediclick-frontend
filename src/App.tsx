@@ -126,7 +126,10 @@ const App = () => {
                         <Route path="/settings" element={<Settings />} />
                         <Route path="*" element={<NotFound />} />
                       </Route>
-                        <Route path="/new-load-order" element={<NewLoadOrders />} />
+                      <Route
+                        path="/load-orders/add-load-order"
+                        element={<NewLoadOrders />}
+                      />
                     </Route>
                   </Routes>
                 </Layout>

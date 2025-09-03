@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -11,27 +9,29 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 import { useAppSelector } from "@/hooks/useUserData";
-import { createCategory } from "@/service/categories";
-import type { Category } from "@/types";
+import { createCategory, getCategories } from "@/service/categories";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface CategorySelectProps {
-  categories: Category[];
-  isLoading: boolean;
   value: string;
   onChange: (id: string) => void;
 }
 
-export function CategorySelector({
-  categories,
-  isLoading,
-  value,
-  onChange,
-}: CategorySelectProps) {
+export function CategorySelector({ value, onChange }: CategorySelectProps) {
   const queryClient = useQueryClient();
+
+  const { data: categories, isLoading: isLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await getCategories(role);
+      return response.categories;
+    },
+  });
 
   const [newCategory, setNewCategory] = useState("");
   const [open, setOpen] = useState(false);

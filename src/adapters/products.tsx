@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Product } from "@/types";
+
+import type { Product } from "@/types/products";
 
 const convertStringLocalDateToISOString = (date: string): string | null => {
   if (!date) return null;
@@ -13,23 +14,26 @@ function formatDateOnly(isoString: string): string {
   return isoString.split("T")[0];
 }
 
-export const adaptProductForDb = (
-  product: any,
-  selectedStoreId: number
-): Product => {
+export const adaptProductForDb = (product: any): Product => {
   return {
     product_name: product.product_name,
-    store_id: selectedStoreId,
+    product_description: product.product_description,
     allow_stock_control: product.allow_stock_control,
     category_id: Number(product.category_id) || null,
     sub_category_id: Number(product.sub_category_id) || null,
     short_code: Number(product.short_code) || null,
-    sale_unit_id: Number(product.sale_unit_id) || null,
     barcode: Number(product.barcode) || null,
     brand_id: Number(product.brand_id) || null,
     lot_control: product.lot_control || null,
     public_image_id: product.public_image_id || null,
-
+    observations: product.observations || null,
+    sell_measurement_mode: product.sell_measurement_mode || null,
+    created_at: product.created_at || null,
+    updated_at: product.updated_at || null,
+    equivalence_minor_mayor_selling: {
+      minor: Number(product.equivalence_minor_mayor_selling?.minor) || null,
+      mayor: Number(product.equivalence_minor_mayor_selling?.mayor) || null,
+    },
     lots: product.lots.map((lot: any) => ({
       ...lot,
       expiration_date:
@@ -42,6 +46,7 @@ export const adaptProductForDb = (
 };
 
 export const adaptProductsForClient = (products: any): Product[] => {
+  console.log("products", products);
   return products.map((product: any) => ({
     product_id: product.product_id,
     short_code: product.short_code,
