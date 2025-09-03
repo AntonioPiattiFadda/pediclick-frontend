@@ -1,29 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  // DialogContent,
-  // DialogDescription,
-  // DialogFooter,
-  // DialogHeader,
-  // DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import type { Product } from "@/types/products";
-import { Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { AddProductBtn } from "../stock/addEditProduct/AddProductBtn";
-
 import { Input } from "@/components/ui/input";
-import { getProductsByName, getProductsByShortCode } from "@/service/products";
+import { useAppSelector } from "@/hooks/useUserData";
+import {
+  createProduct,
+  getProductsByName,
+  getProductsByShortCode,
+} from "@/service/products";
+import type { Product } from "@/types/products";
 import { useQuery } from "@tanstack/react-query";
-import type { Lot } from "@/types/lots";
+import { useEffect, useState } from "react";
+import { emptyProduct } from "../stock/addEditProduct/emptyFormData";
 
 interface ProductSelectProps {
-  products: Product[]; // se conserva para no romper, no se usa acá
-  isLoading: boolean; // se conserva para no romper, no se usa acá
-  value: string; // product_id seleccionado
-  onChange: (lot: Lot) => void;
+  value: number;
+  onChange: (product: Product) => void;
 }
 
 function useDebounce<T>(value: T, delay = 500) {
@@ -36,12 +27,14 @@ function useDebounce<T>(value: T, delay = 500) {
 }
 
 export function ProductSelector({ value, onChange }: ProductSelectProps) {
-  const [open, setOpen] = useState(false);
   const [codeQ, setCodeQ] = useState("");
   const [nameQ, setNameQ] = useState("");
 
   const dCode = useDebounce(codeQ, 500);
+
   const dName = useDebounce(nameQ, 500);
+
+  const { role } = useAppSelector((state) => state.user);
 
   // Coincidencias por short_code
   const {
@@ -49,10 +42,9 @@ export function ProductSelector({ value, onChange }: ProductSelectProps) {
     isFetching: fetchingCode,
     isError: errorCode,
   } = useQuery({
-    queryKey: ["products:shortCodeLike", dCode],
-    queryFn: () => getProductsByShortCode(dCode),
+    queryKey: ["products:shortCodeLike"],
+    queryFn: () => getProductsByShortCode(dCode, role),
     enabled: dCode.trim().length > 0,
-    staleTime: 0,
   });
 
   // Coincidencias por product_name
@@ -61,11 +53,12 @@ export function ProductSelector({ value, onChange }: ProductSelectProps) {
     isFetching: fetchingName,
     isError: errorName,
   } = useQuery({
-    queryKey: ["products:nameLike", dName],
-    queryFn: () => getProductsByName(dName),
+    queryKey: ["products:nameLike"],
+    queryFn: () => getProductsByName(dName, role),
     enabled: dName.trim().length > 0,
-    staleTime: 0,
   });
+
+  const [searchedProducts, setSearchedProducts] = useState<Product[]>([]);
 
   const codeOptions: Product[] = codeData?.products ?? [];
   const nameOptions: Product[] = nameData?.products ?? [];
@@ -80,16 +73,13 @@ export function ProductSelector({ value, onChange }: ProductSelectProps) {
   const codeSelectValue = codeHasValue ? value : "";
   const nameSelectValue = nameHasValue ? value : "";
 
-  console.log(codeData, nameData);
-  console.log(nameQ);
-
   return (
     <div className="w-full space-y-3">
       {/* Buscadores */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div className="space-y-1">
           <Input
-            placeholder="Buscar por codigo"
+            placeholder="Código Corto"
             value={codeQ}
             onChange={(e) => setCodeQ(e.target.value)}
           />
@@ -98,7 +88,7 @@ export function ProductSelector({ value, onChange }: ProductSelectProps) {
             <select
               className="w-full border rounded px-2 py-2"
               value={codeSelectValue}
-              onChange={(e) => onChange(e.target.value)}
+              // onChange={(e) => onChange(e.target.value)}
               disabled={fetchingCode || errorCode}
             >
               <option value="">
@@ -119,25 +109,18 @@ export function ProductSelector({ value, onChange }: ProductSelectProps) {
 
         <div className="space-y-1">
           <Input
-            placeholder="Buscar por nombre"
+            placeholder="Nombre"
             value={nameQ}
             onChange={(e) => setNameQ(e.target.value)}
           />
           {/* Select con coincidencias por nombre */}
-          {dName && (
+          {dName && nameOptions.length > 0 && (
             <select
               className="w-full border rounded px-2 py-2"
               value={nameSelectValue}
-              onChange={(e) => onChange(e.target.value)}
+              // onChange={(e) => onChange(e.target.value)}
               disabled={fetchingName || errorName}
             >
-              <option value="">
-                {fetchingName
-                  ? "Buscando…"
-                  : errorName
-                  ? "Error"
-                  : "Elegí un producto por nombre"}
-              </option>
               {nameOptions.map((p: any) => (
                 <option key={p.product_id} value={p.product_id}>
                   {p.product_name ?? "—"} — {p.short_code ?? "—"}
@@ -148,8 +131,18 @@ export function ProductSelector({ value, onChange }: ProductSelectProps) {
         </div>
       </div>
 
+      {nameOptions.length === 0 && nameQ && dName ? (
+        <Button
+          onClick={() =>
+            createProduct({ ...emptyProduct, product_name: nameQ })
+          }
+        >
+          Crear {dName}
+        </Button>
+      ) : null}
+
       {/* Si hay selección, mostrar tacho */}
-      {value && (
+      {/* {value && (
         <Button
           variant="ghost"
           size="icon"
@@ -158,14 +151,14 @@ export function ProductSelector({ value, onChange }: ProductSelectProps) {
         >
           <Trash2 className="w-5 h-5" />
         </Button>
-      )}
+      )} */}
 
       {/* Botón para crear nuevo producto */}
-      <Dialog open={open} onOpenChange={setOpen}>
+      {/* <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <AddProductBtn shortAddBtn={true} />
         </DialogTrigger>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 }

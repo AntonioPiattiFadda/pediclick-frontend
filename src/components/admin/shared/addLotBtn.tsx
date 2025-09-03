@@ -18,10 +18,25 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { emptyLot } from "./emptyFormData";
+import CheckBoxesSelector from "./checkBoxesSelector";
+import { ProductSelector } from "./ProductSelector";
+import type { Product } from "@/types/products";
+
+type CreationMode = "SHORT" | "LONG";
+
+const creationModeOptions = [
+  { label: "Corto", value: "SHORT" },
+  { label: "Largo", value: "LONG" },
+];
 
 export function AddLotBtn() {
-  const [isShortCreation, setIsShortCreation] = useState(false);
+  const [creationMode, setCreationMode] = useState<CreationMode>("SHORT");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [selectedProduct, setSelectedProduct] = useState<Product>(
+    {} as Product
+  );
+
   const [formData, setFormData] = useState<Lot>(emptyLot);
 
   const queryClient = useQueryClient();
@@ -96,14 +111,16 @@ export function AddLotBtn() {
           </DialogDescription>
         </DialogHeader>
 
-        {/* <CheckBoxesSelector
-          options={[
-            { label: "Corto", value: true },
-            { label: "Rapido", value: false },
-          ]}
-          selectedOption={}
-          onSelectOption={(value) => setIsShortCreation(value)}
-        /> */}
+        <ProductSelector
+          value={selectedProduct.product_id || 0}
+          onChange={setSelectedProduct}
+        />
+
+        <CheckBoxesSelector
+          options={creationModeOptions}
+          selectedOption={creationMode}
+          onSelectOption={(value) => setCreationMode(value as CreationMode)}
+        />
 
         <div className="flex gap-4">
           <Label htmlFor="lot_number">Nro de Lote</Label>
@@ -129,7 +146,7 @@ export function AddLotBtn() {
           />
         </div>
 
-        <DialogFooter className="mt-4">
+        {/* <DialogFooter className="mt-4">
           <DialogClose asChild>
             <Button disabled={createLotMutation.isLoading} variant="outline">
               Cancelar
@@ -138,7 +155,7 @@ export function AddLotBtn() {
           <Button disabled={createLotMutation.isLoading} onClick={handleSubmit}>
             {createLotMutation.isLoading ? "Creando..." : "Crear producto"}
           </Button>
-        </DialogFooter>
+        </DialogFooter> */}
       </DialogContent>
     </Dialog>
   );

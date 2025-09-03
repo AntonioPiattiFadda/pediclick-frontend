@@ -1,6 +1,7 @@
 import { adaptProductsForClient } from "@/adapters/products";
 import { supabase } from ".";
 import type { Product, ProductLot } from "@/types/products";
+import { getBusinessOwnerIdByRole } from "./profiles";
 
 export const getAllProducts = async () => {
   const { data: dbProducts, error } = await supabase
@@ -139,46 +140,43 @@ export const deleteProduct = async (productId: string | number) => {
   return { success: true };
 };
 
-export const getProductsByShortCode = async (shortCode: string) => {
+export const getProductsByShortCode = async (
+  shortCode: string,
+  userRole: string
+) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+
   const { data: dbProducts, error } = await supabase
     .from("products")
-    .select(`
-      *,
-      public_images(public_image_src),
-      categories(category_name),
-      sub_categories(sub_category_name),
-      brands(brand_name),
-      sale_units(sale_unit_name),
-      product_lots ( lots(*) )
-    `)
-    // .is("deleted_at", null) // descomenta si usás borrado lógico
-    .ilike("short_code", `%${shortCode}%`)
+    .select("*")
+    .is("deleted_at", null)
+    .eq("business_owner_id", businessOwnerId)
     .order("product_name", { ascending: true })
+    .eq("short_code", shortCode);
 
-  if (error) throw new Error(error.message)
+  // .ilike("short_code", `%${shortCode}%`);
 
-  const products = adaptProductsForClient(dbProducts || [])
-  return { products, error: null }
-}
+  console.log(dbProducts, error);
 
-export const getProductsByName = async (name: string) => {
+  if (error) throw new Error(error.message);
+
+  const products = adaptProductsForClient(dbProducts || []);
+  return { products, error: null };
+};
+
+export const getProductsByName = async (name: string, userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+
   const { data: dbProducts, error } = await supabase
     .from("products")
-    .select(`
-      *,
-      public_images(public_image_src),
-      categories(category_name),
-      sub_categories(sub_category_name),
-      brands(brand_name),
-      sale_units(sale_unit_name),
-      product_lots ( lots(*) )
-    `)
-    // .is("deleted_at", null)
+    .select("*")
+    .is("deleted_at", null)
+    .eq("business_owner_id", businessOwnerId)
     .ilike("product_name", `%${name}%`)
-    .order("product_name", { ascending: true })
+    .order("product_name", { ascending: true });
 
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(error.message);
 
-  const products = adaptProductsForClient(dbProducts || [])
-  return { products, error: null }
-}
+  const products = adaptProductsForClient(dbProducts || []);
+  return { products, error: null };
+};

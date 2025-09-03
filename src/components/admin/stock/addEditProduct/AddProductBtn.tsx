@@ -32,42 +32,49 @@ import PricesSelector from "./PricesSelector";
 import { ProviderSelector } from "./ProvidersSelector";
 import { SaleUnitSelector } from "./SaleUnitsSelector";
 import { SubCategorySelector } from "./SubCategorySelector";
-import { emptyLotWithLotControl, emptyLotWithoutControl, emptyProduct } from "./emptyFormData";
+import {
+  emptyLotWithLotControl,
+  emptyLotWithoutControl,
+  emptyProduct,
+} from "./emptyFormData";
 import { getProviders } from "@/service/providers";
 import { getCategories } from "@/service/categories";
 import { getSubCategories } from "@/service/subCategories";
 import { createProduct } from "@/service/products";
 import { getSaleUnits } from "@/service/saleUnits";
 
-
-export function AddProductBtn({shortAddBtn = false}: {shortAddBtn?: boolean}) {
+export function AddProductBtn({
+  shortAddBtn = false,
+}: {
+  shortAddBtn?: boolean;
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tab, setTab] = useState("info");
   const [formData, setFormData] = useState(emptyProduct);
-  
+
   const [selectedLotIndex, setSelectedLotIndex] = useState<number | null>(0);
-  
+
   const currentLot =
-  selectedLotIndex !== null
-  ? formData.lots[selectedLotIndex]
-  : emptyLotWithoutControl;
-  
+    selectedLotIndex !== null
+      ? formData.lots[selectedLotIndex]
+      : emptyLotWithoutControl;
+
   const updateCurrentLot = (updatedLot: typeof emptyLotWithoutControl) => {
     if (selectedLotIndex === null) return;
     const newLots = [...formData.lots];
     newLots[selectedLotIndex] = updatedLot;
     setFormData({ ...formData, lots: newLots });
   };
-  
+
   const handleUpdateLotPrices = (updatedPrices: any[]) => {
     updateCurrentLot({ ...currentLot, prices: updatedPrices });
   };
-  
+
   const queryClient = useQueryClient();
 
   const { role } = useAppSelector((state) => state.user);
   const { selectedStoreId } = useUserStoresContext();
-  
+
   const { data: categories, isLoading: isCategoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -75,7 +82,7 @@ export function AddProductBtn({shortAddBtn = false}: {shortAddBtn?: boolean}) {
       return response.categories;
     },
   });
-  
+
   const { data: subCategories, isLoading: isLoadingSub } = useQuery({
     queryKey: ["sub-categories"],
     queryFn: async () => {
@@ -83,7 +90,7 @@ export function AddProductBtn({shortAddBtn = false}: {shortAddBtn?: boolean}) {
       return response.categories;
     },
   });
-  
+
   const { data: providers, isLoading: isLoadingProviders } = useQuery({
     queryKey: ["providers"],
     queryFn: async () => {
@@ -118,7 +125,7 @@ export function AddProductBtn({shortAddBtn = false}: {shortAddBtn?: boolean}) {
       });
     },
   });
-  
+
   const handleSubmit = () => {
     const completedInformation = adaptProductForDb(
       formData,
@@ -126,7 +133,7 @@ export function AddProductBtn({shortAddBtn = false}: {shortAddBtn?: boolean}) {
     );
 
     const validation = createProductSchema.safeParse(completedInformation);
-    
+
     if (!validation.success) {
       toast("Algunos datos fantantes ", {
         description: "Sunday, December 03, 2023 at 9:00 AM",
@@ -142,7 +149,7 @@ export function AddProductBtn({shortAddBtn = false}: {shortAddBtn?: boolean}) {
       completedInformation,
     });
   };
-  
+
   const { data: saleUnits, isLoading: isLoadingSaleUnits } = useQuery({
     queryKey: ["sale_units"],
     queryFn: async () => {
@@ -150,8 +157,7 @@ export function AddProductBtn({shortAddBtn = false}: {shortAddBtn?: boolean}) {
       return response.saleUnits;
     },
   });
-  
-  
+
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogTrigger asChild>
@@ -170,15 +176,15 @@ export function AddProductBtn({shortAddBtn = false}: {shortAddBtn?: boolean}) {
 
         <Tabs value={tab} onValueChange={setTab} className="w-full">
           {!shortAddBtn && (
-          <TabsList>
-            <TabsTrigger value="info">Información</TabsTrigger>
-            <TabsTrigger value="prices">Stock / Lotes</TabsTrigger>
-            <TabsTrigger value="images">
-              Imágenes {selectedLotIndex}
-            </TabsTrigger>
+            <TabsList>
+              <TabsTrigger value="info">Información</TabsTrigger>
+              <TabsTrigger value="prices">Stock / Lotes</TabsTrigger>
+              <TabsTrigger value="images">
+                Imágenes {selectedLotIndex}
+              </TabsTrigger>
 
-            {/* <TabsTrigger value="seo">SEO</TabsTrigger> */}
-          </TabsList>
+              {/* <TabsTrigger value="seo">SEO</TabsTrigger> */}
+            </TabsList>
           )}
 
           <TabsContent value="info" className="space-y-4">
@@ -387,8 +393,6 @@ export function AddProductBtn({shortAddBtn = false}: {shortAddBtn?: boolean}) {
                 updateCurrentLot({ ...currentLot, waste: e.target.value })
               }
             />
-
-           
 
             <div className="flex gap-2 items-center">
               <Label htmlFor="expiration_date">Vencimiento</Label>
