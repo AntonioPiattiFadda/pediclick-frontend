@@ -1,4 +1,4 @@
-import type { Product } from "@/types/products";
+
 
 export const emptyLotWithoutControl = {
   provider_id: "",

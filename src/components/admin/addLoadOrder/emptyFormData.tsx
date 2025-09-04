@@ -22,3 +22,17 @@ export const emptyLoadOrder = {
     },
   ],
 };
+
+export const emptyEmployee = {
+  id: "",
+  email: "",
+  full_name: "",
+  avatar_url: "",
+  phone: "",
+  role: "",
+  is_verified: false,
+  created_at: "",
+  updated_at: "",
+  deleted_at: "",
+  is_active: false,
+};

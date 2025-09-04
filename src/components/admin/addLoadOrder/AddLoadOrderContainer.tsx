@@ -10,16 +10,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAppSelector } from "@/hooks/useUserData";
 import { getProviders } from "@/service/providers";
+import type { UserProfile } from "@/types/users";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import EmployeeSelector from "../shared/employeeSelector";
+
 import { ProviderSelector } from "../stock/addEditProduct/ProvidersSelector";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
-import { emptyLoadOrder } from "./emptyFormData";
+import { emptyEmployee, emptyLoadOrder } from "./emptyFormData";
 
 export const AddLoadOrderContainer = () => {
   const { role } = useAppSelector((state) => state.user);
   const [formData, setFormData] = useState(emptyLoadOrder);
-
+  const [selectedEmployee, setSelectedEmployee] =
+    useState<UserProfile>(emptyEmployee);
   const { data: providers, isLoading: isLoadingProviders } = useQuery({
     queryKey: ["providers"],
     queryFn: async () => {
@@ -169,6 +173,23 @@ export const AddLoadOrderContainer = () => {
                 />
               </div>
             </div>
+          </div>
+          <div className="flex flex-col gap-2 ">
+            {/* <Label htmlFor="max">Número de factura AFIP</Label>
+            <Input
+              id="max"
+              type="number"
+              value={formData.invoice_number}
+              onChange={(e) =>
+                setFormData({ ...formData, invoice_number: e.target.value })
+              }
+            /> */}
+            <EmployeeSelector
+              value={selectedEmployee}
+              onChange={(value) =>
+                setSelectedEmployee({ ...selectedEmployee, ...value })
+              }
+            />
           </div>
           {/* <div className="flex flex-col gap-2 ">
             <Label htmlFor="max">Precio del transporte</Label>

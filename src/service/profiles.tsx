@@ -5,6 +5,7 @@ import {
   setLocalStorage,
 } from "@/utils/localStorageUtils";
 import { getUserId, supabase } from ".";
+import type { UserProfile } from "@/types/users";
 
 export const insertNewAdminUser = async (email: string, userUid: string) => {
   const { data, error } = await supabase
@@ -118,7 +119,7 @@ export async function createNewUser(email: string, password: string) {
 export const getParentUserId = async (userId: string) => {
   const { data: user, error } = await supabase
     .from("users")
-    .select("parent_user_id")
+    .select("business_owner_id")
     .eq("id", userId)
     .single();
 
@@ -126,7 +127,7 @@ export const getParentUserId = async (userId: string) => {
     throw new Error(error.message);
   }
 
-  return user?.parent_user_id;
+  return user?.business_owner_id;
 };
 
 export const getBusinessOwnerIdByRole = async (userRole: string) => {
@@ -270,3 +271,53 @@ export const deleteTeamMember = async (id: string) => {
 
   return { data, error };
 };
+
+export const getEmployeeByName = async (name: string, userRole: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  // const safe = escapeLike(q);
+  const { data: dbUser, error } = await supabase
+    .from("users")
+    .select("*") // <- sin coma final, sin duplicar columnas
+    .is("deleted_at", null)
+    .eq("business_owner_id", businessOwnerId)
+    .ilike("full_name", `%${name}%`) // <- cambia a full_name si no existe user_name
+    .order("full_name", { ascending: true })
+    .limit(10);
+  console.log(dbUser, error);
+  if (error) throw new Error(error.message);
+
+  return { dbUser, error: null };
+};
+
+export async function createEmployeeByName(
+  name: string,
+  businessRole: string
+): Promise<UserProfile> {
+  alert("me estoy ejecutando");
+  const fullName = name.trim();
+  if (!fullName) throw new Error("El nombre no puede estar vacío");
+
+  const ownerId = await getBusinessOwnerIdByRole(businessRole);
+  console.log("Owner ID:", ownerId, fullName);
+
+  const { data, error } = await supabase
+    .from("users")
+    .insert({
+      email: null,
+      full_name: fullName,
+      avatar_url: null,
+      phone: null,
+      role: null, // o "" si preferís vacío
+      is_verified: false,
+      created_at: null,
+      updated_at: null,
+      deleted_at: null,
+      is_active: true,
+      business_owner_id: ownerId,
+    })
+    .select("*")
+    .single();
+  console.log(data, error);
+  if (error) throw new Error(error.message);
+  return data as UserProfile;
+}
