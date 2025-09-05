@@ -31,4 +31,6 @@ export type LoadOrder = {
   // Esto todavia no lo hagas
 
   invoice_number: number | null;
+
+  lots?: []; // Esto no va a ir en el formulario. Se crea automaticamente al crear el remito
 };

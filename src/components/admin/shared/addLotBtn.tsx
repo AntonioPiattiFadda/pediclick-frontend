@@ -20,13 +20,16 @@ import { emptyProduct } from "../stock/addEditProduct/emptyFormData";
 import { CategorySelector } from "../stock/CategorySelector";
 import CheckBoxesSelector from "./checkBoxesSelector";
 import { emptyLot } from "./emptyFormData";
-import ProductSelectorV2 from "./productSelectorV2";
+import ProductSelectorV2 from "./productSelector";
 import { SubCategorySelector } from "../stock/addEditProduct/SubCategorySelector";
 import { BrandSelector } from "../stock/addEditProduct/BrandsSelector";
 import { ImageSelector } from "../stock/addEditProduct/ImageSelector";
 import { Textarea } from "@/components/ui/textarea";
 import { LotContainerSelector } from "../addLoadOrder/lotContainerSelector";
 import { adaptLotData } from "@/adapters/lot";
+import { PricesSelectorV2 } from "./pricesSelectorV2";
+import type { Price } from "@/types/prices";
+import { set } from "lodash";
 
 type CreationMode = "SHORT" | "LONG";
 
@@ -48,12 +51,12 @@ export function AddLotBtn({
   const [creationMode, setCreationMode] = useState<CreationMode>("SHORT");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [formData, setFormData] = useState<Lot>(emptyLot);
   const [selectedProduct, setSelectedProduct] = useState<Product>(emptyProduct);
+  const [lotPrices, setLotPrices] = useState<Price[]>([]);
 
   const isProductSelected = Boolean(selectedProduct.product_id);
   const [isEditing, setIsEditing] = useState(false);
-
-  const [formData, setFormData] = useState<Lot>(emptyLot);
 
   const queryClient = useQueryClient();
 
@@ -116,10 +119,12 @@ export function AddLotBtn({
     onAddElementToLoadOrder({
       ...formData,
       product_name: selectedProduct.product_name,
+      prices: lotPrices,
     } as Lot);
     setIsModalOpen(false);
     setIsEditing(false);
     setSelectedProduct(emptyProduct);
+    setLotPrices([]);
     setFormData(emptyLot);
     // createLotMutation.mutate({
     //   completedInformation: formData,
@@ -186,6 +191,56 @@ export function AddLotBtn({
             />
 
             <div className="grid grid-cols-2 gap-4 w-full">
+              <div className="flex flex-col gap-2 col-span-2">
+                <Label htmlFor="lot_number">Precios</Label>
+                <Input
+                  type="number"
+                  placeholder="Cantidad por ingresar"
+                  disabled={!isEditing}
+                  value={formData.initial_stock_quantity || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      initial_stock_quantity: Number(e.target.value),
+                      cost_per_unit: formData.total_cost
+                        ? Number(formData.total_cost) /
+                          Number(e.target.value || 1)
+                        : 0,
+                      total_cost: formData.cost_per_unit
+                        ? Number(formData.cost_per_unit) *
+                          Number(e.target.value || 1)
+                        : 0,
+                    })
+                  }
+                />
+                <Input
+                  type="number"
+                  placeholder="Precio de costo total del lote"
+                  disabled={!isEditing}
+                  value={formData.total_cost || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      total_cost: Number(e.target.value),
+                      cost_per_unit:
+                        Number(e.target.value) /
+                        Number(formData.initial_stock_quantity || 1),
+                    })
+                  }
+                />
+                <span className="text-xs text-gray-500">
+                  Ingresar el costo total del lote (no el costo por unidad)
+                </span>
+
+                <PricesSelectorV2
+                  value={lotPrices}
+                  onChange={(prices) => setLotPrices(prices)}
+                  lotId={formData?.lot_id || 0}
+                  disabled={!isEditing}
+                  basePrice={formData.total_cost || 0}
+                />
+              </div>
+
               <div className="flex flex-col gap-2">
                 <Label htmlFor="lot_number">Código corto</Label>
                 <Input
@@ -365,7 +420,7 @@ export function AddLotBtn({
                 />
               </div>
 
-              <div className="flex flex-col gap-2">
+              {/* <div className="flex flex-col gap-2">
                 <Label htmlFor="waste">Merma</Label>
                 <Input
                   placeholder="Merma"
@@ -376,7 +431,7 @@ export function AddLotBtn({
                     setFormData({ ...formData, waste: e.target.value })
                   }
                 />
-              </div>
+              </div> */}
 
               <div className="flex flex-col gap-2">
                 <div className="flex gap-2">
@@ -503,7 +558,9 @@ export function AddLotBtn({
           </div>
         )}
 
-        <DialogFooter className="mt-auto translate-y-6 sticky bottom-0 right-0 bg-white border-t-1 border-t-gray-200 py-4">
+        <DialogFooter
+          className={` mt-auto translate-y-6 sticky bottom-0 right-0 bg-white border-t-1 border-t-gray-200 py-4`}
+        >
           {selectedProduct?.updated_at && (
             <span className="mr-auto h-full my-auto">
               Ultima actualización: {selectedProduct.updated_at}
@@ -525,14 +582,25 @@ export function AddLotBtn({
                 <Button onClick={() => setIsEditing(true)}>Modificar</Button>
               )}
 
-              <Button
-                disabled={createLotMutation.isLoading}
-                onClick={handleSubmit}
-              >
-                {createLotMutation.isLoading
-                  ? "Agregando..."
-                  : "Agregar a remito"}
-              </Button>
+              {isEditing ? (
+                <Button
+                  disabled={createLotMutation.isLoading}
+                  onClick={handleSubmit}
+                >
+                  {createLotMutation.isLoading
+                    ? "Actualizando..."
+                    : "Aceptar cambios"}
+                </Button>
+              ) : (
+                <Button
+                  disabled={createLotMutation.isLoading}
+                  onClick={handleSubmit}
+                >
+                  {createLotMutation.isLoading
+                    ? "Agregando..."
+                    : "Agregar a remito"}
+                </Button>
+              )}
             </>
           )}
         </DialogFooter>

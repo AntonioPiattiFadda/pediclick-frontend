@@ -106,7 +106,7 @@ export function BrandSelector({ value, onChange, disabled }: BrandSelectProps) {
             + Nuevo
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Crear nueva marca</DialogTitle>
             <DialogDescription>

@@ -7,17 +7,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 // import TableSkl from "../sellPoints/ui/tableSkl";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAppSelector } from "@/hooks/useUserData";
 import { getProviders } from "@/service/providers";
+import type { LoadOrder } from "@/types/loadOrders";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ProviderSelector } from "../stock/addEditProduct/ProvidersSelector";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 import { emptyLoadOrder } from "./emptyFormData";
-import type { LoadOrder } from "@/types/loadOrders";
-import { Button } from "@/components/ui/button";
 
 export const AddLoadOrderContainer = () => {
   const { role } = useAppSelector((state) => state.user);
@@ -34,6 +34,12 @@ export const AddLoadOrderContainer = () => {
   // TODO Falta asignTo y receptor_id
   //TODO FALTA RENDIMIENTO Y COMISION
 
+  const handleCreateLoadOrder = () => {
+    //TODO Validar
+    //TODO separar los elementos para apuntar a las funciones lo que seria adaptar
+    //TODO Crear el remito en el backend
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -43,6 +49,17 @@ export const AddLoadOrderContainer = () => {
               <CardTitle>Remito</CardTitle>
               <CardDescription>Gestiona tu remito</CardDescription>
             </div>
+            {/* <div className="absolute w-screen h-screen top-0 left-0 flex items-center justify-center bg-red-200 z-50">
+              <div className="flex flex-col gap-2 col-span-2 bg-white w-[1200px] h-[650px] ">
+                <Label htmlFor="lot_number">Precios</Label>
+                <PricesSelectorV2
+                  value={lotPrices}
+                  onChange={(prices) => setLotPrices(prices)}
+                  lotId={null}
+                  disabled={false}
+                />
+              </div>
+            </div> */}
             {/* <div className="flex flex-col sm:flex-row gap-2">
               <AddLoadOrderBtn />
             </div> */}
@@ -67,6 +84,7 @@ export const AddLoadOrderContainer = () => {
             <Input
               placeholder="Fecha de entrega"
               type="date"
+              defaultValue={new Date().toISOString().split("T")[0]}
               value={formData.delivery_date}
               onChange={(e) =>
                 setFormData({ ...formData, delivery_date: e.target.value })
@@ -80,7 +98,10 @@ export const AddLoadOrderContainer = () => {
               providers={providers || []}
               isLoading={isLoadingProviders}
               value={formData.provider_id}
-              onChange={(id) => ({ provider_id: id })}
+              onChange={(value) =>
+                setFormData({ ...formData, provider_id: value })
+              }
+              disabled={false}
             />
           </div>
 
@@ -199,7 +220,9 @@ export const AddLoadOrderContainer = () => {
         </CardContent>
 
         <CardFooter>
-          <Button className="ml-auto">Crear remito</Button>
+          <Button onClick={handleCreateLoadOrder} className="ml-auto">
+            Crear remito
+          </Button>
         </CardFooter>
       </Card>
     </div>

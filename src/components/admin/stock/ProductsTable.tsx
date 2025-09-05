@@ -23,9 +23,6 @@ export const ProductsTable = ({
 }: ProductsTableProps) => {
   console.log(products);
 
-
- 
-
   return (
     <div className="rounded-md">
       <Table>
@@ -69,7 +66,7 @@ export const ProductsTable = ({
             <TableRow key={product.product_id}>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <EditProductBtn productId={product.product_id || 0} />
+                  {/* <EditProductBtn productId={product.product_id || 0} /> */}
 
                   <DeleteTableElementPopUp
                     elementId={product.product_id || 0}
@@ -106,13 +103,12 @@ export const ProductsTable = ({
               </TableCell>
 
               <TableCell>{product.categories?.category_name || "-"}</TableCell>
-              <TableCell>{product.sub_categories?.sub_category_name || "-"}</TableCell>
+              <TableCell>
+                {product.sub_categories?.sub_category_name || "-"}
+              </TableCell>
               <TableCell>{product.brands?.brand_name || "-"}</TableCell>
               {/* <TableCell>{product.lots || "-"}</TableCell> */}
-              <TableCell>{product.sale_units?.sale_unit_name || "-"}</TableCell>
               <TableCell>{product.barcode || "-"}</TableCell>
-
-              
 
               {/* <TableCell className="text-center flex flex-col">
                 {product.stock?.quantity}

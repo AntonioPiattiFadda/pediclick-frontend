@@ -118,7 +118,7 @@ export async function createNewUser(email: string, password: string) {
 export const getParentUserId = async (userId: string) => {
   const { data: user, error } = await supabase
     .from("users")
-    .select("parent_user_id")
+    .select("business_owner_id")
     .eq("id", userId)
     .single();
 
@@ -126,7 +126,7 @@ export const getParentUserId = async (userId: string) => {
     throw new Error(error.message);
   }
 
-  return user?.parent_user_id;
+  return user?.business_owner_id;
 };
 
 export const getBusinessOwnerIdByRole = async (userRole: string) => {

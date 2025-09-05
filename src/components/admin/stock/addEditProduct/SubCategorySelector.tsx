@@ -111,7 +111,7 @@ export function SubCategorySelector({
             + Nuevo
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Crear nueva categoria</DialogTitle>
             <DialogDescription>

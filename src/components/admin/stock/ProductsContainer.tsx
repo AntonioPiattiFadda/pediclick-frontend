@@ -75,7 +75,7 @@ export const ProductsContainer = () => {
                 <Upload className="w-4 h-4" />
                 Importar Excel
               </Button> */}
-              <AddProductBtn />
+              {/* <AddProductBtn /> */}
             </div>
           </div>
         </CardHeader>

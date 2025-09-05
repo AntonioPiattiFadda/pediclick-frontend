@@ -38,7 +38,10 @@ export const AddLoadOrderTable = ({
                 <TableCell>{lot.lot_number}</TableCell>
                 <TableCell>{lot.initial_stock_quantity || "-"}</TableCell>
                 <TableCell>{lot.expiration_date || "-"}</TableCell>
-                {/* <TableCell>{lot.price || '-'}</TableCell> */}
+                <TableCell>
+                  {lot.prices?.map((price) => price.unit_price).join(", ") ||
+                    "-"}
+                </TableCell>
               </TableRow>
             ))
           ) : (

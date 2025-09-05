@@ -17,7 +17,7 @@ import {
 import { toast } from "sonner";
 import { emptyProduct } from "../stock/addEditProduct/emptyFormData";
 
-const ProductSelectorV2 = ({
+const ProductSelector = ({
   value,
   onChange,
 }: {
@@ -112,6 +112,7 @@ const ProductSelectorV2 = ({
 
   const createProductMutation = useMutation({
     mutationFn: async (data: { completedInformation: any }) => {
+      console.log("Creating product with data:", data);
       return await createProduct(data.completedInformation, role);
     },
     onSuccess: (data) => {
@@ -150,6 +151,9 @@ const ProductSelectorV2 = ({
       completedInformation,
     });
   };
+
+  const isSearchValueNumeric = /^\d+$/.test(inputValue.trim());
+  console.log({ isSearchValueNumeric });
 
   return (
     <div className="relative w-full  inline-flex" ref={comboboxRef}>
@@ -196,7 +200,7 @@ const ProductSelectorV2 = ({
                 </li>
                 <li
                   className={` ${
-                    inputValue ? "flex" : "hidden"
+                    inputValue && !isSearchValueNumeric ? "flex" : "hidden"
                   } relative px-3 py-2 text-muted-foreground select-none hover:bg-muted focus:bg-muted`}
                 >
                   <button
@@ -210,7 +214,7 @@ const ProductSelectorV2 = ({
                     {createProductMutation.isLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        <span>Agregando ${inputValue}</span>
+                        <span>Agregando {inputValue}</span>
                       </>
                     ) : (
                       `Agregar "${inputValue}" como nombre de un nuevo producto`
@@ -247,4 +251,4 @@ const ProductSelectorV2 = ({
   );
 };
 
-export default ProductSelectorV2;
+export default ProductSelector;

@@ -1,5 +1,7 @@
 //Crear tabla intermedia entre producto y lote
 
+import type { Price } from "./prices";
+
 export type BaseLot = {
   lot_id?: number;
   load_order_id: number | null;
@@ -30,12 +32,16 @@ export type BaseLot = {
   lot_control: boolean;
   //Caracteristicas inmutables
   initial_stock_quantity: number;
+  total_cost: number;
+  cost_per_unit: number;
   is_sold_out: boolean;
   is_expired: boolean;
 
   providers?: {
     provider_name: string;
   };
+
+  prices?: Price[];
 };
 
 export type LotWithControl = BaseLot & {

@@ -1,5 +1,3 @@
-import type { Product } from "@/types/products";
-
 export const emptyLotWithoutControl = {
   provider_id: "",
   expiration_date: "",
@@ -47,14 +45,9 @@ export const emptyProduct = {
   allow_stock_control: false,
   lot_control: false,
   equivalence_minor_mayor_selling: {
-    minor: 0,
-    mayor: 0,
+    minor: null,
+    mayor: null,
   },
   created_at: "",
   updated_at: "",
-
-  lots: [
-    emptyLotWithoutControl,
-    emptyLotWithLotControl,
-  ] as (typeof emptyLotWithoutControl)[],
 };

@@ -34,19 +34,10 @@ export const adaptProductForDb = (product: any): Product => {
       minor: Number(product.equivalence_minor_mayor_selling?.minor) || null,
       mayor: Number(product.equivalence_minor_mayor_selling?.mayor) || null,
     },
-    lots: product.lots.map((lot: any) => ({
-      ...lot,
-      expiration_date:
-        lot.expiration_date === ""
-          ? null
-          : convertStringLocalDateToISOString(lot.expiration_date),
-      provider_id: Number(lot.provider_id) || null,
-    })),
   };
 };
 
 export const adaptProductsForClient = (products: any): Product[] => {
-  console.log("products", products);
   return products.map((product: any) => ({
     product_id: product.product_id,
     short_code: product.short_code,
@@ -60,11 +51,7 @@ export const adaptProductsForClient = (products: any): Product[] => {
     store_id: product.store_id,
     allow_stock_control: product.allow_stock_control,
     lot_control: product.lot_control,
-    product_lots: product.product_lots.map((lot: any) => ({
-      ...lot,
-      expiration_date: formatDateOnly(lot.expiration_date),
-      provider_id: Number(lot.provider_id) || null,
-    })),
+
     public_images: product.public_images,
     categories: product.categories,
     sub_categories: product.sub_categories,

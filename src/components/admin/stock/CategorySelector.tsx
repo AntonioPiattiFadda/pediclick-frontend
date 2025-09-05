@@ -111,7 +111,7 @@ export function CategorySelector({
             + Nuevo
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Crear nuevo rubro</DialogTitle>
             <DialogDescription>
