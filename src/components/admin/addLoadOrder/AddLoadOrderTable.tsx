@@ -9,25 +9,36 @@ import {
 import type { Lot } from "@/types/lots";
 import { AddLotBtn } from "../shared/addLotBtn";
 
-export const AddLoadOrderTable = ({ formData }: { formData: Lot[] }) => {
-  //Este componmente solo renderiza las LoadOrders
+export const AddLoadOrderTable = ({
+  loadOrderLots,
+  onAddElementToLoadOrder,
+}: {
+  loadOrderLots: Lot[];
+  onAddElementToLoadOrder: (lot: Lot) => void;
+}) => {
+  console.log("loadOrderLots en tabla", loadOrderLots);
 
   return (
     <div className="rounded-md">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>X</TableHead>
-            <TableHead>X</TableHead>
-            <TableHead>X</TableHead>
-            <TableHead>X</TableHead>
+            <TableHead>Nombbre del producto</TableHead>
+            <TableHead>Numero de lote</TableHead>
+            <TableHead>Stock inicial</TableHead>
+            <TableHead>Fecha de vencimiento</TableHead>
+            <TableHead>Precio</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {formData.length > 0 ? (
-            formData.map((lot, index) => (
+          {loadOrderLots.length > 0 ? (
+            loadOrderLots.map((lot, index) => (
               <TableRow key={index}>
+                <TableCell>{lot.product_name}</TableCell>
                 <TableCell>{lot.lot_number}</TableCell>
+                <TableCell>{lot.initial_stock_quantity || "-"}</TableCell>
+                <TableCell>{lot.expiration_date || "-"}</TableCell>
+                {/* <TableCell>{lot.price || '-'}</TableCell> */}
               </TableRow>
             ))
           ) : (
@@ -38,7 +49,7 @@ export const AddLoadOrderTable = ({ formData }: { formData: Lot[] }) => {
             </TableRow>
           )}
         </TableBody>
-        <AddLotBtn />
+        <AddLotBtn onAddElementToLoadOrder={onAddElementToLoadOrder} />
       </Table>
     </div>
   );

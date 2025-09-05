@@ -1,5 +1,6 @@
 export type LoadOrder = {
   load_order_id?: string;
+  business_owner_id?: number; // Viene por defecto del usuario logueado
   load_order_number: string; //Input tipo numero
   //Lo tiene el remito del proveedor
   provider_id: number | null; //Al seleccionar se despliegan adderess y ciuit abjo que vienen por base dde datos
@@ -17,14 +18,12 @@ export type LoadOrder = {
   // Tiene que haber la opcion de otro y esee campo es un string Como primera opcion pones otro.
 
   transporter_data: {
-    delivery_company: string | null; 
+    delivery_company: string | null;
     name: string | null;
-    licence_plate: string | null; 
+    licence_plate: string | null;
     // otros campos que pueda tener el transportista
     // Todo en la misma linea
   };
-
-
 
   delivery_price: number | null;
 
@@ -32,17 +31,4 @@ export type LoadOrder = {
   // Esto todavia no lo hagas
 
   invoice_number: number | null;
-
-
-  //Aun no darle bola
-  lots: Array<{
-    // Tenemos un input de busqueda de productos que buscaran en base de datos los productos existentes y si no conicide mostrara un label que indicara que es un producto nuevo UI
-    // Creara productos por detras
-    // Opcion de carga corta y carga rapida UI
-    lot_id: string;
-    product_id: number;
-    
-    quantity: number;
-    price: number;
-  }>;
 };

@@ -2,6 +2,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -15,10 +16,12 @@ import { useState } from "react";
 import { ProviderSelector } from "../stock/addEditProduct/ProvidersSelector";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 import { emptyLoadOrder } from "./emptyFormData";
+import type { LoadOrder } from "@/types/loadOrders";
+import { Button } from "@/components/ui/button";
 
 export const AddLoadOrderContainer = () => {
   const { role } = useAppSelector((state) => state.user);
-  const [formData, setFormData] = useState(emptyLoadOrder);
+  const [formData, setFormData] = useState<LoadOrder>(emptyLoadOrder);
 
   const { data: providers, isLoading: isLoadingProviders } = useQuery({
     queryKey: ["providers"],
@@ -28,7 +31,8 @@ export const AddLoadOrderContainer = () => {
     },
   });
 
-  // NOTE Falta asignTo y receptor_id
+  // TODO Falta asignTo y receptor_id
+  //TODO FALTA RENDIMIENTO Y COMISION
 
   return (
     <div className="space-y-6">
@@ -184,10 +188,19 @@ export const AddLoadOrderContainer = () => {
         </CardContent>
         <CardContent>
           <AddLoadOrderTable
-            formData={formData.lots}
-            providerId={formData.provider_id}
+            loadOrderLots={formData.lots}
+            onAddElementToLoadOrder={(newLot) => {
+              setFormData({
+                ...formData,
+                lots: [...formData.lots, newLot],
+              });
+            }}
           />
         </CardContent>
+
+        <CardFooter>
+          <Button className="ml-auto">Crear remito</Button>
+        </CardFooter>
       </Card>
     </div>
   );

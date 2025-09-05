@@ -25,6 +25,8 @@ import { SubCategorySelector } from "../stock/addEditProduct/SubCategorySelector
 import { BrandSelector } from "../stock/addEditProduct/BrandsSelector";
 import { ImageSelector } from "../stock/addEditProduct/ImageSelector";
 import { Textarea } from "@/components/ui/textarea";
+import { LotContainerSelector } from "../addLoadOrder/lotContainerSelector";
+import { adaptLotData } from "@/adapters/lot";
 
 type CreationMode = "SHORT" | "LONG";
 
@@ -38,7 +40,11 @@ const sellMeasurementModeOptions = [
   { label: "Kg", value: "WEIGHT" },
 ];
 
-export function AddLotBtn() {
+export function AddLotBtn({
+  onAddElementToLoadOrder,
+}: {
+  onAddElementToLoadOrder: (lot: Lot) => void;
+}) {
   const [creationMode, setCreationMode] = useState<CreationMode>("SHORT");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -55,8 +61,10 @@ export function AddLotBtn() {
   //   const { selectedStoreId } = useUserStoresContext();
 
   const createLotMutation = useMutation({
+    //Pasarle el providerId
     mutationFn: async (data: { completedInformation: Lot }) => {
-      return await createLot(data.completedInformation);
+      const adaptedLotData = adaptLotData(data.completedInformation);
+      return await createLot(adaptedLotData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -100,9 +108,22 @@ export function AddLotBtn() {
     //   return;
     // }
     // console.log("completedInformation", completedInformation);
-    createLotMutation.mutate({
-      completedInformation: formData,
-    });
+
+    //TODO ACTUALIZAR PRODUCTO SI ESTA EN MODO EDICION
+
+    //TODO AGREGAR AL REMITO
+
+    onAddElementToLoadOrder({
+      ...formData,
+      product_name: selectedProduct.product_name,
+    } as Lot);
+    setIsModalOpen(false);
+    setIsEditing(false);
+    setSelectedProduct(emptyProduct);
+    setFormData(emptyLot);
+    // createLotMutation.mutate({
+    //   completedInformation: formData,
+    // });
   };
 
   // const { data: subCategories, isLoading: isLoadingSub } = useQuery({
@@ -122,7 +143,7 @@ export function AddLotBtn() {
         </Button>
       </DialogTrigger>
       <DialogContent
-        className={`border-4  ${
+        className={`border-4   ${
           isEditing ? " border-green-200 " : "border-transparent"
         }  flex  flex-col gap-2 w-[750px] overflow-y-auto max-h-[90vh] min-h-[500px]`}
       >
@@ -199,32 +220,44 @@ export function AddLotBtn() {
                 />
               </div>
 
-              <CategorySelector
-                value={selectedProduct.category_id}
-                onChange={(id) =>
-                  setSelectedProduct({ ...selectedProduct, category_id: id })
-                }
-              />
-
-              <SubCategorySelector
-                value={selectedProduct.sub_category_id}
-                onChange={(id) =>
-                  setSelectedProduct({
-                    ...selectedProduct,
-                    sub_category_id: id,
-                  })
-                }
-              />
-
-              <BrandSelector
-                value={selectedProduct.brand_id}
-                onChange={(id) =>
-                  setSelectedProduct({ ...selectedProduct, brand_id: id })
-                }
-              />
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="waste">Rubro</Label>
+                <CategorySelector
+                  disabled={!isEditing}
+                  value={selectedProduct.category_id}
+                  onChange={(id) =>
+                    setSelectedProduct({ ...selectedProduct, category_id: id })
+                  }
+                />
+              </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="lot_number">Nombre</Label>
+                <Label htmlFor="waste">Categoría</Label>
+                <SubCategorySelector
+                  disabled={!isEditing}
+                  value={selectedProduct.sub_category_id}
+                  onChange={(id) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      sub_category_id: id,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="waste">Marca</Label>
+                <BrandSelector
+                  disabled={!isEditing}
+                  value={selectedProduct.brand_id}
+                  onChange={(id) =>
+                    setSelectedProduct({ ...selectedProduct, brand_id: id })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="product_name">Nombre</Label>
                 <Input
                   placeholder="product_name"
                   disabled={!isEditing}
@@ -235,19 +268,6 @@ export function AddLotBtn() {
                       ...selectedProduct,
                       product_name: e.target.value,
                     })
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="lot_number">Nro de Lote</Label>
-                <Input
-                  placeholder="Nro de Lote"
-                  disabled={!isEditing}
-                  type="number"
-                  value={formData.lot_number}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lot_number: e.target.value })
                   }
                 />
               </div>
@@ -286,19 +306,6 @@ export function AddLotBtn() {
 
             {creationMode === "LONG" && (
               <>
-                <div>
-                  <Label htmlFor="lot_number">Nro de Lote</Label>
-                  <Input
-                    placeholder="Nro de Lote"
-                    type="number"
-                    disabled={isEditing}
-                    value={formData.lot_number}
-                    onChange={(e) =>
-                      setFormData({ ...formData, lot_number: e.target.value })
-                    }
-                  />
-                </div>
-
                 <ImageSelector
                   onImageSelect={(id) =>
                     setSelectedProduct({
@@ -315,6 +322,180 @@ export function AddLotBtn() {
                 />
               </>
             )}
+
+            <div className="grid grid-cols-2 gap-4 w-full">
+              {/* //Vendra del remito porque el remito es quien crea los lotes.
+                provider_id: number | null;
+               
+              
+                is_sold_out: boolean;
+              
+                waste: {
+                  quantity: number | null;
+                  created_at: string | null;
+                  should_notify_owner: boolean;
+                  location: Location | null;
+                  };
+                  
+                stock_movement: StockMovement[] | null;
+                stock: Stock[] | null;
+                prices: Price[]; */}
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="waste">Vacio</Label>
+                <LotContainerSelector
+                  disabled={!isEditing}
+                  value={formData.lot_container_id}
+                  onChange={(value) =>
+                    setFormData({ ...formData, lot_container_id: value })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="lot_number">Nro de Lote</Label>
+                <Input
+                  placeholder="Nro de Lote"
+                  disabled={!isEditing}
+                  type="number"
+                  value={formData.lot_number}
+                  onChange={(e) =>
+                    setFormData({ ...formData, lot_number: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="waste">Merma</Label>
+                <Input
+                  placeholder="Merma"
+                  disabled={!isEditing}
+                  type="number"
+                  value={formData.waste}
+                  onChange={(e) =>
+                    setFormData({ ...formData, waste: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <Label htmlFor="expiration_date">
+                    Fecha de vencimiento. | Activar notificacion
+                  </Label>
+                  <input
+                    type="checkbox"
+                    checked={formData.expiration_date_notification}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        expiration_date_notification: e.target.checked,
+                      })
+                    }
+                  />
+                </div>
+                <Input
+                  placeholder="Fecha de vencimiento"
+                  disabled={!isEditing}
+                  type="date"
+                  value={formData.expiration_date}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      expiration_date: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="stock">Stock de ingreso</Label>
+                <Input
+                  placeholder="Stock de ingreso"
+                  disabled={!isEditing}
+                  type="number"
+                  value={formData.initial_stock_quantity}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      initial_stock_quantity: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="stock">Precios:</Label>
+                <Input
+                  placeholder="Stock de ingreso"
+                  disabled={!isEditing}
+                  type="number"
+                  value={formData.initial_stock_quantity}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      initial_stock_quantity: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="flex flex-col gap-2 relative col-span-2">
+                <Label className="mt-2 absolute -top-4">
+                  Cantidad por mayor / menor
+                </Label>
+                <div className="grid grid-cols-4 gap-4 mt-3">
+                  <div>
+                    <Label className="text-xs" htmlFor="company">
+                      Cantidad por mayor
+                    </Label>
+                    <Input
+                      id="company"
+                      type="string"
+                      value={
+                        formData.sale_units_equivalence.mayor.quantity_in_base
+                      }
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          sale_units_equivalence: {
+                            ...formData.sale_units_equivalence,
+                            mayor: {
+                              ...formData.sale_units_equivalence.mayor,
+                              quantity_in_base: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs" htmlFor="company">
+                      Cantidad por menor
+                    </Label>
+                    <Input
+                      id="company"
+                      type="string"
+                      value={
+                        formData.sale_units_equivalence.minor.quantity_in_base
+                      }
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          sale_units_equivalence: {
+                            ...formData.sale_units_equivalence,
+                            minor: {
+                              ...formData.sale_units_equivalence.minor,
+                              quantity_in_base: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </>
         ) : (
           <div className="w-full h-full text-center  my-auto">
@@ -322,10 +503,13 @@ export function AddLotBtn() {
           </div>
         )}
 
-        <DialogFooter className="mt-auto ">
-          <span className="mr-auto h-full my-auto">
-            Ultima actualización: {selectedProduct.updated_at}
-          </span>
+        <DialogFooter className="mt-auto translate-y-6 sticky bottom-0 right-0 bg-white border-t-1 border-t-gray-200 py-4">
+          {selectedProduct?.updated_at && (
+            <span className="mr-auto h-full my-auto">
+              Ultima actualización: {selectedProduct.updated_at}
+            </span>
+          )}
+
           {/* <DialogClose asChild>
             <Button disabled={createLotMutation.isLoading} variant="outline">
               Cancelar

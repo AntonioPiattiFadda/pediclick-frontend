@@ -18,15 +18,12 @@ import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 
 interface BrandSelectProps {
-
   value: string;
   onChange: (id: string) => void;
+  disabled: boolean;
 }
 
-export function BrandSelector({
-  value,
-  onChange,
-}: BrandSelectProps) {
+export function BrandSelector({ value, onChange, disabled }: BrandSelectProps) {
   const queryClient = useQueryClient();
 
   const [newBrand, setNewBrand] = useState("");
@@ -34,13 +31,13 @@ export function BrandSelector({
 
   const { role } = useAppSelector((state) => state.user);
 
-   const { data: brands, isLoading: isLoadingBrands } = useQuery({
-      queryKey: ["brands"],
-      queryFn: async () => {
-        const response = await getBrands(role);
-        return response.brands;
-      },
-    });
+  const { data: brands, isLoading: isLoadingBrands } = useQuery({
+    queryKey: ["brands"],
+    queryFn: async () => {
+      const response = await getBrands(role);
+      return response.brands;
+    },
+  });
 
   const createBrandMutation = useMutation({
     mutationFn: async (data: { newBrand: string }) => {
@@ -80,6 +77,7 @@ export function BrandSelector({
         className="w-full border rounded px-2 py-2"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
       >
         <option value="">Sin Marca</option>
         {(brands ?? []).map((brand) => (
@@ -104,7 +102,9 @@ export function BrandSelector({
       {/* Botón para crear nueva marca */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline">+ Nuevo</Button>
+          <Button disabled={disabled} variant="outline">
+            + Nuevo
+          </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>

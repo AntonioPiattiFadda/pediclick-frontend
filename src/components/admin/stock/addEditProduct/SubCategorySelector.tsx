@@ -21,11 +21,13 @@ import { Trash2 } from "lucide-react"; // 👈 icono del tacho
 interface SubCategorySelectProps {
   value: string;
   onChange: (id: string) => void;
+  disabled: boolean;
 }
 
 export function SubCategorySelector({
   value,
   onChange,
+  disabled,
 }: SubCategorySelectProps) {
   const queryClient = useQueryClient();
 
@@ -78,6 +80,7 @@ export function SubCategorySelector({
     <div className="flex items-center gap-2 w-full">
       <select
         className="w-full border rounded px-2 py-2"
+        disabled={disabled}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       >
@@ -104,7 +107,9 @@ export function SubCategorySelector({
       {/* Botón para crear nueva categoría */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline">+ Nuevo</Button>
+          <Button disabled={disabled} variant="outline">
+            + Nuevo
+          </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>

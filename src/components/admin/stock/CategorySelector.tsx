@@ -20,9 +20,14 @@ import { toast } from "sonner";
 interface CategorySelectProps {
   value: string;
   onChange: (id: string) => void;
+  disabled: boolean;
 }
 
-export function CategorySelector({ value, onChange }: CategorySelectProps) {
+export function CategorySelector({
+  value,
+  onChange,
+  disabled,
+}: CategorySelectProps) {
   const queryClient = useQueryClient();
 
   const { data: categories, isLoading: isLoading } = useQuery({
@@ -74,11 +79,12 @@ export function CategorySelector({ value, onChange }: CategorySelectProps) {
     <div className="flex items-center gap-2 w-full">
       <select
         className="w-full border rounded px-2 py-2"
+        disabled={disabled}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       >
         <option value="">Sin Rubro</option>
-        {categories.map((cat) => (
+        {(categories ?? []).map((cat) => (
           <option key={cat.category_id} value={cat.category_id}>
             {cat.category_name}
           </option>
@@ -89,6 +95,7 @@ export function CategorySelector({ value, onChange }: CategorySelectProps) {
       {value && (
         <Button
           variant="ghost"
+          disabled={disabled}
           size="icon"
           onClick={() => onChange("")}
           className="text-red-500 hover:text-red-700"
@@ -100,7 +107,9 @@ export function CategorySelector({ value, onChange }: CategorySelectProps) {
       {/* Botón para crear nueva categoría */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline">+ Nuevo</Button>
+          <Button disabled={disabled} variant="outline">
+            + Nuevo
+          </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>

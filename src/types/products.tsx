@@ -1,5 +1,3 @@
-import type { Lot } from "./lots";
-
 export type SellMeasurementMode = "QUANTITY" | "WEIGHT";
 
 export interface Product {
@@ -35,8 +33,6 @@ export interface Product {
   allow_stock_control: boolean;
   //If no lot control the system will use a single lot as if there was not.
   lot_control: boolean;
-
-  lots: Lot[];
 
   //El formato en que viene de base de datos.
   public_images?: {
