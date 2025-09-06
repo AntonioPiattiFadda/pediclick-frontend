@@ -1,6 +1,7 @@
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -16,14 +17,16 @@ export const AddLoadOrderTable = ({
   loadOrderLots: Lot[];
   onAddElementToLoadOrder: (lot: Lot) => void;
 }) => {
-  console.log("loadOrderLots en tabla", loadOrderLots);
-
   return (
     <div className="rounded-md">
       <Table>
+        <TableCaption className="py-2 pb-6">
+          {" "}
+          <AddLotBtn onAddElementToLoadOrder={onAddElementToLoadOrder} />
+        </TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>Nombbre del producto</TableHead>
+            <TableHead>Nombre del producto</TableHead>
             <TableHead>Numero de lote</TableHead>
             <TableHead>Stock inicial</TableHead>
             <TableHead>Fecha de vencimiento</TableHead>
@@ -46,13 +49,12 @@ export const AddLoadOrderTable = ({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={5} className="text-center">
+              <TableCell colSpan={5} className="text-center translate-y-3">
                 No hay lotes asignados
               </TableCell>
             </TableRow>
           )}
         </TableBody>
-        <AddLotBtn onAddElementToLoadOrder={onAddElementToLoadOrder} />
       </Table>
     </div>
   );

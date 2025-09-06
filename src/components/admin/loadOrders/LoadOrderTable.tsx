@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/table";
 // import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
 // import { ROLES } from "./RoleInfoPopover";
-import { deleteTeamMember } from "@/service/profiles";
 import type { LoadOrder } from "@/types/loadOrders";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
 
@@ -17,41 +16,47 @@ interface TeamMemberTableProps {
 }
 
 export const LoadOrderTable = ({ loadOrders }: TeamMemberTableProps) => {
-  // const { userStores } = useUserStoresContext();
-
   return (
     <div className="rounded-md">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Acciones</TableHead>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Email</TableHead>
+            <TableHead>Nro de remito</TableHead>
+            <TableHead>Nro de factura</TableHead>
 
-            <TableHead>Rol</TableHead>
-            <TableHead>Punto de venta</TableHead>
+            <TableHead>Proveedor</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {loadOrders.length > 0 ? (
-            loadOrders.map((member) => (
-              <TableRow key={member.load_order_id}>
+            loadOrders.map((loadOrder) => (
+              <TableRow key={loadOrder.load_order_id}>
                 <TableCell>
                   {" "}
-                  {/* <EditTeamMemberBtn id={member.id} />{" "} */}
+                  {/* < id={member.id} />{" "} */}
                   <DeleteTableElementPopUp
-                    elementId={member.load_order_id!}
-                    elementName={member.load_order_number}
+                    elementId={loadOrder.load_order_id!}
+                    elementName={
+                      loadOrder?.load_order_number?.toString() ?? "Remito"
+                    }
                     deleteFn={async (id: string | number) => {
-                      await deleteTeamMember(String(id));
+                      console.log("Eliminar orden de carga con ID:", id);
+                      // await deleteTeamMember(String(id));
                     }}
-                    queryKey={["team-members"]}
-                    successMsgTitle="Miembro eliminado"
-                    successMsgDescription="El miembro de equipo ha sido eliminado correctamente."
-                    errorMsgTitle="Error al eliminar miembro"
-                    errorMsgDescription="No se pudo eliminar el miembro de equipo."
+                    queryKey={["load-orders"]}
+                    successMsgTitle="Remito eliminada"
+                    successMsgDescription="El remito ha sido eliminado correctamente."
+                    errorMsgTitle="Error al eliminar remito"
+                    errorMsgDescription="No se pudo eliminar el remito."
                   />
                 </TableCell>
+                <TableCell>{loadOrder.load_order_number || "--"}</TableCell>
+                <TableCell>{loadOrder.invoice_number || "--"}</TableCell>
+                <TableCell>
+                  {loadOrder.providers?.provider_name || "--"}
+                </TableCell>
+                <TableCell>{loadOrder.created_at || "--"}</TableCell>
                 {/* <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="w-10 h-10">
@@ -93,7 +98,7 @@ export const LoadOrderTable = ({ loadOrders }: TeamMemberTableProps) => {
           ) : (
             <TableRow>
               <TableCell colSpan={6} className="text-center">
-                No hay miembros en el equipo.
+                No tienes remitos cargados
               </TableCell>
             </TableRow>
           )}

@@ -153,7 +153,6 @@ const ProductSelector = ({
   };
 
   const isSearchValueNumeric = /^\d+$/.test(inputValue.trim());
-  console.log({ isSearchValueNumeric });
 
   return (
     <div className="relative w-full  inline-flex" ref={comboboxRef}>

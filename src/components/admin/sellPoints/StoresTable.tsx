@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContext";
 import { EditStoreBtn } from "./EditStoreBtn";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
@@ -14,7 +14,7 @@ import { deleteStore } from "@/service/stores";
 
 export const StoresTable = () => {
   const { userStores, setUserStores, setSelectedStoreId, selectedStoreId } =
-    useUserStoresContext();
+    UseUserStoresContext();
 
   const handleDeleteStore = async (id: string | number) => {
     try {
@@ -44,7 +44,7 @@ export const StoresTable = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead >Acciones</TableHead>
+            <TableHead>Acciones</TableHead>
             <TableHead>Nombre</TableHead>
             <TableHead>Descripcion</TableHead>
             <TableHead>Direccion</TableHead>
@@ -55,13 +55,12 @@ export const StoresTable = () => {
             <TableHead>Redes sociales</TableHead>
             <TableHead>Horarios</TableHead>
             <TableHead>Nombre e-commerce</TableHead>
-
           </TableRow>
         </TableHeader>
         <TableBody>
           {userStores.map((store) => (
             <TableRow key={store.store_id}>
-                <TableCell className="text-right flex gap-2">
+              <TableCell className="text-right flex gap-2">
                 {" "}
                 <EditStoreBtn id={store.store_id} />
                 <DeleteTableElementPopUp
@@ -87,7 +86,6 @@ export const StoresTable = () => {
               <TableCell>{store.social_links || "-"}</TableCell>
               <TableCell>{store.opening_hours || "-"}</TableCell>
               <TableCell>{store.slug || "-"}</TableCell>
-            
             </TableRow>
           ))}
         </TableBody>

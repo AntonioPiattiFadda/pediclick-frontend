@@ -4,9 +4,10 @@ import { supabase } from ".";
 export const createLot = async (lot: Lot) => {
   //Desestructurar el stock_movement y el stock porque seran en otra tabla
 
-  const { stock_movement, stock, ...lotData } = lot;
+  const { ...lotData } = lot;
 
   console.log("lotData", lotData);
+  alert("Creando lote...");
 
   const { data: newLot, error: lotsError } = await supabase
     .from("lots")

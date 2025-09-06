@@ -23,7 +23,7 @@ import { editStoreSchema } from "@/validator/stores";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { ZodIssue } from "zod";
-import { useUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContext";
 import { Edit } from "lucide-react";
 
 const emptyStore = {
@@ -39,13 +39,13 @@ const emptyStore = {
   social_links: "",
   opening_hours: "",
   slug: "",
-  deleted_at: '',
-  updated_at: '',
-  created_at: '',
+  deleted_at: "",
+  updated_at: "",
+  created_at: "",
 };
 
-export function EditStoreBtn({ id }: { id:  number }) {
-  const { setUserStores } = useUserStoresContext();
+export function EditStoreBtn({ id }: { id: number }) {
+  const { setUserStores } = UseUserStoresContext();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [zErrors, setZErrors] = useState<ZodIssue[]>([]);
@@ -120,13 +120,16 @@ export function EditStoreBtn({ id }: { id:  number }) {
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost"><Edit/></Button>
+        <Button variant="ghost">
+          <Edit />
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Nuevo punto de venta</DialogTitle>
           <DialogDescription>
-            Completá la información de la nuevo punto de venta que querés agregar.
+            Completá la información de la nuevo punto de venta que querés
+            agregar.
           </DialogDescription>
         </DialogHeader>
 

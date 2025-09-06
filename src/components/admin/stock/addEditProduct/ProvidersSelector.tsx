@@ -12,17 +12,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { useAppSelector } from "@/hooks/useUserData";
 import { createProvider } from "@/service/providers";
-import type { Provider } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
+import type { Provider } from "@/types/providers";
 
 interface ProviderSelectProps {
   providers: Provider[];
   isLoading: boolean;
-  value: string;
-  onChange: (id: string) => void;
+  value: number | null;
+  onChange: (id: number) => void;
+  disabled: boolean;
 }
 
 export function ProviderSelector({
@@ -30,6 +31,7 @@ export function ProviderSelector({
   isLoading,
   value,
   onChange,
+  disabled,
 }: ProviderSelectProps) {
   const queryClient = useQueryClient();
 
@@ -74,8 +76,11 @@ export function ProviderSelector({
     <div className="flex items-center gap-2 w-full">
       <select
         className="w-full border border-gray-200 rounded px-2 py-2"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={value === null ? "" : value}
+        disabled={disabled}
+        onChange={(e) =>
+          onChange(e.target.value === "" ? 0 : Number(e.target.value))
+        }
       >
         <option value="">Sin Proveedor</option>
         {providers.map((provider) => (
@@ -86,11 +91,11 @@ export function ProviderSelector({
       </select>
 
       {/* Si hay selección, mostrar tacho */}
-      {value && (
+      {value !== 0 && (
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => onChange("")}
+          onClick={() => onChange(0)}
           className="text-red-500 hover:text-red-700"
         >
           <Trash2 className="w-5 h-5" />

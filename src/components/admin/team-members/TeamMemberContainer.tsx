@@ -9,14 +9,14 @@ import { useQuery } from "@tanstack/react-query";
 import TableSkl from "../sellPoints/ui/tableSkl";
 import { TeamMemberTable } from "./TeamMemberTable";
 import { AddTeamMemberBtn } from "./AddTeamMemberBtn";
-import { useUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContext";
 import { getUserTeamMembers } from "@/service/profiles";
 
 export const TeamMemberContainer = () => {
   // const [searchTerm, setSearchTerm] = useState("");
   // const [selectedCategory, setSelectedCategory] = useState("all");
   // const [selectedStatus, setSelectedStatus] = useState("all");
-  const { selectedStoreId } = useUserStoresContext();
+  const { selectedStoreId } = UseUserStoresContext();
 
   const {
     data: teamMembers = [],

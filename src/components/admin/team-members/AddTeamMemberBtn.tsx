@@ -25,7 +25,7 @@ import { useState } from "react";
 import { createTeamMemberSchema } from "@/validator/teamMembers";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContext";
 import type { ZodIssue } from "zod";
 import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
 import RolesInfoPopover, { ROLES } from "./RoleInfoPopover";
@@ -53,7 +53,7 @@ const emptyUser: UserProfile = {
 
 export function AddTeamMemberBtn() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { userStores } = useUserStoresContext();
+  const { userStores } = UseUserStoresContext();
   const [zErrors, setZErrors] = useState<ZodIssue[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState<UserProfile>(emptyUser);

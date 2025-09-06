@@ -7,21 +7,30 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 // import TableSkl from "../sellPoints/ui/tableSkl";
+import { adaptLoadOrderForSubmission } from "@/adapters/loadOrders";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAppSelector } from "@/hooks/useUserData";
+import { createLoadOrder } from "@/service/loadOrders";
 import { getProviders } from "@/service/providers";
 import type { LoadOrder } from "@/types/loadOrders";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { ProviderSelector } from "../stock/addEditProduct/ProvidersSelector";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 import { emptyLoadOrder } from "./emptyFormData";
 
 export const AddLoadOrderContainer = () => {
+  const queryClient = useQueryClient();
+
   const { role } = useAppSelector((state) => state.user);
   const [formData, setFormData] = useState<LoadOrder>(emptyLoadOrder);
+
+  console.log("Form data:", formData);
+  const navigator = useNavigate();
 
   const { data: providers, isLoading: isLoadingProviders } = useQuery({
     queryKey: ["providers"],
@@ -34,10 +43,39 @@ export const AddLoadOrderContainer = () => {
   // TODO Falta asignTo y receptor_id
   //TODO FALTA RENDIMIENTO Y COMISION
 
-  const handleCreateLoadOrder = () => {
+  const createLoadOrderMutation = useMutation({
+    mutationFn: async (data: LoadOrder) => {
+      const { loadOrder, lots, prices } = adaptLoadOrderForSubmission(data);
+      return await createLoadOrder(role, loadOrder, lots, prices);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["load-orders"] });
+      // navigator("/load-orders");
+    },
+    onError: (error) => {
+      const errorMessage =
+        typeof error === "object" && error !== null && "message" in error
+          ? String((error as { message?: unknown }).message)
+          : "Error desconocido";
+      toast("Error al crear el remito", {
+        description: errorMessage,
+      });
+    },
+  });
+
+  const handleCreateLoadOrder = async () => {
     //TODO Validar
     //TODO separar los elementos para apuntar a las funciones lo que seria adaptar
     //TODO Crear el remito en el backend
+    console.log("Submitting form data:", formData);
+    if (!formData) return;
+
+    try {
+      await createLoadOrderMutation.mutateAsync(formData);
+      setFormData(emptyLoadOrder);
+    } catch (error) {
+      console.error("Error creating load order:", error);
+    }
   };
 
   return (
@@ -110,9 +148,12 @@ export const AddLoadOrderContainer = () => {
             <Input
               id="max"
               type="number"
-              value={formData.invoice_number}
+              value={formData.invoice_number ?? ""}
               onChange={(e) =>
-                setFormData({ ...formData, invoice_number: e.target.value })
+                setFormData({
+                  ...formData,
+                  invoice_number: Number(e.target.value),
+                })
               }
             />
           </div>
@@ -127,7 +168,7 @@ export const AddLoadOrderContainer = () => {
                 <Input
                   id="company"
                   type="string"
-                  value={formData.transporter_data.delivery_company}
+                  value={formData.transporter_data.delivery_company ?? ""}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -147,7 +188,7 @@ export const AddLoadOrderContainer = () => {
                 <Input
                   id="min"
                   type="string"
-                  value={formData.transporter_data.name}
+                  value={formData.transporter_data.name ?? ""}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -167,7 +208,7 @@ export const AddLoadOrderContainer = () => {
                 <Input
                   id="max"
                   type="string"
-                  value={formData.transporter_data.licence_plate}
+                  value={formData.transporter_data.licence_plate ?? ""}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -187,9 +228,12 @@ export const AddLoadOrderContainer = () => {
                 <Input
                   id="max"
                   type="number"
-                  value={formData.delivery_price}
+                  value={formData.delivery_price ?? ""}
                   onChange={(e) =>
-                    setFormData({ ...formData, delivery_price: e.target.value })
+                    setFormData({
+                      ...formData,
+                      delivery_price: Number(e.target.value),
+                    })
                   }
                 />
               </div>
@@ -209,19 +253,29 @@ export const AddLoadOrderContainer = () => {
         </CardContent>
         <CardContent>
           <AddLoadOrderTable
-            loadOrderLots={formData.lots}
+            loadOrderLots={formData.lots ?? []}
             onAddElementToLoadOrder={(newLot) => {
               setFormData({
                 ...formData,
-                lots: [...formData.lots, newLot],
+                lots: [...(formData.lots ?? []), newLot],
               });
             }}
           />
         </CardContent>
 
         <CardFooter>
-          <Button onClick={handleCreateLoadOrder} className="ml-auto">
-            Crear remito
+          <Button
+            disabled={
+              !formData.lots ||
+              formData.lots.length === 0 ||
+              createLoadOrderMutation.isLoading
+            }
+            onClick={handleCreateLoadOrder}
+            className="ml-auto"
+          >
+            {createLoadOrderMutation.isLoading
+              ? "Creando remito..."
+              : "Crear remito"}
           </Button>
         </CardFooter>
       </Card>

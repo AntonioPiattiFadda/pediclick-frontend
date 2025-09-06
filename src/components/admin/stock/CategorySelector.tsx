@@ -18,8 +18,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 interface CategorySelectProps {
-  value: string;
-  onChange: (id: string) => void;
+  value: number | null;
+  onChange: (id: number | null) => void;
   disabled: boolean;
 }
 
@@ -80,10 +80,12 @@ export function CategorySelector({
       <select
         className="w-full border rounded px-2 py-2"
         disabled={disabled}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={value === null ? "" : value}
+        onChange={(e) =>
+          onChange(e.target.value === "" ? 0 : Number(e.target.value))
+        }
       >
-        <option value="">Sin Rubro</option>
+        <option value={0}>Sin Rubro</option>
         {(categories ?? []).map((cat) => (
           <option key={cat.category_id} value={cat.category_id}>
             {cat.category_name}
@@ -97,7 +99,7 @@ export function CategorySelector({
           variant="ghost"
           disabled={disabled}
           size="icon"
-          onClick={() => onChange("")}
+          onClick={() => onChange(null)}
           className="text-red-500 hover:text-red-700"
         >
           <Trash2 className="w-5 h-5" />

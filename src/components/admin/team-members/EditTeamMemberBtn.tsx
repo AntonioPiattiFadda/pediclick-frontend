@@ -22,7 +22,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
-import { useUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContext";
 import { editTeamMember, getTeamMemberDataById } from "@/service/profiles";
 import type { UserProfile } from "@/types";
 import { editTeamMemberSchema } from "@/validator/teamMembers";
@@ -54,7 +54,7 @@ const emptyUser: UserProfile = {
 
 export function EditTeamMemberBtn({ id }: { id: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { userStores } = useUserStoresContext();
+  const { userStores } = UseUserStoresContext();
   const [zErrors, setZErrors] = useState<ZodIssue[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState<UserProfile>(emptyUser);

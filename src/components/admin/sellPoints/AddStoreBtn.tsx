@@ -19,7 +19,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createStoreSchema } from "@/validator/stores";
-import { useUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContext";
 import type { Store } from "@/types";
 import type { ZodIssue } from "zod";
 import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
@@ -40,7 +40,7 @@ const emptyStore = {
 
 export function AddStoreBtn() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { setUserStores, setSelectedStoreId } = useUserStoresContext();
+  const { setUserStores, setSelectedStoreId } = UseUserStoresContext();
   const [zErrors, setZErrors] = useState<ZodIssue[]>([]);
 
   const [formData, setFormData] = useState(emptyStore);

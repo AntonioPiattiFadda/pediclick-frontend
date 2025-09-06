@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContext";
 import { getUserStores } from "@/service/stores";
 import { useEffect, useState } from "react";
 import NoStoreModal from "../header/NoStoreModal";
@@ -29,7 +29,7 @@ export const STORES_COLORS = [
 
 const StoresSelector = () => {
   const { userStores, setUserStores, setSelectedStoreId, selectedStoreId } =
-    useUserStoresContext();
+    UseUserStoresContext();
 
   const { role } = useAppSelector((state) => state.user);
 
@@ -56,7 +56,9 @@ const StoresSelector = () => {
     <>
       {userStores.length === 0 && <NoStoreModal />}
       <Select
-        onValueChange={(value) => setSelectedStoreId(value ? Number(value) : null)}
+        onValueChange={(value) =>
+          setSelectedStoreId(value ? Number(value) : null)
+        }
         value={selectedStoreId ? String(selectedStoreId) : ""}
       >
         <SelectTrigger className="w-[280px] relative">

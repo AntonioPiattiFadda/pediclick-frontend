@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContext";
 import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
 import { ROLES } from "./RoleInfoPopover";
 import { deleteTeamMember } from "@/service/profiles";
@@ -19,7 +19,7 @@ interface TeamMemberTableProps {
 }
 
 export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
-  const { userStores } = useUserStoresContext();
+  const { userStores } = UseUserStoresContext();
 
   return (
     <div className="rounded-md">

@@ -1,18 +1,24 @@
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { useAppSelector } from "@/hooks/useUserData";
-import { BarChart3, Home, Package } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import SideBarSkeleton from "./sideBarSkeleton";
+import { BarChart3, ChevronRight, Home, Package } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const MENU_ITEMS = [
@@ -47,7 +53,11 @@ export const MENU_ITEMS = [
     roles: ["OWNER", "MANAGER"],
     subItems: [
       {
-        title: "Agregar Remito +",
+        title: "Tus Remitos",
+        url: "/load-orders",
+      },
+      {
+        title: "Agregar Remito",
         url: "/load-orders/add-load-order",
       },
     ],
@@ -60,8 +70,6 @@ export const MENU_ITEMS = [
 ];
 
 export function AppSidebar() {
-  const location = useLocation();
-
   const { role } = useAppSelector((state) => state.user);
 
   const userRoleMenuItems = MENU_ITEMS.filter((item) =>
@@ -96,60 +104,54 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/70 font-medium">
-            Navegación
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {!role && <SideBarSkeleton />}
-
-              {userRoleMenuItems.map((item) => {
-                const isActive = location.pathname === item.url;
+          <SidebarGroupLabel>Platform</SidebarGroupLabel>
+          <SidebarMenu>
+            {userRoleMenuItems.map((item) => {
+              const hasSubItems = item.subItems && item.subItems.length > 0;
+              if (!hasSubItems) {
                 return (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      className={`transition-all duration-200 ${
-                        isActive
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                      }`}
-                    >
-                      <Link
-                        to={item.url}
-                        className="flex items-center gap-3 px-3 py-2"
-                      >
-                        <item.icon className="w-4 h-4" />
+                    <SidebarMenuButton asChild tooltip={item.title}>
+                      <Link to={item.url}>
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
-
-                    {/* Subitems */}
-                    {item.subItems && (
-                      <div className="ml-6 mt-1 flex flex-col gap-1">
-                        {item.subItems.map((sub) => {
-                          const isSubActive = location.pathname === sub.url;
-                          return (
-                            <Link
-                              key={sub.title}
-                              to={sub.url}
-                              className={`text-sm px-3 py-1 ml-6 rounded-md transition-colors ${
-                                isSubActive
-                                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                                  : "text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-sidebar-accent-foreground"
-                              }`}
-                            >
-                              {sub.title}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
                   </SidebarMenuItem>
                 );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
+              }
+              return (
+                <Collapsible
+                  key={item.title}
+                  asChild
+                  // defaultOpen={item.isActive}
+                  className="group/collapsible"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton tooltip={item.title}>
+                        {item.icon && <item.icon />}
+                        <span>{item.title}</span>
+                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {item.subItems?.map((subItem) => (
+                          <SidebarMenuSubItem key={subItem.title}>
+                            <SidebarMenuSubButton asChild>
+                              <Link to={subItem.url}>
+                                <span>{subItem.title}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              );
+            })}
+          </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>

@@ -1,11 +1,6 @@
 "use client";
-import type { Store } from "@/types";
-import {
-  createContext,
-  useContext,
-  useState,
-  type ReactNode
-} from "react";
+import type { Store } from "@/types/stores";
+import { createContext, useContext, useState, type ReactNode } from "react";
 
 const UserStoresContext = createContext<{
   userStores: Store[];
@@ -18,14 +13,14 @@ const UserStoresContext = createContext<{
   setUserStores: () => {},
   selectedStoreId: null,
   setSelectedStoreId: () => {},
-  selectedStoreIndex: 0
+  selectedStoreIndex: 0,
 });
 
 export const UserStoresProvider = ({ children }: { children: ReactNode }) => {
   const [userStores, setUserStores] = useState<Store[]>([]);
   const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
   const selectedStoreIndex = userStores.findIndex(
-    store => store.store_id === (selectedStoreId ?? 0)
+    (store) => store.store_id === (selectedStoreId ?? 0)
   );
 
   return (
@@ -35,7 +30,7 @@ export const UserStoresProvider = ({ children }: { children: ReactNode }) => {
         setUserStores,
         selectedStoreId,
         setSelectedStoreId,
-        selectedStoreIndex
+        selectedStoreIndex,
       }}
     >
       {children}
@@ -43,4 +38,4 @@ export const UserStoresProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useUserStoresContext = () => useContext(UserStoresContext);
+export const UseUserStoresContext = () => useContext(UserStoresContext);

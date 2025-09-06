@@ -1,6 +1,9 @@
 // import type { LoadOrder } from "@/types";
+import type { LoadOrder } from "@/types/loadOrders";
 import { supabase } from ".";
 import { getBusinessOwnerIdByRole } from "./profiles";
+import type { Lot } from "@/types/lots";
+import type { Price } from "@/types/prices";
 
 // const mockLoadOrders: LoadOrder[] = [
 //   {
@@ -17,18 +20,59 @@ import { getBusinessOwnerIdByRole } from "./profiles";
 //   },
 // ];
 
-export const getAllLoadOrdersMock = async (userRole: string) => {
+export const getAllLoadOrders = async (userRole: string) => {
   const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
   const { data: dbLoadOrders, error } = await supabase
     .from("load_orders")
-    .select("*")
+    .select(
+      `*,
+      providers(provider_name)
+        `
+    )
     .eq("business_owner_id", businessOwnerId);
-
-  console.log(dbLoadOrders);
 
   if (error) {
     throw new Error(error.message);
   }
 
   return { dbLoadOrders, error: null };
+};
+
+export const createLoadOrder = async (
+  userRole: string,
+  loadOrder: LoadOrder,
+  lots: Lot,
+  prices: Price[]
+) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+
+  const reqBody = {
+    p_load_order: {
+      business_owner_id: businessOwnerId, // viene del user logueado
+      load_order_number: Number(loadOrder.load_order_number) || null,
+      provider_id: Number(loadOrder.provider_id) || null,
+      delivery_date: loadOrder.delivery_date,
+      receptor_other: loadOrder.receptor_other ?? null,
+      receptor_id: Number(loadOrder.receptor_id) || null,
+      transporter_data: loadOrder.transporter_data ?? null,
+      delivery_price: Number(loadOrder.delivery_price) || null,
+      invoice_number: Number(loadOrder.invoice_number) || null,
+      status: loadOrder.status ?? "pending",
+    },
+    p_lots: lots,
+    p_prices: prices,
+  };
+
+  console.log("createLoadOrder reqBody:", reqBody);
+  const { data, error } = await supabase.rpc(
+    "create_load_order_with_lots_and_prices",
+    reqBody
+  );
+  console.log("createLoadOrder response:", { data, error });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 };

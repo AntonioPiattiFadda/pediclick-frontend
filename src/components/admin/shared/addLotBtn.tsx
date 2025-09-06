@@ -9,27 +9,22 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createLot } from "@/service/lots";
+import { Textarea } from "@/components/ui/textarea";
 import type { Lot } from "@/types/lots";
+import type { Price } from "@/types/prices";
 import type { Product, SellMeasurementMode } from "@/types/products";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Barcode, Plus } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { LotContainerSelector } from "../addLoadOrder/lotContainerSelector";
+import { BrandSelector } from "../stock/addEditProduct/BrandsSelector";
 import { emptyProduct } from "../stock/addEditProduct/emptyFormData";
+import { ImageSelector } from "../stock/addEditProduct/ImageSelector";
+import { SubCategorySelector } from "../stock/addEditProduct/SubCategorySelector";
 import { CategorySelector } from "../stock/CategorySelector";
 import CheckBoxesSelector from "./checkBoxesSelector";
 import { emptyLot } from "./emptyFormData";
-import ProductSelectorV2 from "./productSelector";
-import { SubCategorySelector } from "../stock/addEditProduct/SubCategorySelector";
-import { BrandSelector } from "../stock/addEditProduct/BrandsSelector";
-import { ImageSelector } from "../stock/addEditProduct/ImageSelector";
-import { Textarea } from "@/components/ui/textarea";
-import { LotContainerSelector } from "../addLoadOrder/lotContainerSelector";
-import { adaptLotData } from "@/adapters/lot";
 import { PricesSelectorV2 } from "./pricesSelectorV2";
-import type { Price } from "@/types/prices";
-import { set } from "lodash";
+import ProductSelectorV2 from "./productSelector";
 
 type CreationMode = "SHORT" | "LONG";
 
@@ -58,60 +53,7 @@ export function AddLotBtn({
   const isProductSelected = Boolean(selectedProduct.product_id);
   const [isEditing, setIsEditing] = useState(false);
 
-  const queryClient = useQueryClient();
-
-  //   const { role } = useAppSelector((state) => state.user);
-  //   const { selectedStoreId } = useUserStoresContext();
-
-  const createLotMutation = useMutation({
-    //Pasarle el providerId
-    mutationFn: async (data: { completedInformation: Lot }) => {
-      const adaptedLotData = adaptLotData(data.completedInformation);
-      return await createLot(adaptedLotData);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      setIsModalOpen(false);
-      toast("Elemento creado exitosamente", {
-        description: "El elemento ha sido creado correctamente.",
-        action: {
-          label: "Undo",
-          onClick: () => console.log("Undo"),
-        },
-      });
-      setFormData(emptyLot);
-    },
-    onError: () => {
-      toast("Error al agregar el elemento", {
-        description: "Intentá nuevamente más tarde.",
-        action: {
-          label: "Undo",
-          onClick: () => console.log("Undo"),
-        },
-      });
-    },
-  });
-
   const handleSubmit = () => {
-    // const completedInformation = adaptProductForDb(
-    //   formData,
-    //   selectedStoreId || 0
-    // );
-
-    // const validation = createProductSchema.safeParse(completedInformation);
-
-    // if (!validation.success) {
-    //   toast("Algunos datos fantantes ", {
-    //     description: "Sunday, December 03, 2023 at 9:00 AM",
-    //     action: {
-    //       label: "Undo",
-    //       onClick: () => console.log("Undo"),
-    //     },
-    //   });
-    //   return;
-    // }
-    // console.log("completedInformation", completedInformation);
-
     //TODO ACTUALIZAR PRODUCTO SI ESTA EN MODO EDICION
 
     //TODO AGREGAR AL REMITO
@@ -119,6 +61,7 @@ export function AddLotBtn({
     onAddElementToLoadOrder({
       ...formData,
       product_name: selectedProduct.product_name,
+      product_id: selectedProduct.product_id,
       prices: lotPrices,
     } as Lot);
     setIsModalOpen(false);
@@ -126,18 +69,7 @@ export function AddLotBtn({
     setSelectedProduct(emptyProduct);
     setLotPrices([]);
     setFormData(emptyLot);
-    // createLotMutation.mutate({
-    //   completedInformation: formData,
-    // });
   };
-
-  // const { data: subCategories, isLoading: isLoadingSub } = useQuery({
-  //   queryKey: ["sub-categories"],
-  //   queryFn: async () => {
-  //     const response = await getSubCategories(role);
-  //     return response.categories;
-  //   },
-  // });
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -269,7 +201,7 @@ export function AddLotBtn({
                   onChange={(e) =>
                     setSelectedProduct({
                       ...selectedProduct,
-                      barcode: e.target.value,
+                      barcode: Number(e.target.value),
                     })
                   }
                 />
@@ -583,23 +515,9 @@ export function AddLotBtn({
               )}
 
               {isEditing ? (
-                <Button
-                  disabled={createLotMutation.isLoading}
-                  onClick={handleSubmit}
-                >
-                  {createLotMutation.isLoading
-                    ? "Actualizando..."
-                    : "Aceptar cambios"}
-                </Button>
+                <Button onClick={handleSubmit}>Guardar Cambios</Button>
               ) : (
-                <Button
-                  disabled={createLotMutation.isLoading}
-                  onClick={handleSubmit}
-                >
-                  {createLotMutation.isLoading
-                    ? "Agregando..."
-                    : "Agregar a remito"}
-                </Button>
+                <Button onClick={handleSubmit}>Agregar al remito</Button>
               )}
             </>
           )}

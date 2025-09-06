@@ -6,9 +6,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContext";
 import { useAppSelector } from "@/hooks/useUserData";
-import { getAllLoadOrdersMock } from "@/service/loadOrders";
+import { getAllLoadOrders } from "@/service/loadOrders";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import TableSkl from "../sellPoints/ui/tableSkl";
@@ -18,7 +18,7 @@ export const LoadOrderContainer = () => {
   // const [searchTerm, setSearchTerm] = useState("");
   // const [selectedCategory, setSelectedCategory] = useState("all");
   // const [selectedStatus, setSelectedStatus] = useState("all");
-  const { selectedStoreId } = useUserStoresContext();
+  const { selectedStoreId } = UseUserStoresContext();
 
   const { role } = useAppSelector((state) => state.user);
 
@@ -29,7 +29,7 @@ export const LoadOrderContainer = () => {
   } = useQuery({
     queryKey: ["load-orders"],
     queryFn: async () => {
-      const response = await getAllLoadOrdersMock(role);
+      const response = await getAllLoadOrders(role);
       return response.dbLoadOrders;
     },
     enabled: selectedStoreId !== null,
@@ -38,11 +38,10 @@ export const LoadOrderContainer = () => {
   if (isLoading) {
     return <TableSkl />;
   }
-  
- if (isError) {
+
+  if (isError) {
     return <TableSkl />;
   }
-  
 
   return (
     <div className="space-y-6">
@@ -50,12 +49,15 @@ export const LoadOrderContainer = () => {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <CardTitle>Personal</CardTitle>
-              <CardDescription>Gestiona tus personal</CardDescription>
+              <CardTitle>Remitos</CardTitle>
+              <CardDescription>Gestiona tus remitos</CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
-              <Link to="/new-load-order" className="text-sm underline">
-               <Button>Crear orden de carga</Button>
+              <Link
+                to="/load-orders/add-load-order"
+                className="text-sm underline"
+              >
+                <Button>Crear orden de carga</Button>
               </Link>
             </div>
           </div>

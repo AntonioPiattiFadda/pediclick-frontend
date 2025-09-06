@@ -19,7 +19,7 @@ import { useState } from "react";
 
 import { adaptProductForDb } from "@/adapters/products";
 import { Label } from "@/components/ui/label";
-import { useUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContext";
 import { useAppSelector } from "@/hooks/useUserData";
 import { createProductSchema } from "@/validator/products";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -73,7 +73,7 @@ export function AddProductBtn({
   const queryClient = useQueryClient();
 
   const { role } = useAppSelector((state) => state.user);
-  const { selectedStoreId } = useUserStoresContext();
+  const { selectedStoreId } = UseUserStoresContext();
 
   const { data: providers, isLoading: isLoadingProviders } = useQuery({
     queryKey: ["providers"],
