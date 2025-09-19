@@ -1,3 +1,5 @@
+import type { Lot } from "./lots";
+
 export type SellMeasurementMode = "QUANTITY" | "WEIGHT";
 
 export interface Product {
@@ -51,13 +53,8 @@ export interface Product {
   sale_units?: {
     sale_unit_name: string;
   };
+
+  lots?: Lot[];
 }
 
-export interface ProductLot {
-  lot_id: number;
-  product_id: number;
-  quantity: number;
-  expiration_date: string;
-  created_at: string;
-  updated_at: string;
-}
+

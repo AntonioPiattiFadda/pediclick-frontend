@@ -9,7 +9,7 @@ const LoadOrders = () => {
         </h1>
         <p className="text-muted-foreground">Administra tu personal</p>
       </div>
-      <LoadOrderContainer/>
+      <LoadOrderContainer />
     </div>
   );
 };

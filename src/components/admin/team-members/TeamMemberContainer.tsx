@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import TableSkl from "../sellPoints/ui/tableSkl";
 import { TeamMemberTable } from "./TeamMemberTable";
 import { AddTeamMemberBtn } from "./AddTeamMemberBtn";
-import { UseUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
 import { getUserTeamMembers } from "@/service/profiles";
 
 export const TeamMemberContainer = () => {

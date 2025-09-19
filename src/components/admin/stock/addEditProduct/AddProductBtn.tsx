@@ -19,12 +19,12 @@ import { useState } from "react";
 
 import { adaptProductForDb } from "@/adapters/products";
 import { Label } from "@/components/ui/label";
-import { UseUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
 import { useAppSelector } from "@/hooks/useUserData";
 import { createProductSchema } from "@/validator/products";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CategorySelector } from "../CategorySelector";
+import { CategorySelector } from "../../shared/CategorySelector";
 import { BrandSelector } from "./BrandsSelector";
 import { ImageSelector } from "./ImageSelector";
 import LotSelector from "./LotSelector";

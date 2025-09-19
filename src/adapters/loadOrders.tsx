@@ -4,10 +4,13 @@ import { v4 as uuid } from "uuid";
 export const adaptLoadOrderForSubmission = (formData: LoadOrder) => {
   const { lots, ...loadOrder } = formData;
 
+  console.log("Original Load Order:", formData);
+
   const adaptedLots = (lots ?? []).map((lot) => {
     const client_key = uuid(); // 👈 genera clave única por lote
     return {
       ...lot,
+      initial_stock_quantity: Number(lot.initial_stock_quantity) || 0,
       client_key,
     };
   });

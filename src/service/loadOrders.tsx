@@ -21,7 +21,9 @@ import type { Price } from "@/types/prices";
 // ];
 
 export const getAllLoadOrders = async (userRole: string) => {
+  console.log("getAllLoadOrders called with userRole:", userRole);
   const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  console.log("getAllLoadOrders - businessOwnerId:", businessOwnerId);
   const { data: dbLoadOrders, error } = await supabase
     .from("load_orders")
     .select(
@@ -30,6 +32,7 @@ export const getAllLoadOrders = async (userRole: string) => {
         `
     )
     .eq("business_owner_id", businessOwnerId);
+
 
   if (error) {
     throw new Error(error.message);
@@ -63,16 +66,57 @@ export const createLoadOrder = async (
     p_prices: prices,
   };
 
-  console.log("createLoadOrder reqBody:", reqBody);
   const { data, error } = await supabase.rpc(
     "create_load_order_with_lots_and_prices",
     reqBody
   );
-  console.log("createLoadOrder response:", { data, error });
 
   if (error) {
     throw new Error(error.message);
   }
 
   return data;
+};
+
+
+export const getLoadOrder = async (loadOrderId: string, userRole: string): Promise<{ dbLoadOrder: LoadOrder | null, error: string | null }> => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  const { data: dbLoadOrder, error } = await supabase
+    .from("load_orders")
+    .select(
+      `
+      *,
+      providers(provider_name),
+      lots(
+  *,
+  prices(*),
+  products(*),
+  stock(
+    *,
+    stock_rooms(stock_room_name),
+    stores(store_name)
+  )
+)
+
+    `
+    )
+    .eq("business_owner_id", businessOwnerId)
+    .eq("load_order_id", loadOrderId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const adaptedLoadOrder: LoadOrder | null = dbLoadOrder ? {
+    ...dbLoadOrder,
+    lots: dbLoadOrder.lots?.map((lot: any) => ({
+      ...lot,
+      product_name: lot.products?.product_name || 'N/A',
+      prices: lot.prices || [],
+      stock: lot.stock || [],
+    })) || [],
+  } : null;
+
+  return { dbLoadOrder: adaptedLoadOrder, error: null };
 };

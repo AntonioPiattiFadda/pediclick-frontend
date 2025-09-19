@@ -5,14 +5,13 @@ import { useAppSelector } from "@/hooks/useUserData";
 import { signOut } from "@/service/auth";
 import { getUserDataByUid } from "@/service/profiles";
 import { setUser } from "@/stores/userSlice";
-import type { UserProfile } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import StoresSelector from "../sellPoints/StoresSelector";
 import { ROLES } from "../team-members/RoleInfoPopover";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { UserProfile } from "@/types/users";
 
 export const Header = () => {
   const dispatch = useDispatch();
@@ -71,7 +70,7 @@ export const Header = () => {
           </div>
         </div>
 
-        <StoresSelector />
+
 
         {userData ? (
           <div className="flex items-center gap-3">
@@ -87,9 +86,8 @@ export const Header = () => {
 
             <Avatar className="w-8 h-8">
               <AvatarImage
-                src={`https://ui-avatars.com/api/?name=${
-                  userData?.full_name || userData?.email
-                }`}
+                src={`https://ui-avatars.com/api/?name=${userData?.full_name || userData?.email
+                  }`}
                 alt="Usuario"
               />
               <AvatarFallback className="bg-primary text-primary-foreground text-sm">

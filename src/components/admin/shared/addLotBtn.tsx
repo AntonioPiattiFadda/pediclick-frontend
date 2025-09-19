@@ -10,19 +10,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import type { Lot } from "@/types/lots";
 import type { Price } from "@/types/prices";
 import type { Product, SellMeasurementMode } from "@/types/products";
+import { adaptProductForDb } from "@/adapters/products";
 import { Barcode, Plus } from "lucide-react";
 import { useState } from "react";
 import { LotContainerSelector } from "../addLoadOrder/lotContainerSelector";
 import { BrandSelector } from "../stock/addEditProduct/BrandsSelector";
-import { emptyProduct } from "../stock/addEditProduct/emptyFormData";
 import { ImageSelector } from "../stock/addEditProduct/ImageSelector";
 import { SubCategorySelector } from "../stock/addEditProduct/SubCategorySelector";
-import { CategorySelector } from "../stock/CategorySelector";
+import { CategorySelector } from "./CategorySelector";
 import CheckBoxesSelector from "./checkBoxesSelector";
-import { emptyLot } from "./emptyFormData";
+import { emptyLot, emptyProduct } from "./emptyFormData";
 import { PricesSelectorV2 } from "./pricesSelectorV2";
 import ProductSelectorV2 from "./productSelector";
 
@@ -47,7 +48,7 @@ export function AddLotBtn({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [formData, setFormData] = useState<Lot>(emptyLot);
-  const [selectedProduct, setSelectedProduct] = useState<Product>(emptyProduct);
+  const [selectedProduct, setSelectedProduct] = useState<Product>(() => adaptProductForDb(emptyProduct));
   const [lotPrices, setLotPrices] = useState<Price[]>([]);
 
   const isProductSelected = Boolean(selectedProduct.product_id);
@@ -66,7 +67,7 @@ export function AddLotBtn({
     } as Lot);
     setIsModalOpen(false);
     setIsEditing(false);
-    setSelectedProduct(emptyProduct);
+    setSelectedProduct(adaptProductForDb(emptyProduct));
     setLotPrices([]);
     setFormData(emptyLot);
   };
@@ -80,19 +81,17 @@ export function AddLotBtn({
         </Button>
       </DialogTrigger>
       <DialogContent
-        className={`border-4   ${
-          isEditing ? " border-green-200 " : "border-transparent"
-        }  flex  flex-col gap-2 w-[750px] overflow-y-auto max-h-[90vh] min-h-[500px]`}
+        className={`border-4   ${isEditing ? " border-green-200 " : "border-transparent"
+          }  flex  flex-col gap-2 w-[750px] overflow-y-auto max-h-[90vh] min-h-[500px]`}
       >
         <DialogHeader>
           <DialogTitle>
             {isEditing
               ? "Editando producto"
-              : `${
-                  selectedProduct.product_name
-                    ? "Producto: " + selectedProduct.product_name
-                    : "Elegir producto"
-                }`}
+              : `${selectedProduct.product_name
+                ? "Producto: " + selectedProduct.product_name
+                : "Elegir producto"
+              }`}
           </DialogTitle>
           {/* <DialogDescription>
             Completá la información del nuevo elemento que querés publicar.
@@ -115,374 +114,334 @@ export function AddLotBtn({
 
         {isProductSelected ? (
           <>
-            <CheckBoxesSelector
-              options={creationModeOptions}
-              selectedOption={creationMode}
-              onSelectOption={(value) => setCreationMode(value as CreationMode)}
-              disabled={!isEditing}
-            />
+            <Tabs defaultValue="lot" className="w-full">
+              <TabsList className="grid grid-cols-2 w-full">
+                <TabsTrigger value="lot">Lote</TabsTrigger>
+                <TabsTrigger value="product">Producto</TabsTrigger>
+              </TabsList>
 
-            <div className="grid grid-cols-2 gap-4 w-full">
-              <div className="flex flex-col gap-2 col-span-2">
-                <Label htmlFor="lot_number">Precios</Label>
-                <Input
-                  type="number"
-                  placeholder="Cantidad por ingresar"
-                  disabled={!isEditing}
-                  value={formData.initial_stock_quantity || ""}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      initial_stock_quantity: Number(e.target.value),
-                      cost_per_unit: formData.total_cost
-                        ? Number(formData.total_cost) /
-                          Number(e.target.value || 1)
-                        : 0,
-                      total_cost: formData.cost_per_unit
-                        ? Number(formData.cost_per_unit) *
-                          Number(e.target.value || 1)
-                        : 0,
-                    })
-                  }
-                />
-                <Input
-                  type="number"
-                  placeholder="Precio de costo total del lote"
-                  disabled={!isEditing}
-                  value={formData.total_cost || ""}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      total_cost: Number(e.target.value),
-                      cost_per_unit:
-                        Number(e.target.value) /
-                        Number(formData.initial_stock_quantity || 1),
-                    })
-                  }
-                />
-                <span className="text-xs text-gray-500">
-                  Ingresar el costo total del lote (no el costo por unidad)
-                </span>
+              <TabsContent value="lot" className="mt-4">
+                <div className="grid grid-cols-2 gap-4 w-full">
+                  <div className="flex flex-col gap-2 col-span-2">
+                    <Label htmlFor="lot_number">Precios</Label>
+                    <Input
+                      type="number"
+                      placeholder="Cantidad por ingresar"
+                      disabled={!isEditing}
+                      value={formData.initial_stock_quantity || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          initial_stock_quantity: Number(e.target.value),
+                          cost_per_unit: formData.total_cost
+                            ? Number(formData.total_cost) /
+                            Number(e.target.value || 1)
+                            : 0,
+                          total_cost: formData.cost_per_unit
+                            ? Number(formData.cost_per_unit) *
+                            Number(e.target.value || 1)
+                            : 0,
+                        })
+                      }
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Precio de costo total del lote"
+                      disabled={!isEditing}
+                      value={formData.total_cost || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          total_cost: Number(e.target.value),
+                          cost_per_unit:
+                            Number(e.target.value) /
+                            Number(formData.initial_stock_quantity || 1),
+                        })
+                      }
+                    />
+                    <span className="text-xs text-gray-500">
+                      Ingresar el costo total del lote (no el costo por unidad)
+                    </span>
 
-                <PricesSelectorV2
-                  value={lotPrices}
-                  onChange={(prices) => setLotPrices(prices)}
-                  lotId={formData?.lot_id || 0}
-                  disabled={!isEditing}
-                  basePrice={formData.total_cost || 0}
-                />
-              </div>
+                    <PricesSelectorV2
+                      value={lotPrices}
+                      onChange={(prices) => setLotPrices(prices)}
+                      lotId={formData?.lot_id || 0}
+                      disabled={!isEditing}
+                      basePrice={formData.total_cost || 0}
+                    />
+                  </div>
+                </div>
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="lot_number">Código corto</Label>
-                <Input
-                  placeholder="Código corto"
-                  disabled={!isEditing}
-                  type="number"
-                  value={selectedProduct.short_code || ""}
-                  onChange={(e) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      short_code: e.target.value,
-                    })
-                  }
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4 w-full">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="waste">Vacio</Label>
+                    <LotContainerSelector
+                      disabled={!isEditing}
+                      value={formData.lot_container_id === null ? "" : String(formData.lot_container_id)}
+                      onChange={(value) =>
+                        setFormData({
+                          ...formData,
+                          lot_container_id: value ? Number(value) : null,
+                        })
+                      }
+                    />
+                  </div>
 
-              <div className="flex flex-col gap-2">
-                <Label className="flex gap-2" htmlFor="barcode">
-                  Código de barras <Barcode height={14} />
-                </Label>
-                <Input
-                  placeholder="barcode"
-                  disabled={!isEditing}
-                  type="number"
-                  value={selectedProduct.barcode || ""}
-                  onChange={(e) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      barcode: Number(e.target.value),
-                    })
-                  }
-                />
-              </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="lot_number">Nro de Lote</Label>
+                    <Input
+                      placeholder="Nro de Lote"
+                      disabled={!isEditing}
+                      type="number"
+                      value={formData.lot_number ?? ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          lot_number: e.target.value === "" ? null : Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="waste">Rubro</Label>
-                <CategorySelector
-                  disabled={!isEditing}
-                  value={selectedProduct.category_id}
-                  onChange={(id) =>
-                    setSelectedProduct({ ...selectedProduct, category_id: id })
-                  }
-                />
-              </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <Label htmlFor="expiration_date">
+                        Fecha de vencimiento. | Activar notificacion
+                      </Label>
+                      <input
+                        type="checkbox"
+                        checked={formData.expiration_date_notification}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            expiration_date_notification: e.target.checked,
+                          })
+                        }
+                      />
+                    </div>
+                    <Input
+                      placeholder="Fecha de vencimiento"
+                      disabled={!isEditing}
+                      type="date"
+                      value={formData.expiration_date ?? ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          expiration_date: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="waste">Categoría</Label>
-                <SubCategorySelector
-                  disabled={!isEditing}
-                  value={selectedProduct.sub_category_id}
-                  onChange={(id) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      sub_category_id: id,
-                    })
-                  }
-                />
-              </div>
+                  <div className="flex flex-col gap-2 relative col-span-2">
+                    <Label className="mt-2 absolute -top-4">
+                      Cantidad por mayor / menor
+                    </Label>
+                    <div className="grid grid-cols-4 gap-4 mt-3">
+                      <div>
+                        <Label className="text-xs" htmlFor="company">
+                          Cantidad por mayor
+                        </Label>
+                        <Input
+                          id="company"
+                          type="string"
+                          value={
+                            formData.sale_units_equivalence.mayor.quantity_in_base
+                          }
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              sale_units_equivalence: {
+                                ...formData.sale_units_equivalence,
+                                mayor: {
+                                  ...formData.sale_units_equivalence.mayor,
+                                  quantity_in_base: Number(e.target.value) as unknown as 0,
+                                },
+                              },
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs" htmlFor="company">
+                          Cantidad por menor
+                        </Label>
+                        <Input
+                          id="company"
+                          type="string"
+                          value={
+                            formData.sale_units_equivalence.minor.quantity_in_base
+                          }
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              sale_units_equivalence: {
+                                ...formData.sale_units_equivalence,
+                                minor: {
+                                  ...formData.sale_units_equivalence.minor,
+                                  quantity_in_base: Number(e.target.value) as unknown as 0,
+                                },
+                              },
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="waste">Marca</Label>
-                <BrandSelector
-                  disabled={!isEditing}
-                  value={selectedProduct.brand_id}
-                  onChange={(id) =>
-                    setSelectedProduct({ ...selectedProduct, brand_id: id })
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="product_name">Nombre</Label>
-                <Input
-                  placeholder="product_name"
-                  disabled={!isEditing}
-                  type="text"
-                  value={selectedProduct.product_name}
-                  onChange={(e) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      product_name: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label>Modo de venta</Label>
-
+              <TabsContent value="product" className="mt-4">
                 <CheckBoxesSelector
-                  options={sellMeasurementModeOptions}
-                  selectedOption={selectedProduct.sell_measurement_mode}
-                  onSelectOption={(value) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      sell_measurement_mode: value as SellMeasurementMode,
-                    })
-                  }
+                  options={creationModeOptions}
+                  selectedOption={creationMode}
+                  onSelectOption={(value) => setCreationMode(value as CreationMode)}
                   disabled={!isEditing}
                 />
-              </div>
 
-              <div className="flex flex-col gap-2 col-span-2">
-                <Label htmlFor="observations">Observaciones</Label>
-                <Textarea
-                  placeholder=""
-                  disabled={!isEditing}
-                  value={selectedProduct.observations || ""}
-                  onChange={(e) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      observations: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            </div>
-
-            {creationMode === "LONG" && (
-              <>
-                <ImageSelector
-                  onImageSelect={(id) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      public_image_id: id ?? "",
-                    })
-                  }
-                  onImageRemove={() =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      public_image_id: "",
-                    })
-                  }
-                />
-              </>
-            )}
-
-            <div className="grid grid-cols-2 gap-4 w-full">
-              {/* //Vendra del remito porque el remito es quien crea los lotes.
-                provider_id: number | null;
-               
-              
-                is_sold_out: boolean;
-              
-                waste: {
-                  quantity: number | null;
-                  created_at: string | null;
-                  should_notify_owner: boolean;
-                  location: Location | null;
-                  };
-                  
-                stock_movement: StockMovement[] | null;
-                stock: Stock[] | null;
-                prices: Price[]; */}
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="waste">Vacio</Label>
-                <LotContainerSelector
-                  disabled={!isEditing}
-                  value={formData.lot_container_id}
-                  onChange={(value) =>
-                    setFormData({ ...formData, lot_container_id: value })
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="lot_number">Nro de Lote</Label>
-                <Input
-                  placeholder="Nro de Lote"
-                  disabled={!isEditing}
-                  type="number"
-                  value={formData.lot_number}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lot_number: e.target.value })
-                  }
-                />
-              </div>
-
-              {/* <div className="flex flex-col gap-2">
-                <Label htmlFor="waste">Merma</Label>
-                <Input
-                  placeholder="Merma"
-                  disabled={!isEditing}
-                  type="number"
-                  value={formData.waste}
-                  onChange={(e) =>
-                    setFormData({ ...formData, waste: e.target.value })
-                  }
-                />
-              </div> */}
-
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <Label htmlFor="expiration_date">
-                    Fecha de vencimiento. | Activar notificacion
-                  </Label>
-                  <input
-                    type="checkbox"
-                    checked={formData.expiration_date_notification}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        expiration_date_notification: e.target.checked,
-                      })
-                    }
-                  />
-                </div>
-                <Input
-                  placeholder="Fecha de vencimiento"
-                  disabled={!isEditing}
-                  type="date"
-                  value={formData.expiration_date}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      expiration_date: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="stock">Stock de ingreso</Label>
-                <Input
-                  placeholder="Stock de ingreso"
-                  disabled={!isEditing}
-                  type="number"
-                  value={formData.initial_stock_quantity}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      initial_stock_quantity: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="stock">Precios:</Label>
-                <Input
-                  placeholder="Stock de ingreso"
-                  disabled={!isEditing}
-                  type="number"
-                  value={formData.initial_stock_quantity}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      initial_stock_quantity: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="flex flex-col gap-2 relative col-span-2">
-                <Label className="mt-2 absolute -top-4">
-                  Cantidad por mayor / menor
-                </Label>
-                <div className="grid grid-cols-4 gap-4 mt-3">
-                  <div>
-                    <Label className="text-xs" htmlFor="company">
-                      Cantidad por mayor
-                    </Label>
+                <div className="grid grid-cols-2 gap-4 w-full">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="lot_number">Código corto</Label>
                     <Input
-                      id="company"
-                      type="string"
-                      value={
-                        formData.sale_units_equivalence.mayor.quantity_in_base
-                      }
+                      placeholder="Código corto"
+                      disabled={!isEditing}
+                      type="number"
+                      value={selectedProduct.short_code ?? ""}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          sale_units_equivalence: {
-                            ...formData.sale_units_equivalence,
-                            mayor: {
-                              ...formData.sale_units_equivalence.mayor,
-                              quantity_in_base: e.target.value,
-                            },
-                          },
+                        setSelectedProduct({
+                          ...selectedProduct,
+                          short_code: e.target.value === "" ? null : Number(e.target.value),
                         })
                       }
                     />
                   </div>
-                  <div>
-                    <Label className="text-xs" htmlFor="company">
-                      Cantidad por menor
+
+                  <div className="flex flex-col gap-2">
+                    <Label className="flex gap-2" htmlFor="barcode">
+                      Código de barras <Barcode height={14} />
                     </Label>
                     <Input
-                      id="company"
-                      type="string"
-                      value={
-                        formData.sale_units_equivalence.minor.quantity_in_base
-                      }
+                      placeholder="barcode"
+                      disabled={!isEditing}
+                      type="number"
+                      value={selectedProduct.barcode ?? ""}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          sale_units_equivalence: {
-                            ...formData.sale_units_equivalence,
-                            minor: {
-                              ...formData.sale_units_equivalence.minor,
-                              quantity_in_base: e.target.value,
-                            },
-                          },
+                        setSelectedProduct({
+                          ...selectedProduct,
+                          barcode: e.target.value === "" ? null : Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="waste">Rubro</Label>
+                    <CategorySelector
+                      disabled={!isEditing}
+                      value={selectedProduct.category_id}
+                      onChange={(id) =>
+                        setSelectedProduct({ ...selectedProduct, category_id: id })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="waste">Categoría</Label>
+                    <SubCategorySelector
+                      disabled={!isEditing}
+                      value={selectedProduct.sub_category_id?.toString() ?? ""}
+                      onChange={(id) =>
+                        setSelectedProduct({
+                          ...selectedProduct,
+                          sub_category_id: id ? Number(id) : null,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="waste">Marca</Label>
+                    <BrandSelector
+                      disabled={!isEditing}
+                      value={selectedProduct.brand_id?.toString() ?? ""}
+                      onChange={(id) =>
+                        setSelectedProduct({
+                          ...selectedProduct,
+                          brand_id: id ? Number(id) : null,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="product_name">Nombre</Label>
+                    <Input
+                      placeholder="product_name"
+                      disabled={!isEditing}
+                      type="text"
+                      value={selectedProduct.product_name}
+                      onChange={(e) =>
+                        setSelectedProduct({
+                          ...selectedProduct,
+                          product_name: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label>Modo de venta</Label>
+
+                    <CheckBoxesSelector
+                      options={sellMeasurementModeOptions}
+                      selectedOption={selectedProduct.sell_measurement_mode}
+                      onSelectOption={(value) =>
+                        setSelectedProduct({
+                          ...selectedProduct,
+                          sell_measurement_mode: value as SellMeasurementMode,
+                        })
+                      }
+                      disabled={!isEditing}
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2 col-span-2">
+                    <Label htmlFor="observations">Observaciones</Label>
+                    <Textarea
+                      placeholder=""
+                      disabled={!isEditing}
+                      value={selectedProduct.observations || ""}
+                      onChange={(e) =>
+                        setSelectedProduct({
+                          ...selectedProduct,
+                          observations: e.target.value,
                         })
                       }
                     />
                   </div>
                 </div>
-              </div>
-            </div>
+
+                {creationMode === "LONG" && (
+                  <>
+                    <ImageSelector
+                      onImageSelect={(id) =>
+                        setSelectedProduct({
+                          ...selectedProduct,
+                          public_image_id: id ? Number(id) : null,
+                        })
+                      }
+                      onImageRemove={() =>
+                        setSelectedProduct({
+                          ...selectedProduct,
+                          public_image_id: null,
+                        })
+                      }
+                    />
+                  </>
+                )}
+              </TabsContent>
+            </Tabs>
           </>
         ) : (
           <div className="w-full h-full text-center  my-auto">

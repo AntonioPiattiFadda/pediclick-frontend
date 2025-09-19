@@ -6,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { UseUserStoresContext } from "@/contexts/UserStoresContext";
 import { useAppSelector } from "@/hooks/useUserData";
 import { getAllLoadOrders } from "@/service/loadOrders";
 import { useQuery } from "@tanstack/react-query";
@@ -18,7 +17,6 @@ export const LoadOrderContainer = () => {
   // const [searchTerm, setSearchTerm] = useState("");
   // const [selectedCategory, setSelectedCategory] = useState("all");
   // const [selectedStatus, setSelectedStatus] = useState("all");
-  const { selectedStoreId } = UseUserStoresContext();
 
   const { role } = useAppSelector((state) => state.user);
 
@@ -31,9 +29,9 @@ export const LoadOrderContainer = () => {
     queryFn: async () => {
       const response = await getAllLoadOrders(role);
       return response.dbLoadOrders;
-    },
-    enabled: selectedStoreId !== null,
+    }
   });
+
 
   if (isLoading) {
     return <TableSkl />;

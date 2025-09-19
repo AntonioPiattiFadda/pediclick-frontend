@@ -34,7 +34,7 @@ const AdminHome = () => {
             <span className="text-blue-600"> de confianza</span>
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            La solución completa para gestionar tu negocio de manera eficiente, 
+            La solución completa para gestionar tu negocio de manera eficiente,
             segura y con todas las herramientas que necesitas.
           </p>
           <div className="space-x-4">

@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { UseUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
 import { EditStoreBtn } from "./EditStoreBtn";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";

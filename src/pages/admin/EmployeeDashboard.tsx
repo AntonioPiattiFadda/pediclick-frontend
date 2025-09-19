@@ -38,9 +38,8 @@ const EmployeeDashboard = () => {
       </div>
 
       {/* Success Message Card */}
-      <div className={`max-w-md mx-auto transition-all duration-1000 transform ${
-        showMessage ? 'scale-100 opacity-100 translate-y-0' : 'scale-75 opacity-0 translate-y-8'
-      }`}>
+      <div className={`max-w-md mx-auto transition-all duration-1000 transform ${showMessage ? 'scale-100 opacity-100 translate-y-0' : 'scale-75 opacity-0 translate-y-8'
+        }`}>
         <div className="bg-white rounded-3xl shadow-2xl p-8 text-center border border-gray-100">
           {/* Icon Animation */}
           <div className="mb-6">
@@ -60,7 +59,7 @@ const EmployeeDashboard = () => {
               <span>Tu verificación fue exitosa</span>
               <span>🌟</span>
             </p>
-            
+
             <p className="flex items-center justify-center gap-2">
               <span>🚀</span>
               <span>¡Listo para comenzar!</span>

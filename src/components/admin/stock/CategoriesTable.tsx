@@ -7,12 +7,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 // import { Badge } from '@/components/ui/badge';
-import type { Category } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
+import type { Category } from "@/types/categories";
 
 interface CategoriesTableProps {
   categories: Category[];
- 
+
 }
 
 export const CategoriesTable = ({ categories }: CategoriesTableProps) => {
@@ -47,10 +47,10 @@ export const CategoriesTable = ({ categories }: CategoriesTableProps) => {
                   </div>
                 </div>
               </TableCell>
-           
+
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                
+
                   {/* <Button size="sm" variant="outline">
                     <Trash2 className="w-4 h-4" />
                   </Button> */}

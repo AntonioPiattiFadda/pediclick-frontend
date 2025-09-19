@@ -6,14 +6,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useAppSelector } from "@/hooks/useUserData";
 import { getAllProducts } from "@/service/products";
 import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useState } from "react";
-import { AddProductBtn } from "./addEditProduct/AddProductBtn";
 import { ProductsTable } from "./ProductsTable";
 import TableSkl from "./ui/tableSkl";
-import { useAppSelector } from "@/hooks/useUserData";
 
 export const ProductsContainer = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,8 +37,6 @@ export const ProductsContainer = () => {
       }));
     },
   });
-
-  console.log("Products:", products);
 
   const filteredProducts = products.filter((product) => {
     const matchesSearchTerm = product.product_name

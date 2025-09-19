@@ -31,7 +31,7 @@ export function SignIn() {
       setError(null);
       //Buscar al usuario en base de datos para ponerlo en la app
       dispatch(setUser({ email, full_name: "", role: "user", id: "1", avatar_url: null, phone: null, address: null, is_verified: false, parent_user_id: "", store_id: 0, job_position: null, created_at: "", updated_at: "", deleted_at: null }));
-      window.location.href = "/dashboard"; 
+      window.location.href = "/dashboard";
     },
     onError: (err: any) => {
       setError(err.message || "Error al iniciar sesión");

@@ -17,17 +17,18 @@ import SearchContextProvider from "./components/clients/Context/SearchContext";
 import Footer from "./components/clients/Footer/Footer";
 import ItemListContainer from "./components/clients/ItemListContainer/ItemListContainer";
 import Navbar from "./components/clients/Navbar/Navbar";
-import { UserStoresProvider } from "./contexts/UserStoresContext";
 import AdminHome from "./pages/admin/AdminHome";
 import { ForgotPassword } from "./pages/admin/auth/ForgotPassword";
 import { SignIn } from "./pages/admin/auth/SignIn";
 import { SignUp } from "./pages/admin/auth/SignUp";
 import Dashboard from "./pages/admin/Dashboard";
-import Stores from "./pages/admin/Stores";
-import TeamMembers from "./pages/admin/TeamMembers";
-import { store } from "./stores/store";
+import LoadOrder from "./pages/admin/LoadOrder";
 import LoadOrders from "./pages/admin/LoadOrders";
 import NewLoadOrders from "./pages/admin/NewLoadOrder";
+import Stores from "./pages/admin/Stores";
+import TeamMembers from "./pages/admin/TeamMembers";
+import Clients from "./pages/admin/Clients";
+import { store } from "./stores/store";
 
 const queryClient = new QueryClient();
 
@@ -94,22 +95,22 @@ const App = () => {
           </div>
         ) : (
           <Provider store={store}>
-            <UserStoresProvider>
-              <BrowserRouter>
-                <Layout>
-                  <Routes>
-                    <Route element={<PublicRoutesAuthCheck />}>
-                      <Route path="/" element={<AdminHome />} />
-                      <Route path="/sign-in" element={<SignIn />} />
-                      <Route path="/sign-up" element={<SignUp />} />
-                      <Route
-                        path="/forgot-password"
-                        element={<ForgotPassword />}
-                      />
-                    </Route>
 
-                    <Route element={<RequireAuth />}>
-                      {/* <Route
+            <BrowserRouter>
+              <Layout>
+                <Routes>
+                  <Route element={<PublicRoutesAuthCheck />}>
+                    <Route path="/" element={<AdminHome />} />
+                    <Route path="/sign-in" element={<SignIn />} />
+                    <Route path="/sign-up" element={<SignUp />} />
+                    <Route
+                      path="/forgot-password"
+                      element={<ForgotPassword />}
+                    />
+                  </Route>
+
+                  <Route element={<RequireAuth />}>
+                    {/* <Route
                         path="/reset-password"
                         element={<ResetPassword />}
                       />
@@ -117,24 +118,26 @@ const App = () => {
                         path="/auth/v1/verify"
                         element={<ResetPassword />}
                       /> */}
-                      <Route element={<RolesAuth />}>
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/stock" element={<Stock />} />
-                        <Route path="/stores" element={<Stores />} />
-                        <Route path="/team-members" element={<TeamMembers />} />
-                        <Route path="/load-orders" element={<LoadOrders />} />
-                        <Route path="/settings" element={<Settings />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Route>
-                      <Route
-                        path="/load-orders/add-load-order"
-                        element={<NewLoadOrders />}
-                      />
+                    <Route element={<RolesAuth />}>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/stock" element={<Stock />} />
+                      <Route path="/stores" element={<Stores />} />
+                      <Route path="/clients" element={<Clients />} />
+                      <Route path="/team-members" element={<TeamMembers />} />
+                      <Route path="/load-orders" element={<LoadOrders />} />
+                      <Route path="/load-orders/:load-order-id" element={<LoadOrder />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="*" element={<NotFound />} />
                     </Route>
-                  </Routes>
-                </Layout>
-              </BrowserRouter>
-            </UserStoresProvider>
+                    <Route
+                      path="/load-orders/add-load-order"
+                      element={<NewLoadOrders />}
+                    />
+                  </Route>
+                </Routes>
+              </Layout>
+            </BrowserRouter>
+
           </Provider>
         )}
       </TooltipProvider>

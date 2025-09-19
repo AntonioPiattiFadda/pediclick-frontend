@@ -10,12 +10,16 @@ import {
 // import { ROLES } from "./RoleInfoPopover";
 import type { LoadOrder } from "@/types/loadOrders";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface TeamMemberTableProps {
   loadOrders: LoadOrder[];
 }
 
 export const LoadOrderTable = ({ loadOrders }: TeamMemberTableProps) => {
+  const navigate = useNavigate();
+
   return (
     <div className="rounded-md">
       <Table>
@@ -57,6 +61,11 @@ export const LoadOrderTable = ({ loadOrders }: TeamMemberTableProps) => {
                   {loadOrder.providers?.provider_name || "--"}
                 </TableCell>
                 <TableCell>{loadOrder.created_at || "--"}</TableCell>
+                <TableCell>
+                  <Button variant="outline" onClick={() => { navigate(`/load-orders/${loadOrder.load_order_id}`) }} >
+                    Ver remito
+                  </Button>
+                </TableCell>
                 {/* <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="w-10 h-10">

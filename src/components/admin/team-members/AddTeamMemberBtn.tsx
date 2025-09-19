@@ -25,7 +25,7 @@ import { useState } from "react";
 import { createTeamMemberSchema } from "@/validator/teamMembers";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { UseUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
 import type { ZodIssue } from "zod";
 import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
 import RolesInfoPopover, { ROLES } from "./RoleInfoPopover";
@@ -130,11 +130,10 @@ export function AddTeamMemberBtn() {
             <Input
               id="full_name"
               placeholder="Juan Pérez"
-              className={`border ${
-                zErrors?.find((error: any) => error.path.includes("full_name"))
+              className={`border ${zErrors?.find((error: any) => error.path.includes("full_name"))
                   ? "border-red-500"
                   : "border-gray-300"
-              } rounded-md p-2`}
+                } rounded-md p-2`}
               value={formData.full_name}
               onChange={(e) =>
                 setFormData({ ...formData, full_name: e.target.value })
@@ -150,11 +149,10 @@ export function AddTeamMemberBtn() {
               id="email"
               type="email"
               placeholder="juan@ejemplo.com"
-              className={`border ${
-                zErrors?.find((error: any) => error.path.includes("email"))
+              className={`border ${zErrors?.find((error: any) => error.path.includes("email"))
                   ? "border-red-500"
                   : "border-gray-300"
-              } rounded-md p-2`}
+                } rounded-md p-2`}
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
@@ -176,11 +174,10 @@ export function AddTeamMemberBtn() {
               id="password"
               type="password"
               placeholder="Mínimo 6 caracteres"
-              className={`border ${
-                zErrors?.find((error: any) => error.path.includes("password"))
+              className={`border ${zErrors?.find((error: any) => error.path.includes("password"))
                   ? "border-red-500"
                   : "border-gray-300"
-              } rounded-md p-2`}
+                } rounded-md p-2`}
               value={formData.password}
               onChange={(e) =>
                 setFormData({ ...formData, password: e.target.value })
@@ -204,11 +201,10 @@ export function AddTeamMemberBtn() {
               }
             >
               <SelectTrigger
-                className={`w-full ${
-                  zErrors?.find((error: any) => error.path.includes("role"))
+                className={`w-full ${zErrors?.find((error: any) => error.path.includes("role"))
                     ? "border-red-500"
                     : "border-gray-300"
-                }`}
+                  }`}
               >
                 <SelectValue placeholder="Seleccionar rol" />
               </SelectTrigger>
@@ -233,11 +229,10 @@ export function AddTeamMemberBtn() {
               }
             >
               <SelectTrigger
-                className={` w-full ${
-                  zErrors?.find((error: any) => error.path.includes("store_id"))
+                className={` w-full ${zErrors?.find((error: any) => error.path.includes("store_id"))
                     ? "border-red-500"
                     : "border-gray-300"
-                }`}
+                  }`}
               >
                 <SelectValue placeholder="Seleccionar punto de venta" />
               </SelectTrigger>
@@ -261,13 +256,12 @@ export function AddTeamMemberBtn() {
             <Input
               id="job_position"
               placeholder="Descripción del puesto"
-              className={`border ${
-                zErrors?.find((error: any) =>
-                  error.path.includes("job_position")
-                )
+              className={`border ${zErrors?.find((error: any) =>
+                error.path.includes("job_position")
+              )
                   ? "border-red-500"
                   : "border-gray-300"
-              } rounded-md p-2`}
+                } rounded-md p-2`}
               value={formData.job_position || ""}
               onChange={(e) =>
                 setFormData({ ...formData, job_position: e.target.value })
@@ -286,11 +280,10 @@ export function AddTeamMemberBtn() {
               id="phone"
               type="tel"
               placeholder="+54 9 11 1234-5678"
-              className={`border ${
-                zErrors?.find((error: any) => error.path.includes("phone"))
+              className={`border ${zErrors?.find((error: any) => error.path.includes("phone"))
                   ? "border-red-500"
                   : "border-gray-300"
-              } rounded-md p-2`}
+                } rounded-md p-2`}
               value={formData.phone || ""}
               onChange={(e) =>
                 setFormData({ ...formData, phone: e.target.value })
@@ -305,11 +298,10 @@ export function AddTeamMemberBtn() {
             <Textarea
               id="address"
               placeholder="Calle Ejemplo 123, Ciudad, Provincia"
-              className={`border ${
-                zErrors?.find((error: any) => error.path.includes("address"))
+              className={`border ${zErrors?.find((error: any) => error.path.includes("address"))
                   ? "border-red-500"
                   : "border-gray-300"
-              } rounded-md`}
+                } rounded-md`}
               value={formData.address || ""}
               onChange={(e) =>
                 setFormData({ ...formData, address: e.target.value })

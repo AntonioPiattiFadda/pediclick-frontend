@@ -1,5 +1,7 @@
 import type { Lot } from "./lots";
 
+export type ProductorComissionType = "TOTAL_PERCENTAGE" | "BY_UNIT" | "NONE";
+
 export type LoadOrder = {
   load_order_id?: number;
   business_owner_id?: number; // Viene por defecto del usuario logueado
@@ -27,10 +29,16 @@ export type LoadOrder = {
     // otros campos que pueda tener el transportista
     // Todo en la misma linea
   };
+  divide_transport_costs_btw_lots: boolean; // Checkbox
 
+
+
+  //Esto que es?
   delivery_price: number | null;
 
   invoice_number: number | null;
+
+  observations: string | null; // Text area
 
   created_at?: string; // Fecha de creacion automatico
   updated_at?: string; // Fecha de actualizacion automatico
@@ -44,4 +52,15 @@ export type LoadOrder = {
   providers?: {
     provider_name: string;
   };
+
+
+  purchasing_agent_id: number | null; // Selector de comprador
+  total_download_cost: number | null;
+
+  productor_commission_type: ProductorComissionType; // Radio button
+  productor_commission_percentage: number | null; // Input tipo numero, solo si productor_commission_type es BY_UNIT
+  productor_commission_unit_value: number | null; // Input tipo numero, solo si productor_commission_type es FIXED
+
+  buyer_commission_percentage: number | null; // Input tipo numero, solo si productor_commission_type es TOTAL_PERCENTAGE
+
 };

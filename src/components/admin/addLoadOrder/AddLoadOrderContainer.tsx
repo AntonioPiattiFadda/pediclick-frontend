@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { ProviderSelector } from "../stock/addEditProduct/ProvidersSelector";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 import { emptyLoadOrder } from "./emptyFormData";
+import { PurchasingAgentSelector } from "../shared/purchasingAgentSelector";
 
 export const AddLoadOrderContainer = () => {
   const queryClient = useQueryClient();
@@ -45,6 +46,7 @@ export const AddLoadOrderContainer = () => {
 
   const createLoadOrderMutation = useMutation({
     mutationFn: async (data: LoadOrder) => {
+      console.log("Creating load order with data:", data);
       const { loadOrder, lots, prices } = adaptLoadOrderForSubmission(data);
       return await createLoadOrder(role, loadOrder, lots, prices);
     },
@@ -142,6 +144,20 @@ export const AddLoadOrderContainer = () => {
               disabled={false}
             />
           </div>
+
+          <div className="flex flex-col gap-2 -mt-2">
+            <Label className="mt-2">Comprador</Label>
+            <PurchasingAgentSelector
+              value={formData.purchasing_agent_id}
+              onChange={(value) =>
+                setFormData({ ...formData, purchasing_agent_id: value })
+              }
+              disabled={false}
+            />
+          </div>
+
+
+
 
           <div className="flex flex-col gap-2 ">
             <Label htmlFor="max">Número de factura AFIP</Label>

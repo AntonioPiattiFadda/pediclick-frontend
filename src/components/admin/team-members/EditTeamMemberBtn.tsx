@@ -22,7 +22,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
-import { UseUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
 import { editTeamMember, getTeamMemberDataById } from "@/service/profiles";
 import type { UserProfile } from "@/types";
 import { editTeamMemberSchema } from "@/validator/teamMembers";
@@ -142,13 +142,12 @@ export function EditTeamMemberBtn({ id }: { id: string }) {
                 <Input
                   id="full_name"
                   placeholder="Juan Pérez"
-                  className={`border ${
-                    zErrors?.find((error: any) =>
-                      error.path.includes("full_name")
-                    )
+                  className={`border ${zErrors?.find((error: any) =>
+                    error.path.includes("full_name")
+                  )
                       ? "border-red-500"
                       : "border-gray-300"
-                  } rounded-md p-2`}
+                    } rounded-md p-2`}
                   value={formData.full_name}
                   onChange={(e) =>
                     setFormData({ ...formData, full_name: e.target.value })
@@ -206,11 +205,10 @@ export function EditTeamMemberBtn({ id }: { id: string }) {
                   }
                 >
                   <SelectTrigger
-                    className={`w-full ${
-                      zErrors?.find((error: any) => error.path.includes("role"))
+                    className={`w-full ${zErrors?.find((error: any) => error.path.includes("role"))
                         ? "border-red-500"
                         : "border-gray-300"
-                    }`}
+                      }`}
                   >
                     <SelectValue placeholder="Seleccionar rol" />
                   </SelectTrigger>
@@ -237,13 +235,12 @@ export function EditTeamMemberBtn({ id }: { id: string }) {
                   }
                 >
                   <SelectTrigger
-                    className={` w-full ${
-                      zErrors?.find((error: any) =>
-                        error.path.includes("store_id")
-                      )
+                    className={` w-full ${zErrors?.find((error: any) =>
+                      error.path.includes("store_id")
+                    )
                         ? "border-red-500"
                         : "border-gray-300"
-                    }`}
+                      }`}
                   >
                     <SelectValue placeholder="Seleccionar punto de venta" />
                   </SelectTrigger>

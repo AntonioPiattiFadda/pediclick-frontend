@@ -1,5 +1,61 @@
 import type { Lot } from "@/types/lots";
 import type { Price } from "@/types/prices";
+import type { StockMovement } from "@/types/stockMovements";
+
+export const emptyLotWithoutControl = {
+  provider_id: "",
+  expiration_date: "",
+  expiration_date_notification: false,
+  lot: "NO CONTROL LOT",
+  lot_control: false,
+  stock: {
+    quantity: 0,
+    min: 0,
+    max: 0,
+  },
+  bulk: "",
+  waste: "",
+  prices: [{ price: "", quantity: "", type: "PRIMARY" }],
+};
+
+export const emptyLotWithLotControl = {
+  provider_id: "",
+  expiration_date: "",
+  expiration_date_notification: false,
+  lot: "Lote 1",
+  lot_control: true,
+  stock: {
+    quantity: 0,
+    min: 0,
+    max: 0,
+  },
+  bulk: "",
+  waste: "",
+  prices: [{ price: "", quantity: "", type: "PRIMARY" }],
+};
+
+export const emptyProduct = {
+  short_code: "",
+  product_name: "",
+  product_description: "",
+  category_id: "",
+  sub_category_id: "",
+  brand_id: "",
+  sale_unit_id: "",
+  barcode: "",
+  public_image_id: "",
+  observations: "",
+  sell_measurement_mode: "QUANTITY",
+  allow_stock_control: false,
+  lot_control: false,
+  equivalence_minor_mayor_selling: {
+    minor: null,
+    mayor: null,
+  },
+  created_at: "",
+  updated_at: "",
+};
+
 
 export const emptyLot: Lot = {
   lot_number: null,
@@ -199,3 +255,17 @@ export const mockPrices: Price[] = [
     updated_at: null,
   },
 ];
+
+
+export const emptyStockMovement: StockMovement = {
+  lot_id: 0,
+  movement_type: "TRANSFER",
+  quantity: null,
+  created_at: null,
+  from_stock_room_id: null,
+  to_stock_room_id: null,
+  from_store_id: null,
+  to_store_id: null,
+  should_notify_owner: false,
+};
+

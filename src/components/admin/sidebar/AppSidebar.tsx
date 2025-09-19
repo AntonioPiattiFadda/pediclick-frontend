@@ -20,7 +20,7 @@ import { useAppSelector } from "@/hooks/useUserData";
 import { BarChart3, ChevronRight, Home, Package } from "lucide-react";
 import { Link } from "react-router-dom";
 
-// eslint-disable-next-line react-refresh/only-export-components
+/* eslint-disable react-refresh/only-export-components */
 export const MENU_ITEMS = [
   {
     title: "Dashboard",
@@ -39,6 +39,12 @@ export const MENU_ITEMS = [
     url: "/stores",
     icon: Package,
     roles: ["OWNER"],
+  },
+  {
+    title: "Clientes",
+    url: "/clients",
+    icon: Package,
+    roles: ["OWNER", "MANAGER"],
   },
   {
     title: "Personal",
@@ -63,8 +69,8 @@ export const MENU_ITEMS = [
     ],
   },
   // {
-  //   title: 'Configuración',
-  //   url: '/settings',
+  //   title: "Configuración",
+  //   url: "/settings",
   //   icon: Settings,
   // },
 ];

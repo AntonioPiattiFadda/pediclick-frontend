@@ -44,7 +44,7 @@ export function DeleteTableElementPopUp({
       queryClient.invalidateQueries({ queryKey });
       setOpen(false);
       toast(successMsgTitle, {
-        description:  successMsgDescription,
+        description: successMsgDescription,
       });
     },
     onError: (error: any) => {
@@ -77,7 +77,7 @@ export function DeleteTableElementPopUp({
       <PopoverContent className="w-80">
         <div className="space-y-4">
           <div className="space-y-2">
-            <h4 className="font-medium leading-none">Eliminar producto</h4>
+            <h4 className="font-medium leading-none">Eliminar elemento</h4>
             <p className="text-sm text-muted-foreground">
               Esta acción es irreversible.{" "}
               {elementName &&

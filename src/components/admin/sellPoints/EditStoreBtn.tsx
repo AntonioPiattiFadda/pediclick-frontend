@@ -23,7 +23,7 @@ import { editStoreSchema } from "@/validator/stores";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { ZodIssue } from "zod";
-import { UseUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
 import { Edit } from "lucide-react";
 
 const emptyStore = {
@@ -141,13 +141,12 @@ export function EditStoreBtn({ id }: { id: number }) {
               <Input
                 id="store_name"
                 placeholder="Mi punto de venta"
-                className={`border ${
-                  zErrors?.find((error: any) =>
-                    error.path.includes("store_name")
-                  )
+                className={`border ${zErrors?.find((error: any) =>
+                  error.path.includes("store_name")
+                )
                     ? "border-red-500"
                     : "border-gray-300"
-                } rounded-md p-2`}
+                  } rounded-md p-2`}
                 value={formData?.store_name}
                 onChange={(e) =>
                   setFormData({ ...formData, store_name: e.target.value })

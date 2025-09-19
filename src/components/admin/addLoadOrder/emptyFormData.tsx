@@ -1,4 +1,5 @@
 import type { Lot } from "@/types/lots";
+import type { Stock } from "@/types/stocks";
 
 export const emptyLoadOrder = {
   load_order_number: null,
@@ -15,4 +16,16 @@ export const emptyLoadOrder = {
   invoice_number: null,
   //Aun no darle bola
   lots: [] as Lot[],
+};
+
+export const emptyStock: Stock = {
+  location_id: null,
+  current_quantity: 0,
+  lot_id: 0,
+  min_notification: 0,
+  max_notification: 0,
+  stock_type: "NOT ASSIGNED",
+  transformed_from_product_id: null,
+  transformed_to_product_id: null,
+  last_updated: null,
 };

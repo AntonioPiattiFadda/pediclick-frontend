@@ -1,9 +1,9 @@
-import { getUserId, supabase } from ".";
+import { supabase } from ".";
 import { getBusinessOwnerIdByRole } from "./profiles";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export const createStore = async (formData: any) => {
-  const userId = await getUserId();
+export const createStore = async (formData: any, userRole: string) => {
+  const userId = await getBusinessOwnerIdByRole(userRole);
   const formattedStore = {
     ...formData,
     business_owner_id: userId,

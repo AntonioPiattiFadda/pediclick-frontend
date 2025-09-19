@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { UseUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
 import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
 import { ROLES } from "./RoleInfoPopover";
 import { deleteTeamMember } from "@/service/profiles";

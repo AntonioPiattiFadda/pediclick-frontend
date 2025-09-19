@@ -28,13 +28,13 @@ import { useEffect, useState } from "react";
 
 import { adaptProductForDb } from "@/adapters/products";
 import { Label } from "@/components/ui/label";
-import { UseUserStoresContext } from "@/contexts/UserStoresContext";
+import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
 import { useAppSelector } from "@/hooks/useUserData";
 import { updateProductSchema } from "@/validator/products";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { BrandSelector } from "./BrandsSelector";
-import { CategorySelector } from "../CategorySelector";
+import { CategorySelector } from "../../shared/CategorySelector";
 import { ImageSelector } from "./ImageSelector";
 import { ProviderSelector } from "./ProvidersSelector";
 import { SaleUnitSelector } from "./SaleUnitsSelector";
@@ -137,18 +137,18 @@ export function EditProductBtn({ productId }: EditProductBtnProps) {
       const initialData = {
         short_code:
           productData.short_code !== undefined &&
-          productData.short_code !== null
+            productData.short_code !== null
             ? String(productData.short_code)
             : "",
         product_name: productData.product_name || "",
         category_id:
           productData.category_id !== undefined &&
-          productData.category_id !== null
+            productData.category_id !== null
             ? String(productData.category_id)
             : "",
         sub_category_id:
           productData.sub_category_id !== undefined &&
-          productData.sub_category_id !== null
+            productData.sub_category_id !== null
             ? String(productData.sub_category_id)
             : "",
         brand_id:
@@ -157,7 +157,7 @@ export function EditProductBtn({ productId }: EditProductBtnProps) {
             : "",
         sale_unit_id:
           productData.sale_unit_id !== undefined &&
-          productData.sale_unit_id !== null
+            productData.sale_unit_id !== null
             ? String(productData.sale_unit_id)
             : "",
         barcode:
@@ -166,7 +166,7 @@ export function EditProductBtn({ productId }: EditProductBtnProps) {
             : "",
         public_image_id:
           productData.public_image_id !== undefined &&
-          productData.public_image_id !== null
+            productData.public_image_id !== null
             ? String(productData.public_image_id)
             : "",
         allow_stock_control: productData.allow_stock_control ?? false,
