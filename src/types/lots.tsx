@@ -25,7 +25,11 @@ export type BaseLot = {
   };
 
   has_lot_container: boolean;
-  lot_container_id: number | null;
+
+  lot_containers: {
+    lot_container_id: number | null;
+    quantity: number | null;
+  }[];
 
   is_parent_lot: boolean;
   parent_lot_id: number | null;
@@ -48,14 +52,14 @@ export type BaseLot = {
   download_total_cost: number | null;
   download_cost_per_unit: number | null;
 
-  purchase_cost_total: number;
-  purchase_cost_per_unit: number;
+  purchase_cost_total: number | null;
+  purchase_cost_per_unit: number | null;
 
-  extra_cost_total: number;        // transporte, descarga, comisiones prorrateadas
-  extra_cost_per_unit: number;
+  extra_cost_total: number | null;        // transporte, descarga, comisiones prorrateadas
+  extra_cost_per_unit: number | null;
 
-  final_cost_total: number;        // purchase_cost_total + extra_cost_total
-  final_cost_per_unit: number;
+  final_cost_total: number | null;        // purchase_cost_total + extra_cost_total
+  final_cost_per_unit: number | null;
   //NOTE informacion de la compra. SI esta liquidado
 
   has_transport_cost_divided: boolean;

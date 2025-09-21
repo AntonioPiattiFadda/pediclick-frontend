@@ -69,8 +69,17 @@ export const emptyLot: Lot = {
   is_sold_out: false,
   lot_container_id: null,
   initial_stock_quantity: 0,
-  total_cost: 0,
-  cost_per_unit: 0,
+  purchase_cost_total: 0,
+  purchase_cost_per_unit: 0,
+
+  extra_cost_total: null,
+  extra_cost_per_unit: null,
+  final_cost_total: null,
+  final_cost_per_unit: null,
+  has_transport_cost_divided: false,
+
+  download_total_cost: null,
+  download_cost_per_unit: null,
   parent_lot_id: null,
   is_expired: false,
   sale_units_equivalence: {

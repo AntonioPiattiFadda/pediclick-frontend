@@ -17,12 +17,13 @@ import { getProviders } from "@/service/providers";
 import type { LoadOrder } from "@/types/loadOrders";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ProviderSelector } from "../stock/addEditProduct/ProvidersSelector";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 import { emptyLoadOrder } from "./emptyFormData";
 import { PurchasingAgentSelector } from "../shared/purchasingAgentSelector";
+import { updateLotWithCalculations } from "@/utils/lots";
+import GetFollowingLoadOrderNumberBtn from "@/components/unassigned/getFollowingLoadOrderNumberBtn";
 
 export const AddLoadOrderContainer = () => {
   const queryClient = useQueryClient();
@@ -31,7 +32,6 @@ export const AddLoadOrderContainer = () => {
   const [formData, setFormData] = useState<LoadOrder>(emptyLoadOrder);
 
   console.log("Form data:", formData);
-  const navigator = useNavigate();
 
   const { data: providers, isLoading: isLoadingProviders } = useQuery({
     queryKey: ["providers"],
@@ -64,6 +64,16 @@ export const AddLoadOrderContainer = () => {
       });
     },
   });
+
+  // Sum of download_total_cost across all lots (used to show on the load order)
+  const computeTotalDownloadCost = (
+    lots: { download_total_cost: number | null | undefined }[]
+  ) => {
+    return lots.reduce(
+      (sum, l) => sum + (Number(l?.download_total_cost) || 0),
+      0
+    );
+  };
 
   const handleCreateLoadOrder = async () => {
     //TODO Validar
@@ -108,14 +118,27 @@ export const AddLoadOrderContainer = () => {
         <CardContent className="space-y-4 grid grid-cols-4 gap-4">
           <div className="flex flex-col gap-2 ">
             <Label htmlFor="expiration_date">Número de remito</Label>
-            <Input
-              type="number"
-              name="load_order_number"
-              value={formData.load_order_number}
-              onChange={(e) =>
-                setFormData({ ...formData, load_order_number: e.target.value })
-              }
-            />
+            <div className="grid grid-cols-[1fr_50px] gap-2">
+
+              <Input
+                type="number"
+                name="load_order_number"
+                value={formData.load_order_number ?? ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    load_order_number:
+                      e.target.value === "" ? null : Number(e.target.value),
+                  })
+                }
+              />
+              <GetFollowingLoadOrderNumberBtn onClick={(nextLoadOrderNumber) => {
+                setFormData({
+                  ...formData,
+                  load_order_number: nextLoadOrderNumber,
+                });
+              }} />
+            </div>
           </div>
 
           <div className="flex flex-col gap-2 ">
@@ -255,6 +278,14 @@ export const AddLoadOrderContainer = () => {
               </div>
             </div>
           </div>
+          <div className="flex flex-col gap-2 ">
+            <Label>Total descarga (lotes)</Label>
+            <Input
+              type="number"
+              value={formData.total_download_cost ?? 0}
+              readOnly
+            />
+          </div>
           {/* <div className="flex flex-col gap-2 ">
             <Label htmlFor="max">Precio del transporte</Label>
             <Input
@@ -271,9 +302,32 @@ export const AddLoadOrderContainer = () => {
           <AddLoadOrderTable
             loadOrderLots={formData.lots ?? []}
             onAddElementToLoadOrder={(newLot) => {
+              const newLots = [...(formData.lots ?? []), newLot];
+              const totalDownload = computeTotalDownloadCost(newLots);
               setFormData({
                 ...formData,
-                lots: [...(formData.lots ?? []), newLot],
+                lots: newLots,
+                total_download_cost: totalDownload,
+              });
+            }}
+            onUpdateLot={(index, patch) => {
+              setFormData((prev) => {
+                const prevLots = prev.lots ?? [];
+                const current = prevLots[index];
+                if (!current) return prev;
+                const updated = updateLotWithCalculations(current, patch);
+                const lots = [...prevLots];
+                lots[index] = updated;
+                const totalDownload = computeTotalDownloadCost(lots);
+                return { ...prev, lots, total_download_cost: totalDownload };
+              });
+            }}
+            onDeleteLot={(index) => {
+              setFormData((prev) => {
+                const prevLots = prev.lots ?? [];
+                const lots = prevLots.filter((_, i) => i !== index);
+                const totalDownload = computeTotalDownloadCost(lots);
+                return { ...prev, lots, total_download_cost: totalDownload };
               });
             }}
           />

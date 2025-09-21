@@ -1,7 +1,8 @@
 import type { Lot } from "@/types/lots";
 import type { Stock } from "@/types/stocks";
+import type { LoadOrder } from "@/types/loadOrders";
 
-export const emptyLoadOrder = {
+export const emptyLoadOrder: LoadOrder = {
   load_order_number: null,
   provider_id: null,
   delivery_date: new Date().toISOString().split("T")[0],
@@ -12,14 +13,22 @@ export const emptyLoadOrder = {
     name: "",
     licence_plate: "",
   },
+  divide_transport_costs_btw_lots: false,
   delivery_price: null,
   invoice_number: null,
-  //Aun no darle bola
+  observations: "",
+  purchasing_agent_id: null,
+  total_download_cost: null,
+  productor_commission_type: "NONE",
+  productor_commission_percentage: null,
+  productor_commission_unit_value: null,
+  buyer_commission_percentage: null,
   lots: [] as Lot[],
 };
 
 export const emptyStock: Stock = {
-  location_id: null,
+  store_id: null,
+  stock_room_id: null,
   current_quantity: 0,
   lot_id: 0,
   min_notification: 0,

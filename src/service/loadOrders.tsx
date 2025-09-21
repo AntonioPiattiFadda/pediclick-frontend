@@ -4,6 +4,7 @@ import { supabase } from ".";
 import { getBusinessOwnerIdByRole } from "./profiles";
 import type { Lot } from "@/types/lots";
 import type { Price } from "@/types/prices";
+import type { Stock } from "@/types/stocks";
 
 // const mockLoadOrders: LoadOrder[] = [
 //   {
@@ -44,7 +45,7 @@ export const getAllLoadOrders = async (userRole: string) => {
 export const createLoadOrder = async (
   userRole: string,
   loadOrder: LoadOrder,
-  lots: Lot,
+  lots: Lot[],
   prices: Price[]
 ) => {
   const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
@@ -59,6 +60,7 @@ export const createLoadOrder = async (
       receptor_id: Number(loadOrder.receptor_id) || null,
       transporter_data: loadOrder.transporter_data ?? null,
       delivery_price: Number(loadOrder.delivery_price) || null,
+      total_download_cost: Number(loadOrder.total_download_cost) || null,
       invoice_number: Number(loadOrder.invoice_number) || null,
       status: loadOrder.status ?? "pending",
     },
@@ -108,15 +110,46 @@ export const getLoadOrder = async (loadOrderId: string, userRole: string): Promi
     throw new Error(error.message);
   }
 
-  const adaptedLoadOrder: LoadOrder | null = dbLoadOrder ? {
-    ...dbLoadOrder,
-    lots: dbLoadOrder.lots?.map((lot: any) => ({
-      ...lot,
-      product_name: lot.products?.product_name || 'N/A',
-      prices: lot.prices || [],
-      stock: lot.stock || [],
-    })) || [],
-  } : null;
+  type DbLot = Lot & {
+    products?: { product_name?: string | null } | null;
+    prices?: Price[] | null;
+    stock?: Stock[] | null;
+  };
+
+  const adaptedLoadOrder: LoadOrder | null = dbLoadOrder
+    ? {
+      ...dbLoadOrder,
+      lots:
+        ((dbLoadOrder as { lots?: DbLot[] }).lots ?? []).map((lot) => ({
+          ...lot,
+          product_name: lot.products?.product_name || "N/A",
+          prices: lot.prices ?? [],
+          stock: lot.stock ?? [],
+        })),
+    }
+    : null;
 
   return { dbLoadOrder: adaptedLoadOrder, error: null };
 };
+
+export const getFollowingLoadOrderNumber = async (userRole: string): Promise<number> => {
+  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  const { data, error } = await supabase
+    .from("load_orders")
+    .select("load_order_number")
+    .eq("business_owner_id", businessOwnerId)
+    .order("load_order_number", { ascending: false }) // ordenar de mayor a menor
+    .limit(1)
+
+  console.log("maxLoadOrder", data);
+  console.log("error", error);
+
+  if (error && error.code !== "PGRST116") {
+    // PGRST116 = no rows found, lo tratamos como "no hay lotes"
+    throw new Error(error.message);
+  }
+
+  const lastLoadOrderNumber = data?.[0]?.load_order_number ?? 0;
+  return lastLoadOrderNumber + 1;
+};
+

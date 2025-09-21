@@ -25,13 +25,14 @@ import { CategorySelector } from "./CategorySelector";
 import CheckBoxesSelector from "./checkBoxesSelector";
 import { emptyLot, emptyProduct } from "./emptyFormData";
 import ProductSelectorV2 from "./productSelector";
+import GetFollowingLotNumberBtn from "@/components/unassigned/getFollowingLotNumberBtn";
 
-type CreationMode = "SHORT" | "LONG";
+// type CreationMode = "SHORT" | "LONG";
 
-const creationModeOptions = [
-  { label: "Corto", value: "SHORT" },
-  { label: "Largo", value: "LONG" },
-];
+// const creationModeOptions = [
+//   { label: "Corto", value: "SHORT" },
+//   { label: "Largo", value: "LONG" },
+// ];
 
 const sellMeasurementModeOptions = [
   { label: "Unidad", value: "QUANTITY" },
@@ -43,11 +44,11 @@ export function AddLotBtn({
 }: {
   onAddElementToLoadOrder: (lot: Lot) => void;
 }) {
-  const [creationMode, setCreationMode] = useState<CreationMode>("SHORT");
+  // const [creationMode, setCreationMode] = useState<CreationMode>("SHORT");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [formData, setFormData] = useState<Lot>(emptyLot);
-  const [selectedProduct, setSelectedProduct] = useState<Product>(() => adaptProductForDb(emptyProduct));
+  const [selectedProduct, setSelectedProduct] = useState<Product>({} as Product);
   const [lotPrices, setLotPrices] = useState<Price[]>([]);
 
   const isProductSelected = Boolean(selectedProduct.product_id);
@@ -88,8 +89,8 @@ export function AddLotBtn({
     let newTotalCost = currentTotalCost;
     let newInitialStock = currentInitialStock;
     let newCostPerUnit = currentCostPerUnit;
-    let newDownloadTotalCost = formData.download_total_cost ?? 0;
-    let newDownloadCostPerUnit = formData.download_cost_per_unit ?? 0;
+    let newDownloadTotalCost = currentDownloadTotalCost;
+    let newDownloadCostPerUnit = currentDownloadCostPerUnit;
 
     switch (field) {
       case "initial_stock_quantity":
@@ -101,12 +102,20 @@ export function AddLotBtn({
           newCostPerUnit = 0;
           newDownloadTotalCost = 0;
           newDownloadCostPerUnit = 0;
-        } else if (currentCostPerUnit > 0) {
-          newTotalCost = value * currentCostPerUnit;
-          newDownloadTotalCost = value * currentDownloadCostPerUnit;
-        } else if (currentTotalCost > 0) {
-          newCostPerUnit = currentTotalCost / value;
-          newDownloadCostPerUnit = currentDownloadTotalCost / value;
+        } else {
+          // --- Compra ---
+          if (currentCostPerUnit > 0) {
+            newTotalCost = value * currentCostPerUnit;
+          } else if (currentTotalCost > 0) {
+            newCostPerUnit = currentTotalCost / value;
+          }
+
+          // --- Descarga ---
+          if (currentDownloadCostPerUnit > 0) {
+            newDownloadTotalCost = value * currentDownloadCostPerUnit;
+          } else if (currentDownloadTotalCost > 0) {
+            newDownloadCostPerUnit = currentDownloadTotalCost / value;
+          }
         }
         break;
 
@@ -155,6 +164,7 @@ export function AddLotBtn({
         }
         break;
     }
+
 
     setFormData((prev) => ({
       ...prev,
@@ -224,25 +234,33 @@ export function AddLotBtn({
                 <div className="grid grid-cols-2 gap-4 w-full">
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="lot_number">Nro de Lote</Label>
-                    <Input
-                      placeholder="Nro de Lote"
-                      disabled={!isEditing}
-                      type="number"
-                      value={formData.lot_number ?? ""}
-                      onChange={(e) =>
+                    <div className="grid grid-cols-[1fr_50px] gap-2">
+                      <Input
+                        placeholder="Nro de Lote"
+                        // disabled={!isEditing}
+                        type="number"
+                        value={formData.lot_number ?? ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            lot_number: e.target.value === "" ? null : Number(e.target.value),
+                          })
+                        }
+                      />
+                      <GetFollowingLotNumberBtn onClick={(nextLotNumber) => {
                         setFormData({
                           ...formData,
-                          lot_number: e.target.value === "" ? null : Number(e.target.value),
-                        })
-                      }
-                    />
+                          lot_number: nextLotNumber,
+                        });
+                      }} productId={selectedProduct.product_id!} />
+                    </div>
                   </div>
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="initial_stock_quantity">Stock nuevo</Label>
                     <Input
                       type="number"
                       placeholder="Stock inicial"
-                      disabled={!isEditing}
+                      // disabled={!isEditing}
                       value={formData.initial_stock_quantity || ""}
                       onChange={(e) => handleUpdateLotField("initial_stock_quantity", Number(e.target.value))}
                     />
@@ -256,7 +274,7 @@ export function AddLotBtn({
                     <Input
                       type="number"
                       placeholder="Costo de compra total"
-                      disabled={!isEditing}
+                      // disabled={!isEditing}
                       value={formData.purchase_cost_total || ""}
                       onChange={(e) => handleUpdateLotField("purchase_cost_total", Number(e.target.value))}
                     />
@@ -267,7 +285,7 @@ export function AddLotBtn({
                     <Input
                       type="number"
                       placeholder="Costo por unidad"
-                      disabled={!isEditing}
+                      // disabled={!isEditing}
                       value={formData.purchase_cost_per_unit || ""}
                       onChange={(e) => handleUpdateLotField("purchase_cost_per_unit", Number(e.target.value))}
                     />
@@ -282,9 +300,9 @@ export function AddLotBtn({
                     <Label htmlFor="download_total_cost">Costo total de descarga</Label>
                     <Input
                       placeholder="Costo total de descarga"
-                      disabled={!isEditing}
+                      // disabled={!isEditing}
                       type="number"
-                      value={formData.download_total_cost ?? ""}
+                      value={formData.download_total_cost || ""}
                       onChange={(e) => handleUpdateLotField("download_total_cost", Number(e.target.value))}
                     />
                   </div>
@@ -292,9 +310,9 @@ export function AddLotBtn({
                     <Label htmlFor="download_cost_per_unit">Costo de descarga por unidad</Label>
                     <Input
                       placeholder="Costo de descarga por unidad"
-                      disabled={!isEditing}
+                      // disabled={!isEditing}
                       type="number"
-                      value={formData.download_cost_per_unit ?? ""}
+                      value={formData.download_cost_per_unit || ""}
                       onChange={(e) => handleUpdateLotField("download_cost_per_unit", Number(e.target.value))}
                     />
                   </div>
@@ -316,7 +334,8 @@ export function AddLotBtn({
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="waste">Vacio</Label>
                     <LotContainerSelector
-                      disabled={!isEditing}
+                      // disabled={!isEditing}
+                      disabled={false}
                       value={formData.lot_container_id === null ? "" : String(formData.lot_container_id)}
                       onChange={(value) =>
                         setFormData({
@@ -346,7 +365,7 @@ export function AddLotBtn({
                     </div>
                     <Input
                       placeholder="Fecha de vencimiento"
-                      disabled={!isEditing}
+                      // disabled={!isEditing}
                       type="date"
                       value={formData.expiration_date ?? ""}
                       onChange={(e) =>
@@ -417,12 +436,12 @@ export function AddLotBtn({
               </TabsContent>
 
               <TabsContent value="product" className="mt-4">
-                <CheckBoxesSelector
+                {/* <CheckBoxesSelector
                   options={creationModeOptions}
                   selectedOption={creationMode}
                   onSelectOption={(value) => setCreationMode(value as CreationMode)}
                   disabled={!isEditing}
-                />
+                /> */}
 
                 <div className="grid grid-cols-2 gap-4 w-full">
                   <div className="flex flex-col gap-2">
@@ -546,24 +565,23 @@ export function AddLotBtn({
                   </div>
                 </div>
 
-                {creationMode === "LONG" && (
-                  <>
-                    <ImageSelector
-                      onImageSelect={(id) =>
-                        setSelectedProduct({
-                          ...selectedProduct,
-                          public_image_id: id ? Number(id) : null,
-                        })
-                      }
-                      onImageRemove={() =>
-                        setSelectedProduct({
-                          ...selectedProduct,
-                          public_image_id: null,
-                        })
-                      }
-                    />
-                  </>
-                )}
+                <>
+                  <ImageSelector
+                    onImageSelect={(id) =>
+                      setSelectedProduct({
+                        ...selectedProduct,
+                        public_image_id: id ? Number(id) : null,
+                      })
+                    }
+                    onImageRemove={() =>
+                      setSelectedProduct({
+                        ...selectedProduct,
+                        public_image_id: null,
+                      })
+                    }
+                  />
+                </>
+
               </TabsContent>
             </Tabs>
           </>

@@ -1,7 +1,12 @@
 export type ClientType = "FINAL" | "REGISTERED"
-export type OrderType = "DIRECT_SALE" | "CREDIT_ORDER" | "RESERVATION" | "ONLINE_PICKUP"
+export type OrderType = "DIRECT_SALE" | "RESERVATION" | "TAKEAWAY" | "DELIVERY"
+  | "PRESUPUESTO"
+
+// TODO Hay que ver que no se pueda vender con un presupuesto
+
 export type PaymentStatus = "PENDING" | "PAID" | "PARTIALLY_PAID" | "REFUNDED" | "PARTIALLY_REFUNDED"
-export type OrderStatus = "NEW" | "PROCESSING" | "DELIVERED" | "COMPLETED" | "CANCELLED" | "RETURNED" | "DELIVERING"
+
+export type OrderStatus = "NEW" | "DELIVERING" | "DELIVERED" | "PROCESSING" | "COMPLETED" | "CANCELLED"
 
 
 // FIXME Una cosa es el paymentStatus que tiene relacion con el pago y otra es el estado que tiene que ver con que se creo recien o esta reservada o esta enenvio, etc
