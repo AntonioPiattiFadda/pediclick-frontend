@@ -47,11 +47,13 @@ export function StoreSelector({
 
   const createStoreMutation = useMutation({
     mutationFn: async (data: { newStore: string }) => {
-      return await createStore(data.newStore, role);
+      return await createStore({ store_name: data.newStore }, role);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["stores"] });
-      onChange(data.store_id);
+      // If data is an array, use the first element; otherwise, use data directly
+      const store = Array.isArray(data) ? data[0] : data;
+      onChange(store?.store_id ?? null);
       setOpen(false);
     },
     onError: (error: any) => {

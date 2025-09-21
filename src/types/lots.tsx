@@ -33,8 +33,6 @@ export type BaseLot = {
   lot_control: boolean;
   //Caracteristicas inmutables
   initial_stock_quantity: number;
-  total_cost: number;
-  cost_per_unit: number;
   is_sold_out: boolean;
   is_expired: boolean;
 
@@ -48,10 +46,19 @@ export type BaseLot = {
 
 
   download_total_cost: number | null;
-  has_transport_cost_divided: boolean;
+  download_cost_per_unit: number | null;
 
+  purchase_cost_total: number;
+  purchase_cost_per_unit: number;
+
+  extra_cost_total: number;        // transporte, descarga, comisiones prorrateadas
+  extra_cost_per_unit: number;
+
+  final_cost_total: number;        // purchase_cost_total + extra_cost_total
+  final_cost_per_unit: number;
   //NOTE informacion de la compra. SI esta liquidado
 
+  has_transport_cost_divided: boolean;
 };
 
 export type LotWithControl = BaseLot & {

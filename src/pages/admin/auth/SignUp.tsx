@@ -9,6 +9,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { signUp } from "@/service/auth";
 import { toast } from "sonner";
 import SignUpSuccessMessage from "./SignUpSuccessMessage";
+import { useNavigate } from "react-router-dom";
 
 export function SignUp() {
   const [formData, setFormData] = useState({
@@ -19,9 +20,10 @@ export function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [signUpSuccess, setSignUpSuccess] = useState(false);
+  // const [signUpSuccess, setSignUpSuccess] = useState(false);
 
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Mutation de react-query
   const signUpMutation = useMutation({
@@ -32,9 +34,10 @@ export function SignUp() {
       queryClient.invalidateQueries({ queryKey: ["user"] });
       //TODO crear una pagina nueva para que el usuario vea el mensaje en caso de que se acabe el toast
       toast.success(
-        "Cuenta creada exitosamente. Revisa tu casilla de email para verificar tu cuenta."
+        "Cuenta creada exitosamente."
       );
-      setSignUpSuccess(true);
+      navigate("/dashboard");
+      // setSignUpSuccess(true);
     },
     onError: (err: any) => {
       // Si tu backend retorna mensajes en err.message
@@ -80,6 +83,8 @@ export function SignUp() {
 
   const loading = signUpMutation.isLoading;
   const error = errors.general;
+
+  const signUpSuccess = false;
 
   return (
     <AuthLayout

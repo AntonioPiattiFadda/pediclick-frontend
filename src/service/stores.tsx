@@ -8,10 +8,12 @@ export const createStore = async (formData: any, userRole: string) => {
     ...formData,
     business_owner_id: userId,
   };
+  console.log("Formatted Store:", formattedStore);
   const { data, error } = await supabase
     .from("stores")
     .insert(formattedStore)
     .select();
+  console.log("Formatted Store:", formattedStore);
 
   if (error) {
     throw new Error(error.message);

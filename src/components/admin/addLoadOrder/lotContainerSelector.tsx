@@ -122,7 +122,7 @@ export function LotContainerSelector({
             + Nuevo
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Crear nuevo Vacio</DialogTitle>
             <DialogDescription>

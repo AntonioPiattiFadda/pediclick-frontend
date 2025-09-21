@@ -1,7 +1,10 @@
 export type ClientType = "FINAL" | "REGISTERED"
 export type OrderType = "DIRECT_SALE" | "CREDIT_ORDER" | "RESERVATION" | "ONLINE_PICKUP"
-export type PaymentStatus = "PENDING" | "PAID" | "CANCELLED" | "ON_HOLD" | "DELIVERED" | "PARTIALLY_PAID" | "REFUNDED" | "PARTIALLY_REFUNDED"
+export type PaymentStatus = "PENDING" | "PAID" | "PARTIALLY_PAID" | "REFUNDED" | "PARTIALLY_REFUNDED"
+export type OrderStatus = "NEW" | "PROCESSING" | "DELIVERED" | "COMPLETED" | "CANCELLED" | "RETURNED" | "DELIVERING"
 
+
+// FIXME Una cosa es el paymentStatus que tiene relacion con el pago y otra es el estado que tiene que ver con que se creo recien o esta reservada o esta enenvio, etc
 export interface Order {
   order_id?: number;
   business_owner_id?: number;
@@ -11,6 +14,7 @@ export interface Order {
   provider_id?: number;
   order_number: string;
   order_type: OrderType;
+  order_status: OrderStatus;
 
   // 🔥 eliminamos payment_method y final_payment_method
   // en su lugar, tendremos OrderPayment[] asociado a la orden
@@ -27,3 +31,5 @@ export interface Order {
   updated_at?: string;
   deleted_at?: string;
 }
+
+

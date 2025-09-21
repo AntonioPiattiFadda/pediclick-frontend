@@ -1,3 +1,4 @@
+import { adaptProductForDb } from "@/adapters/products";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,12 +10,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import type { Lot } from "@/types/lots";
 import type { Price } from "@/types/prices";
 import type { Product, SellMeasurementMode } from "@/types/products";
-import { adaptProductForDb } from "@/adapters/products";
 import { Barcode, Plus } from "lucide-react";
 import { useState } from "react";
 import { LotContainerSelector } from "../addLoadOrder/lotContainerSelector";
@@ -24,7 +24,6 @@ import { SubCategorySelector } from "../stock/addEditProduct/SubCategorySelector
 import { CategorySelector } from "./CategorySelector";
 import CheckBoxesSelector from "./checkBoxesSelector";
 import { emptyLot, emptyProduct } from "./emptyFormData";
-import { PricesSelectorV2 } from "./pricesSelectorV2";
 import ProductSelectorV2 from "./productSelector";
 
 type CreationMode = "SHORT" | "LONG";
@@ -71,6 +70,107 @@ export function AddLotBtn({
     setLotPrices([]);
     setFormData(emptyLot);
   };
+
+
+  type LotField = "initial_stock_quantity" | "purchase_cost_per_unit" | "purchase_cost_total" | "download_total_cost" | "download_cost_per_unit";
+
+  const handleUpdateLotField = (field: LotField, rawValue: number | string) => {
+    // normalizamos: si viene vacío o NaN lo tratamos como 0
+    const value = Number(rawValue) || 0;
+
+    // valores actuales (default 0 si son null/undefined)
+    const currentTotalCost = formData.purchase_cost_total ?? 0;
+    const currentInitialStock = formData.initial_stock_quantity ?? 0;
+    const currentCostPerUnit = formData.purchase_cost_per_unit ?? 0;
+    const currentDownloadTotalCost = formData.download_total_cost ?? 0;
+    const currentDownloadCostPerUnit = formData.download_cost_per_unit ?? 0;
+
+    let newTotalCost = currentTotalCost;
+    let newInitialStock = currentInitialStock;
+    let newCostPerUnit = currentCostPerUnit;
+    let newDownloadTotalCost = formData.download_total_cost ?? 0;
+    let newDownloadCostPerUnit = formData.download_cost_per_unit ?? 0;
+
+    switch (field) {
+      case "initial_stock_quantity":
+        newInitialStock = value;
+
+        if (value <= 0) {
+          // si borra el stock → todo a 0
+          newTotalCost = 0;
+          newCostPerUnit = 0;
+          newDownloadTotalCost = 0;
+          newDownloadCostPerUnit = 0;
+        } else if (currentCostPerUnit > 0) {
+          newTotalCost = value * currentCostPerUnit;
+          newDownloadTotalCost = value * currentDownloadCostPerUnit;
+        } else if (currentTotalCost > 0) {
+          newCostPerUnit = currentTotalCost / value;
+          newDownloadCostPerUnit = currentDownloadTotalCost / value;
+        }
+        break;
+
+      case "purchase_cost_per_unit":
+        newCostPerUnit = value;
+
+        if (value <= 0) {
+          // si borra costo unitario → total a 0
+          newTotalCost = 0;
+        } else if (currentInitialStock > 0) {
+          newTotalCost = currentInitialStock * value;
+        }
+        break;
+
+      case "purchase_cost_total":
+        newTotalCost = value;
+
+        if (value <= 0) {
+          // si borra costo total → costo unitario a 0
+          newCostPerUnit = 0;
+        } else if (currentInitialStock > 0) {
+          newCostPerUnit = value / currentInitialStock;
+        }
+        break;
+
+
+      case "download_total_cost":
+        newDownloadTotalCost = value;
+
+        if (value <= 0) {
+          // si borra costo total → costo unitario a 0
+          newDownloadCostPerUnit = 0;
+        } else if (currentInitialStock > 0) {
+          newDownloadCostPerUnit = value / currentInitialStock;
+        }
+        break;
+
+      case "download_cost_per_unit":
+        newDownloadCostPerUnit = value;
+        if (value <= 0) {
+          // si borra costo unitario → total a 0
+          newDownloadTotalCost = 0;
+        }
+        else if (currentInitialStock > 0) {
+          newDownloadTotalCost = currentInitialStock * value;
+        }
+        break;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      purchase_cost_total: newTotalCost,
+      initial_stock_quantity: newInitialStock,
+      purchase_cost_per_unit: newCostPerUnit,
+      download_total_cost: newDownloadTotalCost,
+      download_cost_per_unit: newDownloadCostPerUnit,
+    }));
+  };
+
+
+
+
+
+
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -120,74 +220,8 @@ export function AddLotBtn({
                 <TabsTrigger value="product">Producto</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="lot" className="mt-4">
+              <TabsContent value="lot" className="flex flex-col gap-2 mt-2">
                 <div className="grid grid-cols-2 gap-4 w-full">
-                  <div className="flex flex-col gap-2 col-span-2">
-                    <Label htmlFor="lot_number">Precios</Label>
-                    <Input
-                      type="number"
-                      placeholder="Cantidad por ingresar"
-                      disabled={!isEditing}
-                      value={formData.initial_stock_quantity || ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          initial_stock_quantity: Number(e.target.value),
-                          cost_per_unit: formData.total_cost
-                            ? Number(formData.total_cost) /
-                            Number(e.target.value || 1)
-                            : 0,
-                          total_cost: formData.cost_per_unit
-                            ? Number(formData.cost_per_unit) *
-                            Number(e.target.value || 1)
-                            : 0,
-                        })
-                      }
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Precio de costo total del lote"
-                      disabled={!isEditing}
-                      value={formData.total_cost || ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          total_cost: Number(e.target.value),
-                          cost_per_unit:
-                            Number(e.target.value) /
-                            Number(formData.initial_stock_quantity || 1),
-                        })
-                      }
-                    />
-                    <span className="text-xs text-gray-500">
-                      Ingresar el costo total del lote (no el costo por unidad)
-                    </span>
-
-                    <PricesSelectorV2
-                      value={lotPrices}
-                      onChange={(prices) => setLotPrices(prices)}
-                      lotId={formData?.lot_id || 0}
-                      disabled={!isEditing}
-                      basePrice={formData.total_cost || 0}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 w-full">
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="waste">Vacio</Label>
-                    <LotContainerSelector
-                      disabled={!isEditing}
-                      value={formData.lot_container_id === null ? "" : String(formData.lot_container_id)}
-                      onChange={(value) =>
-                        setFormData({
-                          ...formData,
-                          lot_container_id: value ? Number(value) : null,
-                        })
-                      }
-                    />
-                  </div>
-
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="lot_number">Nro de Lote</Label>
                     <Input
@@ -203,6 +237,96 @@ export function AddLotBtn({
                       }
                     />
                   </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="initial_stock_quantity">Stock nuevo</Label>
+                    <Input
+                      type="number"
+                      placeholder="Stock inicial"
+                      disabled={!isEditing}
+                      value={formData.initial_stock_quantity || ""}
+                      onChange={(e) => handleUpdateLotField("initial_stock_quantity", Number(e.target.value))}
+                    />
+
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 w-full">
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="total_cost">Costo de compra total</Label>
+                    <Input
+                      type="number"
+                      placeholder="Costo de compra total"
+                      disabled={!isEditing}
+                      value={formData.purchase_cost_total || ""}
+                      onChange={(e) => handleUpdateLotField("purchase_cost_total", Number(e.target.value))}
+                    />
+
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="cost_per_unit">Costo por unidad</Label>
+                    <Input
+                      type="number"
+                      placeholder="Costo por unidad"
+                      disabled={!isEditing}
+                      value={formData.purchase_cost_per_unit || ""}
+                      onChange={(e) => handleUpdateLotField("purchase_cost_per_unit", Number(e.target.value))}
+                    />
+
+
+                  </div>
+
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 w-full">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="download_total_cost">Costo total de descarga</Label>
+                    <Input
+                      placeholder="Costo total de descarga"
+                      disabled={!isEditing}
+                      type="number"
+                      value={formData.download_total_cost ?? ""}
+                      onChange={(e) => handleUpdateLotField("download_total_cost", Number(e.target.value))}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="download_cost_per_unit">Costo de descarga por unidad</Label>
+                    <Input
+                      placeholder="Costo de descarga por unidad"
+                      disabled={!isEditing}
+                      type="number"
+                      value={formData.download_cost_per_unit ?? ""}
+                      onChange={(e) => handleUpdateLotField("download_cost_per_unit", Number(e.target.value))}
+                    />
+                  </div>
+
+                </div>
+
+
+
+
+
+                {/* <PricesSelectorV2
+                      value={lotPrices}
+                      onChange={(prices) => setLotPrices(prices)}
+                      lotId={formData?.lot_id || 0}
+                      disabled={!isEditing}
+                      basePrice={formData.total_cost || 0}
+                    /> */}
+                <div className="grid grid-cols-2 gap-4 w-full">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="waste">Vacio</Label>
+                    <LotContainerSelector
+                      disabled={!isEditing}
+                      value={formData.lot_container_id === null ? "" : String(formData.lot_container_id)}
+                      onChange={(value) =>
+                        setFormData({
+                          ...formData,
+                          lot_container_id: value ? Number(value) : null,
+                        })
+                      }
+                    />
+                  </div>
+
 
                   <div className="flex flex-col gap-2">
                     <div className="flex gap-2">
@@ -234,7 +358,7 @@ export function AddLotBtn({
                     />
                   </div>
 
-                  <div className="flex flex-col gap-2 relative col-span-2">
+                  {/* <div className="flex flex-col gap-2 relative col-span-2">
                     <Label className="mt-2 absolute -top-4">
                       Cantidad por mayor / menor
                     </Label>
@@ -288,7 +412,7 @@ export function AddLotBtn({
                         />
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </TabsContent>
 
