@@ -16,12 +16,14 @@ interface ImageSelectorProps {
   onImageSelect?: (imageSrc: string | null) => void;
   onImageRemove?: () => void;
   selectedImageId?: number | null;
+  disabled?: boolean;
 }
 
 export const ImageSelector = ({
   onImageSelect,
   onImageRemove,
-  selectedImageId
+  selectedImageId,
+  disabled = false
 }: ImageSelectorProps) => {
   const [selectedImage, setSelectedImage] = useState<PublicImage | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,7 +31,7 @@ export const ImageSelector = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  
+
 
   const { data: images, isLoading } = useQuery({
     queryKey: ["public-images"],
@@ -40,7 +42,7 @@ export const ImageSelector = ({
   });
 
   useEffect(() => {
-    
+
     if (selectedImageId && images) {
       const image = images.find((img) => img.public_image_id === selectedImageId);
       setSelectedImage(image || null);
@@ -102,11 +104,11 @@ export const ImageSelector = ({
   // };
 
   return (
-    <div className="space-y-4">
+    <div className="grid gap-4 grid-cols-2 mt-2">
       {/* Select con buscador */}
       <div>
         <label className="block text-sm font-medium mb-2">
-          Seleccionar imagen 
+          Seleccionar imagen
         </label>
         <div className="relative" ref={dropdownRef}>
           <div className="relative">
@@ -115,6 +117,7 @@ export const ImageSelector = ({
               size={16}
             />
             <input
+              disabled={disabled}
               ref={inputRef}
               type="text"
               placeholder={
@@ -128,13 +131,13 @@ export const ImageSelector = ({
               onFocus={handleInputFocus}
             />
             <button
+              disabled={disabled}
               onClick={() => setIsOpen(!isOpen)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
             >
               <ChevronDown
-                className={`transition-transform duration-200 ${
-                  isOpen ? "rotate-180" : ""
-                }`}
+                className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                  }`}
                 size={16}
               />
             </button>
@@ -161,11 +164,11 @@ export const ImageSelector = ({
                     <button
                       key={image.public_image_id}
                       onClick={() => handleImageSelect(image)}
-                      className={`w-full px-3 py-2 text-left hover:bg-blue-50 flex items-center space-x-3 ${
-                        selectedImage?.public_image_id === image.public_image_id
-                          ? "bg-blue-100 text-blue-800"
-                          : ""
-                      }`}
+                      disabled={disabled}
+                      className={`w-full px-3 py-2 text-left hover:bg-blue-50 flex items-center space-x-3 ${selectedImage?.public_image_id === image.public_image_id
+                        ? "bg-blue-100 text-blue-800"
+                        : ""
+                        }`}
                     >
                       <img
                         src={image.public_image_src}
@@ -205,20 +208,21 @@ export const ImageSelector = ({
       </div>
 
       {/* Preview de imagen seleccionada */}
-      <div className="border rounded p-4 h-[300px] flex items-center justify-center">
+      <div className="border rounded p-4 h-[100px] flex items-center justify-center">
         {selectedImage ? (
           <div className="relative group">
             <button
               onClick={handleImageRemove}
-              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600"
+              className="absolute -top-1 -right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600"
               title="Eliminar imagen"
+              disabled={disabled}
             >
               <Trash2 size={16} />
             </button>
             <img
               src={selectedImage.public_image_src}
               alt={selectedImage.public_image_name}
-              className="max-w-full max-h-48 object-cover rounded"
+              className="max-w-full max-h-[80px] object-cover rounded"
             />
           </div>
         ) : (

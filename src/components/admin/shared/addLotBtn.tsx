@@ -26,6 +26,7 @@ import { SubCategorySelector } from "../stock/addEditProduct/SubCategorySelector
 import { CategorySelector } from "./CategorySelector";
 import { emptyLot } from "./emptyFormData";
 import ProductSelectorV2 from "./productSelector";
+import { ProductEditSheet } from "./ProductEditSheet";
 import toast from 'react-hot-toast';
 
 
@@ -52,6 +53,7 @@ export function AddLotBtn({
   const [formData, setFormData] = useState<Lot>(emptyLot);
   const [selectedProduct, setSelectedProduct] = useState<Product>({} as Product);
   const [lotPrices, setLotPrices] = useState<Price[]>([]);
+  const [tab, setTab] = useState("lot");
 
   const isProductSelected = Boolean(selectedProduct.product_id);
   const [isEditing, setIsEditing] = useState(false);
@@ -230,11 +232,19 @@ export function AddLotBtn({
 
         {isProductSelected ? (
           <>
-            <Tabs defaultValue="lot" className="w-full">
+            <Tabs value={tab} onValueChange={setTab} className="w-full">
               <TabsList className="grid grid-cols-2 w-full">
                 <TabsTrigger value="lot">Lote</TabsTrigger>
                 <TabsTrigger value="product">Producto</TabsTrigger>
               </TabsList>
+              {tab === "product" && (
+                <div className="mt-2">
+                  <ProductEditSheet
+                    product={selectedProduct}
+                    onUpdated={(updated) => setSelectedProduct(updated)}
+                  />
+                </div>
+              )}
 
               <TabsContent value="lot" className="flex flex-col gap-2 mt-2">
                 <div className="grid grid-cols-2 gap-4 w-full">
@@ -327,7 +337,35 @@ export function AddLotBtn({
 
 
 
-
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Label htmlFor="expiration_date">
+                      Fecha de vencimiento. | Activar notificacion
+                    </Label>
+                    <input
+                      type="checkbox"
+                      checked={formData.expiration_date_notification}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          expiration_date_notification: e.target.checked,
+                        })
+                      }
+                    />
+                  </div>
+                  <Input
+                    placeholder="Fecha de vencimiento"
+                    // disabled={!isEditing}
+                    type="date"
+                    value={formData.expiration_date ?? ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        expiration_date: e.target.value,
+                      })
+                    }
+                  />
+                </div>
 
                 {/* <PricesSelectorV2
                       value={lotPrices}
@@ -336,55 +374,29 @@ export function AddLotBtn({
                       disabled={!isEditing}
                       basePrice={formData.total_cost || 0}
                     /> */}
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="waste">Vacíos</Label>
+                  <LotContainerSelector
+                    disabled={false}
+                    assignments={formData.lot_containers ?? []}
+                    initialQuantity={formData.initial_stock_quantity || 0}
+                    onChange={(next) =>
+                      setFormData({
+                        ...formData,
+                        lot_containers: next,
+                        has_lot_container: (next ?? []).some(
+                          (a) => (Number(a?.quantity) || 0) > 0
+                        ),
+                      })
+                    }
+                  />
+                </div>
+
+
                 <div className="grid grid-cols-2 gap-4 w-full">
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="waste">Vacíos</Label>
-                    <LotContainerSelector
-                      disabled={false}
-                      assignments={formData.lot_containers ?? []}
-                      initialQuantity={formData.initial_stock_quantity || 0}
-                      onChange={(next) =>
-                        setFormData({
-                          ...formData,
-                          lot_containers: next,
-                          has_lot_container: (next ?? []).some(
-                            (a) => (Number(a?.quantity) || 0) > 0
-                          ),
-                        })
-                      }
-                    />
-                  </div>
 
 
-                  <div className="flex flex-col gap-2">
-                    <div className="flex gap-2">
-                      <Label htmlFor="expiration_date">
-                        Fecha de vencimiento. | Activar notificacion
-                      </Label>
-                      <input
-                        type="checkbox"
-                        checked={formData.expiration_date_notification}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            expiration_date_notification: e.target.checked,
-                          })
-                        }
-                      />
-                    </div>
-                    <Input
-                      placeholder="Fecha de vencimiento"
-                      // disabled={!isEditing}
-                      type="date"
-                      value={formData.expiration_date ?? ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          expiration_date: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
+
 
                   {/* <div className="flex flex-col gap-2 relative col-span-2">
                     <Label className="mt-2 absolute -top-4">
@@ -542,7 +554,21 @@ export function AddLotBtn({
                     />
                   </div>
 
-
+                  <ImageSelector
+                    onImageSelect={(id) =>
+                      setSelectedProduct({
+                        ...selectedProduct,
+                        public_image_id: id ? Number(id) : null,
+                      })
+                    }
+                    onImageRemove={() =>
+                      setSelectedProduct({
+                        ...selectedProduct,
+                        public_image_id: null,
+                      })
+                    }
+                    disabled={!isEditing}
+                  />
                   <div className="flex flex-col gap-2 col-span-2">
                     <Label htmlFor="observations">Observaciones</Label>
                     <Textarea
@@ -559,22 +585,9 @@ export function AddLotBtn({
                   </div>
                 </div>
 
-                <>
-                  <ImageSelector
-                    onImageSelect={(id) =>
-                      setSelectedProduct({
-                        ...selectedProduct,
-                        public_image_id: id ? Number(id) : null,
-                      })
-                    }
-                    onImageRemove={() =>
-                      setSelectedProduct({
-                        ...selectedProduct,
-                        public_image_id: null,
-                      })
-                    }
-                  />
-                </>
+
+
+
 
               </TabsContent>
             </Tabs>
@@ -599,20 +612,21 @@ export function AddLotBtn({
               Cancelar
             </Button>
           </DialogClose> */}
-          {Object.keys(selectedProduct).length > 0 && (
-            <>
-              <DialogClose asChild>
-                <Button variant={"outline"} onClick={() => {
-                  setSelectedProduct({} as Product);
-                  setFormData(emptyLot);
-                  setLotPrices([]);
-                  setIsEditing(false);
-                }}>
-                  Cancelar
-                </Button>
-              </DialogClose>
+          {tab === 'lot' ? (
+            Object.keys(selectedProduct).length > 0 && (
+              <>
+                <DialogClose asChild>
+                  <Button variant={"outline"} onClick={() => {
+                    setSelectedProduct({} as Product);
+                    setFormData(emptyLot);
+                    setLotPrices([]);
+                    setIsEditing(false);
+                  }}>
+                    Cancelar
+                  </Button>
+                </DialogClose>
 
-              {/* {isEditing ? (
+                {/* {isEditing ? (
                 <Button variant={"outline"} onClick={() => setIsEditing(false)}>
                   Cancelar
                 </Button>
@@ -621,10 +635,15 @@ export function AddLotBtn({
               )} */}
 
 
-              <Button onClick={handleSubmit}>Agregar al remito</Button>
+                <Button onClick={handleSubmit}>Agregar al remito</Button>
 
-            </>
+              </>
+            )
+          ) : (
+            null
           )}
+
+
         </DialogFooter>
       </DialogContent>
     </Dialog>

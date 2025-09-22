@@ -148,9 +148,7 @@ export function LotContainerSelector({
 
     const finalQty = Math.min(cleaned, maxAllowed);
     if (cleaned > maxAllowed) {
-      toast("Cantidad ajustada", {
-        description: `No podés exceder el stock inicial. Máximo disponible: ${maxAllowed}.`,
-      });
+      toast(`No podés exceder el stock inicial. Máximo disponible: ${maxAllowed}.`);
     }
 
     const next = assignments.map((a, i) =>
@@ -254,7 +252,10 @@ export function LotContainerSelector({
                   key={lotContainer.id ?? lotContainer.lot_container_id}
                   value={lotContainer.lot_container_id}
                 >
-                  {lotContainer.lot_container_name}
+                  {lotContainer.lot_container_name}{" "}
+                  {lotContainer.lot_container_price
+                    ? `( $${lotContainer.lot_container_price} )`
+                    : ""}
                 </option>
               ))}
             </select>

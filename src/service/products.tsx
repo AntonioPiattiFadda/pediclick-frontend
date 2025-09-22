@@ -38,11 +38,7 @@ export const getProduct = async (productId: number) => {
       public_images(public_image_src),
       categories(category_name),
       sub_categories(sub_category_name),
-      brands(brand_name),
-      
-      product_lots (
-        lots (*)
-        )
+      brands(brand_name)
         `
     )
     .eq("product_id", productId)
@@ -69,6 +65,8 @@ export const updateProduct = async (
     .from("products")
     .update(productData)
     .eq("product_id", productId);
+
+  console.log("updateProduct", data, error);
 
   if (error) {
     throw new Error(error.message);
