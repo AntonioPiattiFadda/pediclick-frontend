@@ -1,8 +1,8 @@
 import { supabase } from ".";
 import { getBusinessOwnerIdByRole } from "./profiles";
 
-export const getStockRooms = async (userRole: string) => {
-    const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const getStockRooms = async () => {
+    const businessOwnerId = await getBusinessOwnerIdByRole();
 
     const { data: stockRooms, error } = await supabase
         .from("stock_rooms")
@@ -18,8 +18,8 @@ export const getStockRooms = async (userRole: string) => {
     return { stockRooms, error };
 };
 
-export const createStockRoom = async (stockRoomName: string, userRole: string) => {
-    const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const createStockRoom = async (stockRoomName: string) => {
+    const businessOwnerId = await getBusinessOwnerIdByRole();
 
     const { data, error } = await supabase
         .from("stock_rooms")

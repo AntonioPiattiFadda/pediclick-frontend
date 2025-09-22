@@ -6,7 +6,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useAppSelector } from "@/hooks/useUserData";
 import { getAllProducts } from "@/service/products";
 import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
@@ -19,7 +18,6 @@ export const ProductsContainer = () => {
   // const [selectedCategory, setSelectedCategory] = useState("all");
   // const [selectedStatus, setSelectedStatus] = useState("all");
 
-  const { role } = useAppSelector((state) => state.user);
 
   const {
     data: products = [],
@@ -28,7 +26,7 @@ export const ProductsContainer = () => {
   } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const response = await getAllProducts(role);
+      const response = await getAllProducts();
       // Ensure each product has seller_id
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return response.products.map((product: any) => ({

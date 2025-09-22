@@ -21,10 +21,8 @@ import type { Stock } from "@/types/stocks";
 //   },
 // ];
 
-export const getAllLoadOrders = async (userRole: string) => {
-  console.log("getAllLoadOrders called with userRole:", userRole);
-  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
-  console.log("getAllLoadOrders - businessOwnerId:", businessOwnerId);
+export const getAllLoadOrders = async () => {
+  const businessOwnerId = await getBusinessOwnerIdByRole();
   const { data: dbLoadOrders, error } = await supabase
     .from("load_orders")
     .select(
@@ -43,12 +41,11 @@ export const getAllLoadOrders = async (userRole: string) => {
 };
 
 export const createLoadOrder = async (
-  userRole: string,
   loadOrder: LoadOrder,
   lots: Lot[],
   prices: Price[]
 ) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  const businessOwnerId = await getBusinessOwnerIdByRole();
 
   const reqBody = {
     p_load_order: {
@@ -81,8 +78,8 @@ export const createLoadOrder = async (
 };
 
 
-export const getLoadOrder = async (loadOrderId: string, userRole: string): Promise<{ dbLoadOrder: LoadOrder | null, error: string | null }> => {
-  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const getLoadOrder = async (loadOrderId: string,): Promise<{ dbLoadOrder: LoadOrder | null, error: string | null }> => {
+  const businessOwnerId = await getBusinessOwnerIdByRole();
   const { data: dbLoadOrder, error } = await supabase
     .from("load_orders")
     .select(
@@ -132,8 +129,8 @@ export const getLoadOrder = async (loadOrderId: string, userRole: string): Promi
   return { dbLoadOrder: adaptedLoadOrder, error: null };
 };
 
-export const getFollowingLoadOrderNumber = async (userRole: string): Promise<number> => {
-  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const getFollowingLoadOrderNumber = async (): Promise<number> => {
+  const businessOwnerId = await getBusinessOwnerIdByRole();
   const { data, error } = await supabase
     .from("load_orders")
     .select("load_order_number")

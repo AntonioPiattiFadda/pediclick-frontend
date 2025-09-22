@@ -1,8 +1,8 @@
 import { supabase } from ".";
 import { getBusinessOwnerIdByRole } from "./profiles";
 
-export const getPurchasingAgents = async (userRole: string) => {
-    const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const getPurchasingAgents = async () => {
+    const businessOwnerId = await getBusinessOwnerIdByRole();
     const { data: purchasingAgents, error } = await supabase
         .from("purchasing_agents")
         .select("*")
@@ -15,8 +15,8 @@ export const getPurchasingAgents = async (userRole: string) => {
     return { purchasingAgents, error };
 };
 
-export const createPurchasingAgent = async (name: string, userRole: string) => {
-    const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const createPurchasingAgent = async (name: string) => {
+    const businessOwnerId = await getBusinessOwnerIdByRole();
     const { data, error } = await supabase
         .from("purchasing_agents")
         .insert({ purchasing_agent_name: name, business_owner_id: businessOwnerId })

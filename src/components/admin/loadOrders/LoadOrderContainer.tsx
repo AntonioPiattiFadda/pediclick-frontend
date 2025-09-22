@@ -6,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useAppSelector } from "@/hooks/useUserData";
 import { getAllLoadOrders } from "@/service/loadOrders";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -18,7 +17,6 @@ export const LoadOrderContainer = () => {
   // const [selectedCategory, setSelectedCategory] = useState("all");
   // const [selectedStatus, setSelectedStatus] = useState("all");
 
-  const { role } = useAppSelector((state) => state.user);
 
   const {
     data: dbLoadOrders,
@@ -27,7 +25,7 @@ export const LoadOrderContainer = () => {
   } = useQuery({
     queryKey: ["load-orders"],
     queryFn: async () => {
-      const response = await getAllLoadOrders(role);
+      const response = await getAllLoadOrders();
       return response.dbLoadOrders;
     }
   });

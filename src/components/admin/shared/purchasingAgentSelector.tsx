@@ -10,7 +10,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useAppSelector } from "@/hooks/useUserData";
 import { createPurchasingAgent, getPurchasingAgents } from "@/service/purchasingAgents";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
@@ -33,7 +32,7 @@ export function PurchasingAgentSelector({
   const { data: purchasingAgents, isLoading: isLoading } = useQuery({
     queryKey: ["purchasing-agents"],
     queryFn: async () => {
-      const response = await getPurchasingAgents(role);
+      const response = await getPurchasingAgents();
       return response.purchasingAgents;
     },
   });
@@ -41,11 +40,10 @@ export function PurchasingAgentSelector({
   const [newPurchasingAgent, setNewPurchasingAgent] = useState("");
   const [open, setOpen] = useState(false);
 
-  const { role } = useAppSelector((state) => state.user);
 
   const createPurchasingAgentMutation = useMutation({
     mutationFn: async (data: { newPurchasingAgent: string }) => {
-      return await createPurchasingAgent(data.newPurchasingAgent, role);
+      return await createPurchasingAgent(data.newPurchasingAgent);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["purchasing-agents"] });

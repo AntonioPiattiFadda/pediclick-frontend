@@ -7,24 +7,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getCategories } from "@/service/categories";
+import { getSubCategories } from "@/service/subCategories";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
+import { SubCategoriesTable } from "./addEditProduct/SubCategoriesTable ";
 import { CategoriesTable } from "./CategoriesTable";
 import TableSkl from "./ui/tableSkl";
-import { useAppSelector } from "@/hooks/useUserData";
-import { SubCategoriesTable } from "./addEditProduct/SubCategoriesTable ";
-import { getSubCategories } from "@/service/subCategories";
 
 export const CategoriesContainer = () => {
   // const [searchTerm, setSearchTerm] = useState("");
   // const [selectedStatus, setSelectedStatus] = useState("all");
 
-  const { role } = useAppSelector((state) => state.user);
 
   const { data: categories, isLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const response = await getCategories(role);
+      const response = await getCategories();
       return response.categories;
     },
   });
@@ -32,7 +30,7 @@ export const CategoriesContainer = () => {
   const { data: subCategories, isLoading: isLoadingSub } = useQuery({
     queryKey: ["sub-categories"],
     queryFn: async () => {
-      const response = await getSubCategories(role);
+      const response = await getSubCategories();
       return response.categories;
     },
   });

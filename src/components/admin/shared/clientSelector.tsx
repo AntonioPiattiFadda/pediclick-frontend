@@ -10,7 +10,6 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useAppSelector } from "@/hooks/useUserData";
 import { createClient, getClients } from "@/service/clients";
 import type { Client } from "@/types/clients";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -34,7 +33,7 @@ export function ClientSelector({
     const { data: clients, isLoading: isLoading } = useQuery({
         queryKey: ["clients"],
         queryFn: async () => {
-            const response = await getClients(role);
+            const response = await getClients();
             return response.clients;
         },
     });
@@ -42,11 +41,10 @@ export function ClientSelector({
     const [newClient, setNewClient] = useState("");
     const [open, setOpen] = useState(false);
 
-    const { role } = useAppSelector((state) => state.user);
 
     const createClientMutation = useMutation({
         mutationFn: async (data: { newClient: string }) => {
-            return await createClient(data.newClient, role);
+            return await createClient(data.newClient);
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["clients"] });

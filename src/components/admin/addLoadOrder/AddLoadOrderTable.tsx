@@ -104,15 +104,29 @@ function EditableCell({
 
 
 
+
 type LotContainerCellProps = {
-  value: number | null | undefined;
+  assignments: Lot["lot_containers"] | undefined;
+  initialStock: number;
   disabled?: boolean;
-  onSave: (newId: number | null) => void;
+  onSave: (assignments: Lot["lot_containers"]) => void;
 };
 
-function LotContainerCell({ value, disabled = false, onSave }: LotContainerCellProps) {
+function LotContainerCell({
+  assignments,
+  initialStock,
+  disabled = false,
+  onSave,
+}: LotContainerCellProps) {
   const [open, setOpen] = useState(false);
-  const display = value ? `#${value}` : "Sin vacío";
+  const totalAssigned = (assignments ?? []).reduce(
+    (sum, a) => sum + (Number(a?.quantity) || 0),
+    0
+  );
+  const display =
+    totalAssigned > 0
+      ? `${totalAssigned}/${initialStock}`
+      : "Sin vacíos";
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -126,12 +140,13 @@ function LotContainerCell({ value, disabled = false, onSave }: LotContainerCellP
           {display}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-80">
+      <PopoverContent className="w-[600px]">
         <div className="flex flex-col gap-3">
           <LotContainerSelector
-            value={value === null || value === undefined ? "" : String(value)}
+            assignments={assignments ?? []}
+            initialQuantity={Number(initialStock) || 0}
             disabled={disabled}
-            onChange={(id) => onSave(id ? Number(id) : null)}
+            onChange={(next) => onSave(next)}
           />
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => setOpen(false)}>
@@ -301,11 +316,20 @@ export const AddLoadOrderTable = ({
                   />
                 </TableCell>
 
-                {/* Vacío (selector) */}
+                {/* Vacíos (múltiples asignaciones) */}
                 <TableCell>
                   <LotContainerCell
-                    value={lot.lot_container_id}
-                    onSave={(newId) => onUpdateLot?.(index, { lot_container_id: newId })}
+                    assignments={lot.lot_containers}
+                    initialStock={lot.initial_stock_quantity}
+                    onSave={(nextAssignments) =>
+                      onUpdateLot?.(index, {
+                        lot_containers: nextAssignments,
+                        has_lot_container:
+                          (nextAssignments ?? []).some(
+                            (a) => (Number(a?.quantity) || 0) > 0
+                          ),
+                      })
+                    }
                   />
                 </TableCell>
 

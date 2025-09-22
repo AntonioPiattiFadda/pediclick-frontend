@@ -2,8 +2,8 @@ import { supabase } from ".";
 import { getBusinessOwnerIdByRole } from "./profiles";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export const createStore = async (formData: any, userRole: string) => {
-  const userId = await getBusinessOwnerIdByRole(userRole);
+export const createStore = async (formData: any) => {
+  const userId = await getBusinessOwnerIdByRole();
   const formattedStore = {
     ...formData,
     business_owner_id: userId,
@@ -22,8 +22,8 @@ export const createStore = async (formData: any, userRole: string) => {
   return data;
 };
 
-export const getUserStores = async (userRole: string) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const getUserStores = async () => {
+  const businessOwnerId = await getBusinessOwnerIdByRole();
 
   const { data: stores, error } = await supabase
     .from("stores")

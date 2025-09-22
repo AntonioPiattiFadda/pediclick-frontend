@@ -2,17 +2,17 @@
 
 import type { Product } from "@/types/products";
 
-const convertStringLocalDateToISOString = (date: string): string | null => {
-  if (!date) return null;
-  const localDate = new Date(date);
-  const isoDate = localDate.toISOString();
-  return isoDate;
-};
+// const convertStringLocalDateToISOString = (date: string): string | null => {
+//   if (!date) return null;
+//   const localDate = new Date(date);
+//   const isoDate = localDate.toISOString();
+//   return isoDate;
+// };
 
-function formatDateOnly(isoString: string): string {
-  if (!isoString) return "";
-  return isoString.split("T")[0];
-}
+// function formatDateOnly(isoString: string): string {
+//   if (!isoString) return "";
+//   return isoString.split("T")[0];
+// }
 
 export const adaptProductForDb = (product: any): Product => {
   return {

@@ -2,8 +2,8 @@ import { supabase } from ".";
 import { getBusinessOwnerIdByRole } from "./profiles";
 import type { Client } from "@/types/clients";
 
-export const getClients = async (userRole: string) => {
-    const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const getClients = async () => {
+    const businessOwnerId = await getBusinessOwnerIdByRole();
     const { data: clients, error } = await supabase
         .from("clients")
         .select("*")
@@ -16,8 +16,8 @@ export const getClients = async (userRole: string) => {
     return { clients, error };
 };
 
-export const createClient = async (name: string, userRole: string) => {
-    const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const createClient = async (name: string) => {
+    const businessOwnerId = await getBusinessOwnerIdByRole();
     const { data, error } = await supabase
         .from("clients")
         .insert({ full_name: name, business_owner_id: businessOwnerId })

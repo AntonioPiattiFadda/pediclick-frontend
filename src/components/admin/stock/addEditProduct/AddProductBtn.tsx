@@ -19,29 +19,25 @@ import { useState } from "react";
 
 import { adaptProductForDb } from "@/adapters/products";
 import { Label } from "@/components/ui/label";
-import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
-import { useAppSelector } from "@/hooks/useUserData";
+import { createProduct } from "@/service/products";
+import { getProviders } from "@/service/providers";
 import { createProductSchema } from "@/validator/products";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CategorySelector } from "../../shared/CategorySelector";
+import { emptyLotWithLotControl, emptyLotWithoutControl, emptyProduct } from "../../shared/emptyFormData";
 import { BrandSelector } from "./BrandsSelector";
 import { ImageSelector } from "./ImageSelector";
 import LotSelector from "./LotSelector";
-import PricesSelector from "./PricesSelector";
 import { ProviderSelector } from "./ProvidersSelector";
-import { SaleUnitSelector } from "./SaleUnitsSelector";
 import { SubCategorySelector } from "./SubCategorySelector";
-import {
-  emptyLotWithLotControl,
-  emptyLotWithoutControl,
-  emptyProduct,
-} from "./emptyFormData";
-import { getProviders } from "@/service/providers";
-import { getCategories } from "@/service/categories";
-import { getSubCategories } from "@/service/subCategories";
-import { createProduct } from "@/service/products";
-import { getSaleUnits } from "@/service/saleUnits";
+// import type { Product } from "@/types/products";
+// import type { Lot } from "@/types/lots";
+
+// type ProductFormDataType = Product & {
+//   lots: Lot[];
+// };
+
 
 export function AddProductBtn({
   shortAddBtn = false,
@@ -50,7 +46,7 @@ export function AddProductBtn({
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tab, setTab] = useState("info");
-  const [formData, setFormData] = useState(emptyProduct);
+  const [formData, setFormData] = useState<any>(emptyProduct);
 
   const [selectedLotIndex, setSelectedLotIndex] = useState<number | null>(0);
 
@@ -66,19 +62,17 @@ export function AddProductBtn({
     setFormData({ ...formData, lots: newLots });
   };
 
-  const handleUpdateLotPrices = (updatedPrices: any[]) => {
-    updateCurrentLot({ ...currentLot, prices: updatedPrices });
-  };
+  // const handleUpdateLotPrices = (updatedPrices: any[]) => {
+  //   updateCurrentLot({ ...currentLot, prices: updatedPrices });
+  // };
 
   const queryClient = useQueryClient();
 
-  const { role } = useAppSelector((state) => state.user);
-  const { selectedStoreId } = UseUserStoresContext();
 
   const { data: providers, isLoading: isLoadingProviders } = useQuery({
     queryKey: ["providers"],
     queryFn: async () => {
-      const response = await getProviders(role);
+      const response = await getProviders();
       return response.providers;
     },
   });
@@ -112,8 +106,7 @@ export function AddProductBtn({
 
   const handleSubmit = () => {
     const completedInformation = adaptProductForDb(
-      formData,
-      selectedStoreId || 0
+      formData
     );
 
     const validation = createProductSchema.safeParse(completedInformation);
@@ -134,13 +127,13 @@ export function AddProductBtn({
     });
   };
 
-  const { data: saleUnits, isLoading: isLoadingSaleUnits } = useQuery({
-    queryKey: ["sale_units"],
-    queryFn: async () => {
-      const response = await getSaleUnits(role);
-      return response.saleUnits;
-    },
-  });
+  // const { data: saleUnits, isLoading: isLoadingSaleUnits } = useQuery({
+  //   queryKey: ["sale_units"],
+  //   queryFn: async () => {
+  //     const response = await getSaleUnits(role);
+  //     return response.saleUnits;
+  //   },
+  // });
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -191,8 +184,9 @@ export function AddProductBtn({
             />
 
             <CategorySelector
-              value={formData.category_id}
-              onChange={(id) => setFormData({ ...formData, category_id: id })}
+              value={formData.category_id !== null ? Number(formData.category_id) : null}
+              onChange={(id) => setFormData({ ...formData, category_id: id !== null ? String(id) : "" })}
+              disabled={false}
             />
 
             <SubCategorySelector
@@ -200,11 +194,13 @@ export function AddProductBtn({
               onChange={(id) =>
                 setFormData({ ...formData, sub_category_id: id })
               }
+              disabled={false}
             />
 
             <BrandSelector
               value={formData.brand_id}
               onChange={(id) => setFormData({ ...formData, brand_id: id })}
+              disabled={false}
             />
 
             <Label htmlFor="barcode">Código de Barras</Label>
@@ -233,6 +229,7 @@ export function AddProductBtn({
                 />
                 <span>Recibir notificaciones de stock</span>
               </label>
+
 
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -270,16 +267,16 @@ export function AddProductBtn({
               className="
             "
             >
-              <SaleUnitSelector
+              {/* <SaleUnitSelector
                 saleUnits={saleUnits || []}
                 isLoadingSaleUnits={isLoadingSaleUnits}
                 value={formData.sale_unit_id}
                 onChange={(value) =>
                   setFormData({ ...formData, sale_unit_id: value })
                 }
-              />
+              /> */}
 
-              <PricesSelector
+              {/* <PricesSelector
                 prices={currentLot.prices}
                 setPrices={handleUpdateLotPrices}
                 saleUnits={saleUnits || []}
@@ -287,7 +284,7 @@ export function AddProductBtn({
                 lots={formData.lots}
                 currentLotIndex={selectedLotIndex ?? 0}
                 lotControl={formData.lot_control}
-              />
+              /> */}
 
               <ProviderSelector
                 providers={providers || []}
@@ -296,6 +293,7 @@ export function AddProductBtn({
                 onChange={(id) =>
                   updateCurrentLot({ ...currentLot, provider_id: id })
                 }
+                disabled={false}
               />
 
               <Label className="mt-2">Stock</Label>

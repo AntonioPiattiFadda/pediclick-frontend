@@ -10,7 +10,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useAppSelector } from "@/hooks/useUserData";
 import { createStore, getUserStores } from "@/service/stores";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
@@ -33,7 +32,7 @@ export function StoreSelector({
   const { data: stores, isLoading: isLoading } = useQuery({
     queryKey: ["stores"],
     queryFn: async () => {
-      const response = await getUserStores(role);
+      const response = await getUserStores();
       return response.stores;
     },
   });
@@ -43,11 +42,10 @@ export function StoreSelector({
   const [newStore, setNewStore] = useState("");
   const [open, setOpen] = useState(false);
 
-  const { role } = useAppSelector((state) => state.user);
 
   const createStoreMutation = useMutation({
     mutationFn: async (data: { newStore: string }) => {
-      return await createStore({ store_name: data.newStore }, role);
+      return await createStore({ store_name: data.newStore });
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["stores"] });

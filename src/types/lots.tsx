@@ -3,6 +3,12 @@
 import type { Price } from "./prices";
 import type { Stock } from "./stocks";
 
+// Asignación de vacíos por lote (soporta múltiples vacíos por lote)
+export type LotContainerAssignment = {
+  lot_container_id: number;
+  quantity: number;
+};
+
 export type BaseLot = {
   lot_id?: number;
   load_order_id: number | null;

@@ -1,16 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useAppSelector } from "@/hooks/useUserData";
 import { getClients } from "@/service/clients";
-import { useQuery } from "@tanstack/react-query";
-import TableSkl from "../sellPoints/ui/tableSkl";
-import { ClientsTable } from "./ClientsTable";
 import type { Client } from "@/types/clients";
+import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useState } from "react";
+import TableSkl from "../sellPoints/ui/tableSkl";
+import { ClientsTable } from "./ClientsTable";
 
 export const ClientsContainer = () => {
-    const { role } = useAppSelector((state) => state.user);
 
     const [searchTerm, setSearchTerm] = useState<string>("");
 
@@ -18,7 +16,7 @@ export const ClientsContainer = () => {
     const { data: clients = [], isLoading, isError } = useQuery({
         queryKey: ["clients"],
         queryFn: async () => {
-            const response = await getClients(role);
+            const response = await getClients();
             return (response.clients ?? []) as Client[];
         },
     });

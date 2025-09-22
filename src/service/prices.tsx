@@ -11,5 +11,5 @@ export const getPricesByLot = async (lotId: number) => {
   return { prices, error: null };
 };
 
-export const upsertPrice = async (lotId: string) => {};
-export const deletePrice = async (lotId: string) => {};
+// export const upsertPrice = async (lotId: string) => { };
+// export const deletePrice = async (lotId: string) => { };

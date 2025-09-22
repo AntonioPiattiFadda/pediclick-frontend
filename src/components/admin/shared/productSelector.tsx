@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { adaptProductForDb } from "@/adapters/products";
-import { useAppSelector } from "@/hooks/useUserData";
 import { createProduct, getProductsByName } from "@/service/products";
 import type { Product } from "@/types/products";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -32,7 +31,6 @@ const ProductSelector = ({
   const comboboxRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const { role } = useAppSelector((state) => state.user);
 
   const fetchProducts = useCallback(
     async (searchValue: string) => {
@@ -45,7 +43,7 @@ const ProductSelector = ({
       setError(null);
 
       try {
-        const data = await getProductsByName(searchValue, role);
+        const data = await getProductsByName(searchValue);
 
         setOptions(data.products);
       } catch (err) {
@@ -56,7 +54,7 @@ const ProductSelector = ({
         setIsSearching(false);
       }
     },
-    [role]
+    []
   );
 
   const debouncedFetchMicroOrganisms = useMemo(
@@ -113,7 +111,7 @@ const ProductSelector = ({
   const createProductMutation = useMutation({
     mutationFn: async (data: { completedInformation: any }) => {
       console.log("Creating product with data:", data);
-      return await createProduct(data.completedInformation, role);
+      return await createProduct(data.completedInformation);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });

@@ -129,10 +129,23 @@ export const getParentUserId = async (userId: string) => {
   return user?.business_owner_id;
 };
 
-export const getBusinessOwnerIdByRole = async (userRole: string) => {
+export const getBusinessOwnerIdByRole = async () => {
   const userId = await getUserId();
+  const { data: userData, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", userId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  //FIXME aca hago una llamada extra pero es mas seguro
   const businessOwnerId =
-    userRole === "OWNER" ? userId : await getParentUserId(userId || "");
+    userData.role === "OWNER" ? userId : userData.business_owner_id;
+  console.log("Business Owner ID:", businessOwnerId); // Debug log
+
   return businessOwnerId;
 };
 

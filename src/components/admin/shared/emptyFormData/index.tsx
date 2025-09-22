@@ -67,7 +67,7 @@ export const emptyLot: Lot = {
   has_lot_container: false,
   is_parent_lot: false,
   is_sold_out: false,
-  lot_container_id: null,
+  lot_containers: [],
   initial_stock_quantity: 0,
   purchase_cost_total: 0,
   purchase_cost_per_unit: 0,

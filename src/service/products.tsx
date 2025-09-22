@@ -3,8 +3,8 @@ import type { Product } from "@/types/products";
 import { supabase } from ".";
 import { getBusinessOwnerIdByRole } from "./profiles";
 
-export const getAllProducts = async (userRole: string) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const getAllProducts = async () => {
+  const businessOwnerId = await getBusinessOwnerIdByRole();
   const { data: dbProducts, error } = await supabase
     .from("products")
     .select(
@@ -77,8 +77,8 @@ export const updateProduct = async (
   return { data, error };
 };
 
-export const createProduct = async (product: Product, userRole: string) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const createProduct = async (product: Product) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole();
 
   const { data: newProduct, error: productError } = await supabase
     .from("products")
@@ -113,10 +113,9 @@ export const deleteProduct = async (productId: string | number) => {
 };
 
 export const getProductsByShortCode = async (
-  shortCode: string,
-  userRole: string
+  shortCode: string
 ) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+  const businessOwnerId = await getBusinessOwnerIdByRole();
 
   const { data: dbProducts, error } = await supabase
     .from("products")
@@ -141,8 +140,8 @@ export const getProductsByShortCode = async (
 //   return s.replace(/[%_]/g, (m) => `\\${m}`);
 // }
 
-export const getProductsByName = async (name: string, userRole: string) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const getProductsByName = async (name: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole();
 
   const q = name.trim();
   const isNumeric = /^\d+$/.test(q);

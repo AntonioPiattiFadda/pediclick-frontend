@@ -11,24 +11,22 @@ import { adaptLoadOrderForSubmission } from "@/adapters/loadOrders";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAppSelector } from "@/hooks/useUserData";
+import GetFollowingLoadOrderNumberBtn from "@/components/unassigned/getFollowingLoadOrderNumberBtn";
 import { createLoadOrder } from "@/service/loadOrders";
 import { getProviders } from "@/service/providers";
 import type { LoadOrder } from "@/types/loadOrders";
+import { updateLotWithCalculations } from "@/utils/lots";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { PurchasingAgentSelector } from "../shared/purchasingAgentSelector";
 import { ProviderSelector } from "../stock/addEditProduct/ProvidersSelector";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 import { emptyLoadOrder } from "./emptyFormData";
-import { PurchasingAgentSelector } from "../shared/purchasingAgentSelector";
-import { updateLotWithCalculations } from "@/utils/lots";
-import GetFollowingLoadOrderNumberBtn from "@/components/unassigned/getFollowingLoadOrderNumberBtn";
 
 export const AddLoadOrderContainer = () => {
   const queryClient = useQueryClient();
 
-  const { role } = useAppSelector((state) => state.user);
   const [formData, setFormData] = useState<LoadOrder>(emptyLoadOrder);
 
   console.log("Form data:", formData);
@@ -36,7 +34,7 @@ export const AddLoadOrderContainer = () => {
   const { data: providers, isLoading: isLoadingProviders } = useQuery({
     queryKey: ["providers"],
     queryFn: async () => {
-      const response = await getProviders(role);
+      const response = await getProviders();
       return response.providers;
     },
   });
@@ -48,7 +46,7 @@ export const AddLoadOrderContainer = () => {
     mutationFn: async (data: LoadOrder) => {
       console.log("Creating load order with data:", data);
       const { loadOrder, lots, prices } = adaptLoadOrderForSubmission(data);
-      return await createLoadOrder(role, loadOrder, lots, prices);
+      return await createLoadOrder(loadOrder, lots, prices);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["load-orders"] });

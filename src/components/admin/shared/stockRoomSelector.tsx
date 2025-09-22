@@ -10,7 +10,6 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useAppSelector } from "@/hooks/useUserData";
 import { createStockRoom, getStockRooms } from "@/service/stockRooms";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
@@ -33,7 +32,7 @@ export function StockRoomSelector({
     const { data: stockRooms, isLoading: isLoading } = useQuery({
         queryKey: ["stock-rooms"],
         queryFn: async () => {
-            const response = await getStockRooms(role);
+            const response = await getStockRooms();
             return response.stockRooms;
         },
     });
@@ -43,15 +42,14 @@ export function StockRoomSelector({
     const [newStockRoom, setNewStockRoom] = useState("");
     const [open, setOpen] = useState(false);
 
-    const { role } = useAppSelector((state) => state.user);
 
     const createStockRoomMutation = useMutation({
         mutationFn: async (data: { newStockRoom: string }) => {
-            return await createStockRoom(data.newStockRoom, role);
+            return await createStockRoom(data.newStockRoom);
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["stock-rooms"] });
-            onChange(data.stock_room_id);
+            onChange(data.stockRoom.stock_room_id);
             setOpen(false);
         },
         onError: (error: any) => {

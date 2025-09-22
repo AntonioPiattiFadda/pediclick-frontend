@@ -1,8 +1,8 @@
 import { supabase } from ".";
 import { getBusinessOwnerIdByRole } from "./profiles";
 
-export const getCategories = async (userRole: string) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const getCategories = async () => {
+  const businessOwnerId = await getBusinessOwnerIdByRole();
   const { data: categories, error } = await supabase
     .from("categories")
     .select("*")
@@ -15,8 +15,8 @@ export const getCategories = async (userRole: string) => {
   return { categories, error };
 };
 
-export const createCategory = async (name: string, userRole: string) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+export const createCategory = async (name: string) => {
+  const businessOwnerId = await getBusinessOwnerIdByRole();
   const { data, error } = await supabase
     .from("categories")
     .insert({ category_name: name, business_owner_id: businessOwnerId })

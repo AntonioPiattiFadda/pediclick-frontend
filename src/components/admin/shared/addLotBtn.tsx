@@ -332,15 +332,18 @@ export function AddLotBtn({
                     /> */}
                 <div className="grid grid-cols-2 gap-4 w-full">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="waste">Vacio</Label>
+                    <Label htmlFor="waste">Vacíos</Label>
                     <LotContainerSelector
-                      // disabled={!isEditing}
                       disabled={false}
-                      value={formData.lot_container_id === null ? "" : String(formData.lot_container_id)}
-                      onChange={(value) =>
+                      assignments={formData.lot_containers ?? []}
+                      initialQuantity={formData.initial_stock_quantity || 0}
+                      onChange={(next) =>
                         setFormData({
                           ...formData,
-                          lot_container_id: value ? Number(value) : null,
+                          lot_containers: next,
+                          has_lot_container: (next ?? []).some(
+                            (a) => (Number(a?.quantity) || 0) > 0
+                          ),
                         })
                       }
                     />
