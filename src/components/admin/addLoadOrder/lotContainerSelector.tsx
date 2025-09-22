@@ -14,7 +14,7 @@ import { createLotContainer, getLotContainers } from "@/service/lotContainer";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
+import toast from 'react-hot-toast';
 
 type Assignment = {
   lot_container_id: number | null;
@@ -59,10 +59,7 @@ export function LotContainerSelector({
 
       const remaining = computeRemaining(assignments, initialQuantity);
       if (remaining <= 0) {
-        toast("No hay unidades restantes", {
-          description:
-            "Ya asignaste todas las unidades disponibles del lote a vacíos.",
-        });
+        toast("No hay unidades restantes");
         setOpen(false);
         return;
       }
@@ -78,15 +75,13 @@ export function LotContainerSelector({
     },
     onError: (error: any) => {
       const errorMessage = error.message;
-      toast("Error al crear vacío", {
-        description: errorMessage,
-      });
+      toast(errorMessage || "Error creando el vacío");
     },
   });
 
   const handleCreateLotContainer = async () => {
     if (!newLotContainerData.lot_container_name.trim()) {
-      toast("Nombre requerido", { description: "Ingresá el nombre del vacío." });
+      toast("Nombre requerido");
       return;
     }
     try {
@@ -113,10 +108,7 @@ export function LotContainerSelector({
   const handleAddAssignment = () => {
     const rest = computeRemaining(assignments, initialQuantity);
     if (rest <= 0) {
-      toast("No hay unidades restantes", {
-        description:
-          "La suma de cantidades ya alcanza el stock inicial del lote.",
-      });
+      toast("No hay stock sin asignar ");
       return;
     }
     const next = [...assignments, { lot_container_id: null, quantity: rest }];
@@ -169,7 +161,7 @@ export function LotContainerSelector({
 
   return (
     <div className="flex flex-col gap-3 w-full">
-      <div className="flex items-center justify-between">
+      <div className="grid grid-cols-[30%_70%] items-center ">
         <span className="text-sm text-muted-foreground">
           Restante: {remaining}
         </span>
@@ -181,7 +173,7 @@ export function LotContainerSelector({
             onClick={handleAddAssignment}
           >
             <Plus className="w-4 h-4 mr-1" />
-            Agregar vacío
+            Agregar
           </Button>
 
           <Dialog open={open} onOpenChange={setOpen}>
@@ -191,7 +183,7 @@ export function LotContainerSelector({
                 disabled={disabled}
                 variant="outline"
               >
-                + Nuevo vacío
+                + Nuevo
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">

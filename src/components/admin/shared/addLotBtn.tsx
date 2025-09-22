@@ -12,9 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import GetFollowingLotNumberBtn from "@/components/unassigned/getFollowingLotNumberBtn";
 import type { Lot } from "@/types/lots";
 import type { Price } from "@/types/prices";
-import type { Product, SellMeasurementMode } from "@/types/products";
+import type { Product } from "@/types/products";
+import { DialogClose } from "@radix-ui/react-dialog";
 import { Barcode, Plus } from "lucide-react";
 import { useState } from "react";
 import { LotContainerSelector } from "../addLoadOrder/lotContainerSelector";
@@ -22,10 +24,10 @@ import { BrandSelector } from "../stock/addEditProduct/BrandsSelector";
 import { ImageSelector } from "../stock/addEditProduct/ImageSelector";
 import { SubCategorySelector } from "../stock/addEditProduct/SubCategorySelector";
 import { CategorySelector } from "./CategorySelector";
-import CheckBoxesSelector from "./checkBoxesSelector";
-import { emptyLot, emptyProduct } from "./emptyFormData";
+import { emptyLot } from "./emptyFormData";
 import ProductSelectorV2 from "./productSelector";
-import GetFollowingLotNumberBtn from "@/components/unassigned/getFollowingLotNumberBtn";
+import toast from 'react-hot-toast';
+
 
 // type CreationMode = "SHORT" | "LONG";
 
@@ -34,10 +36,10 @@ import GetFollowingLotNumberBtn from "@/components/unassigned/getFollowingLotNum
 //   { label: "Largo", value: "LONG" },
 // ];
 
-const sellMeasurementModeOptions = [
-  { label: "Unidad", value: "QUANTITY" },
-  { label: "Kg", value: "WEIGHT" },
-];
+// const sellMeasurementModeOptions = [
+//   { label: "Unidad", value: "QUANTITY" },
+//   { label: "Kg", value: "WEIGHT" },
+// ];
 
 export function AddLotBtn({
   onAddElementToLoadOrder,
@@ -55,6 +57,10 @@ export function AddLotBtn({
   const [isEditing, setIsEditing] = useState(false);
 
   const handleSubmit = () => {
+    if (!isProductSelected) {
+      toast('Debes seleccionar un producto para agregar al remito');
+      return
+    };
     //TODO ACTUALIZAR PRODUCTO SI ESTA EN MODO EDICION
 
     //TODO AGREGAR AL REMITO
@@ -67,7 +73,7 @@ export function AddLotBtn({
     } as Lot);
     setIsModalOpen(false);
     setIsEditing(false);
-    setSelectedProduct(adaptProductForDb(emptyProduct));
+    setSelectedProduct(adaptProductForDb({} as Product));
     setLotPrices([]);
     setFormData(emptyLot);
   };
@@ -536,21 +542,6 @@ export function AddLotBtn({
                     />
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <Label>Modo de venta</Label>
-
-                    <CheckBoxesSelector
-                      options={sellMeasurementModeOptions}
-                      selectedOption={selectedProduct.sell_measurement_mode}
-                      onSelectOption={(value) =>
-                        setSelectedProduct({
-                          ...selectedProduct,
-                          sell_measurement_mode: value as SellMeasurementMode,
-                        })
-                      }
-                      disabled={!isEditing}
-                    />
-                  </div>
 
                   <div className="flex flex-col gap-2 col-span-2">
                     <Label htmlFor="observations">Observaciones</Label>
@@ -610,19 +601,28 @@ export function AddLotBtn({
           </DialogClose> */}
           {Object.keys(selectedProduct).length > 0 && (
             <>
-              {isEditing ? (
+              <DialogClose asChild>
+                <Button variant={"outline"} onClick={() => {
+                  setSelectedProduct({} as Product);
+                  setFormData(emptyLot);
+                  setLotPrices([]);
+                  setIsEditing(false);
+                }}>
+                  Cancelar
+                </Button>
+              </DialogClose>
+
+              {/* {isEditing ? (
                 <Button variant={"outline"} onClick={() => setIsEditing(false)}>
                   Cancelar
                 </Button>
               ) : (
                 <Button onClick={() => setIsEditing(true)}>Modificar</Button>
-              )}
+              )} */}
 
-              {isEditing ? (
-                <Button onClick={handleSubmit}>Guardar Cambios</Button>
-              ) : (
-                <Button onClick={handleSubmit}>Agregar al remito</Button>
-              )}
+
+              <Button onClick={handleSubmit}>Agregar al remito</Button>
+
             </>
           )}
         </DialogFooter>

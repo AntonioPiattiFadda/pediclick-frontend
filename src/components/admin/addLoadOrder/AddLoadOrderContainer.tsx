@@ -23,9 +23,11 @@ import { PurchasingAgentSelector } from "../shared/purchasingAgentSelector";
 import { ProviderSelector } from "../stock/addEditProduct/ProvidersSelector";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 import { emptyLoadOrder } from "./emptyFormData";
+import { useNavigate } from "react-router-dom";
 
 export const AddLoadOrderContainer = () => {
   const queryClient = useQueryClient();
+  const navigator = useNavigate();
 
   const [formData, setFormData] = useState<LoadOrder>(emptyLoadOrder);
 
@@ -50,7 +52,7 @@ export const AddLoadOrderContainer = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["load-orders"] });
-      // navigator("/load-orders");
+      navigator("/load-orders");
     },
     onError: (error) => {
       const errorMessage =

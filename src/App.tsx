@@ -7,6 +7,7 @@ import { Layout } from "./components/Layout";
 import NotFound from "./pages/admin/NotFound";
 import Settings from "./pages/admin/Settings";
 import Stock from "./pages/admin/Stock";
+import { Toaster as ReactHotToast } from 'react-hot-toast';
 
 import { Provider } from "react-redux";
 import styles from "./App.module.css";
@@ -52,6 +53,8 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <ReactHotToast
+          position="bottom-right" />
         <Toaster />
         {isInClientMode ? (
           <div
