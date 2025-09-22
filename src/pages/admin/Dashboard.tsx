@@ -16,10 +16,8 @@ import EmployeeDashboard from "./EmployeeDashboard";
 const Dashboard = () => {
   const { role } = useAppSelector((state) => state.user);
 
-  console.log(role);
-
   if (role === "EMPLOYEE") {
-    return <EmployeeDashboard/>;
+    return <EmployeeDashboard />;
   }
 
   return (

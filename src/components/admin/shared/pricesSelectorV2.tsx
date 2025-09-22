@@ -256,7 +256,7 @@ export function PricesSelectorV2({
                   is_active: true,
                   valid_from: null,
                   valid_until: null,
-                  lot_id: lotId || null,
+                  lot_id: lotId,
                   units_per_price: 1,
                   unit_price: round2(basePrice * 1),
                 };

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
     Table,
     TableBody,
@@ -6,11 +7,11 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import ClientHistoricalMvts from "@/components/unassigned/clientHistoricalMvts";
+import RegisterClientPayment from "@/components/unassigned/registerClientPayment";
+import { deleteClient } from "@/service/clients";
 import type { Client } from "@/types/clients";
-import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
-import { deleteClient, updateClient } from "@/service/clients";
-import { useEffect, useMemo, useState } from "react";
+import type { ColumnDef, PaginationState } from "@tanstack/react-table";
 import {
     flexRender,
     getCoreRowModel,
@@ -18,11 +19,8 @@ import {
     getPaginationRowModel,
     useReactTable,
 } from "@tanstack/react-table";
-import type { ColumnDef, PaginationState } from "@tanstack/react-table";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import ClientHistoricalMvts from "@/components/unassigned/clientHistoricalMvts";
-import RegisterClientPayment from "@/components/unassigned/registerClientPayment";
+import { useEffect, useMemo, useState } from "react";
+import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
 
 interface ClientsTableProps {
     clients: Client[];
@@ -31,7 +29,7 @@ interface ClientsTableProps {
 
 
 export const ClientsTable = ({ clients, filter = "" }: ClientsTableProps) => {
-    const queryClient = useQueryClient();
+    // const queryClient = useQueryClient();
 
     const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
 
@@ -171,35 +169,35 @@ export const ClientsTable = ({ clients, filter = "" }: ClientsTableProps) => {
         ];
     }, []); // columns are static
 
-    const updateClientMutation = useMutation({
-        mutationFn: async ({
-            id,
-            updates,
-        }: {
-            id: string | number;
-            updates: Partial<Client>;
-        }) => {
-            return await updateClient(id, updates);
-        },
-        onSuccess: (updated) => {
-            // Update the cache in-place for ["clients"]
-            queryClient.setQueryData<Client[]>(["clients"], (prev) => {
-                if (!prev) return prev as unknown as Client[];
-                return prev.map((c) =>
-                    c.client_id === updated.client_id ? { ...c, ...updated } : c
-                );
-            });
-            toast("Cliente actualizado", {
-                description: "Los cambios se guardaron correctamente.",
-            });
-        },
-        onError: (error: unknown) => {
-            const msg =
-                (error as { message?: string })?.message ??
-                "No se pudo actualizar el cliente.";
-            toast("Error al actualizar", { description: msg });
-        },
-    });
+    // const updateClientMutation = useMutation({
+    //     mutationFn: async ({
+    //         id,
+    //         updates,
+    //     }: {
+    //         id: string | number;
+    //         updates: Partial<Client>;
+    //     }) => {
+    //         return await updateClient(id, updates);
+    //     },
+    //     onSuccess: (updated) => {
+    //         // Update the cache in-place for ["clients"]
+    //         queryClient.setQueryData<Client[]>(["clients"], (prev) => {
+    //             if (!prev) return prev as unknown as Client[];
+    //             return prev.map((c) =>
+    //                 c.client_id === updated.client_id ? { ...c, ...updated } : c
+    //             );
+    //         });
+    //         toast("Cliente actualizado", {
+    //             description: "Los cambios se guardaron correctamente.",
+    //         });
+    //     },
+    //     onError: (error: unknown) => {
+    //         const msg =
+    //             (error as { message?: string })?.message ??
+    //             "No se pudo actualizar el cliente.";
+    //         toast("Error al actualizar", { description: msg });
+    //     },
+    // });
 
     const table = useReactTable({
         data: clients,

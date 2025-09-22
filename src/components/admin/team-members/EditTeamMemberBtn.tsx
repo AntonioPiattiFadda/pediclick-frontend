@@ -24,7 +24,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
 import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
 import { editTeamMember, getTeamMemberDataById } from "@/service/profiles";
-import type { UserProfile } from "@/types";
 import { editTeamMemberSchema } from "@/validator/teamMembers";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -33,6 +32,7 @@ import type { ZodIssue } from "zod";
 import PasswordInfoPopover from "./PasswordInfoPopover";
 import RolesInfoPopover, { ROLES } from "./RoleInfoPopover";
 import { Edit } from "lucide-react";
+import type { UserProfile } from "@/types/users";
 
 const emptyUser: UserProfile = {
   id: "",
@@ -145,8 +145,8 @@ export function EditTeamMemberBtn({ id }: { id: string }) {
                   className={`border ${zErrors?.find((error: any) =>
                     error.path.includes("full_name")
                   )
-                      ? "border-red-500"
-                      : "border-gray-300"
+                    ? "border-red-500"
+                    : "border-gray-300"
                     } rounded-md p-2`}
                   value={formData.full_name}
                   onChange={(e) =>
@@ -206,8 +206,8 @@ export function EditTeamMemberBtn({ id }: { id: string }) {
                 >
                   <SelectTrigger
                     className={`w-full ${zErrors?.find((error: any) => error.path.includes("role"))
-                        ? "border-red-500"
-                        : "border-gray-300"
+                      ? "border-red-500"
+                      : "border-gray-300"
                       }`}
                   >
                     <SelectValue placeholder="Seleccionar rol" />
@@ -238,8 +238,8 @@ export function EditTeamMemberBtn({ id }: { id: string }) {
                     className={` w-full ${zErrors?.find((error: any) =>
                       error.path.includes("store_id")
                     )
-                        ? "border-red-500"
-                        : "border-gray-300"
+                      ? "border-red-500"
+                      : "border-gray-300"
                       }`}
                   >
                     <SelectValue placeholder="Seleccionar punto de venta" />

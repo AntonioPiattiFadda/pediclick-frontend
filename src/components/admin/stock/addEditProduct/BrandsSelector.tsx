@@ -10,7 +10,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useAppSelector } from "@/hooks/useUserData";
 import { createBrand, getBrands } from "@/service/brands";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -29,19 +28,18 @@ export function BrandSelector({ value, onChange, disabled }: BrandSelectProps) {
   const [newBrand, setNewBrand] = useState("");
   const [open, setOpen] = useState(false);
 
-  const { role } = useAppSelector((state) => state.user);
 
   const { data: brands, isLoading: isLoadingBrands } = useQuery({
     queryKey: ["brands"],
     queryFn: async () => {
-      const response = await getBrands(role);
+      const response = await getBrands();
       return response.brands;
     },
   });
 
   const createBrandMutation = useMutation({
     mutationFn: async (data: { newBrand: string }) => {
-      return await createBrand(data.newBrand, role);
+      return await createBrand(data.newBrand,);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["brands"] });

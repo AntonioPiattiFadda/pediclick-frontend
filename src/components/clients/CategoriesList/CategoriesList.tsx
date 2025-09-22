@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import  { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import style from './CategoriesList.module.css';
 import { SearchContext } from '../Context/SearchContext';
 import { getCategories } from '@/service/categories';
@@ -9,7 +9,7 @@ const CategoriesList = () => {
   const { setSearchedCategory, searchedCategory } = useContext(SearchContext);
 
   useEffect(() => {
-    getCategories('ads')
+    getCategories()
       .then((res) => {
         const newCategories = [
           'Todos',

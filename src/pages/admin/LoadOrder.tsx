@@ -8,17 +8,15 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { useAppSelector } from "@/hooks/useUserData";
 import { getLoadOrder } from "@/service/loadOrders";
+import type { Stock } from "@/types/stocks";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
-import type { Stock } from "@/types/stocks";
 
 const LoadOrder = () => {
     const location = useLocation();
     const loadOrderId = location.pathname.split("/").pop() || "";
 
-    const { role } = useAppSelector((state) => state.user);
 
     const {
         data: loadOrder,
@@ -27,7 +25,7 @@ const LoadOrder = () => {
     } = useQuery({
         queryKey: ["load-order", Number(loadOrderId)],
         queryFn: async () => {
-            const response = await getLoadOrder(loadOrderId, role);
+            const response = await getLoadOrder(loadOrderId);
             return response.dbLoadOrder;
         },
     });

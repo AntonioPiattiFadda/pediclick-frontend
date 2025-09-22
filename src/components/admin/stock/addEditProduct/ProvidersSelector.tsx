@@ -10,13 +10,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useAppSelector } from "@/hooks/useUserData";
 import { createProvider } from "@/service/providers";
+import type { Provider } from "@/types/providers";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
-import type { Provider } from "@/types/providers";
 
 interface ProviderSelectProps {
   providers: Provider[];
@@ -38,11 +37,10 @@ export function ProviderSelector({
   const [newProvider, setNewProvider] = useState("");
   const [open, setOpen] = useState(false);
 
-  const { role } = useAppSelector((state) => state.user);
 
   const createProviderMutation = useMutation({
     mutationFn: async (data: { newProvider: string }) => {
-      return await createProvider(data.newProvider, role);
+      return await createProvider(data.newProvider);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["providers"] });

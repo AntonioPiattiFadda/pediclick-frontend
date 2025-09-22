@@ -8,15 +8,15 @@ import {
 } from "@/components/ui/table";
 // import { Badge } from '@/components/ui/badge';
 import { Button } from "@/components/ui/button";
-import type { SubCategory } from "@/types";
 import { Edit, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../ui/avatar";
+import type { SubCategory } from "@/types/subCategories";
 
 interface CategoriesTableProps {
   subCategories: SubCategory[];
 }
 
-export const SubCategoriesTable  = ({  subCategories }: CategoriesTableProps) => {
+export const SubCategoriesTable = ({ subCategories }: CategoriesTableProps) => {
   // const getStatusBadge = (status: string) => {
   //   switch (status) {
   //     case 'active':
@@ -42,7 +42,7 @@ export const SubCategoriesTable  = ({  subCategories }: CategoriesTableProps) =>
           </TableRow>
         </TableHeader>
         <TableBody>
-        
+
 
           {subCategories.map((category) => (
             <TableRow key={category.sub_category_id}>

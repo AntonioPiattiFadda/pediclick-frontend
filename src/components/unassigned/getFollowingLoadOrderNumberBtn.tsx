@@ -1,7 +1,6 @@
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { useAppSelector } from "@/hooks/useUserData";
 import { getFollowingLoadOrderNumber } from "@/service/loadOrders";
 
 const GetFollowingLoadOrderNumberBtn = ({
@@ -11,12 +10,11 @@ const GetFollowingLoadOrderNumberBtn = ({
 }) => {
     const [loading, setLoading] = useState(false);
 
-    const { role } = useAppSelector(state => state.user);
     const handleGetFollowingLoadOrderNumber = async () => {
         // Lógica para obtener el siguiente número de LoadOrdere
         try {
             setLoading(true);
-            const nextLoadOrderNumber = await getFollowingLoadOrderNumber(role);
+            const nextLoadOrderNumber = await getFollowingLoadOrderNumber();
             onClick(nextLoadOrderNumber);
             setLoading(false);
         } catch (error) {

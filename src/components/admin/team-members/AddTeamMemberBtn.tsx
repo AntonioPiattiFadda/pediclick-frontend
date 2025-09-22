@@ -30,8 +30,8 @@ import type { ZodIssue } from "zod";
 import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
 import RolesInfoPopover, { ROLES } from "./RoleInfoPopover";
 import { createTeamMember } from "@/service/profiles";
-import type { UserProfile } from "@/types";
 import PasswordInfoPopover from "./PasswordInfoPopover";
+import type { UserProfile } from "@/types/users";
 
 const emptyUser: UserProfile = {
   id: "",
@@ -131,8 +131,8 @@ export function AddTeamMemberBtn() {
               id="full_name"
               placeholder="Juan Pérez"
               className={`border ${zErrors?.find((error: any) => error.path.includes("full_name"))
-                  ? "border-red-500"
-                  : "border-gray-300"
+                ? "border-red-500"
+                : "border-gray-300"
                 } rounded-md p-2`}
               value={formData.full_name}
               onChange={(e) =>
@@ -150,8 +150,8 @@ export function AddTeamMemberBtn() {
               type="email"
               placeholder="juan@ejemplo.com"
               className={`border ${zErrors?.find((error: any) => error.path.includes("email"))
-                  ? "border-red-500"
-                  : "border-gray-300"
+                ? "border-red-500"
+                : "border-gray-300"
                 } rounded-md p-2`}
               value={formData.email}
               onChange={(e) =>
@@ -175,8 +175,8 @@ export function AddTeamMemberBtn() {
               type="password"
               placeholder="Mínimo 6 caracteres"
               className={`border ${zErrors?.find((error: any) => error.path.includes("password"))
-                  ? "border-red-500"
-                  : "border-gray-300"
+                ? "border-red-500"
+                : "border-gray-300"
                 } rounded-md p-2`}
               value={formData.password}
               onChange={(e) =>
@@ -202,8 +202,8 @@ export function AddTeamMemberBtn() {
             >
               <SelectTrigger
                 className={`w-full ${zErrors?.find((error: any) => error.path.includes("role"))
-                    ? "border-red-500"
-                    : "border-gray-300"
+                  ? "border-red-500"
+                  : "border-gray-300"
                   }`}
               >
                 <SelectValue placeholder="Seleccionar rol" />
@@ -230,8 +230,8 @@ export function AddTeamMemberBtn() {
             >
               <SelectTrigger
                 className={` w-full ${zErrors?.find((error: any) => error.path.includes("store_id"))
-                    ? "border-red-500"
-                    : "border-gray-300"
+                  ? "border-red-500"
+                  : "border-gray-300"
                   }`}
               >
                 <SelectValue placeholder="Seleccionar punto de venta" />
@@ -259,8 +259,8 @@ export function AddTeamMemberBtn() {
               className={`border ${zErrors?.find((error: any) =>
                 error.path.includes("job_position")
               )
-                  ? "border-red-500"
-                  : "border-gray-300"
+                ? "border-red-500"
+                : "border-gray-300"
                 } rounded-md p-2`}
               value={formData.job_position || ""}
               onChange={(e) =>
@@ -281,8 +281,8 @@ export function AddTeamMemberBtn() {
               type="tel"
               placeholder="+54 9 11 1234-5678"
               className={`border ${zErrors?.find((error: any) => error.path.includes("phone"))
-                  ? "border-red-500"
-                  : "border-gray-300"
+                ? "border-red-500"
+                : "border-gray-300"
                 } rounded-md p-2`}
               value={formData.phone || ""}
               onChange={(e) =>
@@ -299,8 +299,8 @@ export function AddTeamMemberBtn() {
               id="address"
               placeholder="Calle Ejemplo 123, Ciudad, Provincia"
               className={`border ${zErrors?.find((error: any) => error.path.includes("address"))
-                  ? "border-red-500"
-                  : "border-gray-300"
+                ? "border-red-500"
+                : "border-gray-300"
                 } rounded-md`}
               value={formData.address || ""}
               onChange={(e) =>

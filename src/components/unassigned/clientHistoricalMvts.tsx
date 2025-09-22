@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import type { ClientTransaction } from "@/types/clientTransactions";
 import { Loader2 } from "lucide-react";
-import { useAppSelector } from "@/hooks/useUserData";
 import { getClientTransactions } from "@/service/clientTransactions";
 
 type EnrichedTransaction = ClientTransaction & {

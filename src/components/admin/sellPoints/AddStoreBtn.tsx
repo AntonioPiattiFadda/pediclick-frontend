@@ -20,10 +20,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createStoreSchema } from "@/validator/stores";
 import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
-import type { Store } from "@/types";
 import type { ZodIssue } from "zod";
 import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
 import { createStore } from "@/service/stores";
+import type { Store } from "@/types/stores";
 
 const emptyStore = {
   store_name: "",
@@ -126,8 +126,8 @@ export function AddStoreBtn() {
               id="store_name"
               placeholder="Mi punto de venta"
               className={`border ${zErrors?.find((error: any) => error.path.includes("store_name"))
-                  ? "border-red-500"
-                  : "border-gray-300"
+                ? "border-red-500"
+                : "border-gray-300"
                 } rounded-md p-2`}
               value={formData.store_name}
               onChange={(e) =>

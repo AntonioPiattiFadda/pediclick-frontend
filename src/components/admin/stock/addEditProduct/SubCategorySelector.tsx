@@ -10,13 +10,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useAppSelector } from "@/hooks/useUserData";
 import { createSubCategory, getSubCategories } from "@/service/subCategories";
-import type { SubCategory } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react"; // 👈 icono del tacho
 import { useState } from "react";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react"; // 👈 icono del tacho
 
 interface SubCategorySelectProps {
   value: string;
@@ -34,7 +32,7 @@ export function SubCategorySelector({
   const { data: subCategories, isLoading: isLoading } = useQuery({
     queryKey: ["sub-categories"],
     queryFn: async () => {
-      const response = await getSubCategories(role);
+      const response = await getSubCategories();
       return response.categories;
     },
   });
@@ -42,11 +40,10 @@ export function SubCategorySelector({
   const [newCategory, setNewCategory] = useState("");
   const [open, setOpen] = useState(false);
 
-  const { role } = useAppSelector((state) => state.user);
 
   const createSubCategoryMutation = useMutation({
     mutationFn: async (data: { newCategory: string }) => {
-      return await createSubCategory(data.newCategory, role);
+      return await createSubCategory(data.newCategory);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["sub-categories"] });
@@ -85,11 +82,12 @@ export function SubCategorySelector({
         onChange={(e) => onChange(e.target.value)}
       >
         <option value="">Sin Categoría</option>
-        {subCategories.map((cat) => (
-          <option key={cat.sub_category_id} value={cat.sub_category_id}>
-            {cat.sub_category_name}
-          </option>
-        ))}
+        {subCategories &&
+          subCategories.map((cat) => (
+            <option key={cat.sub_category_id} value={cat.sub_category_id}>
+              {cat.sub_category_name}
+            </option>
+          ))}
       </select>
 
       {/* Si hay selección, mostrar tacho */}
