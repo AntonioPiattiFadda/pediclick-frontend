@@ -2,81 +2,64 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Sheet,
-    SheetClose,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet";
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { createStockMovement } from "@/service/stockMovement";
-import type { StockMovement } from "@/types/stockMovements";
+import type { StockMovement as StockMovementType } from "@/types/stockMovements";
 import type { Stock } from "@/types/stocks";
+import type { Lot } from "@/types/lots";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { StoreSelector } from "../shared/StoresSelector";
 import { StockRoomSelector } from "../shared/stockRoomSelector";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatStockLocation } from "@/pages/admin/LoadOrder";
 
-type StockMovementDTO = NonNullable<StockMovement>;
-const buildMovementFromStock = (stock?: Stock): StockMovementDTO => ({
-    lot_id: stock?.lot_id ?? 0,
-    movement_type: "TRANSFER",
-    quantity: null,
-    from_stock_room_id: stock?.stock_type === "STOCKROOM" ? (stock?.stock_room_id ?? null) : null,
-    to_stock_room_id: null,
-    from_store_id: stock?.stock_type === "STORE" ? (stock?.store_id ?? null) : null,
-    to_store_id: null,
-    should_notify_owner: false,
-});
+type StockWithRelations = Stock & {
+    stores?: { store_name?: string } | null;
+    stock_rooms?: { stock_room_name?: string } | null;
+};
 
-export function StockMovement({
-    stockData,
-    loadOrderId,
-}: {
-    stockData?: Stock;
-    loadOrderId: number;
-}) {
-    console.log("stockData en StockMovement:", stockData);
-    console.log("loadOrderId:", loadOrderId);
+type DestinationType = "" | "STORE" | "STOCKROOM" | "NOT ASSIGNED";
 
-    //      {
-    //     lot_id: 99,
-    //     stores: null,
-    //     stock_id: 7,
-    //     store_id: null,
-    //     created_at: '2025-09-16T19:03:56.077446+00:00',
-    //     stock_type: 'NOT ASSIGNED',
-    //     updated_at: '2025-09-16T19:03:56.077446+00:00',
-    //     stock_rooms: null,
-    //     last_updated: null,
-    //     stock_room_id: null,
-    //     current_quantity: 15,
-    //     max_notification: null,
-    //     min_notification: null,
-    //     transformed_to_product_id: null,
-    //     transformed_from_product_id: null
-    //   }
 
+
+type MovementDTO = NonNullable<StockMovementType>;
+
+function buildPayload(params: {
+    lot: Lot;
+    from?: StockWithRelations;
+    destType: DestinationType;
+    toStoreId: number | null;
+    toStockRoomId: number | null;
+    quantity: number | null;
+}): MovementDTO {
+    const { lot, from, destType, toStoreId, toStockRoomId, quantity } = params;
+    return {
+        lot_id: lot?.lot_id ?? 0,
+        movement_type: "TRANSFER",
+        quantity: quantity ?? null,
+        from_stock_room_id: from?.stock_type === "STOCKROOM" ? from?.stock_room_id ?? null : null,
+        to_stock_room_id: destType === "STOCKROOM" ? toStockRoomId ?? null : null,
+        from_store_id: from?.stock_type === "STORE" ? from?.store_id ?? null : null,
+        to_store_id: destType === "STORE" ? toStoreId ?? null : null,
+        should_notify_owner: false,
+    };
+}
+
+function useCreateStockMovement(loadOrderId: number, onAfterSuccess?: () => void) {
     const queryClient = useQueryClient();
-
-    const [newStockMovement, setNewStockMovement] = useState<StockMovementDTO>(
-        buildMovementFromStock(stockData)
-    );
-    const [open, setOpen] = useState(false);
-
-    const [selectedToLocationType, setSelectedToLocationType] = useState<string>("");
-
-    // Prefill "from" based on the current stock location of this lot
-    useEffect(() => {
-        setNewStockMovement(buildMovementFromStock(stockData));
-    }, [stockData]);
-
-    const createStockMovementMutation = useMutation({
-        mutationFn: async (data: { newStockMovement: StockMovement }) => {
+    return useMutation({
+        mutationFn: async (data: { newStockMovement: StockMovementType }) => {
             return await createStockMovement(data.newStockMovement);
         },
         onSuccess: async () => {
@@ -84,7 +67,7 @@ export function StockMovement({
                 queryKey: ["load-order", loadOrderId],
                 exact: true,
             });
-            setOpen(false);
+            onAfterSuccess?.();
         },
         onError: (error: unknown) => {
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -93,184 +76,239 @@ export function StockMovement({
             });
         },
     });
+}
 
-    const handleCreateStockMovement = async () => {
-        if (!newStockMovement) return;
 
-        console.log("Creating stock movement with data:", newStockMovement);
-        // {
-        //     lot_id: 98,
-        //     movement_type: 'TRANSFER',
-        //     quantity: 4,
-        //     from_stock_room_id: null,
-        //     to_stock_room_id: null,
-        //     from_store_id: null,
-        //     to_store_id: 27,
-        //     should_notify_owner: false
-        //   }
+export function StockMovement({
+    loadOrderId,
+    lot,
+    stocks,
+}: {
+    loadOrderId: number;
+    lot: Lot;
+    stocks: StockWithRelations[];
+}) {
+    const [open, setOpen] = useState(false);
 
-        try {
-            await createStockMovementMutation.mutateAsync({ newStockMovement });
-            setNewStockMovement(buildMovementFromStock(stockData));
-        } catch (error) {
-            console.error("Error creating stock movement:", error);
+    const [selectedFromId, setSelectedFromId] = useState<number | null>(null);
+    const selectedFrom = useMemo(
+        () => stocks.find((s) => s.stock_id === selectedFromId),
+        [stocks, selectedFromId]
+    );
+
+    const [destType, setDestType] = useState<DestinationType>("");
+    const [toStoreId, setToStoreId] = useState<number | null>(null);
+    const [toStockRoomId, setToStockRoomId] = useState<number | null>(null);
+    const [quantity, setQuantity] = useState<number | "">("");
+
+    // Reset destination ids on type change
+    useEffect(() => {
+        setToStoreId(null);
+        setToStockRoomId(null);
+    }, [destType]);
+
+    // Reset all state when dialog closes
+    useEffect(() => {
+        if (!open) {
+            setSelectedFromId(null);
+            setDestType("");
+            setToStoreId(null);
+            setToStockRoomId(null);
+            setQuantity("");
         }
+    }, [open]);
+
+    const resetForm = () => {
+        setSelectedFromId(null);
+        setDestType("");
+        setToStoreId(null);
+        setToStockRoomId(null);
+        setQuantity("");
+    };
+    const createMovement = useCreateStockMovement(loadOrderId, () => {
+        // Keep dialog open, reset form, and values will refresh via query refetch
+        resetForm();
+    });
+
+    const qtyNum = typeof quantity === "number" ? quantity : NaN;
+    const fromQty = selectedFrom?.current_quantity ?? 0;
+    const qtyInvalid = !Number.isFinite(qtyNum) || qtyNum <= 0 || qtyNum > fromQty;
+    const destMissing =
+        (destType === "STORE" && !toStoreId) ||
+        (destType === "STOCKROOM" && !toStockRoomId) ||
+        destType === "";
+    const fromMissing = !selectedFrom;
+    const sameLocation =
+        !!selectedFrom &&
+        destType !== "" &&
+        destType === selectedFrom.stock_type &&
+        ((destType === "STORE" && toStoreId === selectedFrom.store_id) ||
+            (destType === "STOCKROOM" && toStockRoomId === selectedFrom.stock_room_id) ||
+            (destType === "NOT ASSIGNED" && selectedFrom.stock_type === "NOT ASSIGNED"));
+
+    const handleSubmit = async () => {
+        if (!selectedFrom) return;
+        const payload = buildPayload({
+            lot,
+            from: selectedFrom,
+            destType,
+            toStoreId,
+            toStockRoomId,
+            quantity: Number(quantity),
+        });
+        await createMovement.mutateAsync({ newStockMovement: payload });
     };
 
-    const isStockInStore = stockData?.stock_type === "STORE";
-    // const storeName = isStockInStore ? "Tienda" : "Otro";
-    const isStockInStockRoom = stockData?.stock_type === "STOCKROOM";
-    const isStockUnassigned = stockData?.stock_type === "NOT ASSIGNED";
-
-    const stockLocation = isStockInStore ? "Tienda" : isStockInStockRoom ? "Deposito" : isStockUnassigned ? "No Asignado" : "Otro";
-
-    console.log("Rendering StockMovement with stockData:", stockLocation);
+    const totalQty = (stocks ?? []).reduce((sum, s) => sum + (s?.current_quantity ?? 0), 0);
 
     return (
-        <Sheet onOpenChange={setOpen} open={open}>
-            <SheetTrigger asChild>
-                <Button variant="outline">Mover Stock</Button>
-            </SheetTrigger>
-            <SheetContent className="flex flex-col ">
-                <SheetHeader>
-                    <SheetTitle>Movimiento de Stock</SheetTitle>
-                    <SheetDescription>
-                        Realiza cambios en el movimiento de stock aquí. Haz clic en guardar cuando hayas terminado.
-                    </SheetDescription>
-                </SheetHeader>
-                <div className="grid flex-1 auto-rows-min gap-6 px-4">
-                    <div className="grid gap-3">
-                        <Label htmlFor="sheet-demo-name">Stock Disponible desde:</Label>
-                        <span>{stockLocation}</span>
-                        <Input defaultValue={stockData?.current_quantity} disabled />
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline">Mover stock</Button>
+            </DialogTrigger>
+            <DialogContent className="flex flex-col max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle>Movimiento de Stock</DialogTitle>
+                    <DialogDescription>
+                        Visualiza la distribución actual del stock y mueve cantidades entre ubicaciones.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-4 overflow-y-auto">
+                    <div>
+                        <div className="text-sm mb-2 font-medium">Distribución actual (Total: {totalQty})</div>
+                        <div className="rounded border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Ubicación</TableHead>
+                                        <TableHead>Tipo</TableHead>
+                                        <TableHead>Cantidad</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {(stocks ?? []).length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="text-muted-foreground">
+                                                Sin stock asociado
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        (stocks ?? [])
+                                            .sort((a, b) => a.stock_type.localeCompare(b.stock_type))
+                                            .map((item) => {
+                                                const { typeLabel, nameLabel } = formatStockLocation(item);
+                                                return (
+                                                    <TableRow key={item.stock_id}>
+                                                        <TableCell className="max-w-[220px]">
+                                                            <div className="flex items-center gap-2">
+                                                                <input
+                                                                    type="radio"
+                                                                    name="fromLocation"
+                                                                    checked={selectedFromId === item.stock_id}
+                                                                    onChange={() => setSelectedFromId(item.stock_id ?? null)}
+                                                                />
+                                                                <div className="flex flex-col">
+                                                                    <span>{nameLabel || typeLabel}</span>
+                                                                    {nameLabel && (
+                                                                        <span className="text-xs text-muted-foreground">{typeLabel}</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell>{typeLabel}</TableCell>
+                                                        <TableCell>{item.current_quantity}</TableCell>
+                                                    </TableRow>
+                                                );
+                                            })
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </div>
-                    Mover hacia:
 
-                    <Select onValueChange={(value) => {
-                        if (value !== selectedToLocationType) {
-                            setNewStockMovement((prev) => ({
-                                ...prev,
-                                to_store_id: null,
-                                to_stock_room_id: null
-                            }));
-                        }
-                        setSelectedToLocationType(value);
-                    }}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Seleccionar Tipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="STORE">Tienda</SelectItem>
-                            <SelectItem value="STOCKROOM">Deposito</SelectItem>
-                            <SelectItem value="NOT ASSIGNED">No Asignado</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <div className="grid gap-3">
+                        <div className="grid gap-2">
+                            <Label>Origen</Label>
+                            <Select
+                                value={selectedFromId ? String(selectedFromId) : ""}
+                                onValueChange={(v: string) => setSelectedFromId(Number(v))}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Seleccionar origen" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {(stocks ?? []).map((item) => {
+                                        const { typeLabel, nameLabel } = formatStockLocation(item);
+                                        return (
+                                            <SelectItem key={item.stock_id} value={String(item.stock_id)}>
+                                                {typeLabel} {nameLabel ? `• ${nameLabel}` : ""} — Disp: {item.current_quantity}
+                                            </SelectItem>
+                                        );
+                                    })}
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                    {selectedToLocationType === "STORE" && (<StoreSelector
-                        value={newStockMovement.to_store_id}
-                        onChange={(id) => {
-                            setNewStockMovement((prev) => ({
-                                ...prev,
-                                to_store_id: id,
-                                to_stock_room_id: null,
-                            }));
-                        }}
-                        disabled={false}
-                    />)}
-                    {selectedToLocationType === "STOCKROOM" && (<StockRoomSelector
-                        value={newStockMovement.to_stock_room_id}
-                        onChange={(id) => {
-                            setNewStockMovement((prev) => ({
-                                ...prev,
-                                to_stock_room_id: id,
-                                to_store_id: null,
-                            }));
-                        }}
-                        disabled={false}
-                    />
-                    )}
+                        <div className="grid gap-2">
+                            <Label>Destino</Label>
+                            <Select value={destType} onValueChange={(v: string) => setDestType(v as DestinationType)}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Seleccionar tipo" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="STORE">Tienda</SelectItem>
+                                    <SelectItem value="STOCKROOM">Depósito</SelectItem>
+                                    <SelectItem value="NOT ASSIGNED">No asignado</SelectItem>
+                                </SelectContent>
+                            </Select>
 
-                    <Label htmlFor="sheet-demo-name">Cantidad a Mover:</Label>
-                    <Input
-                        type="number"
-                        min={1}
-                        max={stockData?.current_quantity ?? undefined}
-                        value={newStockMovement?.quantity ?? ""}
-                        onChange={(e) => {
-                            const val = e.target.value;
-                            setNewStockMovement((prev) => ({
-                                ...prev,
-                                quantity: val === "" ? null : Number(val),
-                            }));
-                        }}
-                    />
-                    {(() => {
-                        const qty = newStockMovement?.quantity ?? 0;
-                        const max = stockData?.current_quantity ?? 0;
-                        const qtyInvalid =
-                            !Number.isFinite(qty) || qty <= 0 || qty > max;
-                        const sameLocation =
-                            selectedToLocationType !== "" &&
-                            selectedToLocationType === stockData?.stock_type &&
-                            (
-                                (selectedToLocationType === "STORE" && newStockMovement?.to_store_id === stockData?.store_id) ||
-                                (selectedToLocationType === "STOCKROOM" && newStockMovement?.to_stock_room_id === stockData?.stock_room_id) ||
-                                (selectedToLocationType === "NOT ASSIGNED")
-                            );
-                        const destMissing =
-                            (selectedToLocationType === "STORE" && !newStockMovement?.to_store_id) ||
-                            (selectedToLocationType === "STOCKROOM" && !newStockMovement?.to_stock_room_id);
+                            {destType === "STORE" && (
+                                <StoreSelector value={toStoreId} onChange={setToStoreId} disabled={false} />
+                            )}
+                            {destType === "STOCKROOM" && (
+                                <StockRoomSelector value={toStockRoomId} onChange={setToStockRoomId} disabled={false} />
+                            )}
+                        </div>
 
-                        return (
+                        <div className="grid gap-2">
+                            <Label>Cantidad a mover</Label>
+                            <Input
+                                type="number"
+                                min={1}
+                                max={selectedFrom?.current_quantity ?? undefined}
+                                value={quantity}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setQuantity(val === "" ? "" : Number(val));
+                                }}
+                            />
                             <div className="flex flex-col gap-1 text-xs">
+                                {fromMissing && <span className="text-destructive">Selecciona un origen.</span>}
                                 {qtyInvalid && (
                                     <span className="text-destructive">
-                                        Cantidad inválida. Debe ser entre 1 y {max}.
+                                        Cantidad inválida. Debe ser entre 1 y {fromQty}.
                                     </span>
                                 )}
-                                {sameLocation && (
-                                    <span className="text-destructive">
-                                        El origen y destino no pueden ser iguales.
-                                    </span>
-                                )}
-                                {destMissing && (
-                                    <span className="text-destructive">
-                                        Selecciona un destino válido.
-                                    </span>
-                                )}
+                                {sameLocation && <span className="text-destructive">El origen y destino no pueden ser iguales.</span>}
+                                {destMissing && <span className="text-destructive">Selecciona un destino válido.</span>}
                             </div>
-                        );
-                    })()}
-
+                        </div>
+                    </div>
                 </div>
-                <SheetFooter className="mt-auto">
+
+                <DialogFooter className="mt-2">
                     <Button
-                        onClick={handleCreateStockMovement}
-                        disabled={
-                            !Number.isFinite(newStockMovement?.quantity ?? NaN) ||
-                            (newStockMovement?.quantity ?? 0) <= 0 ||
-                            (stockData?.current_quantity !== undefined &&
-                                (newStockMovement?.quantity ?? 0) > (stockData?.current_quantity ?? 0)) ||
-                            (selectedToLocationType === "STORE" && !newStockMovement?.to_store_id) ||
-                            (selectedToLocationType === "STOCKROOM" && !newStockMovement?.to_stock_room_id) ||
-                            (
-                                selectedToLocationType !== "" &&
-                                selectedToLocationType === stockData?.stock_type &&
-                                (
-                                    (selectedToLocationType === "STORE" && newStockMovement?.to_store_id === stockData?.store_id) ||
-                                    (selectedToLocationType === "STOCKROOM" && newStockMovement?.to_stock_room_id === stockData?.stock_room_id) ||
-                                    (selectedToLocationType === "NOT ASSIGNED")
-                                )
-                            )
-                        }
+                        onClick={handleSubmit}
+                        disabled={fromMissing || qtyInvalid || destMissing || sameLocation}
                     >
                         Registrar movimiento
                     </Button>
-                    <SheetClose asChild>
-                        <Button variant="outline">Close</Button>
-                    </SheetClose>
-                </SheetFooter>
-            </SheetContent>
-        </Sheet>
-    )
+                    <DialogClose asChild>
+                        <Button variant="outline">Cerrar</Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
 }
