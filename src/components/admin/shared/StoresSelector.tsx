@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,25 +10,53 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { createStore, getUserStores } from "@/service/stores";
+import type { Store } from "@/types/stores";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import { X } from "lucide-react";
+import {
+  createContext,
+  useContext,
+  useState,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-interface StoreSelectProps {
+// ---------- Context ----------
+interface StoreSelectorContextType {
   value: number | null;
   onChange: (id: number | null) => void;
   disabled: boolean;
+  stores: Store[];
+  isLoading: boolean;
 }
 
-export function StoreSelector({
-  value,
-  onChange,
-  disabled,
-}: StoreSelectProps) {
-  const queryClient = useQueryClient();
+const StoreSelectorContext = createContext<StoreSelectorContextType | null>(
+  null
+);
 
-  const { data: stores, isLoading: isLoading } = useQuery({
+function useStoreSelectorContext() {
+  const ctx = useContext(StoreSelectorContext);
+  if (!ctx) throw new Error("StoreSelector components must be used inside Root");
+  return ctx;
+}
+
+// ---------- Root ----------
+interface RootProps {
+  value: number | null;
+  onChange: (id: number | null) => void;
+  disabled?: boolean;
+  children: ReactNode;
+}
+
+const StoreSelectorRoot = ({ value, onChange, disabled = false, children }: RootProps) => {
+  const { data: stores, isLoading } = useQuery({
     queryKey: ["stores"],
     queryFn: async () => {
       const response = await getUserStores();
@@ -37,65 +64,46 @@ export function StoreSelector({
     },
   });
 
-  console.log("Stores en StoreSelector:", stores);
+  return (
+    <StoreSelectorContext.Provider
+      value={{ value, onChange, disabled, stores: stores ?? [], isLoading }}
+    >
+      <div className="flex items-center gap-2 w-full">{children}</div>
+    </StoreSelectorContext.Provider>
+  );
+};
 
-  const [newStore, setNewStore] = useState("");
-  const [open, setOpen] = useState(false);
-
-
-  const createStoreMutation = useMutation({
-    mutationFn: async (data: { newStore: string }) => {
-      return await createStore({ store_name: data.newStore });
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["stores"] });
-      // If data is an array, use the first element; otherwise, use data directly
-      const store = Array.isArray(data) ? data[0] : data;
-      onChange(store?.store_id ?? null);
-      setOpen(false);
-    },
-    onError: (error: any) => {
-      const errorMessage = error.message;
-      toast("Error al crear tienda", {
-        description: errorMessage,
-      });
-    },
-  });
-
-  const handleCreateStore = async () => {
-    if (!newStore) return;
-
-    try {
-      await createStoreMutation.mutateAsync({ newStore });
-      setNewStore("");
-    } catch (error) {
-      console.error("Error creating store:", error);
-    }
-  };
+// ---------- Select ----------
+const SelectStore = () => {
+  const { value, onChange, disabled, stores, isLoading } =
+    useStoreSelectorContext();
 
   if (isLoading) {
     return <Input placeholder="Buscando tus tiendas..." disabled />;
   }
 
   return (
-    <div className="flex items-center gap-2 w-full">
-      <select
-        className="w-full border rounded px-2 py-2"
+    <>
+      <Select
         disabled={disabled}
-        value={value === null ? "" : value}
-        onChange={(e) =>
-          onChange(e.target.value === "" ? 0 : Number(e.target.value))
-        }
+        value={value?.toString() ?? ""}
+        onValueChange={(val) => onChange(val === "" ? null : Number(val))}
       >
-        <option value={0}>Sin Tienda</option>
-        {(stores ?? []).map((cat) => (
-          <option key={cat.store_id} value={cat.store_id}>
-            {cat.store_name}
-          </option>
-        ))}
-      </select>
+        <SelectTrigger className="w-full border border-gray-200 text-gray-500">
+          <SelectValue placeholder="Sin Tienda" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem disabled value="none">
+            Sin Tienda
+          </SelectItem>
+          {(stores ?? []).map((cat) => (
+            <SelectItem key={cat.store_id} value={cat.store_id.toString()}>
+              {cat.store_name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-      {/* Si hay selección, mostrar tacho */}
       {value && (
         <Button
           variant="ghost"
@@ -104,49 +112,93 @@ export function StoreSelector({
           onClick={() => onChange(null)}
           className="text-red-500 hover:text-red-700"
         >
-          <Trash2 className="w-5 h-5" />
+          <X className="w-5 h-5" />
         </Button>
       )}
-
-      {/* Botón para crear nueva sala de stock */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button disabled={disabled} variant="outline">
-            + Nuevo
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Crear nueva tienda</DialogTitle>
-            <DialogDescription>
-              Ingresá el nombre de la nueva tienda que quieras crear.
-            </DialogDescription>
-          </DialogHeader>
-
-          <Input
-            value={newStore}
-            disabled={createStoreMutation.isLoading}
-            onChange={(e) => setNewStore(e.target.value)}
-            placeholder="Nombre de la tienda"
-          />
-
-          <DialogFooter>
-            <Button
-              disabled={createStoreMutation.isLoading}
-              variant="outline"
-              onClick={() => setOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              disabled={createStoreMutation.isLoading}
-              onClick={handleCreateStore}
-            >
-              {createStoreMutation.isLoading ? "Creando..." : "Crear"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+    </>
   );
-}
+};
+
+// ---------- Create ----------
+const CreateStore = () => {
+  const { onChange, disabled } = useStoreSelectorContext();
+  const queryClient = useQueryClient();
+
+  const [newStore, setNewStore] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const createStoreMutation = useMutation({
+    mutationFn: async (data: { newStore: string }) => {
+      return await createStore({ store_name: data.newStore });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["stores"] });
+      const store = Array.isArray(data) ? data[0] : data;
+      onChange(store?.store_id ?? null);
+      setOpen(false);
+      setNewStore("");
+    },
+    onError: (error: {
+      message: string
+    }) => {
+      toast("Error al crear tienda", {
+        description: error.message,
+      });
+    },
+  });
+
+  const handleCreateStore = async () => {
+    if (!newStore) return;
+    try {
+      await createStoreMutation.mutateAsync({ newStore });
+    } catch (err) {
+      console.error("Error creating store:", err);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button disabled={disabled} variant="outline">
+          + Nuevo
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Crear nueva tienda</DialogTitle>
+          <DialogDescription>
+            Ingresá el nombre de la nueva tienda que quieras crear.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Input
+          value={newStore}
+          disabled={createStoreMutation.isLoading}
+          onChange={(e) => setNewStore(e.target.value)}
+          placeholder="Nombre de la tienda"
+        />
+
+        <DialogFooter>
+          <Button
+            disabled={createStoreMutation.isLoading}
+            variant="outline"
+            onClick={() => setOpen(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            disabled={createStoreMutation.isLoading}
+            onClick={handleCreateStore}
+          >
+            {createStoreMutation.isLoading ? "Creando..." : "Crear"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Remove compound export from this file.
+
+// Export each component individually.
+export { StoreSelectorRoot, SelectStore, CreateStore };

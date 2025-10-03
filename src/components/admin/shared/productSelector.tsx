@@ -44,6 +44,7 @@ const ProductSelector = ({
 
       try {
         const data = await getProductsByName(searchValue);
+        console.log("Fetched products:", data);
 
         setOptions(data.products);
       } catch (err) {

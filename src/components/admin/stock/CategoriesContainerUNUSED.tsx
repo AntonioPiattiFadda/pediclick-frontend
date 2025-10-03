@@ -10,7 +10,7 @@ import { getCategories } from "@/service/categories";
 import { getSubCategories } from "@/service/subCategories";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import { SubCategoriesTable } from "./addEditProduct/SubCategoriesTable ";
+import { SubCategoriesTable } from "./addEditProduct/SubCategoriesTableUNUSED";
 import { CategoriesTable } from "./CategoriesTable";
 import TableSkl from "./ui/tableSkl";
 

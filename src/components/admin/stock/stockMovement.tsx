@@ -16,13 +16,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { createStockMovement } from "@/service/stockMovement";
 import type { StockMovement as StockMovementType } from "@/types/stockMovements";
 import type { Stock } from "@/types/stocks";
-import type { Lot } from "@/types/lots";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { StoreSelector } from "../shared/StoresSelector";
-import { StockRoomSelector } from "../shared/stockRoomSelector";
-import { formatStockLocation } from "@/pages/admin/LoadOrder";
+import { formatStockLocation } from "@/utils/stock";
+import { toast } from "react-hot-toast";
+import { getLotStocks } from "@/service/stock";
+import { CreateStore, SelectStore, StoreSelectorRoot } from "../shared/storesSelector";
+import { CreateStockRoom, SelectStockRoom, StockroomSelectorRoot } from "../shared/stockRoomSelector";
 
 type StockWithRelations = Stock & {
     stores?: { store_name?: string } | null;
@@ -36,16 +36,16 @@ type DestinationType = "" | "STORE" | "STOCKROOM" | "NOT ASSIGNED";
 type MovementDTO = NonNullable<StockMovementType>;
 
 function buildPayload(params: {
-    lot: Lot;
+    lotId: number;
     from?: StockWithRelations;
     destType: DestinationType;
     toStoreId: number | null;
     toStockRoomId: number | null;
     quantity: number | null;
 }): MovementDTO {
-    const { lot, from, destType, toStoreId, toStockRoomId, quantity } = params;
+    const { lotId, from, destType, toStoreId, toStockRoomId, quantity } = params;
     return {
-        lot_id: lot?.lot_id ?? 0,
+        lot_id: lotId,
         movement_type: "TRANSFER",
         quantity: quantity ?? null,
         from_stock_room_id: from?.stock_type === "STOCKROOM" ? from?.stock_room_id ?? null : null,
@@ -56,7 +56,7 @@ function buildPayload(params: {
     };
 }
 
-function useCreateStockMovement(loadOrderId: number, onAfterSuccess?: () => void) {
+function useCreateStockMovement(queryKey: (number | string)[], aditionalQueryKey?: (number | string)[], onAfterSuccess?: () => void) {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (data: { newStockMovement: StockMovementType }) => {
@@ -64,36 +64,50 @@ function useCreateStockMovement(loadOrderId: number, onAfterSuccess?: () => void
         },
         onSuccess: async () => {
             await queryClient.refetchQueries({
-                queryKey: ["load-order", loadOrderId],
+                queryKey: queryKey,
                 exact: true,
             });
+            await queryClient.refetchQueries({
+                queryKey: aditionalQueryKey,
+                exact: true,
+            });
+            toast.success("Has movido el stock exitosamente");
             onAfterSuccess?.();
         },
         onError: (error: unknown) => {
             const errorMessage = error instanceof Error ? error.message : String(error);
-            toast("Error al crear movimiento de stock", {
-                description: errorMessage,
-            });
+            toast(errorMessage || "Error al crear movimiento de stock");
         },
     });
 }
 
 
 export function StockMovement({
-    loadOrderId,
-    lot,
-    stocks,
+    lotId,
+    aditionalQueryKey = [],
 }: {
-    loadOrderId: number;
-    lot: Lot;
-    stocks: StockWithRelations[];
+    lotId: number;
+    aditionalQueryKey?: (number | string)[];
 }) {
+    const queryKey = ["stock", lotId];
+    const { data: lotStock = [], isLoading, isError } = useQuery({
+        queryKey: queryKey,
+        queryFn: async () => {
+            const response = await getLotStocks(lotId);
+            return response.lotStock;
+        },
+        enabled: !!lotId,
+    });
+    const totalQty = lotStock?.reduce((sum, s) => sum + (s?.current_quantity ?? 0), 0);
+
+    // FIXME Aca solo necesito el lot_id no el resto del objeto lot
     const [open, setOpen] = useState(false);
 
     const [selectedFromId, setSelectedFromId] = useState<number | null>(null);
+
     const selectedFrom = useMemo(
-        () => stocks.find((s) => s.stock_id === selectedFromId),
-        [stocks, selectedFromId]
+        () => lotStock?.find((s) => s.stock_id === selectedFromId),
+        [lotStock, selectedFromId]
     );
 
     const [destType, setDestType] = useState<DestinationType>("");
@@ -117,7 +131,6 @@ export function StockMovement({
             setQuantity("");
         }
     }, [open]);
-
     const resetForm = () => {
         setSelectedFromId(null);
         setDestType("");
@@ -125,10 +138,21 @@ export function StockMovement({
         setToStockRoomId(null);
         setQuantity("");
     };
-    const createMovement = useCreateStockMovement(loadOrderId, () => {
+
+    const createMovement = useCreateStockMovement(queryKey, aditionalQueryKey, () => {
         // Keep dialog open, reset form, and values will refresh via query refetch
+
         resetForm();
     });
+
+    if (isLoading) {
+        return <Button variant="outline" disabled>Cargando stock...</Button>;
+    }
+    if (isError) {
+        return <Button variant="outline" disabled>Sin stock</Button>;
+    }
+
+
 
     const qtyNum = typeof quantity === "number" ? quantity : NaN;
     const fromQty = selectedFrom?.current_quantity ?? 0;
@@ -149,7 +173,7 @@ export function StockMovement({
     const handleSubmit = async () => {
         if (!selectedFrom) return;
         const payload = buildPayload({
-            lot,
+            lotId,
             from: selectedFrom,
             destType,
             toStoreId,
@@ -159,7 +183,7 @@ export function StockMovement({
         await createMovement.mutateAsync({ newStockMovement: payload });
     };
 
-    const totalQty = (stocks ?? []).reduce((sum, s) => sum + (s?.current_quantity ?? 0), 0);
+    // const totalQty = (stocks ?? []).reduce((sum, s) => sum + (s?.current_quantity ?? 0), 0);
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -187,15 +211,15 @@ export function StockMovement({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {(stocks ?? []).length === 0 ? (
+                                    {(lotStock ?? []).length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={3} className="text-muted-foreground">
                                                 Sin stock asociado
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        (stocks ?? [])
-                                            .sort((a, b) => a.stock_type.localeCompare(b.stock_type))
+                                        (lotStock ?? [])
+                                            .sort((a, b) => a.stock_id - b.stock_id)
                                             .map((item) => {
                                                 const { typeLabel, nameLabel } = formatStockLocation(item);
                                                 return (
@@ -238,7 +262,7 @@ export function StockMovement({
                                     <SelectValue placeholder="Seleccionar origen" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {(stocks ?? []).map((item) => {
+                                    {(lotStock ?? []).map((item) => {
                                         const { typeLabel, nameLabel } = formatStockLocation(item);
                                         return (
                                             <SelectItem key={item.stock_id} value={String(item.stock_id)}>
@@ -264,10 +288,17 @@ export function StockMovement({
                             </Select>
 
                             {destType === "STORE" && (
-                                <StoreSelector value={toStoreId} onChange={setToStoreId} disabled={false} />
+                                <StoreSelectorRoot value={toStoreId} onChange={setToStoreId} disabled={false}>
+                                    <SelectStore />
+                                    <CreateStore />
+                                </StoreSelectorRoot>
+
                             )}
                             {destType === "STOCKROOM" && (
-                                <StockRoomSelector value={toStockRoomId} onChange={setToStockRoomId} disabled={false} />
+                                <StockroomSelectorRoot value={toStockRoomId} onChange={setToStockRoomId} disabled={false}>
+                                    <SelectStockRoom />
+                                    <CreateStockRoom />
+                                </StockroomSelectorRoot>
                             )}
                         </div>
 
@@ -300,9 +331,9 @@ export function StockMovement({
                 <DialogFooter className="mt-2">
                     <Button
                         onClick={handleSubmit}
-                        disabled={fromMissing || qtyInvalid || destMissing || sameLocation}
+                        disabled={fromMissing || qtyInvalid || destMissing || sameLocation || createMovement.isLoading}
                     >
-                        Registrar movimiento
+                        {createMovement.isLoading ? "Registrando..." : "Registrar movimiento"}
                     </Button>
                     <DialogClose asChild>
                         <Button variant="outline">Cerrar</Button>

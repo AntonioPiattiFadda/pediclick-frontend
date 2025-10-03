@@ -156,7 +156,7 @@ const ClientHistoricalMvts = ({
                                                     {formatCurrency(m.signedAmount)}
                                                 </div>
                                                 <div className="col-span-2 text-right font-medium">
-                                                    {formatCurrency(m.partialBalance)}
+                                                    {formatCurrency(m.balance_after_transaction)}
                                                 </div>
                                             </div>
                                         );

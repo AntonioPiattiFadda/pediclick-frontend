@@ -125,7 +125,7 @@ export const ImageSelector = ({
                   ? selectedImage.public_image_name
                   : "Buscar imagen..."
               }
-              className="w-full pl-10 pr-10 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white cursor-pointer"
+              className="w-full pl-10 pr-10 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white cursor-pointer"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onFocus={handleInputFocus}
@@ -145,7 +145,7 @@ export const ImageSelector = ({
 
           {/* Dropdown */}
           {isOpen && (
-            <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-50 w-full mt-1 bg-white border  rounded-md shadow-lg max-h-60 overflow-y-auto">
               {isLoading ? (
                 <div className="px-3 py-2 text-gray-500">
                   Cargando imágenes...
@@ -208,7 +208,7 @@ export const ImageSelector = ({
       </div>
 
       {/* Preview de imagen seleccionada */}
-      <div className="border rounded p-4 h-[100px] flex items-center justify-center">
+      <div className="border border-gray-200 rounded p-4 h-[100px] flex items-center justify-center">
         {selectedImage ? (
           <div className="relative group">
             <button

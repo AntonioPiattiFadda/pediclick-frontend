@@ -7,27 +7,34 @@ import {
 } from "@/components/ui/card";
 import { AddStoreBtn } from "./AddStoreBtn";
 import { StoresTable } from "./StoresTable";
+import { useQuery } from "@tanstack/react-query";
+import { getUserStores } from "@/service/stores";
+import TableSkl from "./ui/tableSkl";
 
 export const StoresContainer = () => {
   // const [searchTerm, setSearchTerm] = useState("");
   // const [selectedCategory, setSelectedCategory] = useState("all");
   // const [selectedStatus, setSelectedStatus] = useState("all");
 
-  // const {
-  //   data: stores = [],
-  //   isLoading,
-  //   // isError,
-  // } = useQuery({
-  //   queryKey: ["stores"],
-  //   queryFn: async () => {
-  //     const response = await getUserStores();
-  //     return response.stores;
-  //   },
-  // });
+  const {
+    data: stores = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["stores"],
+    queryFn: async () => {
+      const response = await getUserStores();
+      return response.stores;
+    },
+  });
 
-  // if (isLoading) {
-  //   return <TableSkl />;
-  // }
+  if (isLoading) {
+    return <TableSkl />;
+  }
+
+  if (isError) {
+    return <div>Error loading stores.</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -48,7 +55,7 @@ export const StoresContainer = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <StoresTable />
+          <StoresTable stores={stores} />
         </CardContent>
       </Card>
     </div>

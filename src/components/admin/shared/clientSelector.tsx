@@ -11,26 +11,46 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { createClient, getClients } from "@/service/clients";
-import type { Client } from "@/types/clients";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import {
+    createContext,
+    useContext,
+    useState,
+    type ReactNode,
+} from "react";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
+import type { Client } from "@/types/clients";
 
-interface ClientSelectProps {
+// ---------- Context ----------
+interface ClientSelectorContextType {
     value: number | null;
     onChange: (id: number | null) => void;
     disabled: boolean;
+    clients: Client[];
+    isLoading: boolean;
 }
 
-export function ClientSelector({
-    value,
-    onChange,
-    disabled,
-}: ClientSelectProps) {
-    const queryClient = useQueryClient();
+const ClientSelectorContext =
+    createContext<ClientSelectorContextType | null>(null);
 
-    const { data: clients, isLoading: isLoading } = useQuery({
+function useClientSelectorContext() {
+    const ctx = useContext(ClientSelectorContext);
+    if (!ctx)
+        throw new Error("ClientSelector components must be used inside Root");
+    return ctx;
+}
+
+// ---------- Root ----------
+interface RootProps {
+    value: number | null;
+    onChange: (id: number | null) => void;
+    disabled?: boolean;
+    children: ReactNode;
+}
+
+const ClientSelectorRoot = ({ value, onChange, disabled = false, children }: RootProps) => {
+    const { data: clients, isLoading } = useQuery({
         queryKey: ["clients"],
         queryFn: async () => {
             const response = await getClients();
@@ -38,61 +58,48 @@ export function ClientSelector({
         },
     });
 
-    const [newClient, setNewClient] = useState("");
-    const [open, setOpen] = useState(false);
+    return (
+        <ClientSelectorContext.Provider
+            value={{
+                value,
+                onChange,
+                disabled,
+                clients: clients ?? [],
+                isLoading,
+            }}
+        >
+            <div className="flex items-center gap-2 w-full">{children}</div>
+        </ClientSelectorContext.Provider>
+    );
+};
 
-
-    const createClientMutation = useMutation({
-        mutationFn: async (data: { newClient: string }) => {
-            return await createClient(data.newClient);
-        },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ["clients"] });
-            onChange(data.client_id);
-            setOpen(false);
-        },
-        onError: (error: any) => {
-            const errorMessage = error.message;
-            toast("Error al crear cliente", {
-                description: errorMessage,
-            });
-        },
-    });
-
-    const handleCreateClient = async () => {
-        if (!newClient) return;
-
-        try {
-            await createClientMutation.mutateAsync({ newClient });
-            setNewClient("");
-        } catch (error) {
-            console.error("Error creating client:", error);
-        }
-    };
+// ---------- Select ----------
+const SelectClient = () => {
+    const { value, onChange, disabled, clients, isLoading } =
+        useClientSelectorContext();
 
     if (isLoading) {
         return <Input placeholder="Buscando tus clientes..." disabled />;
     }
 
     return (
-        <div className="flex items-center gap-2 w-full">
+        <>
             <select
                 className="w-full border rounded px-2 py-2"
                 disabled={disabled}
                 value={value === null ? "" : value}
                 onChange={(e) =>
-                    onChange(e.target.value === "" ? 0 : Number(e.target.value))
+                    onChange(e.target.value === "" ? null : Number(e.target.value))
                 }
             >
-                <option value={0}>Sin Cliente</option>
-                {(clients ?? []).map((client: Client) => (
+                <option disabled value="">Sin Cliente</option>
+                {(clients ?? []).map((client) => (
                     <option key={client.client_id} value={client.client_id}>
                         {client.full_name}
                     </option>
                 ))}
             </select>
 
-            {/* Si hay selección, mostrar tacho */}
             {value && (
                 <Button
                     variant="ghost"
@@ -104,46 +111,89 @@ export function ClientSelector({
                     <Trash2 className="w-5 h-5" />
                 </Button>
             )}
-
-            {/* Botón para crear nueva categoría */}
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                    <Button disabled={disabled} variant="outline">
-                        + Nuevo
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>Crear nuevo cliente</DialogTitle>
-                        <DialogDescription>
-                            Ingresá el nombre del nuevo cliente que quieras crear.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <Input
-                        value={newClient}
-                        disabled={createClientMutation.isLoading}
-                        onChange={(e) => setNewClient(e.target.value)}
-                        placeholder="Nombre del cliente"
-                    />
-
-                    <DialogFooter>
-                        <Button
-                            disabled={createClientMutation.isLoading}
-                            variant="outline"
-                            onClick={() => setOpen(false)}
-                        >
-                            Cancelar
-                        </Button>
-                        <Button
-                            disabled={createClientMutation.isLoading}
-                            onClick={handleCreateClient}
-                        >
-                            {createClientMutation.isLoading ? "Creando..." : "Crear"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </div>
+        </>
     );
-}
+};
+
+// ---------- Create ----------
+const CreateClient = () => {
+    const { onChange, disabled } = useClientSelectorContext();
+    const queryClient = useQueryClient();
+
+    const [newClient, setNewClient] = useState("");
+    const [open, setOpen] = useState(false);
+
+    const createClientMutation = useMutation({
+        mutationFn: async (data: { newClient: string }) => {
+            return await createClient(data.newClient);
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ["clients"] });
+            onChange(data.client_id);
+            setOpen(false);
+            setNewClient("");
+        },
+        onError: (error: any) => {
+            toast("Error al crear cliente", {
+                description: error.message,
+            });
+        },
+    });
+
+    const handleCreateClient = async () => {
+        if (!newClient) return;
+        try {
+            await createClientMutation.mutateAsync({ newClient });
+        } catch (err) {
+            console.error("Error creating client:", err);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button disabled={disabled} variant="outline">
+                    + Nuevo
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Crear nuevo cliente</DialogTitle>
+                    <DialogDescription>
+                        Ingresá el nombre del nuevo cliente que quieras crear.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <Input
+                    value={newClient}
+                    disabled={createClientMutation.isLoading}
+                    onChange={(e) => setNewClient(e.target.value)}
+                    placeholder="Nombre del cliente"
+                />
+
+                <DialogFooter>
+                    <Button
+                        disabled={createClientMutation.isLoading}
+                        variant="outline"
+                        onClick={() => setOpen(false)}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        disabled={createClientMutation.isLoading}
+                        onClick={handleCreateClient}
+                    >
+                        {createClientMutation.isLoading ? "Creando..." : "Crear"}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+// ---------- Compound export ----------
+export {
+    ClientSelectorRoot,
+    SelectClient,
+    CreateClient,
+};

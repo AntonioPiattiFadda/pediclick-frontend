@@ -246,7 +246,7 @@ export function LotContainerSelector({
               onChange={(e) => handleSelectContainer(index, e.target.value)}
               disabled={disabled}
             >
-              <option value="">Seleccionar vacío</option>
+              <option disabled value="">Seleccionar vacío</option>
               {(lotContainers ?? []).map((lotContainer: any) => (
                 <option
                   key={lotContainer.id ?? lotContainer.lot_container_id}

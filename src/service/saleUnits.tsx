@@ -1,8 +1,8 @@
 // import { supabase } from ".";
-// import { getBusinessOwnerIdByRole } from "./profiles";
+// import { getBusinessOwnerId } from "./profiles";
 
 // export const getSaleUnits = async (userRole: string) => {
-//   const businessOwnerId = await getBusinessOwnerIdByRole(userRole);
+//   const businessOwnerId = await getBusinessOwnerId(userRole);
 //   const { data: saleUnits, error } = await supabase
 //     .from("sale_units")
 //     .select("*")
@@ -23,7 +23,7 @@
 // };
 
 // export const createSaleUnit = async (name: string) => {
-//   const businessOwnerId = await getBusinessOwnerIdByRole();
+//   const businessOwnerId = await getBusinessOwnerId();
 //   const { data: saleUnits, error } = await supabase
 //     .from("sale_units")
 //     .insert({ sale_unit_name: name, business_owner_id: businessOwnerId })

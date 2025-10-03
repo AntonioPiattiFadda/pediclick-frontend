@@ -4,27 +4,49 @@ import { supabase } from ".";
 export const createLot = async (lot: Lot) => {
   //Desestructurar el stock_movement y el stock porque seran en otra tabla
 
-  const { ...lotData } = lot;
 
-  console.log("lotData", lotData);
-  alert("Creando lote...");
-
-  const { data: newLot, error: lotsError } = await supabase
-    .from("lots")
-    .insert(lotData)
-    .select();
-
-  if (lotsError) {
-    console.error("lotsError", lotsError);
-    throw new Error("Error al crear los lotes");
+  const adaptedLotData = {
+    expiration_date: lot.expiration_date || null,
+    product_id: lot.product_id,
+    expiration_date_notification: lot.expiration_date_notification,
+    lot_control: lot.lot_control,
+    is_sold_out: lot.is_sold_out,
+    has_lot_container: lot.has_lot_container,
+    is_parent_lot: lot.is_parent_lot,
+    is_expired: lot.is_expired,
+    // has_transport_cost: lot.has_transport_cost,    // 
+    sale_units_equivalence: lot.sale_units_equivalence
+      ? JSON.stringify(lot.sale_units_equivalence)
+      : null,
+    initial_stock_quantity: lot.initial_stock_quantity ?? 0,
+    current_stock_quantity: lot.current_stock_quantity ?? 0,
+    purchase_cost_total: lot.purchase_cost_total ?? 0,
+    purchase_cost_per_unit: lot.purchase_cost_per_unit ?? 0,
+    download_total_cost: lot.download_total_cost ?? 0,
+    download_cost_per_unit: lot.download_cost_per_unit ?? 0,
+    extra_cost_total: lot.extra_cost_total ?? 0,
+    extra_cost_per_unit: lot.extra_cost_per_unit ?? 0,
+    final_cost_total: lot.final_cost_total ?? 0,
+    final_cost_per_unit: lot.final_cost_per_unit ?? 0,
+    updated_at: new Date().toISOString(),
   }
 
-  // Crear la tabla intermedia para asociar al producto
 
-  return {
-    ...newLot,
-  };
-};
+
+  const { data, error } = await supabase.rpc("create_lots_with_stock", {
+    p_lots: [adaptedLotData],
+  });
+
+  console.log("created lot", data);
+  console.log("error creating lot", error);
+
+  if (error) {
+    console.error("Error creating lots:", error);
+    throw error;
+  }
+
+  return data;
+}
 
 
 export const getFollowingLotNumber = async (productId: number): Promise<number> => {

@@ -13,17 +13,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import GetFollowingLoadOrderNumberBtn from "@/components/unassigned/getFollowingLoadOrderNumberBtn";
 import { createLoadOrder } from "@/service/loadOrders";
-import { getProviders } from "@/service/providers";
 import type { LoadOrder } from "@/types/loadOrders";
 import { updateLotWithCalculations } from "@/utils/lots";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { PurchasingAgentSelector } from "../shared/purchasingAgentSelector";
-import { ProviderSelector } from "../stock/addEditProduct/ProvidersSelector";
+import { CreateProvider, ProviderSelectorRoot, SelectProvider } from "../shared/ProvidersSelector";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 import { emptyLoadOrder } from "./emptyFormData";
-import { useNavigate } from "react-router-dom";
+import { CreatePurchasingAgent, PurchasingAgentSelectorRoot, SelectPurchasingAgent } from "../shared/purchasingAgentSelector";
 
 export const AddLoadOrderContainer = () => {
   const queryClient = useQueryClient();
@@ -33,13 +32,13 @@ export const AddLoadOrderContainer = () => {
 
   console.log("Form data:", formData);
 
-  const { data: providers, isLoading: isLoadingProviders } = useQuery({
-    queryKey: ["providers"],
-    queryFn: async () => {
-      const response = await getProviders();
-      return response.providers;
-    },
-  });
+  // const { data: providers, isLoading: isLoadingProviders } = useQuery({
+  //   queryKey: ["providers"],
+  //   queryFn: async () => {
+  //     const response = await getProviders();
+  //     return response.providers;
+  //   },
+  // });
 
   // TODO Falta asignTo y receptor_id
   //TODO FALTA RENDIMIENTO Y COMISION
@@ -157,26 +156,29 @@ export const AddLoadOrderContainer = () => {
 
           <div className="flex flex-col gap-2 -mt-2">
             <Label className="mt-2">Proveedor</Label>
-            <ProviderSelector
-              providers={providers || []}
-              isLoading={isLoadingProviders}
+            <ProviderSelectorRoot
               value={formData.provider_id}
               onChange={(value) =>
                 setFormData({ ...formData, provider_id: value })
               }
-              disabled={false}
-            />
+              disabled={false}>
+              <SelectProvider />
+              <CreateProvider />
+            </ProviderSelectorRoot>
+
           </div>
 
           <div className="flex flex-col gap-2 -mt-2">
             <Label className="mt-2">Comprador</Label>
-            <PurchasingAgentSelector
-              value={formData.purchasing_agent_id}
+            <PurchasingAgentSelectorRoot value={formData.purchasing_agent_id}
               onChange={(value) =>
                 setFormData({ ...formData, purchasing_agent_id: value })
               }
-              disabled={false}
-            />
+              disabled={false}>
+              <SelectPurchasingAgent />
+              <CreatePurchasingAgent />
+            </PurchasingAgentSelectorRoot>
+
           </div>
 
 

@@ -10,10 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  createPurchasingAgent,
-  getPurchasingAgents,
-} from "@/service/purchasingAgents";
+import { createProvider, getProviders } from "@/service/providers";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
@@ -25,21 +22,21 @@ import { toast } from "sonner";
 import { X } from "lucide-react";
 
 // ---------- Context ----------
-interface PurchasingAgentSelectorContextType {
+interface ProviderSelectorContextType {
   value: number | null;
   onChange: (id: number | null) => void;
   disabled: boolean;
-  agents: any[];
+  providers: any[];
   isLoading: boolean;
 }
 
-const PurchasingAgentSelectorContext =
-  createContext<PurchasingAgentSelectorContextType | null>(null);
+const ProviderSelectorContext =
+  createContext<ProviderSelectorContextType | null>(null);
 
-function usePurchasingAgentSelectorContext() {
-  const ctx = useContext(PurchasingAgentSelectorContext);
+function useProviderSelectorContext() {
+  const ctx = useContext(ProviderSelectorContext);
   if (!ctx)
-    throw new Error("PurchasingAgentSelector components must be used inside Root");
+    throw new Error("ProviderSelector components must be used inside Root");
   return ctx;
 }
 
@@ -51,53 +48,53 @@ interface RootProps {
   children: ReactNode;
 }
 
-const PurchasingAgentSelectorRoot = ({ value, onChange, disabled = false, children }: RootProps) => {
-  const { data: agents, isLoading } = useQuery({
-    queryKey: ["purchasing-agents"],
+const ProviderSelectorRoot = ({ value, onChange, disabled = false, children }: RootProps) => {
+  const { data: providers, isLoading } = useQuery({
+    queryKey: ["providers"],
     queryFn: async () => {
-      const response = await getPurchasingAgents();
-      return response.purchasingAgents;
+      const response = await getProviders();
+      return response.providers;
     },
   });
 
   return (
-    <PurchasingAgentSelectorContext.Provider
+    <ProviderSelectorContext.Provider
       value={{
         value,
         onChange,
         disabled,
-        agents: agents ?? [],
+        providers: providers ?? [],
         isLoading,
       }}
     >
       <div className="flex items-center gap-2 w-full">{children}</div>
-    </PurchasingAgentSelectorContext.Provider>
+    </ProviderSelectorContext.Provider>
   );
 };
 
 // ---------- Select ----------
-const SelectPurchasingAgent = () => {
-  const { value, onChange, disabled, agents, isLoading } =
-    usePurchasingAgentSelectorContext();
+const SelectProvider = () => {
+  const { value, onChange, disabled, providers, isLoading } =
+    useProviderSelectorContext();
 
   if (isLoading) {
-    return <Input placeholder="Buscando tus compradores..." disabled />;
+    return <Input placeholder="Buscando tus proveedores..." disabled />;
   }
 
   return (
     <>
       <select
         className="w-full border border-gray-200 rounded px-2 py-2"
-        disabled={disabled}
         value={value === null ? "" : value}
+        disabled={disabled}
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
       >
-        <option disabled value="">Sin Comprador</option>
-        {(agents ?? []).map((agent) => (
-          <option key={agent.purchasing_agent_id} value={agent.purchasing_agent_id}>
-            {agent.purchasing_agent_name}
+        <option disabled value="">Sin Proveedor</option>
+        {(providers ?? []).map((provider) => (
+          <option className="cursor-pointer" key={provider.provider_id} value={provider.provider_id}>
+            {provider.provider_name}
           </option>
         ))}
       </select>
@@ -105,7 +102,6 @@ const SelectPurchasingAgent = () => {
       {value && (
         <Button
           variant="ghost"
-          disabled={disabled}
           size="icon"
           onClick={() => onChange(null)}
           className="text-red-500 hover:text-red-700"
@@ -118,36 +114,36 @@ const SelectPurchasingAgent = () => {
 };
 
 // ---------- Create ----------
-const CreatePurchasingAgent = () => {
-  const { onChange, disabled } = usePurchasingAgentSelectorContext();
+const CreateProvider = () => {
+  const { onChange, disabled } = useProviderSelectorContext();
   const queryClient = useQueryClient();
 
-  const [newPurchasingAgent, setNewPurchasingAgent] = useState("");
+  const [newProvider, setNewProvider] = useState("");
   const [open, setOpen] = useState(false);
 
-  const createPurchasingAgentMutation = useMutation({
-    mutationFn: async (data: { newPurchasingAgent: string }) => {
-      return await createPurchasingAgent(data.newPurchasingAgent);
+  const createProviderMutation = useMutation({
+    mutationFn: async (data: { newProvider: string }) => {
+      return await createProvider(data.newProvider);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["purchasing-agents"] });
-      onChange(data.purchasing_agent_id);
+      queryClient.invalidateQueries({ queryKey: ["providers"] });
+      onChange(data.provider_id);
       setOpen(false);
-      setNewPurchasingAgent("");
+      setNewProvider("");
     },
     onError: (error: any) => {
-      toast("Error al crear agente de compra", {
+      toast("Error al crear proveedor", {
         description: error.message,
       });
     },
   });
 
-  const handleCreatePurchasingAgent = async () => {
-    if (!newPurchasingAgent) return;
+  const handleCreateProvider = async () => {
+    if (!newProvider) return;
     try {
-      await createPurchasingAgentMutation.mutateAsync({ newPurchasingAgent });
+      await createProviderMutation.mutateAsync({ newProvider });
     } catch (err) {
-      console.error("Error creating purchasing agent:", err);
+      console.error("Error creating provider:", err);
     }
   };
 
@@ -160,32 +156,32 @@ const CreatePurchasingAgent = () => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Crear nuevo comprador</DialogTitle>
+          <DialogTitle>Crear nuevo proveedor</DialogTitle>
           <DialogDescription>
-            Ingresá el nombre del nuevo comprador que quieras crear.
+            Ingresá el nombre del nuevo proveedor que quieras crear.
           </DialogDescription>
         </DialogHeader>
 
         <Input
-          value={newPurchasingAgent}
-          disabled={createPurchasingAgentMutation.isLoading}
-          onChange={(e) => setNewPurchasingAgent(e.target.value)}
-          placeholder="Nombre del comprador"
+          value={newProvider}
+          disabled={createProviderMutation.isLoading}
+          onChange={(e) => setNewProvider(e.target.value)}
+          placeholder="Nombre del proveedor"
         />
 
         <DialogFooter>
           <Button
-            disabled={createPurchasingAgentMutation.isLoading}
+            disabled={createProviderMutation.isLoading}
             variant="outline"
             onClick={() => setOpen(false)}
           >
             Cancelar
           </Button>
           <Button
-            disabled={createPurchasingAgentMutation.isLoading}
-            onClick={handleCreatePurchasingAgent}
+            disabled={createProviderMutation.isLoading}
+            onClick={handleCreateProvider}
           >
-            {createPurchasingAgentMutation.isLoading ? "Creando..." : "Crear"}
+            {createProviderMutation.isLoading ? "Creando..." : "Crear"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -195,7 +191,7 @@ const CreatePurchasingAgent = () => {
 
 // ---------- Compound export ----------
 export {
-  PurchasingAgentSelectorRoot,
-  SelectPurchasingAgent,
-  CreatePurchasingAgent,
+  ProviderSelectorRoot,
+  SelectProvider,
+  CreateProvider,
 };

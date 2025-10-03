@@ -1,30 +1,26 @@
 import { adaptProductsForClient } from "@/adapters/products";
 import type { Product } from "@/types/products";
 import { supabase } from ".";
-import { getBusinessOwnerIdByRole } from "./profiles";
+import { getBusinessOwnerId } from "./profiles";
 
 export const getAllProducts = async () => {
-  const businessOwnerId = await getBusinessOwnerIdByRole();
+  const businessOwnerId = await getBusinessOwnerId();
   const { data: dbProducts, error } = await supabase
-    .from("products")
-    .select(
-      `
-    *,
-    public_images(public_image_src),
-    categories(category_name),
-    sub_categories(sub_category_name),
-    brands(brand_name),
-    providers(provider_name)
-      `
-    )
-    .eq("business_owner_id", businessOwnerId)
-    .is("deleted_at", null);
+    .rpc("get_products_with_available_lots", {
+      p_business_owner_id: businessOwnerId,
+    });
+
+
+  console.log("dbProducts", dbProducts, error);
 
   if (error) {
     throw new Error(error.message);
   }
 
+
   const products = adaptProductsForClient(dbProducts);
+  console.log("adaptedProducts", products);
+
 
   return { products, error };
 };
@@ -76,7 +72,7 @@ export const updateProduct = async (
 };
 
 export const createProduct = async (product: Product) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole();
+  const businessOwnerId = await getBusinessOwnerId();
 
   const { data: newProduct, error: productError } = await supabase
     .from("products")
@@ -113,7 +109,7 @@ export const deleteProduct = async (productId: string | number) => {
 export const getProductsByShortCode = async (
   shortCode: string
 ) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole();
+  const businessOwnerId = await getBusinessOwnerId();
 
   const { data: dbProducts, error } = await supabase
     .from("products")
@@ -139,7 +135,7 @@ export const getProductsByShortCode = async (
 // }
 
 export const getProductsByName = async (name: string) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole();
+  const businessOwnerId = await getBusinessOwnerId();
 
   const q = name.trim();
   const isNumeric = /^\d+$/.test(q);
@@ -163,6 +159,7 @@ export const getProductsByName = async (name: string) => {
       .order("product_name", { ascending: true })
       .limit(10);
 
+
     if (error) throw new Error(error.message);
 
     const products = adaptProductsForClient(dbProducts || []);
@@ -184,6 +181,8 @@ export const getProductsByName = async (name: string) => {
     .ilike("product_name", `%${name}%`)
     .order("product_name", { ascending: true })
     .limit(10);
+
+
 
   if (error) throw new Error(error.message);
 

@@ -14,13 +14,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CategorySelector } from "./CategorySelector";
-import { SubCategorySelector } from "../stock/addEditProduct/SubCategorySelector";
-import { BrandSelector } from "../stock/addEditProduct/BrandsSelector";
 import { ImageSelector } from "../stock/addEditProduct/ImageSelector";
 import { adaptProductForDb } from "@/adapters/products";
 import { getProduct, updateProduct } from "@/service/products";
 import { toast } from "sonner";
+import { CategorySelectorRoot, CreateCategory, SelectCategory } from "./CCcategorySelector";
+import { BrandSelectorRoot, CreateBrand, SelectBrand } from "./brandSelector";
+import { CreateSubCategory, SelectSubCategory, SubCategorySelectorRoot } from "./CCsubCategorySelector";
 
 interface ProductEditSheetProps {
     product: Product;
@@ -124,8 +124,7 @@ export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) 
 
                         <div className="flex flex-col gap-2">
                             <Label htmlFor="category">Rubro</Label>
-                            <CategorySelector
-                                disabled={false}
+                            <CategorySelectorRoot disabled={false}
                                 value={formData.category_id ?? null}
                                 onChange={(id) =>
                                     setFormData((p) => ({
@@ -133,35 +132,42 @@ export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) 
                                         category_id: id,
                                     }))
                                 }
-                            />
+                            >
+                                <SelectCategory />
+                                <CreateCategory />
+                            </CategorySelectorRoot>
+
                         </div>
 
                         <div className="flex flex-col gap-2">
                             <Label htmlFor="sub_category">Categoría</Label>
-                            <SubCategorySelector
-                                disabled={false}
+                            <SubCategorySelectorRoot disabled={false}
                                 value={formData.sub_category_id?.toString() ?? ""}
                                 onChange={(id) =>
                                     setFormData((p) => ({
                                         ...p,
                                         sub_category_id: id ? Number(id) : null,
                                     }))
-                                }
-                            />
+                                }>
+                                <SelectSubCategory />
+                                <CreateSubCategory />
+                            </SubCategorySelectorRoot>
+
                         </div>
 
                         <div className="flex flex-col gap-2 col-span-2">
                             <Label htmlFor="brand">Marca</Label>
-                            <BrandSelector
-                                disabled={false}
+                            <BrandSelectorRoot disabled={false}
                                 value={formData.brand_id?.toString() ?? ""}
                                 onChange={(id) =>
                                     setFormData((p) => ({
                                         ...p,
                                         brand_id: id ? Number(id) : null,
                                     }))
-                                }
-                            />
+                                }>
+                                <SelectBrand />
+                                <CreateBrand />
+                            </BrandSelectorRoot>
                         </div>
 
                         <div className="flex flex-col gap-2 col-span-2">

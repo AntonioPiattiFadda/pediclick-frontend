@@ -129,7 +129,7 @@ export const getParentUserId = async (userId: string) => {
   return user?.business_owner_id;
 };
 
-export const getBusinessOwnerIdByRole = async () => {
+export const getBusinessOwnerId = async () => {
   const userId = await getUserId();
   const { data: userData, error } = await supabase
     .from("users")
@@ -149,22 +149,22 @@ export const getBusinessOwnerIdByRole = async () => {
   return businessOwnerId;
 };
 
-const getBusinessOwnerId = async (storeId: number) => {
-  const { data: store, error } = await supabase
-    .from("stores")
-    .select("business_owner_id")
-    .eq("store_id", storeId)
-    .single();
+// const getBusinessOwnerId = async (storeId: number) => {
+//   const { data: store, error } = await supabase
+//     .from("stores")
+//     .select("business_owner_id")
+//     .eq("store_id", storeId)
+//     .single();
 
-  if (error) {
-    throw new Error(error.message);
-  }
+//   if (error) {
+//     throw new Error(error.message);
+//   }
 
-  return store?.business_owner_id;
-};
+//   return store?.business_owner_id;
+// };
 
-export const getUserTeamMembers = async (storeId: number) => {
-  const businessOwnerId = await getBusinessOwnerId(storeId);
+export const getUserTeamMembers = async () => {
+  const businessOwnerId = await getBusinessOwnerId();
 
   const { data: teamMembers, error } = await supabase
     .from("users")
@@ -180,7 +180,7 @@ export const getUserTeamMembers = async (storeId: number) => {
 };
 
 export const createTeamMember = async (newUserData: any) => {
-  const userId = await getBusinessOwnerId(newUserData.store_id);
+  const userId = await getBusinessOwnerId();
 
   const { error: createUserError, data: user } = await createNewUser(
     newUserData.email,

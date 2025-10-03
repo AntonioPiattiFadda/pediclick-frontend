@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Check, Edit2,  X } from "lucide-react";
+import { Check, Edit2, X } from "lucide-react";
 import { useState } from "react";
 
 // Componente para la gestión de lotes
@@ -98,7 +98,7 @@ const LotSelector = ({
             onChange={(e) => setSelectedLotIndex(Number(e.target.value))}
             className="flex-1 border rounded p-2"
           >
-            <option value="">Selecciona Lote</option>
+            <option disabled value="">Selecciona Lote</option>
             {lotControlLots.map((lote: any, index: number) => (
               <option key={index} value={index + 1}>
                 {lote.lot || `Lote ${index + 2}`}
@@ -140,7 +140,7 @@ const LotSelector = ({
                 }
               }}
             />
-          
+
 
             <Button variant="outline" onClick={addNewLot}>+ Nuevo</Button>
           </div>

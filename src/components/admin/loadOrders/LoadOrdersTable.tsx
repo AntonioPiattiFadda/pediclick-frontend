@@ -12,12 +12,13 @@ import type { LoadOrder } from "@/types/loadOrders";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { formatDateToDDMMYYHHMM } from "@/utils";
 
 interface TeamMemberTableProps {
   loadOrders: LoadOrder[];
 }
 
-export const LoadOrderTable = ({ loadOrders }: TeamMemberTableProps) => {
+export const LoadOrdersTable = ({ loadOrders }: TeamMemberTableProps) => {
   const navigate = useNavigate();
 
   return (
@@ -60,7 +61,7 @@ export const LoadOrderTable = ({ loadOrders }: TeamMemberTableProps) => {
                 <TableCell>
                   {loadOrder.providers?.provider_name || "--"}
                 </TableCell>
-                <TableCell>{loadOrder.created_at || "--"}</TableCell>
+                <TableCell>{formatDateToDDMMYYHHMM(loadOrder?.created_at ?? "--") || "--"}</TableCell>
                 <TableCell>
                   <Button variant="outline" onClick={() => { navigate(`/load-orders/${loadOrder.load_order_id}`) }} >
                     Ver remito

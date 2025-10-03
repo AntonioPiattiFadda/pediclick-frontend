@@ -18,16 +18,15 @@ import type { Price } from "@/types/prices";
 import type { Product } from "@/types/products";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Barcode, Plus } from "lucide-react";
-import { useState } from "react";
-import { LotContainerSelector } from "../addLoadOrder/lotContainerSelector";
-import { BrandSelector } from "../stock/addEditProduct/BrandsSelector";
-import { ImageSelector } from "../stock/addEditProduct/ImageSelector";
-import { SubCategorySelector } from "../stock/addEditProduct/SubCategorySelector";
-import { CategorySelector } from "./CategorySelector";
-import { emptyLot } from "./emptyFormData";
-import ProductSelectorV2 from "./productSelector";
-import { ProductEditSheet } from "./ProductEditSheet";
+import { useEffect, useState } from "react";
 import toast from 'react-hot-toast';
+import { LotContainerSelector } from "../addLoadOrder/lotContainerSelector";
+import { BrandSelectorRoot, SelectBrand } from "./brandSelector";
+import { CategorySelectorRoot, SelectCategory } from "./CCcategorySelector";
+import { emptyLot } from "./emptyFormData";
+import ProductSelector from "./productSelector";
+import { SelectSubCategory, SubCategorySelectorRoot } from "./CCsubCategorySelector";
+import { ProductEditSheet } from "./CCproductEditSheet";
 
 
 // type CreationMode = "SHORT" | "LONG";
@@ -43,20 +42,30 @@ import toast from 'react-hot-toast';
 // ];
 
 export function AddLotBtn({
-  onAddElementToLoadOrder,
+  onAddElement,
+  loading = false,
 }: {
-  onAddElementToLoadOrder: (lot: Lot) => void;
+  onAddElement: (lot: Lot) => void;
+  loading: boolean;
 }) {
   // const [creationMode, setCreationMode] = useState<CreationMode>("SHORT");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [formData, setFormData] = useState<Lot>(emptyLot);
   const [selectedProduct, setSelectedProduct] = useState<Product>({} as Product);
+  console.log({ selectedProduct });
   const [lotPrices, setLotPrices] = useState<Price[]>([]);
   const [tab, setTab] = useState("lot");
 
   const isProductSelected = Boolean(selectedProduct.product_id);
   const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      handleClose();
+    }
+  }, [loading]);
+
 
   const handleSubmit = () => {
     if (!isProductSelected) {
@@ -64,21 +73,27 @@ export function AddLotBtn({
       return
     };
     //TODO ACTUALIZAR PRODUCTO SI ESTA EN MODO EDICION
-
     //TODO AGREGAR AL REMITO
-
-    onAddElementToLoadOrder({
+    onAddElement({
       ...formData,
       product_name: selectedProduct.product_name,
       product_id: selectedProduct.product_id,
       prices: lotPrices,
     } as Lot);
+
+    if (!loading) {
+      handleClose();
+    }
+  };
+
+  const handleClose = () => {
     setIsModalOpen(false);
     setIsEditing(false);
     setSelectedProduct(adaptProductForDb({} as Product));
     setLotPrices([]);
     setFormData(emptyLot);
   };
+
 
 
   type LotField = "initial_stock_quantity" | "purchase_cost_per_unit" | "purchase_cost_total" | "download_total_cost" | "download_cost_per_unit";
@@ -184,18 +199,12 @@ export function AddLotBtn({
     }));
   };
 
-
-
-
-
-
-
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogTrigger asChild>
         <Button className="bg-primary text-accent" variant="outline">
           <Plus className="mr-2 h-4 w-4" />
-          Agregar elemento
+          Agregar stock
         </Button>
       </DialogTrigger>
       <DialogContent
@@ -217,7 +226,7 @@ export function AddLotBtn({
         </DialogHeader>
 
         {!isEditing && (
-          <ProductSelectorV2
+          <ProductSelector
             value={selectedProduct}
             onChange={(value) =>
               setSelectedProduct({ ...selectedProduct, ...value })
@@ -367,13 +376,7 @@ export function AddLotBtn({
                   />
                 </div>
 
-                {/* <PricesSelectorV2
-                      value={lotPrices}
-                      onChange={(prices) => setLotPrices(prices)}
-                      lotId={formData?.lot_id || 0}
-                      disabled={!isEditing}
-                      basePrice={formData.total_cost || 0}
-                    /> */}
+
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="waste">Vacíos</Label>
                   <LotContainerSelector
@@ -501,41 +504,46 @@ export function AddLotBtn({
 
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="waste">Rubro</Label>
-                    <CategorySelector
-                      disabled={!isEditing}
+                    <CategorySelectorRoot disabled={true}
                       value={selectedProduct.category_id}
                       onChange={(id) =>
                         setSelectedProduct({ ...selectedProduct, category_id: id })
-                      }
-                    />
+                      }>
+                      <SelectCategory />
+                    </CategorySelectorRoot>
                   </div>
+
 
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="waste">Categoría</Label>
-                    <SubCategorySelector
-                      disabled={!isEditing}
-                      value={selectedProduct.sub_category_id?.toString() ?? ""}
-                      onChange={(id) =>
-                        setSelectedProduct({
-                          ...selectedProduct,
-                          sub_category_id: id ? Number(id) : null,
-                        })
-                      }
-                    />
+
+
+                    <SubCategorySelectorRoot value={selectedProduct.sub_category_id?.toString() ?? ""} onChange={(id) =>
+                      setSelectedProduct({
+                        ...selectedProduct,
+                        sub_category_id: id ? Number(id) : null,
+                      })
+                    } disabled={true}>
+                      <SelectSubCategory />
+
+                    </SubCategorySelectorRoot>
+
                   </div>
 
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="waste">Marca</Label>
-                    <BrandSelector
-                      disabled={!isEditing}
+
+                    <BrandSelectorRoot disabled={true}
                       value={selectedProduct.brand_id?.toString() ?? ""}
                       onChange={(id) =>
                         setSelectedProduct({
                           ...selectedProduct,
                           brand_id: id ? Number(id) : null,
                         })
-                      }
-                    />
+                      }>
+                      <SelectBrand />
+                    </BrandSelectorRoot>
+
                   </div>
 
                   <div className="flex flex-col gap-2">
@@ -554,7 +562,17 @@ export function AddLotBtn({
                     />
                   </div>
 
-                  <ImageSelector
+                  <div className="w-full h-32 border border-dashed border-gray-300 rounded-md">
+                    {selectedProduct.public_image_src ? (
+                      <img src={selectedProduct.public_image_src} alt={selectedProduct.product_name} className="object-cover w-full h-full" />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-500">
+                        No hay imagen disponible
+                      </div>
+                    )}
+                  </div>
+
+                  {/* <ImageSelector
                     onImageSelect={(id) =>
                       setSelectedProduct({
                         ...selectedProduct,
@@ -568,7 +586,7 @@ export function AddLotBtn({
                       })
                     }
                     disabled={!isEditing}
-                  />
+                  /> */}
                   <div className="flex flex-col gap-2 col-span-2">
                     <Label htmlFor="observations">Observaciones</Label>
                     <Textarea
@@ -616,7 +634,7 @@ export function AddLotBtn({
             Object.keys(selectedProduct).length > 0 && (
               <>
                 <DialogClose asChild>
-                  <Button variant={"outline"} onClick={() => {
+                  <Button disabled={loading} variant={"outline"} onClick={() => {
                     setSelectedProduct({} as Product);
                     setFormData(emptyLot);
                     setLotPrices([]);
@@ -635,7 +653,8 @@ export function AddLotBtn({
               )} */}
 
 
-                <Button onClick={handleSubmit}>Agregar al remito</Button>
+                <Button disabled={loading} onClick={handleSubmit}>{
+                  loading ? "Agregando..." : "Agregar"}</Button>
 
               </>
             )

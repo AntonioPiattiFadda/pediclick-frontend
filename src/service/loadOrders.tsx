@@ -1,7 +1,7 @@
 // import type { LoadOrder } from "@/types";
 import type { LoadOrder } from "@/types/loadOrders";
 import { supabase } from ".";
-import { getBusinessOwnerIdByRole } from "./profiles";
+import { getBusinessOwnerId } from "./profiles";
 import type { Lot } from "@/types/lots";
 import type { Price } from "@/types/prices";
 import type { Stock } from "@/types/stocks";
@@ -22,7 +22,7 @@ import type { Stock } from "@/types/stocks";
 // ];
 
 export const getAllLoadOrders = async () => {
-  const businessOwnerId = await getBusinessOwnerIdByRole();
+  const businessOwnerId = await getBusinessOwnerId();
   const { data: dbLoadOrders, error } = await supabase
     .from("load_orders")
     .select(
@@ -45,7 +45,9 @@ export const createLoadOrder = async (
   lots: Lot[],
   prices: Price[]
 ) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole();
+
+  console.log("Creating load order with data:", { loadOrder, lots, prices });
+  const businessOwnerId = await getBusinessOwnerId();
 
   const reqBody = {
     p_load_order: {
@@ -62,7 +64,7 @@ export const createLoadOrder = async (
       status: loadOrder.status ?? "pending",
     },
     p_lots: lots,
-    p_prices: prices,
+    // p_prices: prices,
   };
 
   const { data, error } = await supabase.rpc(
@@ -79,7 +81,7 @@ export const createLoadOrder = async (
 
 
 export const getLoadOrder = async (loadOrderId: string,): Promise<{ dbLoadOrder: LoadOrder | null, error: string | null }> => {
-  const businessOwnerId = await getBusinessOwnerIdByRole();
+  const businessOwnerId = await getBusinessOwnerId();
   const { data: dbLoadOrder, error } = await supabase
     .from("load_orders")
     .select(
@@ -102,6 +104,8 @@ export const getLoadOrder = async (loadOrderId: string,): Promise<{ dbLoadOrder:
     .eq("business_owner_id", businessOwnerId)
     .eq("load_order_id", loadOrderId)
     .single();
+
+  console.log("Raw LoadOrder data:", dbLoadOrder, error);
 
   if (error) {
     throw new Error(error.message);
@@ -126,11 +130,13 @@ export const getLoadOrder = async (loadOrderId: string,): Promise<{ dbLoadOrder:
     }
     : null;
 
+
+
   return { dbLoadOrder: adaptedLoadOrder, error: null };
 };
 
 export const getFollowingLoadOrderNumber = async (): Promise<number> => {
-  const businessOwnerId = await getBusinessOwnerIdByRole();
+  const businessOwnerId = await getBusinessOwnerId();
   const { data, error } = await supabase
     .from("load_orders")
     .select("load_order_number")

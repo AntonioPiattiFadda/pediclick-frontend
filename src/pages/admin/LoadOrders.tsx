@@ -1,4 +1,4 @@
-import { LoadOrderContainer } from "@/components/admin/loadOrders/LoadOrderContainer";
+import { LoadOrdersContainer } from "@/components/admin/loadOrders/LoadOrdersContainer";
 
 const LoadOrders = () => {
   return (
@@ -9,7 +9,7 @@ const LoadOrders = () => {
         </h1>
         <p className="text-muted-foreground">Administra tu personal</p>
       </div>
-      <LoadOrderContainer />
+      <LoadOrdersContainer />
     </div>
   );
 };

@@ -1,8 +1,8 @@
 import { supabase } from ".";
-import { getBusinessOwnerIdByRole } from "./profiles";
+import { getBusinessOwnerId } from "./profiles";
 
 export const getLotContainers = async () => {
-  const businessOwnerId = await getBusinessOwnerIdByRole();
+  const businessOwnerId = await getBusinessOwnerId();
   const { data: lotContainers, error } = await supabase
     .from("lot_containers")
     .select("*")
@@ -24,7 +24,7 @@ export const createLotContainer = async (
     lot_container_price: string;
   }
 ) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole();
+  const businessOwnerId = await getBusinessOwnerId();
   const { data, error } = await supabase
     .from("lot_containers")
     .insert({

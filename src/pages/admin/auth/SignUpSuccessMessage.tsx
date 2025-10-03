@@ -52,11 +52,10 @@ const SignUpSuccessMessage: React.FC<Props> = ({ email }) => {
 
       {/* Card */}
       <div
-        className={`max-w-lg mx-auto transition-all duration-1000 transform ${
-          showMessage
+        className={`max-w-lg mx-auto transition-all duration-1000 transform ${showMessage
             ? "scale-100 opacity-100 translate-y-0"
             : "scale-75 opacity-0 translate-y-8"
-        }`}
+          }`}
       >
         <CardContent>
           {/* Subcopy */}
@@ -87,7 +86,7 @@ const SignUpSuccessMessage: React.FC<Props> = ({ email }) => {
                 <option value="https://mail.yahoo.com/">Yahoo</option>
                 <option value="https://www.icloud.com/mail/">iCloud</option>
                 <option value="https://mail.proton.me/u/0/inbox">Proton</option>
-                <option value="">Otro (pegar URL abajo)</option>
+                <option disabled value="">Otro (pegar URL abajo)</option>
               </select>
             )}
 

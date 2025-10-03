@@ -1,8 +1,8 @@
 import { supabase } from ".";
-import { getBusinessOwnerIdByRole } from "./profiles";
+import { getBusinessOwnerId } from "./profiles";
 
 export const getBrands = async () => {
-  const businessOwnerId = await getBusinessOwnerIdByRole();
+  const businessOwnerId = await getBusinessOwnerId();
   const { data: brands, error } = await supabase
     .from("brands")
     .select("*")
@@ -16,7 +16,7 @@ export const getBrands = async () => {
 };
 
 export const createBrand = async (name: string) => {
-  const businessOwnerId = await getBusinessOwnerIdByRole();
+  const businessOwnerId = await getBusinessOwnerId();
   const { data, error } = await supabase
     .from("brands")
     .insert({ brand_name: name, business_owner_id: businessOwnerId })

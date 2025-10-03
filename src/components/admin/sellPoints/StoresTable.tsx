@@ -6,38 +6,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
-import { EditStoreBtn } from "./EditStoreBtn";
-import { Skeleton } from "@/components/ui/skeleton";
+import type { Store } from "@/types/stores";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
-import { deleteStore } from "@/service/stores";
+import { EditStoreBtn } from "./EditStoreBtn";
 
-export const StoresTable = () => {
-  const { userStores, setUserStores, setSelectedStoreId, selectedStoreId } =
-    UseUserStoresContext();
+export const StoresTable = ({ stores }: {
+  stores: Store[];
+}) => {
 
-  const handleDeleteStore = async (id: string | number) => {
-    try {
-      await deleteStore(id);
-      const remainingStores = userStores.filter(
-        (store) => store.store_id !== id
-      );
-      setUserStores(remainingStores);
-      if (id === selectedStoreId) {
-        setSelectedStoreId(remainingStores[0]?.store_id || null);
-      }
-    } catch (error) {
-      console.error("Error deleting store:", error);
-    }
-  };
-
-  if (userStores.length === 0) {
-    return (
-      <div>
-        <Skeleton className="h-8 w-full" />
-      </div>
-    );
-  }
 
   return (
     <div className="rounded-md">
@@ -58,7 +34,7 @@ export const StoresTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {userStores.map((store) => (
+          {stores.map((store) => (
             <TableRow key={store.store_id}>
               <TableCell className="text-right flex gap-2">
                 {" "}
@@ -67,7 +43,7 @@ export const StoresTable = () => {
                   elementId={store.store_id}
                   elementName={store.store_name}
                   deleteFn={async (id: string | number) => {
-                    await handleDeleteStore(id);
+                    // await handleDeleteStore(id);
                   }}
                   queryKey={["stores"]}
                   successMsgTitle="Punto de venta eliminado"

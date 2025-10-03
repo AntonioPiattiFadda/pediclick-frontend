@@ -15,8 +15,9 @@ export interface Product {
   brand_id: number | null;
   barcode: number | null;
   public_image_id: number | null;
-  created_at: string | null;
-  updated_at: string | null;
+  public_image_src?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 
   observations: string | null;
 

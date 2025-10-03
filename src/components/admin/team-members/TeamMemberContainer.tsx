@@ -9,14 +9,12 @@ import { useQuery } from "@tanstack/react-query";
 import TableSkl from "../sellPoints/ui/tableSkl";
 import { TeamMemberTable } from "./TeamMemberTable";
 import { AddTeamMemberBtn } from "./AddTeamMemberBtn";
-import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
 import { getUserTeamMembers } from "@/service/profiles";
 
 export const TeamMemberContainer = () => {
   // const [searchTerm, setSearchTerm] = useState("");
   // const [selectedCategory, setSelectedCategory] = useState("all");
   // const [selectedStatus, setSelectedStatus] = useState("all");
-  const { selectedStoreId } = UseUserStoresContext();
 
   const {
     data: teamMembers = [],
@@ -25,11 +23,12 @@ export const TeamMemberContainer = () => {
   } = useQuery({
     queryKey: ["team-members"],
     queryFn: async () => {
-      const response = await getUserTeamMembers(Number(selectedStoreId));
+      const response = await getUserTeamMembers();
       return response.teamMembers;
-    },
-    enabled: selectedStoreId !== null,
+    }
   });
+
+  console.log("Team Members:", teamMembers);
 
   if (isLoading) {
     return <TableSkl />;

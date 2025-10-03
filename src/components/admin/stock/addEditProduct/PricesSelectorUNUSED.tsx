@@ -29,7 +29,7 @@ const CopyPriceSelector = ({
           onChange={(e) => onSelectLotIndex(Number(e.target.value))}
           className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-white text-sm"
         >
-          <option value="">Seleccionar lote...</option>
+          <option disabled value="">Seleccionar lote...</option>
           {lotsWithControl.map((lot, index) => (
             <option
               key={index}
@@ -241,10 +241,10 @@ const PricesSelector = ({
       <div className="border rounded-lg p-4 pt-6 relative">
         {lotControl && (
           <CopyPriceSelector
-          selectedLotIndex={selectedLotIndex}
-          lots={lots}
-          currentLotIndex={currentLotIndex}
-          onSelectLotIndex={setSelectedLotIndex}
+            selectedLotIndex={selectedLotIndex}
+            lots={lots}
+            currentLotIndex={currentLotIndex}
+            onSelectLotIndex={setSelectedLotIndex}
             copyPricesFromLot={copyPricesFromLot}
           />
         )}
@@ -293,9 +293,9 @@ const PricesSelector = ({
                           updated[i].price =
                             expectedTotal > 0
                               ? calculateDiscountedPrice(
-                                  expectedTotal,
-                                  discount
-                                ).toFixed(2)
+                                expectedTotal,
+                                discount
+                              ).toFixed(2)
                               : "";
                         }
                       }

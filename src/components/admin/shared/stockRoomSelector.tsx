@@ -12,24 +12,44 @@ import {
 import { Input } from "@/components/ui/input";
 import { createStockRoom, getStockRooms } from "@/service/stockRooms";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import {
+    createContext,
+    useContext,
+    useState,
+    type ReactNode,
+} from "react";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 
-interface StockRoomSelectProps {
+// ---------- Context ----------
+interface StockRoomSelectorContextType {
     value: number | null;
     onChange: (id: number | null) => void;
     disabled: boolean;
+    stockRooms: any[];
+    isLoading: boolean;
 }
 
-export function StockRoomSelector({
-    value,
-    onChange,
-    disabled,
-}: StockRoomSelectProps) {
-    const queryClient = useQueryClient();
+const StockRoomSelectorContext =
+    createContext<StockRoomSelectorContextType | null>(null);
 
-    const { data: stockRooms, isLoading: isLoading } = useQuery({
+function useStockRoomSelectorContext() {
+    const ctx = useContext(StockRoomSelectorContext);
+    if (!ctx)
+        throw new Error("StockRoomSelector components must be used inside Root");
+    return ctx;
+}
+
+// ---------- Root ----------
+interface RootProps {
+    value: number | null;
+    onChange: (id: number | null) => void;
+    disabled?: boolean;
+    children: ReactNode;
+}
+
+const StockroomSelectorRoot = ({ value, onChange, disabled = false, children }: RootProps) => {
+    const { data: stockRooms, isLoading } = useQuery({
         queryKey: ["stock-rooms"],
         queryFn: async () => {
             const response = await getStockRooms();
@@ -37,63 +57,49 @@ export function StockRoomSelector({
         },
     });
 
-    console.log("StockRooms en StockRoomSelector:", stockRooms);
+    return (
+        <StockRoomSelectorContext.Provider
+            value={{
+                value,
+                onChange,
+                disabled,
+                stockRooms: stockRooms ?? [],
+                isLoading,
+            }}
+        >
+            <div className="flex items-center gap-2 w-full">{children}</div>
+        </StockRoomSelectorContext.Provider>
+    );
+};
 
-    const [newStockRoom, setNewStockRoom] = useState("");
-    const [open, setOpen] = useState(false);
-
-
-    const createStockRoomMutation = useMutation({
-        mutationFn: async (data: { newStockRoom: string }) => {
-            return await createStockRoom(data.newStockRoom);
-        },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ["stock-rooms"] });
-            onChange(data.stockRoom.stock_room_id);
-            setOpen(false);
-        },
-        onError: (error: any) => {
-            const errorMessage = error.message;
-            toast("Error al crear sala de stock", {
-                description: errorMessage,
-            });
-        },
-    });
-
-    const handleCreateStockRoom = async () => {
-        if (!newStockRoom) return;
-
-        try {
-            await createStockRoomMutation.mutateAsync({ newStockRoom });
-            setNewStockRoom("");
-        } catch (error) {
-            console.error("Error creating stock room:", error);
-        }
-    };
+// ---------- Select ----------
+const SelectStockRoom = () => {
+    const { value, onChange, disabled, stockRooms, isLoading } =
+        useStockRoomSelectorContext();
 
     if (isLoading) {
-        return <Input placeholder="Buscando tus depositos..." disabled />;
+        return <Input placeholder="Buscando tus depósitos..." disabled />;
     }
 
     return (
-        <div className="flex items-center gap-2 w-full">
+        <>
             <select
-                className="w-full border rounded px-2 py-2"
+                className={`w-full border border-gray-200 rounded px-2 py-2 ${disabled && "opacity-50 cursor-not-allowed"} text-gray-500`}
+
                 disabled={disabled}
                 value={value === null ? "" : value}
                 onChange={(e) =>
-                    onChange(e.target.value === "" ? 0 : Number(e.target.value))
+                    onChange(e.target.value === "" ? null : Number(e.target.value))
                 }
             >
-                <option value={0}>Sin Deposito</option>
-                {(stockRooms ?? []).map((cat) => (
-                    <option key={cat.stock_room_id} value={cat.stock_room_id}>
-                        {cat.stock_room_name}
+                <option disabled value="">Sin Depósito</option>
+                {(stockRooms ?? []).map((room) => (
+                    <option key={room.stock_room_id} value={room.stock_room_id}>
+                        {room.stock_room_name}
                     </option>
                 ))}
             </select>
 
-            {/* Si hay selección, mostrar tacho */}
             {value && (
                 <Button
                     variant="ghost"
@@ -105,46 +111,89 @@ export function StockRoomSelector({
                     <Trash2 className="w-5 h-5" />
                 </Button>
             )}
-
-            {/* Botón para crear nueva sala de stock */}
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                    <Button disabled={disabled} variant="outline">
-                        + Nuevo
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>Crear nueva sala de stock</DialogTitle>
-                        <DialogDescription>
-                            Ingresá el nombre del nuevo rubro que quieras crear.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <Input
-                        value={newStockRoom}
-                        disabled={createStockRoomMutation.isLoading}
-                        onChange={(e) => setNewStockRoom(e.target.value)}
-                        placeholder="Nombre de la sala de stock"
-                    />
-
-                    <DialogFooter>
-                        <Button
-                            disabled={createStockRoomMutation.isLoading}
-                            variant="outline"
-                            onClick={() => setOpen(false)}
-                        >
-                            Cancelar
-                        </Button>
-                        <Button
-                            disabled={createStockRoomMutation.isLoading}
-                            onClick={handleCreateStockRoom}
-                        >
-                            {createStockRoomMutation.isLoading ? "Creando..." : "Crear"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </div>
+        </>
     );
-}
+};
+
+// ---------- Create ----------
+const CreateStockRoom = () => {
+    const { onChange, disabled } = useStockRoomSelectorContext();
+    const queryClient = useQueryClient();
+
+    const [newStockRoom, setNewStockRoom] = useState("");
+    const [open, setOpen] = useState(false);
+
+    const createStockRoomMutation = useMutation({
+        mutationFn: async (data: { newStockRoom: string }) => {
+            return await createStockRoom(data.newStockRoom);
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ["stock-rooms"] });
+            onChange(data.stockRoom.stock_room_id);
+            setOpen(false);
+            setNewStockRoom("");
+        },
+        onError: (error: any) => {
+            toast("Error al crear sala de stock", {
+                description: error.message,
+            });
+        },
+    });
+
+    const handleCreateStockRoom = async () => {
+        if (!newStockRoom) return;
+        try {
+            await createStockRoomMutation.mutateAsync({ newStockRoom });
+        } catch (err) {
+            console.error("Error creating stock room:", err);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button disabled={disabled} variant="outline">
+                    + Nuevo
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Crear nueva sala de stock</DialogTitle>
+                    <DialogDescription>
+                        Ingresá el nombre de la nueva sala de stock que quieras crear.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <Input
+                    value={newStockRoom}
+                    disabled={createStockRoomMutation.isLoading}
+                    onChange={(e) => setNewStockRoom(e.target.value)}
+                    placeholder="Nombre de la sala de stock"
+                />
+
+                <DialogFooter>
+                    <Button
+                        disabled={createStockRoomMutation.isLoading}
+                        variant="outline"
+                        onClick={() => setOpen(false)}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        disabled={createStockRoomMutation.isLoading}
+                        onClick={handleCreateStockRoom}
+                    >
+                        {createStockRoomMutation.isLoading ? "Creando..." : "Crear"}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+// ---------- Compound export ----------
+export {
+    StockroomSelectorRoot,
+    SelectStockRoom,
+    CreateStockRoom,
+};

@@ -1,9 +1,9 @@
 import { supabase } from ".";
-import { getBusinessOwnerIdByRole } from "./profiles";
+import { getBusinessOwnerId } from "./profiles";
 import type { Client } from "@/types/clients";
 
 export const getClients = async () => {
-    const businessOwnerId = await getBusinessOwnerIdByRole();
+    const businessOwnerId = await getBusinessOwnerId();
     const { data: clients, error } = await supabase
         .from("clients")
         .select("*")
@@ -17,7 +17,7 @@ export const getClients = async () => {
 };
 
 export const createClient = async (name: string) => {
-    const businessOwnerId = await getBusinessOwnerIdByRole();
+    const businessOwnerId = await getBusinessOwnerId();
     const { data, error } = await supabase
         .from("clients")
         .insert({ full_name: name, business_owner_id: businessOwnerId })

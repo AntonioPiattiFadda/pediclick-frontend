@@ -10,9 +10,9 @@ import { getAllLoadOrders } from "@/service/loadOrders";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import TableSkl from "../sellPoints/ui/tableSkl";
-import { LoadOrderTable } from "./LoadOrderTable";
+import { LoadOrdersTable } from "./LoadOrdersTable";
 
-export const LoadOrderContainer = () => {
+export const LoadOrdersContainer = () => {
   // const [searchTerm, setSearchTerm] = useState("");
   // const [selectedCategory, setSelectedCategory] = useState("all");
   // const [selectedStatus, setSelectedStatus] = useState("all");
@@ -96,7 +96,7 @@ export const LoadOrderContainer = () => {
             </Select>
           </div> */}
 
-          <LoadOrderTable loadOrders={dbLoadOrders} />
+          <LoadOrdersTable loadOrders={dbLoadOrders} />
         </CardContent>
       </Card>
     </div>
