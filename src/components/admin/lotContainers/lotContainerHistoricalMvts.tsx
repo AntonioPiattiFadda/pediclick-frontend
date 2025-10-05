@@ -1,6 +1,5 @@
 
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import {
     Sheet,
     SheetContent,
@@ -9,10 +8,11 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { getClientTransactions } from "@/service/clientTransactions";
-import type { ClientTransaction } from "@/types/clientTransactions";
+import { getLotContainersMovements } from "@/service/lotContainer";
+import type { LotContainerMovement } from "@/types/lotContainerMovements";
+import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { useMemo } from "react";
 
 
 function formatCurrency(value: number) {
@@ -39,29 +39,27 @@ function formatDate(value: string) {
 }
 
 
-const ClientHistoricalMvts = ({
-    selectedClientId,
+const LotContainerHistoricalMvts = ({
+    lotContainerId,
 }: {
-    selectedClientId?: string | number;
+    lotContainerId: number;
 }) => {
 
-
-
-    const { data, isLoading, isError, error } = useQuery<ClientTransaction[]>({
-        queryKey: ["client_transactions", selectedClientId],
-        queryFn: () => getClientTransactions(selectedClientId!),
-        enabled: !!selectedClientId,
+    const { data, isLoading, isError, error } = useQuery({
+        queryKey: ["lot-container-movements", lotContainerId],
+        queryFn: () => getLotContainersMovements(lotContainerId),
+        enabled: !!lotContainerId,
     });
 
-    console.log("Fetched transactions:", selectedClientId, data);
+    console.log("Fetched transactions:", lotContainerId, data);
 
-    const movements: ClientTransaction[] = useMemo(() => data ?? [], [data]);
+    const movements: LotContainerMovement[] = useMemo(() => data ?? [], [data]);
 
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="outline" disabled={!selectedClientId}>
-                    Ver historial de cuenta
+                <Button variant="outline" disabled={!lotContainerId}>
+                    Ver historial de movimietos
                 </Button>
             </SheetTrigger>
 
@@ -71,7 +69,7 @@ const ClientHistoricalMvts = ({
                         <SheetHeader>
                             <SheetTitle>Histórico de movimientos</SheetTitle>
                             <SheetDescription>
-                                Cliente #{selectedClientId ?? "-"}
+                                Cliente #{lotContainerId ?? "-"}
                             </SheetDescription>
                         </SheetHeader>
                     </div>
@@ -106,7 +104,7 @@ const ClientHistoricalMvts = ({
                                 </div>
 
                                 <div className="divide-y">
-                                    {movements.map((m) => {
+                                    {/* {movements.map((m) => {
                                         const detail =
                                             m.description ??
                                             (m.order_id ? `Orden #${m.order_id}` : "-");
@@ -122,30 +120,30 @@ const ClientHistoricalMvts = ({
                                                 <div className="col-span-5 truncate">{detail}</div>
 
                                                 {/* Monto de la transacción (informativo, sin énfasis) */}
-                                                <div className="col-span-2 text-right text-muted-foreground">
-                                                    {formatCurrency(m.amount)}
-                                                </div>
+                                    <div className="col-span-2 text-right text-muted-foreground">
+                                        {formatCurrency(m.amount)}
+                                    </div>
 
-                                                {/* Saldo después de la transacción: foco principal */}
-                                                <div
-                                                    className={
-                                                        "col-span-2 text-right font-semibold " +
-                                                        (isDebt ? "text-red-600" : "text-emerald-600")
-                                                    }
-                                                >
-                                                    {formatCurrency(after)}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                    {/* Saldo después de la transacción: foco principal */}
+                                    <div
+                                        className={
+                                            "col-span-2 text-right font-semibold " +
+                                            (isDebt ? "text-red-600" : "text-emerald-600")
+                                        }
+                                    >
+                                        {formatCurrency(after)}
+                                    </div>
                                 </div>
+                                );
+                                    })} */}
+                            </div>
                             </div>
                         )}
-                    </div>
                 </div>
-            </SheetContent>
-        </Sheet>
+            </div>
+        </SheetContent>
+        </Sheet >
     );
 };
 
-export default ClientHistoricalMvts;
+export default LotContainerHistoricalMvts;

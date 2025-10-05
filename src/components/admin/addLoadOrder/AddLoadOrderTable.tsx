@@ -174,7 +174,7 @@ export const AddLoadOrderTable = ({
     <div className="rounded-md overflow-x-auto">
       <Table>
         <TableCaption className="py-2 pb-6">
-          <AddLotBtn onAddElementToLoadOrder={onAddElementToLoadOrder} />
+          <AddLotBtn onAddElement={onAddElementToLoadOrder} />
         </TableCaption>
         <TableHeader>
           <TableRow>
@@ -334,7 +334,7 @@ export const AddLoadOrderTable = ({
                 </TableCell>
 
                 {/* Precios (solo vista rápida) */}
-                <TableCell>{lot.prices?.map((p) => p.unit_price).join(", ") || "-"}</TableCell>
+                <TableCell>{lot.prices?.map((p) => p.price).join(", ") || "-"}</TableCell>
               </TableRow>
             ))
           ) : (

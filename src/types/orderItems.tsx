@@ -7,9 +7,9 @@ export interface OrderItem {
   price_id?: number;
   //La va a determinar la balanza si es producto por kg
   //Si es por unidad lo va a seleccionar el usuario
-  //Se calculaara unit_price en base a esto
+  //Se calculaara price en base a esto
   quantity: number;
-  unit_price: number;
+  price: number;
   subtotal: number;
   discount?: number;
   tax?: number;

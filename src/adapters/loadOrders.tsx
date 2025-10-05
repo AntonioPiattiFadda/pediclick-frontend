@@ -21,6 +21,8 @@ export const adaptLoadOrderForSubmission = (formData: LoadOrder) => {
     }))
   );
 
+  //Obtener los lot containers con el lote y para ver como manejamos la informacion de su ubicacion y sus movimientos
+
   console.log("Adapted Load Order:", { loadOrder, adaptedLots, adaptedPrices });
 
   return {

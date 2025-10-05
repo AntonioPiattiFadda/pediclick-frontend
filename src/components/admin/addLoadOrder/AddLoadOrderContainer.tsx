@@ -19,10 +19,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { CreateProvider, ProviderSelectorRoot, SelectProvider } from "../shared/ProvidersSelector";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 import { emptyLoadOrder } from "./emptyFormData";
 import { CreatePurchasingAgent, PurchasingAgentSelectorRoot, SelectPurchasingAgent } from "../shared/purchasingAgentSelector";
+import { CreateProvider, ProviderSelectorRoot, SelectProvider } from "../shared/providersSelector";
 
 export const AddLoadOrderContainer = () => {
   const queryClient = useQueryClient();
@@ -46,6 +46,7 @@ export const AddLoadOrderContainer = () => {
   const createLoadOrderMutation = useMutation({
     mutationFn: async (data: LoadOrder) => {
       console.log("Creating load order with data:", data);
+      //FIXME - FILTRAT LOS LOT_CONTAINERS QUE TENGAN LOT_CONTAINER_ID NULL
       const { loadOrder, lots, prices } = adaptLoadOrderForSubmission(data);
       return await createLoadOrder(loadOrder, lots, prices);
     },

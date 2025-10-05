@@ -46,7 +46,7 @@ export function AddLotBtn({
   loading = false,
 }: {
   onAddElement: (lot: Lot) => void;
-  loading: boolean;
+  loading?: boolean;
 }) {
   // const [creationMode, setCreationMode] = useState<CreationMode>("SHORT");
   const [isModalOpen, setIsModalOpen] = useState(false);

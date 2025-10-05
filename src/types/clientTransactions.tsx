@@ -1,3 +1,4 @@
+
 // =======================
 // Client Transactions
 
@@ -17,8 +18,7 @@ export interface ClientTransaction {
   created_at: string;
 
 
-  //NOTE SACAR transaction type
-  transaction_type: TransactionType;
+  // transaction_type: TransactionType;
   transaction_date: string;
   payment_method?: PaymentMethod;
   payment_status: PaymentStatus;

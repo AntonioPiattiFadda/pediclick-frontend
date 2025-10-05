@@ -35,6 +35,12 @@ export const MENU_ITEMS = [
     roles: ["OWNER", "MANAGER"],
   },
   {
+    title: "Vacios",
+    url: "/lot_containers",
+    icon: Package,
+    roles: ["OWNER", "MANAGER"],
+  },
+  {
     title: "Puntos de venta",
     url: "/stores",
     icon: Package,

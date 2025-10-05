@@ -30,6 +30,7 @@ import Stores from "./pages/admin/Stores";
 import TeamMembers from "./pages/admin/TeamMembers";
 import Clients from "./pages/admin/Clients";
 import { store } from "./stores/store";
+import LotContainers from "./pages/admin/LotContainers";
 
 const queryClient = new QueryClient();
 
@@ -124,6 +125,8 @@ const App = () => {
                     <Route element={<RolesAuth />}>
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/stock" element={<Stock />} />
+                      <Route path="/lot_containers" element={<LotContainers />} />
+
                       <Route path="/stores" element={<Stores />} />
                       <Route path="/clients" element={<Clients />} />
                       <Route path="/team-members" element={<TeamMembers />} />
