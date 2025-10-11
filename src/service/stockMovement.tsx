@@ -22,3 +22,32 @@ export const createStockMovement = async (formData: StockMovement) => {
 
     return stockMovementData;
 };
+
+
+export const getStockSalesHistory = async (lotId: number) => {
+    const { data, error } = await supabase
+        .rpc("get_stock_sales_history", {
+            p_product_id: null,
+            p_lot_id: lotId
+        });
+
+    if (error) console.error(error);
+
+    return data;
+}
+
+
+export const getSalesHistoryByProductOrLot = async (lotId: number) => {
+    console.log("getSalesHistoryByProductOrLot called with lotId:", lotId);
+    const { data, error } = await supabase
+        .rpc("get_sales_history_by_product_or_lots", {
+            p_product_id: null,
+            p_lot_id: lotId
+        });
+
+    console.log("get_sales_history_by_product_or_lot:", data, error);
+
+    if (error) console.error(error);
+
+    return data;
+}

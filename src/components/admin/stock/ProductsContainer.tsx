@@ -14,8 +14,8 @@ import { ProductTableRendererClientSide } from "../shared/productTableRendererCl
 import TableSkl from "./ui/tableSkl";
 // import { StoreSelector } from "../shared/StoresSelector";
 import { Button } from "@/components/ui/button";
-import { CategorySelectorRoot, SelectCategory } from "../shared/CCcategorySelector";
-import { SelectSubCategory, SubCategorySelectorRoot } from "../shared/CCsubCategorySelector";
+import { CategorySelectorRoot, SelectCategory } from "../shared/categorySelector";
+import { SelectSubCategory, SubCategorySelectorRoot } from "../shared/subCategorySelector";
 import { SelectStockRoom, StockroomSelectorRoot } from "../shared/stockRoomSelector";
 import { SelectStore, StoreSelectorRoot } from "../shared/storesSelector";
 import AddStock from "./AddStock";

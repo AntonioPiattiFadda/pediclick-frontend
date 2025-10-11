@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Dialog,
     DialogClose,
@@ -11,18 +10,21 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getLotStocks } from "@/service/stock";
 import { createStockMovement } from "@/service/stockMovement";
+import type { LotContainersLocation } from "@/types/lotContainersLocation";
 import type { StockMovement as StockMovementType } from "@/types/stockMovements";
 import type { Stock } from "@/types/stocks";
+import { formatStockLocation } from "@/utils/stock";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { formatStockLocation } from "@/utils/stock";
 import { toast } from "react-hot-toast";
-import { getLotStocks } from "@/service/stock";
-import { CreateStore, SelectStore, StoreSelectorRoot } from "../shared/storesSelector";
 import { CreateStockRoom, SelectStockRoom, StockroomSelectorRoot } from "../shared/stockRoomSelector";
+import { CreateStore, SelectStore, StoreSelectorRoot } from "../shared/storesSelector";
 
 type StockWithRelations = Stock & {
     stores?: { store_name?: string } | null;
@@ -98,12 +100,22 @@ export function StockMovement({
         },
         enabled: !!lotId,
     });
+
+    console.log("lotStock", lotStock);
+
     const totalQty = lotStock?.reduce((sum, s) => sum + (s?.current_quantity ?? 0), 0);
 
     // FIXME Aca solo necesito el lot_id no el resto del objeto lot
     const [open, setOpen] = useState(false);
 
     const [selectedFromId, setSelectedFromId] = useState<number | null>(null);
+    const [selectedLotContainersLocation, setSelectedLotContainersLocation] = useState<LotContainersLocation | null>(null);
+    const [lotContainersToMove, setLotContainersToMove] = useState<{ quantity: number; auto: boolean }>({
+        quantity: 0,
+        auto: true
+    });
+
+    console.log("selectedLotContainersLocation", selectedLotContainersLocation);
 
     const selectedFrom = useMemo(
         () => lotStock?.find((s) => s.stock_id === selectedFromId),
@@ -125,6 +137,7 @@ export function StockMovement({
     useEffect(() => {
         if (!open) {
             setSelectedFromId(null);
+            setSelectedLotContainersLocation(null);
             setDestType("");
             setToStoreId(null);
             setToStockRoomId(null);
@@ -133,6 +146,7 @@ export function StockMovement({
     }, [open]);
     const resetForm = () => {
         setSelectedFromId(null);
+        setSelectedLotContainersLocation(null);
         setDestType("");
         setToStoreId(null);
         setToStockRoomId(null);
@@ -230,7 +244,11 @@ export function StockMovement({
                                                                     type="radio"
                                                                     name="fromLocation"
                                                                     checked={selectedFromId === item.stock_id}
-                                                                    onChange={() => setSelectedFromId(item.stock_id ?? null)}
+                                                                    onChange={() => {
+                                                                        setSelectedFromId(item.stock_id ?? null)
+                                                                        setSelectedLotContainersLocation(item.lot_containers_location ?? null);
+                                                                    }
+                                                                    }
                                                                 />
                                                                 <div className="flex flex-col">
                                                                     <span>{nameLabel || typeLabel}</span>
@@ -256,7 +274,13 @@ export function StockMovement({
                             <Label>Origen</Label>
                             <Select
                                 value={selectedFromId ? String(selectedFromId) : ""}
-                                onValueChange={(v: string) => setSelectedFromId(Number(v))}
+                                onValueChange={(v: string) => {
+                                    setSelectedFromId(Number(v))
+                                    const selectedStock = lotStock?.find((s) => s.stock_id === Number(v));
+                                    if (selectedStock) {
+                                        setSelectedLotContainersLocation(selectedStock.lot_containers_location ?? null);
+                                    }
+                                }}
                             >
                                 <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Seleccionar origen" />
@@ -302,28 +326,78 @@ export function StockMovement({
                             )}
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label>Cantidad a mover</Label>
-                            <Input
-                                type="number"
-                                min={1}
-                                max={selectedFrom?.current_quantity ?? undefined}
-                                value={quantity}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    setQuantity(val === "" ? "" : Number(val));
-                                }}
-                            />
-                            <div className="flex flex-col gap-1 text-xs">
-                                {fromMissing && <span className="text-destructive">Selecciona un origen.</span>}
-                                {qtyInvalid && (
-                                    <span className="text-destructive">
-                                        Cantidad inválida. Debe ser entre 1 y {fromQty}.
-                                    </span>
-                                )}
-                                {sameLocation && <span className="text-destructive">El origen y destino no pueden ser iguales.</span>}
-                                {destMissing && <span className="text-destructive">Selecciona un destino válido.</span>}
+                        <div className="grid grid-cols-2 gap-2 ">
+
+                            <div className="grid gap-2">
+                                <Label>Cantidad a mover</Label>
+                                <Input
+                                    type="number"
+                                    min={1}
+                                    max={selectedFrom?.current_quantity ?? undefined}
+                                    value={quantity}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setQuantity(val === "" ? "" : Number(val));
+                                    }}
+                                />
+                                <div className="flex flex-col gap-1 text-xs">
+                                    {fromMissing && <span className="text-destructive">Selecciona un origen.</span>}
+                                    {qtyInvalid && (
+                                        <span className="text-destructive">
+                                            Cantidad inválida. Debe ser entre 1 y {fromQty}.
+                                        </span>
+                                    )}
+                                    {sameLocation && <span className="text-destructive">El origen y destino no pueden ser iguales.</span>}
+                                    {destMissing && <span className="text-destructive">Selecciona un destino válido.</span>}
+                                </div>
                             </div>
+
+                            <div className="grid gap-2">
+                                <div className="flex gap-2 items-center">
+
+                                    <Label>Vacios a mover: {selectedLotContainersLocation?.quantity ?? 0}</Label>
+
+                                    <Checkbox checked={lotContainersToMove.auto} onCheckedChange={() => {
+                                        if (lotContainersToMove.auto) {
+                                            console.log("auto to false", quantity)
+                                            setLotContainersToMove({
+                                                ...lotContainersToMove,
+                                                quantity: quantity as number || 0,
+                                            })
+                                        }
+                                        setLotContainersToMove({
+                                            ...lotContainersToMove,
+                                            auto: !lotContainersToMove.auto,
+                                        })
+                                    }} disabled={!(selectedLotContainersLocation?.quantity ?? 0 > 0)} />
+                                    <Label>Mover con vacios {lotContainersToMove.quantity} </Label>
+
+                                </div>
+                                <Input
+                                    type="number"
+                                    min={1}
+                                    max={selectedLotContainersLocation?.quantity ?? undefined}
+                                    value={lotContainersToMove.quantity}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setLotContainersToMove({
+                                            ...lotContainersToMove,
+                                            quantity: val === "" ? "" : Number(val)
+                                        });
+                                    }}
+                                />
+                                <div className="flex flex-col gap-1 text-xs">
+                                    {/* {fromMissing && <span className="text-destructive">Selecciona un origen.</span>} */}
+                                    {qtyInvalid && (
+                                        <span className="text-destructive">.
+                                        </span>
+                                    )}
+                                    {sameLocation && <span className="text-destructive">.</span>}
+                                    {destMissing && <span className="text-destructive">.</span>}
+                                </div>
+                            </div>
+
+
                         </div>
                     </div>
                 </div>

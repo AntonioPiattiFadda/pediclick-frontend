@@ -185,9 +185,6 @@ export default function ManageStockPrices({
         });
     }
 
-    //TODO AGREGAR OBSERVACIONES Y LOS PRECIOS SE QUIEREN ACTUALIZAR POR EL ID Y NO LO TENEMOS SIEMPRE ASIQUE USAR EL INDEX
-
-
 
     // === Render category ===
     function renderCategory(prices: Price[], price_type: "MINOR" | "MAYOR", logic_type: PriceLogicType) {
@@ -246,7 +243,9 @@ export default function ManageStockPrices({
                                 disabled={disabled}
                                 onClick={() => {
                                     onChange(value.filter((p) => p.price_id !== price.price_id))
-                                    setPricesToDelete((prev) => [...prev, price.price_id!]);
+                                    if (price.price_id && !price.isNew) {
+                                        setPricesToDelete((prev) => [...prev, price.price_id!]);
+                                    }
                                 }}
                             >
                                 <Trash2 className="w-4 h-4 text-red-500" />
@@ -328,9 +327,7 @@ export default function ManageStockPrices({
 
     const handleCreatePrices = async () => {
         // TODO Validar los precios aca
-
         const adaptedPrices = pricesAdapter(value, lotId, stockId, storeId);
-
         createPricesMutation.mutate(adaptedPrices);
     }
 

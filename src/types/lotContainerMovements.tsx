@@ -16,4 +16,15 @@ export interface LotContainerMovement {
     to_client_id: number | null;
 
     lot_container_id: number;
+
+
+
+    from_store_name: string | null;
+    to_store_name: string | null;
+    from_stock_room_name: string | null;
+    to_stock_room_name: string | null;
+    from_provider_name: string | null;
+    to_provider_name: string | null;
+    from_client_name: string | null;
+    to_client_name: string | null;
 }

@@ -1,20 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import type { Lot } from "@/types/lots";
 import type { Product } from "@/types/products";
 import type { Stock } from "@/types/stocks";
 
-// const convertStringLocalDateToISOString = (date: string): string | null => {
-//   if (!date) return null;
-//   const localDate = new Date(date);
-//   const isoDate = localDate.toISOString();
-//   return isoDate;
-// };
-
-// function formatDateOnly(isoString: string): string {
-//   if (!isoString) return "";
-//   return isoString.split("T")[0];
-// }
 
 export const adaptProductForDb = (product: any): Product => {
   return {

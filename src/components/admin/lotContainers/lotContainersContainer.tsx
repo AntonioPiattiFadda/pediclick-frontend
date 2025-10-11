@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import TableSkl from "../stock/ui/tableSkl";
 import { getLotContainers, getLotContainersLocation } from "@/service/lotContainer";
 import LotContainerTable from "./lotContainerTable";
+import LotContainersLocationTable from "./lotContainersLocationTable";
 
 export const LotContainersContainer = () => {
     // const [searchTerm, setSearchTerm] = useState("");
@@ -56,8 +57,8 @@ export const LotContainersContainer = () => {
                 <CardHeader>
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
-                            <CardTitle>Puntos de Venta</CardTitle>
-                            <CardDescription>Gestiona tus puntos de venta</CardDescription>
+                            <CardTitle>Contenedores</CardTitle>
+                            <CardDescription>Gestiona contenedores y ubicaciones</CardDescription>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2">
                             {/* <Button variant="outline" className="gap-2">
@@ -68,8 +69,12 @@ export const LotContainersContainer = () => {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <LotContainerTable />
+                <CardContent className="space-y-8">
+                    {/* Tabla de contenedores */}
+                    <LotContainerTable lotContainers={lotContainers} />
+
+                    {/* Tabla de localizaciones */}
+                    <LotContainersLocationTable locations={lotContainersLocation} />
                 </CardContent>
             </Card>
         </div>

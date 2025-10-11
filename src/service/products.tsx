@@ -189,3 +189,34 @@ export const getProductsByName = async (name: string) => {
   const products = adaptProductsForClient(dbProducts || []);
   return { products, error: null };
 };
+
+export const checkIfShortCodeIsAvailable = async (
+  shortCode: number,
+  productId?: number
+) => {
+  const businessOwnerId = await getBusinessOwnerId();
+
+  const { data, error } = await supabase.rpc('get_products_stock_status_by_short_code', {
+    p_short_code: shortCode,
+    p_business_owner_id: businessOwnerId,
+  });
+
+  console.log("checkIfShortCodeIsAvailable", { data, error });
+
+  if (error) {
+    console.error("checkIfShortCodeIsAvailable RPC error", error);
+    throw new Error(error.message);
+  }
+
+  const filteredProducts = data ? data.filter((p: {
+    product_id: number;
+    product_name: string;
+    is_sold_out: boolean;
+  }) => p.product_id !== productId) : [];
+
+  const isAvailable = filteredProducts.length === 0 || filteredProducts === null;
+
+  return {
+    isAvailable, products: filteredProducts
+  };
+};

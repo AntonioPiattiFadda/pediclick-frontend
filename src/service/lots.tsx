@@ -1,11 +1,13 @@
 import type { Lot } from "@/types/lots";
 import { supabase } from ".";
+import { getBusinessOwnerId } from "./profiles";
 
 export const createLot = async (lot: Lot) => {
+  const businessOwnerId = await getBusinessOwnerId();
   //Desestructurar el stock_movement y el stock porque seran en otra tabla
 
-
   const adaptedLotData = {
+    client_key: crypto.randomUUID(),
     expiration_date: lot.expiration_date || null,
     product_id: lot.product_id,
     expiration_date_notification: lot.expiration_date_notification,
@@ -15,9 +17,7 @@ export const createLot = async (lot: Lot) => {
     is_parent_lot: lot.is_parent_lot,
     is_expired: lot.is_expired,
     // has_transport_cost: lot.has_transport_cost,    // 
-    sale_units_equivalence: lot.sale_units_equivalence
-      ? JSON.stringify(lot.sale_units_equivalence)
-      : null,
+
     initial_stock_quantity: lot.initial_stock_quantity ?? 0,
     current_stock_quantity: lot.current_stock_quantity ?? 0,
     purchase_cost_total: lot.purchase_cost_total ?? 0,
@@ -29,12 +29,15 @@ export const createLot = async (lot: Lot) => {
     final_cost_total: lot.final_cost_total ?? 0,
     final_cost_per_unit: lot.final_cost_per_unit ?? 0,
     updated_at: new Date().toISOString(),
+    lot_containers: lot.lot_containers || [],
+
   }
 
-
+  console.log("adaptedLotData", adaptedLotData);
 
   const { data, error } = await supabase.rpc("create_lots_with_stock", {
     p_lots: [adaptedLotData],
+    p_business_owner_id: businessOwnerId,
   });
 
   console.log("created lot", data);

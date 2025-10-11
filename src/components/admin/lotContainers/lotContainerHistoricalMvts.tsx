@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
     Sheet,
@@ -13,45 +12,40 @@ import type { LotContainerMovement } from "@/types/lotContainerMovements";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useMemo } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { formatDate } from "@/utils";
 
 
-function formatCurrency(value: number) {
-    try {
-        return new Intl.NumberFormat("es-AR", {
-            style: "currency",
-            currency: "ARS",
-            maximumFractionDigits: 2,
-        }).format(value);
-    } catch {
-        return `$${value.toFixed(2)}`;
-    }
+
+function getFromLabel(m: LotContainerMovement) {
+    if (m.from_store_name) return `Tienda: ${m.from_store_name}`;
+    if (m.from_stock_room_name) return `Depósito: ${m.from_stock_room_name}`;
+    if (m.from_client_name) return `Cliente: ${m.from_client_name}`;
+    if (m.from_provider_name) return `Proveedor: ${m.from_provider_name}`;
+    return "-";
 }
 
-function formatDate(value: string) {
-    try {
-        return new Date(value).toLocaleString("es-AR", {
-            dateStyle: "short",
-            timeStyle: "short",
-        });
-    } catch {
-        return value;
-    }
+function getToLabel(m: LotContainerMovement) {
+    if (m.to_store_name) return `Tienda: ${m.to_store_name}`;
+    if (m.to_stock_room_name) return `Depósito: ${m.to_stock_room_name}`;
+    if (m.to_client_name) return `Cliente: ${m.to_client_name}`;
+    if (m.to_provider_name) return `Proveedor: ${m.to_provider_name}`;
+    return "-";
 }
-
 
 const LotContainerHistoricalMvts = ({
     lotContainerId,
 }: {
     lotContainerId: number;
 }) => {
-
     const { data, isLoading, isError, error } = useQuery({
         queryKey: ["lot-container-movements", lotContainerId],
-        queryFn: () => getLotContainersMovements(lotContainerId),
+        queryFn: async () => {
+            const res = await getLotContainersMovements(lotContainerId);
+            return res.lotContainersMovements ?? [];
+        },
         enabled: !!lotContainerId,
     });
-
-    console.log("Fetched transactions:", lotContainerId, data);
 
     const movements: LotContainerMovement[] = useMemo(() => data ?? [], [data]);
 
@@ -59,7 +53,7 @@ const LotContainerHistoricalMvts = ({
         <Sheet>
             <SheetTrigger asChild>
                 <Button variant="outline" disabled={!lotContainerId}>
-                    Ver historial de movimietos
+                    Ver historial de movimientos
                 </Button>
             </SheetTrigger>
 
@@ -69,7 +63,7 @@ const LotContainerHistoricalMvts = ({
                         <SheetHeader>
                             <SheetTitle>Histórico de movimientos</SheetTitle>
                             <SheetDescription>
-                                Cliente #{lotContainerId ?? "-"}
+                                Contenedor #{lotContainerId ?? "-"}
                             </SheetDescription>
                         </SheetHeader>
                     </div>
@@ -90,59 +84,41 @@ const LotContainerHistoricalMvts = ({
 
                         {!isLoading && !isError && movements.length === 0 && (
                             <div className="p-6 text-sm text-muted-foreground">
-                                No hay movimientos para este cliente.
+                                No hay movimientos para este contenedor.
                             </div>
                         )}
 
                         {!isLoading && !isError && movements.length > 0 && (
                             <div className="px-6 py-4">
-                                <div className="sticky top-0 z-10 grid grid-cols-12 gap-2 border-b bg-background px-2 py-2 text-xs font-medium text-muted-foreground">
-                                    <div className="col-span-3">Fecha</div>
-                                    <div className="col-span-5">Detalle</div>
-                                    <div className="col-span-2 text-right">Monto</div>
-                                    <div className="col-span-2 text-right">Saldo después</div>
-                                </div>
-
-                                <div className="divide-y">
-                                    {/* {movements.map((m) => {
-                                        const detail =
-                                            m.description ??
-                                            (m.order_id ? `Orden #${m.order_id}` : "-");
-                                        const after = m.balance_after_transaction ?? 0;
-                                        const isDebt = after < 0; // rojo si < 0 (debe), verde si >= 0
-
-                                        return (
-                                            <div
-                                                key={m.transaction_id}
-                                                className="grid grid-cols-12 gap-2 px-2 py-3 text-sm"
-                                            >
-                                                <div className="col-span-3">{formatDate(m.created_at)}</div>
-                                                <div className="col-span-5 truncate">{detail}</div>
-
-                                                {/* Monto de la transacción (informativo, sin énfasis) */}
-                                    <div className="col-span-2 text-right text-muted-foreground">
-                                        {formatCurrency(m.amount)}
-                                    </div>
-
-                                    {/* Saldo después de la transacción: foco principal */}
-                                    <div
-                                        className={
-                                            "col-span-2 text-right font-semibold " +
-                                            (isDebt ? "text-red-600" : "text-emerald-600")
-                                        }
-                                    >
-                                        {formatCurrency(after)}
-                                    </div>
-                                </div>
-                                );
-                                    })} */}
-                            </div>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[140px]">Fecha</TableHead>
+                                            <TableHead>Desde</TableHead>
+                                            <TableHead>Hacia</TableHead>
+                                            <TableHead className="text-right w-[120px]">Cantidad</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {movements
+                                            .slice()
+                                            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                                            .map((m) => (
+                                                <TableRow key={m.lot_container_movement_id}>
+                                                    <TableCell>{formatDate(m.created_at)}</TableCell>
+                                                    <TableCell>{getFromLabel(m)}</TableCell>
+                                                    <TableCell>{getToLabel(m)}</TableCell>
+                                                    <TableCell className="text-right">{m.quantity}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                    </TableBody>
+                                </Table>
                             </div>
                         )}
+                    </div>
                 </div>
-            </div>
-        </SheetContent>
-        </Sheet >
+            </SheetContent>
+        </Sheet>
     );
 };
 

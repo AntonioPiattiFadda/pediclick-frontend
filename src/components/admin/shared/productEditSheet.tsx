@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Product } from "@/types/products";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,9 +18,10 @@ import { ImageSelector } from "../stock/addEditProduct/ImageSelector";
 import { adaptProductForDb } from "@/adapters/products";
 import { getProduct, updateProduct } from "@/service/products";
 import { toast } from "sonner";
-import { CategorySelectorRoot, CreateCategory, SelectCategory } from "./CCcategorySelector";
+import { CategorySelectorRoot, CreateCategory, SelectCategory } from "./categorySelector";
 import { BrandSelectorRoot, CreateBrand, SelectBrand } from "./brandSelector";
-import { CreateSubCategory, SelectSubCategory, SubCategorySelectorRoot } from "./CCsubCategorySelector";
+import { CreateSubCategory, SelectSubCategory, SubCategorySelectorRoot } from "./subCategorySelector";
+import ShortCodeSelector from "./shortCodeSelector";
 
 interface ProductEditSheetProps {
     product: Product;
@@ -30,6 +31,8 @@ interface ProductEditSheetProps {
 export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) {
     const [open, setOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+
+    console.log("ProductEditSheet product", product);
 
     const [formData, setFormData] = useState<Partial<Product>>({
         product_id: product.product_id,
@@ -46,6 +49,25 @@ export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) 
         allow_stock_control: product.allow_stock_control ?? false,
         lot_control: product.lot_control ?? false,
     });
+
+    useEffect(() => {
+        setFormData({
+            product_id: product.product_id,
+            product_name: product.product_name ?? "",
+            short_code: product.short_code ?? null,
+            product_description: product.product_description ?? "",
+            category_id: product.category_id ?? null,
+            sub_category_id: product.sub_category_id ?? null,
+            brand_id: product.brand_id ?? null,
+            barcode: product.barcode ?? null,
+            public_image_id: product.public_image_id ?? null,
+            observations: product.observations ?? "",
+            sell_measurement_mode: product.sell_measurement_mode ?? "QUANTITY",
+            allow_stock_control: product.allow_stock_control ?? false,
+            lot_control: product.lot_control ?? false,
+        })
+
+    }, [product]);
 
     const canEdit = Boolean(product?.product_id);
 
@@ -88,7 +110,17 @@ export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) 
 
                 <div className="mt-4 flex flex-col gap-4">
                     <div className="grid grid-cols-2 gap-4 w-full">
-                        <div className="flex flex-col gap-2">
+                        <ShortCodeSelector
+                            productId={formData?.product_id ?? undefined}
+                            value={formData?.short_code ?? null}
+                            onChange={(value) =>
+                                setFormData((p) => ({
+                                    ...p,
+                                    short_code: value === "" ? null : Number(value),
+                                }))
+                            }
+                        />
+                        {/* <div className="flex flex-col gap-2">
                             <Label htmlFor="short_code">Código corto</Label>
                             <Input
                                 id="short_code"
@@ -102,7 +134,7 @@ export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) 
                                     }))
                                 }
                             />
-                        </div>
+                        </div> */}
 
                         <div className="flex flex-col gap-2">
                             <Label className="flex gap-2" htmlFor="barcode">

@@ -22,11 +22,11 @@ import { useEffect, useState } from "react";
 import toast from 'react-hot-toast';
 import { LotContainerSelector } from "../addLoadOrder/lotContainerSelector";
 import { BrandSelectorRoot, SelectBrand } from "./brandSelector";
-import { CategorySelectorRoot, SelectCategory } from "./CCcategorySelector";
+import { CategorySelectorRoot, SelectCategory } from "./categorySelector";
 import { emptyLot } from "./emptyFormData";
 import ProductSelector from "./productSelector";
-import { SelectSubCategory, SubCategorySelectorRoot } from "./CCsubCategorySelector";
-import { ProductEditSheet } from "./CCproductEditSheet";
+import { SelectSubCategory, SubCategorySelectorRoot } from "./subCategorySelector";
+import { ProductEditSheet } from "./productEditSheet";
 
 
 // type CreationMode = "SHORT" | "LONG";

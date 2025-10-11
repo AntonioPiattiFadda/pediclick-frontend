@@ -99,20 +99,7 @@ export const AddLoadOrderContainer = () => {
               <CardTitle>Remito</CardTitle>
               <CardDescription>Gestiona tu remito</CardDescription>
             </div>
-            {/* <div className="absolute w-screen h-screen top-0 left-0 flex items-center justify-center bg-red-200 z-50">
-              <div className="flex flex-col gap-2 col-span-2 bg-white w-[1200px] h-[650px] ">
-                <Label htmlFor="lot_number">Precios</Label>
-                <PricesSelectorV2
-                  value={lotPrices}
-                  onChange={(prices) => setLotPrices(prices)}
-                  lotId={null}
-                  disabled={false}
-                />
-              </div>
-            </div> */}
-            {/* <div className="flex flex-col sm:flex-row gap-2">
-              <AddLoadOrderBtn />
-            </div> */}
+
           </div>
         </CardHeader>
         <CardContent className="space-y-4 grid grid-cols-4 gap-4">

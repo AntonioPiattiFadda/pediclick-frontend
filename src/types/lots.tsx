@@ -21,6 +21,8 @@ export type BaseLot = {
   expiration_date_notification: boolean;
   //Vendra del remito porque el remito es quien crea los lotes.
   provider_id: number | null;
+
+  //Creo que esto no tiene sentido
   sale_units_equivalence: {
     minor: {
       quantity_in_base: 0;
@@ -45,6 +47,13 @@ export type BaseLot = {
   initial_stock_quantity: number;
   is_sold_out: boolean;
   is_expired: boolean;
+
+
+  // // Tiene el mismo nombre que en producto para saber si tiene control de lotes
+  // uses_lots: boolean;
+  // //NEW
+  // tracks_stock: boolean;
+  // is_unassigned_stock: boolean;
 
   providers?: {
     provider_name: string;

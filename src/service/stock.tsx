@@ -2,30 +2,36 @@ import { supabase } from ".";
 
 export const getLotStocks = async (lotId: number) => {
 
-    const { data, error } = await supabase
-        .from("stock")
-        .select(`
+  const { data, error } = await supabase
+    .from("stock")
+    .select(`
     *,
     stores (
       store_name
     ),
     stock_rooms (
       stock_room_name
-    )
-  `)
-        .eq("lot_id", lotId)
+      )
+         ,
+       lot_containers_location (
+         *
+       )
+      `)
+    .eq("lot_id", lotId)
 
-    const adaptedLotStock = data?.map(stock => ({
-        ...stock,
-        store_name: stock.stores?.store_name || null,
-        stock_room_name: stock.stock_rooms?.stock_room_name || null,
-    })) || [];
 
-    console.log("getLotStocks", lotId, adaptedLotStock, error);
+  const adaptedLotStock = data?.map(stock => ({
+    ...stock,
+    store_name: stock.stores?.store_name || null,
+    stock_room_name: stock.stock_rooms?.stock_room_name || null,
+    lot_containers_location: stock?.lot_containers_location[0] || [],
+  })) || [];
 
-    if (error) {
-        throw new Error(error.message);
-    }
+  console.log("getLotStocks", lotId, adaptedLotStock, error);
 
-    return { lotStock: adaptedLotStock, error };
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { lotStock: adaptedLotStock, error };
 };

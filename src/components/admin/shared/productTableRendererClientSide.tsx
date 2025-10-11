@@ -17,6 +17,8 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import { StockMovement } from '../stock/stockMovement'
 import { DeleteTableElementPopUp } from './deleteTableElementPopUp'
 import ManageStockPrices from './manageStockPrices'
+import SalesStockHistory from '@/components/unassigned/salesSTOCKHistory'
+import SalesHistory from '@/components/unassigned/salesHistory'
 
 const HeaderCell = ({ children }: { children: React.ReactNode }) => (
     <div className="">
@@ -164,11 +166,14 @@ const lotColumns = [
 
 
 
-            return <div>
+            return <div className='flex  gap-2'>
                 <StockMovement
                     lotId={stockData.lot_id}
                     aditionalQueryKey={["products"]}
                 />
+
+                <SalesStockHistory lotId={stockData.lot_id} />
+                <SalesHistory lotId={stockData.lot_id} />
             </div>
         }
     }),

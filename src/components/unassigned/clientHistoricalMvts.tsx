@@ -13,31 +13,7 @@ import { Button } from "@/components/ui/button";
 import { getClientTransactions } from "@/service/clientTransactions";
 import type { ClientTransaction } from "@/types/clientTransactions";
 import { Loader2 } from "lucide-react";
-
-
-function formatCurrency(value: number) {
-    try {
-        return new Intl.NumberFormat("es-AR", {
-            style: "currency",
-            currency: "ARS",
-            maximumFractionDigits: 2,
-        }).format(value);
-    } catch {
-        return `$${value.toFixed(2)}`;
-    }
-}
-
-function formatDate(value: string) {
-    try {
-        return new Date(value).toLocaleString("es-AR", {
-            dateStyle: "short",
-            timeStyle: "short",
-        });
-    } catch {
-        return value;
-    }
-}
-
+import { formatCurrency, formatDate } from "@/utils";
 
 const ClientHistoricalMvts = ({
     selectedClientId,

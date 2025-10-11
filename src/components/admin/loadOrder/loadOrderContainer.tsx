@@ -1,7 +1,7 @@
 import { LoadOrderTable } from "@/components/admin/loadOrder/LoadOrderTable";
 import TableSkl from "@/components/admin/stock/ui/tableSkl";
 import { getLoadOrder } from "@/service/loadOrders";
-import { formatDateToDDMMYYHHMM } from "@/utils";
+import { formatDate } from "@/utils";
 import { type StockWithRelations } from "@/utils/stock";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -62,7 +62,8 @@ const LoadOrderContainer = () => {
                     <p className="text-sm text-muted-foreground">
                         Proveedor: {loadOrder?.providers?.provider_name ?? "--"} · Factura:{" "}
                         {loadOrder?.invoice_number ?? "--"} · Fecha entrega:{" "}
-                        {formatDateToDDMMYYHHMM(loadOrder?.delivery_date ?? "--")}
+                        {formatDate(loadOrder?.delivery_date ?? "--")}
+
                     </p>
                 </div>
             </div>

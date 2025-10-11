@@ -33,9 +33,16 @@ export interface Product {
   };
   //   sale_unit_id: number | null;
   //I dont remember why i put this
+
+
   allow_stock_control: boolean;
   //If no lot control the system will use a single lot as if there was not.
   lot_control: boolean;
+
+  //NEW
+  // uses_lots: boolean;
+  // tracks_stock: boolean;
+
 
   //El formato en que viene de base de datos.
   public_images?: {
