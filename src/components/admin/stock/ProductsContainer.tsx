@@ -17,8 +17,8 @@ import { Button } from "@/components/ui/button";
 import { CategorySelectorRoot, SelectCategory } from "../shared/categorySelector";
 import { SelectSubCategory, SubCategorySelectorRoot } from "../shared/subCategorySelector";
 import { SelectStockRoom, StockroomSelectorRoot } from "../shared/stockRoomSelector";
-import { SelectStore, StoreSelectorRoot } from "../shared/storesSelector";
 import AddStock from "./AddStock";
+import { SelectStore, StoreSelectorRoot } from "../shared/storesSelector";
 
 
 
