@@ -12,13 +12,12 @@ import { Search } from "lucide-react";
 import { useState } from "react";
 import { ProductTableRendererClientSide } from "../shared/productTableRendererClientSide";
 import TableSkl from "./ui/tableSkl";
-// import { StoreSelector } from "../shared/StoresSelector";
 import { Button } from "@/components/ui/button";
 import { CategorySelectorRoot, SelectCategory } from "../shared/categorySelector";
 import { SelectSubCategory, SubCategorySelectorRoot } from "../shared/subCategorySelector";
 import { SelectStockRoom, StockroomSelectorRoot } from "../shared/stockRoomSelector";
 import AddStock from "./AddStock";
-import { SelectStore, StoreSelectorRoot } from "../shared/storesSelector";
+import { SelectStore, StoreSelectorRoot } from "../shared/XXstoresSelector";
 
 
 
