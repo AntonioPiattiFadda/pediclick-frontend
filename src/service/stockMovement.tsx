@@ -2,6 +2,7 @@ import type { StockMovement } from "@/types/stockMovements";
 import { supabase } from ".";
 
 export const createStockMovement = async (formData: StockMovement) => {
+    //TODO Agregar el business_owner_id al llamado y el stock id a la lot_containers_location nueva
     console.log("createStockMovement called with formData:", formData);
     const { data: stockMovementData, error: stockMovementError } = await supabase
         .rpc("transfer_stock", {
@@ -13,6 +14,8 @@ export const createStockMovement = async (formData: StockMovement) => {
             p_from_store_id: formData?.from_store_id ?? null,
             p_to_store_id: formData?.to_store_id ?? null,
             p_should_notify_owner: formData?.should_notify_owner ?? false,
+            p_lot_containers_to_move: formData?.lot_containers_to_move ?? null,
+            // p_business_owner_id: businessOwnerId,
         });
 
 

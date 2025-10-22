@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -9,7 +10,6 @@ import {
     createColumnHelper,
     flexRender,
     getCoreRowModel,
-    getExpandedRowModel,
     getPaginationRowModel,
     useReactTable,
 } from '@tanstack/react-table'
@@ -17,8 +17,8 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import { StockMovement } from '../stock/stockMovement'
 import { DeleteTableElementPopUp } from './deleteTableElementPopUp'
 import ManageStockPrices from './manageStockPrices'
-import SalesStockHistory from '@/components/unassigned/salesSTOCKHistory'
 import SalesHistory from '@/components/unassigned/salesHistory'
+import SalesStockHistory from '@/components/unassigned/salesStockHistory'
 
 const HeaderCell = ({ children }: { children: React.ReactNode }) => (
     <div className="">
@@ -204,7 +204,7 @@ const lotColumns = [
                     storeId={stock?.store_id ?? null}
                     productId={stock?.product_id ?? 0}
                     lotNumber={stockData.lot_number ?? 0}
-                    stockId={stock?.stock_id}
+                    stockId={stock?.stock_id || 0}
                     cost_per_unit={stockData.purchase_cost_per_unit ?? 0}
                     lotId={stockData.lot_id ?? 0}
                 />
@@ -249,7 +249,8 @@ export function ProductTableRendererClientSide({
         state: {
             pagination,
         },
-        getSubRows: (row) => row.lots ?? [],  // return the children array as sub-rows
+        // lots are a different type (Lot[]), so coerce types to satisfy the table generics
+        getSubRows: (row: any) => (row.lots ?? []) as unknown as Product[],  // return the children array as sub-rows
     })
 
     return (
@@ -297,14 +298,14 @@ export function ProductTableRendererClientSide({
                                             <TableHeader>
                                                 <TableRow>
                                                     {lotColumns.map((col, idx) => (
-                                                        <TableHead key={idx}>{col.header}</TableHead>
+                                                        <TableHead key={idx}>{col.header as any}</TableHead>
                                                     ))}
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
                                                 {row.original.lots?.map((lot: any, idx: number) => (
                                                     <TableRow key={idx}>
-                                                        {lotColumns.map((col, j) => (
+                                                        {lotColumns.map((col: any, j) => (
                                                             <TableCell key={j}>
                                                                 {typeof col.cell === "function"
                                                                     ? col.cell({ getValue: () => lot[col.accessorKey], row: { original: lot } })

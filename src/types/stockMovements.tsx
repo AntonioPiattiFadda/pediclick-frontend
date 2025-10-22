@@ -9,4 +9,5 @@ export type StockMovement = {
   from_store_id: number | null;
   to_store_id: number | null;
   should_notify_owner: boolean;
+  lot_containers_to_move?: { quantity: number } | null;
 } | null;

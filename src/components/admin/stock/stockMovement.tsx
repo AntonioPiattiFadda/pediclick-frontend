@@ -44,8 +44,10 @@ function buildPayload(params: {
     toStoreId: number | null;
     toStockRoomId: number | null;
     quantity: number | null;
+    lotContainersToMove?: { quantity: number; auto: boolean, lot_containers_location_id?: number | null } | null;
+
 }): MovementDTO {
-    const { lotId, from, destType, toStoreId, toStockRoomId, quantity } = params;
+    const { lotId, from, destType, toStoreId, toStockRoomId, quantity, lotContainersToMove } = params;
     return {
         lot_id: lotId,
         movement_type: "TRANSFER",
@@ -55,6 +57,8 @@ function buildPayload(params: {
         from_store_id: from?.stock_type === "STORE" ? from?.store_id ?? null : null,
         to_store_id: destType === "STORE" ? toStoreId ?? null : null,
         should_notify_owner: false,
+        lot_containers_to_move: lotContainersToMove ?? null, // 👈 agregado
+
     };
 }
 
@@ -115,6 +119,7 @@ export function StockMovement({
         auto: true
     });
 
+
     console.log("selectedLotContainersLocation", selectedLotContainersLocation);
 
     const selectedFrom = useMemo(
@@ -132,6 +137,18 @@ export function StockMovement({
         setToStoreId(null);
         setToStockRoomId(null);
     }, [destType]);
+
+    // Auto-update "Vacios a mover" when checkbox is enabled
+    useEffect(() => {
+        if (lotContainersToMove.auto) {
+            const qty = typeof quantity === "number" ? quantity : 0;
+            const avail = selectedLotContainersLocation?.quantity ?? 0;
+            const next = Math.max(0, Math.min(qty, avail));
+            setLotContainersToMove((prev) =>
+                prev.quantity === next ? prev : { ...prev, quantity: next }
+            );
+        }
+    }, [lotContainersToMove.auto, quantity, selectedLotContainersLocation?.quantity]);
 
     // Reset all state when dialog closes
     useEffect(() => {
@@ -193,6 +210,11 @@ export function StockMovement({
             toStoreId,
             toStockRoomId,
             quantity: Number(quantity),
+            lotContainersToMove: {
+                quantity: lotContainersToMove.quantity,
+                auto: lotContainersToMove.auto,
+                lot_containers_location_id: selectedLotContainersLocation?.lot_containers_location_id,
+            }
         });
         await createMovement.mutateAsync({ newStockMovement: payload });
     };
@@ -337,6 +359,10 @@ export function StockMovement({
                                     value={quantity}
                                     onChange={(e) => {
                                         const val = e.target.value;
+                                        if (val > (selectedFrom?.current_quantity ?? 0)) {
+                                            setQuantity(selectedFrom?.current_quantity ?? 0);
+                                            return;
+                                        }
                                         setQuantity(val === "" ? "" : Number(val));
                                     }}
                                 />
@@ -355,22 +381,24 @@ export function StockMovement({
                             <div className="grid gap-2">
                                 <div className="flex gap-2 items-center">
 
-                                    <Label>Vacios a mover: {selectedLotContainersLocation?.quantity ?? 0}</Label>
+                                    <Label>Vacios: {selectedLotContainersLocation?.quantity ?? 0}</Label>
 
-                                    <Checkbox checked={lotContainersToMove.auto} onCheckedChange={() => {
-                                        if (lotContainersToMove.auto) {
-                                            console.log("auto to false", quantity)
+                                    <Checkbox
+                                        checked={lotContainersToMove.auto}
+                                        onCheckedChange={(checked) => {
+                                            const nextAuto = Boolean(checked);
+                                            const qty = typeof quantity === "number" ? quantity : 0;
+                                            const avail = selectedLotContainersLocation?.quantity ?? 0;
+                                            const nextQty = nextAuto ? Math.max(0, Math.min(qty, avail)) : lotContainersToMove.quantity;
                                             setLotContainersToMove({
                                                 ...lotContainersToMove,
-                                                quantity: quantity as number || 0,
-                                            })
-                                        }
-                                        setLotContainersToMove({
-                                            ...lotContainersToMove,
-                                            auto: !lotContainersToMove.auto,
-                                        })
-                                    }} disabled={!(selectedLotContainersLocation?.quantity ?? 0 > 0)} />
-                                    <Label>Mover con vacios {lotContainersToMove.quantity} </Label>
+                                                auto: nextAuto,
+                                                quantity: nextQty,
+                                            });
+                                        }}
+                                        disabled={!(selectedLotContainersLocation?.quantity ?? 0 > 0)}
+                                    />
+                                    <Label>Mover con vacios</Label>
 
                                 </div>
                                 <Input
@@ -378,11 +406,13 @@ export function StockMovement({
                                     min={1}
                                     max={selectedLotContainersLocation?.quantity ?? undefined}
                                     value={lotContainersToMove.quantity}
+                                    disabled={lotContainersToMove.auto}
                                     onChange={(e) => {
                                         const val = e.target.value;
+                                        const n = val === "" ? 0 : Number(val);
                                         setLotContainersToMove({
                                             ...lotContainersToMove,
-                                            quantity: val === "" ? "" : Number(val)
+                                            quantity: n,
                                         });
                                     }}
                                 />

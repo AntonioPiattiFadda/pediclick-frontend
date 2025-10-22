@@ -27,6 +27,7 @@ export const emptyLoadOrder: LoadOrder = {
 };
 
 export const emptyStock: Stock = {
+
   store_id: null,
   stock_room_id: null,
   current_quantity: 0,

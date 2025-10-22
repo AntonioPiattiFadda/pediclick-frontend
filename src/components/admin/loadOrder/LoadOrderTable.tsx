@@ -102,7 +102,7 @@ export const LoadOrderTable = ({ loadOrderData, expandedLots, toggleExpanded, lo
                               <TableBody>
                                 {hasStock ? (
                                   stocks
-                                    .sort((a, b) => a.stock_id - b.stock_id)
+                                    .sort((a, b) => (a?.stock_id ?? 0) - (b?.stock_id ?? 0))
                                     .map((stockItem: Stock) => {
                                       console.log("Stock Item:", stockItem);
                                       const { typeLabel, nameLabel, isStore } = formatStockLocation(stockItem);
@@ -119,11 +119,16 @@ export const LoadOrderTable = ({ loadOrderData, expandedLots, toggleExpanded, lo
                                           </TableCell>
                                           <TableCell>{typeLabel}</TableCell>
                                           <TableCell>{stockItem.current_quantity}</TableCell>
-                                          <TableCell>{isStore ? <ManageStockPrices
-                                            hasCost={hasCost}
-                                            loadOrderId={loadOrderId}
-                                            storeId={stockItem.store_id || null}
-                                            productId={stockItem.product_id} lotNumber={lot.lot_number || 0} stockId={stockItem?.stock_id} cost_per_unit={lot?.purchase_cost_per_unit || 0} lotId={lot.lot_id || 0} /> : <span>Sin precios</span>}</TableCell>
+                                          <TableCell>{isStore ?
+                                            <ManageStockPrices
+                                              hasCost={hasCost}
+                                              loadOrderId={loadOrderId}
+                                              storeId={stockItem.store_id || null}
+                                              productId={stockItem.product_id || 0}
+                                              lotNumber={lot.lot_number || 0}
+                                              stockId={stockItem?.stock_id || 0}
+                                              cost_per_unit={lot?.purchase_cost_per_unit || 0} lotId={lot.lot_id || 0} />
+                                            : <span>Sin precios</span>}</TableCell>
 
 
                                         </TableRow>

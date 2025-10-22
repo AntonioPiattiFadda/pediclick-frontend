@@ -58,6 +58,16 @@ export type BaseLot = {
   providers?: {
     provider_name: string;
   };
+
+  stockData?: {
+    stock?: Stock;
+    lot_number: number;
+    lot_id: number;
+    totalQty: number | null;
+    purchase_cost_per_unit: number | null;
+
+  };
+
   stock?: Stock[];
   prices?: Price[];
 

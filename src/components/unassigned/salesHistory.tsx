@@ -10,10 +10,8 @@ import {
 } from "@/components/ui/sheet";
 import { getSalesHistoryByProductOrLot } from "@/service/stockMovement";
 import type { SalesHistoryRow } from "@/types/SALES";
-import { formatDate } from "@/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useMemo } from "react";
 
 const SalesHistory = ({
     lotId,

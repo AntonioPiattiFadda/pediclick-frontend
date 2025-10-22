@@ -43,6 +43,7 @@ export const StoresTable = ({ stores }: {
                   elementId={store.store_id}
                   elementName={store.store_name}
                   deleteFn={async (id: string | number) => {
+                    console.log("Delete store with id:", id);
                     // await handleDeleteStore(id);
                   }}
                   queryKey={["stores"]}
