@@ -19,6 +19,7 @@ import { DeleteTableElementPopUp } from './deleteTableElementPopUp'
 import ManageStockPrices from './manageStockPrices'
 import SalesHistory from '@/components/unassigned/salesHistory'
 import SalesStockHistory from '@/components/unassigned/salesStockHistory'
+import { ManageStockBtn } from './manageStockBtn'
 
 const HeaderCell = ({ children }: { children: React.ReactNode }) => (
     <div className="">
@@ -32,7 +33,7 @@ const columnHelper = createColumnHelper<Product>()
 const columns = [
     columnHelper.accessor('product_id', {
         header: () => <HeaderCell>Acciones</HeaderCell>,
-        cell: info => <DeleteTableElementPopUp
+        cell: info => <div className='flex gap-2'>                <DeleteTableElementPopUp
             elementId={info.getValue() || ''}
             queryKey={['products']}
             deleteFn={async (id) => {
@@ -50,8 +51,10 @@ const columns = [
             successMsgDescription="El producto ha sido eliminado correctamente."
             errorMsgTitle="Error al eliminar"
             errorMsgDescription="No se pudo eliminar el producto."
-        />,
-
+        />
+            <ManageStockBtn productId={Number(info.getValue()!)} />
+        </div>
+        ,
 
         footer: info => info.column.id,
     }),

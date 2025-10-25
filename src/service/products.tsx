@@ -34,7 +34,8 @@ export const getProduct = async (productId: number) => {
       public_images(public_image_src),
       categories(category_name),
       sub_categories(sub_category_name),
-      brands(brand_name)
+      brands(brand_name),
+      lots(*)
         `
     )
     .eq("product_id", productId)
@@ -44,7 +45,7 @@ export const getProduct = async (productId: number) => {
     console.log("getProduct error", error);
     throw new Error(error.message);
   }
-  console.log("XAtaptar");
+  console.log("XAtaptar", dbProduct);
 
   const product = adaptProductsForClient([dbProduct])[0];
 

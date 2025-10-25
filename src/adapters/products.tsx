@@ -23,6 +23,7 @@ export const adaptProductForDb = (product: any): Product => {
       minor: Number(product.equivalence_minor_mayor_selling?.minor) || null,
       mayor: Number(product.equivalence_minor_mayor_selling?.mayor) || null,
     },
+    lots: product.lots as Lot[] | undefined,
   };
 };
 

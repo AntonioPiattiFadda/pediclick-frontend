@@ -358,7 +358,7 @@ export function AddLotBtn({
             {isEditing
               ? "Editando producto"
               : `${selectedProduct.product_name
-                ? "Producto: " + selectedProduct.product_name
+                ? "Agregar stock a Producto: " + selectedProduct.product_name
                 : "Elegir producto"
               }`}
           </DialogTitle>
