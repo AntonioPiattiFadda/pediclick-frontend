@@ -20,14 +20,24 @@ export const createLot = async (lot: Lot) => {
 
     initial_stock_quantity: lot.initial_stock_quantity ?? 0,
     current_stock_quantity: lot.current_stock_quantity ?? 0,
+
     purchase_cost_total: lot.purchase_cost_total ?? 0,
     purchase_cost_per_unit: lot.purchase_cost_per_unit ?? 0,
+    purchase_cost_per_bulk: lot.purchase_cost_per_bulk ?? 0,
+
     download_total_cost: lot.download_total_cost ?? 0,
+    download_cost_per_bulk: lot.download_cost_per_bulk ?? 0,
     download_cost_per_unit: lot.download_cost_per_unit ?? 0,
-    extra_cost_total: lot.extra_cost_total ?? 0,
-    extra_cost_per_unit: lot.extra_cost_per_unit ?? 0,
+
+    delivery_cost_total: lot.delivery_cost_total ?? 0,
+    delivery_cost_per_bulk: lot.delivery_cost_per_bulk ?? 0,
+    delivery_cost_per_unit: lot.delivery_cost_per_unit ?? 0,
+
     final_cost_total: lot.final_cost_total ?? 0,
+    final_cost_per_bulk: lot.final_cost_per_bulk ?? 0,
     final_cost_per_unit: lot.final_cost_per_unit ?? 0,
+
+
     updated_at: new Date().toISOString(),
     lot_containers: lot.lot_containers || [],
 

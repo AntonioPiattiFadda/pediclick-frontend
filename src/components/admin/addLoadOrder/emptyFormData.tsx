@@ -1,11 +1,12 @@
 import type { Lot } from "@/types/lots";
 import type { Stock } from "@/types/stocks";
 import type { LoadOrder } from "@/types/loadOrders";
+const now = new Date();
 
 export const emptyLoadOrder: LoadOrder = {
   load_order_number: null,
   provider_id: null,
-  delivery_date: new Date().toISOString().split("T")[0],
+  delivery_date: new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split("T")[0],
   receptor_id: null,
   receptor_other: "",
   transporter_data: {
@@ -13,16 +14,8 @@ export const emptyLoadOrder: LoadOrder = {
     name: "",
     licence_plate: "",
   },
-  divide_transport_costs_btw_lots: false,
-  delivery_price: null,
   invoice_number: null,
   observations: "",
-  purchasing_agent_id: null,
-  total_download_cost: null,
-  productor_commission_type: "NONE",
-  productor_commission_percentage: null,
-  productor_commission_unit_value: null,
-  buyer_commission_percentage: null,
   lots: [] as Lot[],
 };
 

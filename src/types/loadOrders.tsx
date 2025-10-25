@@ -1,6 +1,6 @@
 import type { Lot } from "./lots";
 
-export type ProductorComissionType = "TOTAL_PERCENTAGE" | "BY_UNIT" | "NONE";
+
 
 export type LoadOrder = {
   load_order_id?: number;
@@ -13,7 +13,6 @@ export type LoadOrder = {
   //Te va a dar error en base de datos porque no esta creado el campo address ni cuit
   // puede tener un codigo porque pueden ser muchos proveedores.
   // Al lado tiene el boton de + nuevo de proveedor
-
   delivery_date: string; // Auytomaticamente seleccionar la fecha de hoy sino que el cliente la pueda cambiar
   //Fijate como ejemplo el cenvimiento del prodcutso en lote
   receptor_id: number | null;
@@ -21,7 +20,6 @@ export type LoadOrder = {
   // Tiene que elegir entre los empleados o poner otro y agregar un string.
   // No esta hecho.
   // Tiene que haber la opcion de otro y esee campo es un string Como primera opcion pones otro.
-
   transporter_data: {
     delivery_company: string | null;
     name: string | null;
@@ -29,12 +27,6 @@ export type LoadOrder = {
     // otros campos que pueda tener el transportista
     // Todo en la misma linea
   };
-  divide_transport_costs_btw_lots: boolean; // Checkbox
-
-
-
-  //Esto que es?
-  delivery_price: number | null;
 
   invoice_number: number | null;
 
@@ -53,14 +45,5 @@ export type LoadOrder = {
     provider_name: string;
   };
 
-
-  purchasing_agent_id: number | null; // Selector de comprador
-  total_download_cost: number | null;
-
-  productor_commission_type: ProductorComissionType; // Radio button
-  productor_commission_percentage: number | null; // Input tipo numero, solo si productor_commission_type es BY_UNIT
-  productor_commission_unit_value: number | null; // Input tipo numero, solo si productor_commission_type es FIXED
-
-  buyer_commission_percentage: number | null; // Input tipo numero, solo si productor_commission_type es TOTAL_PERCENTAGE
 
 };

@@ -23,7 +23,6 @@ export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
 
   return (
     <div className="rounded-md">
-      {/* <AddLotBtn /> */}
       <Table>
         <TableHeader>
           <TableRow>

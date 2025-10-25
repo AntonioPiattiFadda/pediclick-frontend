@@ -19,10 +19,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { CreateProvider, ProviderSelectorRoot, SelectProvider } from "../shared/providersSelector";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 import { emptyLoadOrder } from "./emptyFormData";
-import { CreatePurchasingAgent, PurchasingAgentSelectorRoot, SelectPurchasingAgent } from "../shared/purchasingAgentSelector";
-import { CreateProvider, ProviderSelectorRoot, SelectProvider } from "../shared/providersSelector";
 
 export const AddLoadOrderContainer = () => {
   const queryClient = useQueryClient();
@@ -30,7 +29,6 @@ export const AddLoadOrderContainer = () => {
 
   const [formData, setFormData] = useState<LoadOrder>(emptyLoadOrder);
 
-  console.log("Form data:", formData);
 
   // const { data: providers, isLoading: isLoadingProviders } = useQuery({
   //   queryKey: ["providers"],
@@ -90,6 +88,7 @@ export const AddLoadOrderContainer = () => {
     }
   };
 
+
   return (
     <div className="space-y-6">
       <Card>
@@ -98,6 +97,20 @@ export const AddLoadOrderContainer = () => {
             <div>
               <CardTitle>Remito</CardTitle>
               <CardDescription>Gestiona tu remito</CardDescription>
+            </div>
+
+            <div className="flex  gap-2 ">
+              <Label htmlFor="expiration_date">Fecha</Label>
+
+              <Input
+                placeholder="Fecha de entrega"
+                type="date"
+                defaultValue={new Date().toISOString().split("T")[0]}
+                value={formData.delivery_date}
+                onChange={(e) =>
+                  setFormData({ ...formData, delivery_date: e.target.value })
+                }
+              />
             </div>
 
           </div>
@@ -128,19 +141,6 @@ export const AddLoadOrderContainer = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 ">
-            <Label htmlFor="expiration_date">Fecha de entrega</Label>
-
-            <Input
-              placeholder="Fecha de entrega"
-              type="date"
-              defaultValue={new Date().toISOString().split("T")[0]}
-              value={formData.delivery_date}
-              onChange={(e) =>
-                setFormData({ ...formData, delivery_date: e.target.value })
-              }
-            />
-          </div>
 
           <div className="flex flex-col gap-2 -mt-2">
             <Label className="mt-2">Proveedor</Label>
@@ -156,7 +156,7 @@ export const AddLoadOrderContainer = () => {
 
           </div>
 
-          <div className="flex flex-col gap-2 -mt-2">
+          {/* <div className="flex flex-col gap-2 -mt-2">
             <Label className="mt-2">Comprador</Label>
             <PurchasingAgentSelectorRoot value={formData.purchasing_agent_id}
               onChange={(value) =>
@@ -167,7 +167,7 @@ export const AddLoadOrderContainer = () => {
               <CreatePurchasingAgent />
             </PurchasingAgentSelectorRoot>
 
-          </div>
+          </div> */}
 
 
 
@@ -250,7 +250,7 @@ export const AddLoadOrderContainer = () => {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <Label className="text-xs" htmlFor="licence_plate">
                   Precio
                 </Label>
@@ -265,17 +265,18 @@ export const AddLoadOrderContainer = () => {
                     })
                   }
                 />
-              </div>
+              </div> */}
             </div>
           </div>
-          <div className="flex flex-col gap-2 ">
+
+          {/* <div className="flex flex-col gap-2 ">
             <Label>Total descarga (lotes)</Label>
             <Input
               type="number"
               value={formData.total_download_cost ?? 0}
               readOnly
             />
-          </div>
+          </div> */}
           {/* <div className="flex flex-col gap-2 ">
             <Label htmlFor="max">Precio del transporte</Label>
             <Input
@@ -293,11 +294,11 @@ export const AddLoadOrderContainer = () => {
             loadOrderLots={formData.lots ?? []}
             onAddElementToLoadOrder={(newLot) => {
               const newLots = [...(formData.lots ?? []), newLot];
-              const totalDownload = computeTotalDownloadCost(newLots);
+              // const totalDownload = computeTotalDownloadCost(newLots);
               setFormData({
                 ...formData,
                 lots: newLots,
-                total_download_cost: totalDownload,
+                // total_download_cost: totalDownload,
               });
             }}
             onUpdateLot={(index, patch) => {

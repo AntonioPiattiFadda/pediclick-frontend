@@ -89,7 +89,7 @@ const SelectPurchasingAgent = () => {
       <select
         className="w-full border border-gray-200 rounded px-2 py-2"
         disabled={disabled}
-        value={value === null ? "" : value}
+        value={value ?? ""}
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }

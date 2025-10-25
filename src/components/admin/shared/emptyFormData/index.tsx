@@ -69,35 +69,39 @@ export const emptyLot: Lot = {
   is_sold_out: false,
   lot_containers: [],
   initial_stock_quantity: 0,
-  purchase_cost_total: 0,
-  purchase_cost_per_unit: 0,
 
-  extra_cost_total: null,
-  extra_cost_per_unit: null,
+  purchase_cost_per_bulk: null,
+  purchase_cost_total: null,
+  purchase_cost_per_unit: null,
+
+
+  bulk_quantity_equivalence: null,
+
   final_cost_total: null,
+  final_cost_per_bulk: null,
   final_cost_per_unit: null,
-  has_transport_cost_divided: false,
 
   download_total_cost: null,
+  download_cost_per_bulk: null,
   download_cost_per_unit: null,
+
+  delivery_cost_total: null,
+  delivery_cost_per_unit: null,
+  delivery_cost_per_bulk: null,
+  productor_commission_type: "NONE",
+
+  productor_commission_percentage: null,
+  productor_commission_unit_value: null,
+
+  purchasing_agent_id: null,
+  purchasing_agent_commision_type: "NONE",
+  purchasing_agent_commision_percentage: null,
+  purchasing_agent_commision_unit_value: null,
+
   parent_lot_id: null,
   is_expired: false,
-  sale_units_equivalence: {
-    minor: {
-      quantity_in_base: 0,
-    },
-    mayor: {
-      quantity_in_base: 0,
-    },
-  },
-  //  {
-  //   quantity: null,
-  //   created_at: null,
-  //   should_notify_owner: false,
-  //   location: null,
-  // },
 
-  // acá decidís si querés que el control sea con stock único o no
+
   lot_control: false,
 };
 

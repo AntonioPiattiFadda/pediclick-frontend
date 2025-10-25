@@ -16,6 +16,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAppSelector } from "@/hooks/useUserData";
 import { BarChart3, ChevronRight, Home, Package } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -89,7 +90,7 @@ export function AppSidebar() {
   );
 
   if (!role) {
-    return null;
+    return <Skeleton className="w-64 h-full" />;
   }
 
   if (role === "EMPLOYEE") {

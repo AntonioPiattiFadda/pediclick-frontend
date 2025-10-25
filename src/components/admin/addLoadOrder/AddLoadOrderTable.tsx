@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -8,14 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import type { Lot } from "@/types/lots";
-import { AddLotBtn } from "../shared/addLotBtn";
-import { LotContainerSelector } from "./lotContainerSelector";
-import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
 import GetFollowingLotNumberBtn from "@/components/unassigned/getFollowingLotNumberBtn";
+import type { Lot } from "@/types/lots";
+import { useEffect, useRef, useState } from "react";
+import { AddLotBtn } from "../shared/addLotBtn";
+import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
+import { LotContainerSelector } from "./lotContainerSelector";
 
 type EditableCellProps = {
   value: string | number | null | undefined;
@@ -211,6 +211,9 @@ export const AddLoadOrderTable = ({
                       return true;
                     }}
                   />
+                  {/* <EditLotBtn lot={lot}
+                    onUpdate={() => { }}
+                  /> */}
                 </TableCell>
                 {/* Producto (solo lectura) */}
                 <TableCell>{lot.product_name || "-"}</TableCell>

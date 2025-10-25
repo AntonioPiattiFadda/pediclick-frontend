@@ -58,8 +58,6 @@ export const createLoadOrder = async (
       receptor_other: loadOrder.receptor_other ?? null,
       receptor_id: Number(loadOrder.receptor_id) || null,
       transporter_data: loadOrder.transporter_data ?? null,
-      delivery_price: Number(loadOrder.delivery_price) || null,
-      total_download_cost: Number(loadOrder.total_download_cost) || null,
       invoice_number: Number(loadOrder.invoice_number) || null,
       status: loadOrder.status ?? "pending",
     },

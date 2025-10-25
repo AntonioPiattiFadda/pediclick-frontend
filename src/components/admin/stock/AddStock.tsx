@@ -29,7 +29,10 @@ const AddStock = () => {
 
 
     return (
-        <AddLotBtn onAddElement={(lot: Lot) => { createLotMutation.mutate(lot) }} loading={createLotMutation.isLoading} />
+        <AddLotBtn
+            onAddElement={(lot: Lot) => { createLotMutation.mutate(lot) }}
+            loading={createLotMutation.isLoading}
+        />
 
     )
 }
