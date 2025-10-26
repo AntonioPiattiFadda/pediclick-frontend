@@ -24,7 +24,7 @@ import { emptyLot } from "../emptyFormData";
 import ManageProductPricesContainer from "../manageProductPricesContainer";
 import { ProductInfoAccordion } from "../ProductInfoDisplay";
 import ProductSelector from "../productSelector";
-import StockAssignationContainer from "./stockassignationContainer";
+import StockAssignationContainer from "./XXstockAssignationContainer";
 // import ManageStockPrices from "./manageStockPrices";
 
 
