@@ -43,6 +43,7 @@ import {
 import { getProduct } from "@/service/products";
 import { useQuery } from "@tanstack/react-query";
 import { CreatePurchasingAgent, PurchasingAgentSelectorRoot, SelectPurchasingAgent } from "./purchasingAgentSelector";
+import DisposeWaste from "./DisposeWaste";
 // import ManageStockPrices from "./manageStockPrices";
 
 
@@ -379,6 +380,8 @@ export function ManageStockBtn({
             <div className="flex items-center gap-3" key={lot?.lot_id ?? `lot-${idx}`}>
               <RadioGroupItem value={lot?.lot_id?.toString() ?? ""} id={`r-${lot?.lot_id ?? ""}`} />
               <Label htmlFor={`r-${lot?.lot_id ?? ""}`}>{`Lote ${lot?.lot_id ?? ""}`}</Label>
+              <DisposeWaste lotId={lot?.lot_id ?? 0} />
+
             </div>
           ))}
         </RadioGroup>

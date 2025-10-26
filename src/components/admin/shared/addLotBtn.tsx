@@ -11,33 +11,23 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import GetFollowingLotNumberBtn from "@/components/unassigned/getFollowingLotNumberBtn";
 import type { Lot } from "@/types/lots";
 import type { Price } from "@/types/prices";
 import type { Product } from "@/types/products";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { Barcode, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from 'react-hot-toast';
 import { LotContainerSelector } from "../addLoadOrder/lotContainerSelector";
-import { BrandSelectorRoot, SelectBrand } from "./brandSelector";
-import { CategorySelectorRoot, SelectCategory } from "./categorySelector";
 import { emptyLot } from "./emptyFormData";
-import { ProductEditSheet } from "./productEditSheet";
 import ProductSelector from "./productSelector";
-import { SelectSubCategory, SubCategorySelectorRoot } from "./subCategorySelector";
-
-
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-
-
-
 import {
   Select,
   SelectContent,
@@ -47,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ProductInfoAccordion } from "./ProductInfoDisplay";
 import { CreatePurchasingAgent, PurchasingAgentSelectorRoot, SelectPurchasingAgent } from "./purchasingAgentSelector";
 // import ManageStockPrices from "./manageStockPrices";
 
@@ -351,7 +342,7 @@ export function AddLotBtn({
       </DialogTrigger>
       <DialogContent
         className={`border-4   ${isEditing ? " border-green-200 " : "border-transparent"
-          }  flex  flex-col gap-2 w-[750px] overflow-y-auto max-h-[90vh] min-h-[500px]`}
+          }  flex  flex-col gap-2 w-[850px] overflow-y-auto max-h-[90vh] min-h-[500px]`}
       >
         <DialogHeader>
           <DialogTitle>
@@ -402,31 +393,30 @@ export function AddLotBtn({
 
 
 
+
+
         {isProductSelected ? (
           <>
+            <ProductInfoAccordion
+              product={selectedProduct}
+              onChangeSelectedProduct={(updated) => setSelectedProduct(updated)}
+            />
             <Tabs value={tab} onValueChange={setTab} className="w-full">
-              <TabsList className="grid grid-cols-4 w-full">
-
-
-
-
-
-
-
+              <TabsList className=" w-full">
                 <TabsTrigger value="lot">Lote</TabsTrigger>
-                <TabsTrigger value="product">Producto</TabsTrigger>
+                {/* <TabsTrigger value="product">Producto</TabsTrigger> */}
                 <TabsTrigger value="prices">Precios</TabsTrigger>
                 <TabsTrigger value="sto">Stock</TabsTrigger>
 
               </TabsList>
-              {tab === "product" && (
+              {/* {tab === "product" && (
                 <div className="mt-2">
                   <ProductEditSheet
                     product={selectedProduct}
                     onUpdated={(updated) => setSelectedProduct(updated)}
                   />
                 </div>
-              )}
+              )} */}
 
               <TabsContent value="lot" className="flex flex-col gap-2 mt-2">
                 <div className="grid grid-cols-3 gap-4 w-full">
@@ -899,155 +889,136 @@ export function AddLotBtn({
                 </div>
               </TabsContent>
 
-              <TabsContent value="product" className="mt-4">
-                {/* <CheckBoxesSelector
-                  options={creationModeOptions}
-                  selectedOption={creationMode}
-                  onSelectOption={(value) => setCreationMode(value as CreationMode)}
-                  disabled={!isEditing}
-                /> */}
+              {/* <TabsContent value="product" className="mt-4">
+           
 
-                <div className="grid grid-cols-2 gap-4 w-full">
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="lot_number">Código corto</Label>
-                    <Input
-                      placeholder="Código corto"
-                      disabled={!isEditing}
-                      type="number"
-                      value={selectedProduct.short_code ?? ""}
-                      onChange={(e) =>
-                        setSelectedProduct({
-                          ...selectedProduct,
-                          short_code: e.target.value === "" ? null : Number(e.target.value),
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <Label className="flex gap-2" htmlFor="barcode">
-                      Código de barras <Barcode height={14} />
-                    </Label>
-                    <Input
-                      placeholder="barcode"
-                      disabled={!isEditing}
-                      type="number"
-                      value={selectedProduct.barcode ?? ""}
-                      onChange={(e) =>
-                        setSelectedProduct({
-                          ...selectedProduct,
-                          barcode: e.target.value === "" ? null : Number(e.target.value),
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="waste">Rubro</Label>
-                    <CategorySelectorRoot disabled={true}
-                      value={selectedProduct.category_id}
-                      onChange={(id) =>
-                        setSelectedProduct({ ...selectedProduct, category_id: id })
-                      }>
-                      <SelectCategory />
-                    </CategorySelectorRoot>
-                  </div>
-
-
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="waste">Categoría</Label>
-
-
-                    <SubCategorySelectorRoot value={selectedProduct.sub_category_id?.toString() ?? ""} onChange={(id) =>
-                      setSelectedProduct({
-                        ...selectedProduct,
-                        sub_category_id: id ? Number(id) : null,
-                      })
-                    } disabled={true}>
-                      <SelectSubCategory />
-
-                    </SubCategorySelectorRoot>
-
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="waste">Marca</Label>
-
-                    <BrandSelectorRoot disabled={true}
-                      value={selectedProduct.brand_id?.toString() ?? ""}
-                      onChange={(id) =>
-                        setSelectedProduct({
-                          ...selectedProduct,
-                          brand_id: id ? Number(id) : null,
-                        })
-                      }>
-                      <SelectBrand />
-                    </BrandSelectorRoot>
-
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="product_name">Nombre</Label>
-                    <Input
-                      placeholder="product_name"
-                      disabled={!isEditing}
-                      type="text"
-                      value={selectedProduct.product_name}
-                      onChange={(e) =>
-                        setSelectedProduct({
-                          ...selectedProduct,
-                          product_name: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="w-full h-32 border border-dashed border-gray-300 rounded-md">
-                    {selectedProduct.public_image_src ? (
-                      <img src={selectedProduct.public_image_src} alt={selectedProduct.product_name} className="object-cover w-full h-full" />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-gray-500">
-                        No hay imagen disponible
-                      </div>
-                    )}
-                  </div>
-
-                  {/* <ImageSelector
-                    onImageSelect={(id) =>
-                      setSelectedProduct({
-                        ...selectedProduct,
-                        public_image_id: id ? Number(id) : null,
-                      })
-                    }
-                    onImageRemove={() =>
-                      setSelectedProduct({
-                        ...selectedProduct,
-                        public_image_id: null,
-                      })
-                    }
+              <div className="grid grid-cols-2 gap-4 w-full">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="lot_number">Código corto</Label>
+                  <Input
+                    placeholder="Código corto"
                     disabled={!isEditing}
-                  /> */}
-                  <div className="flex flex-col gap-2 col-span-2">
-                    <Label htmlFor="observations">Observaciones</Label>
-                    <Textarea
-                      placeholder=""
-                      disabled={!isEditing}
-                      value={selectedProduct.observations || undefined}
-                      onChange={(e) =>
-                        setSelectedProduct({
-                          ...selectedProduct,
-                          observations: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
+                    type="number"
+                    value={selectedProduct.short_code ?? ""}
+                    onChange={(e) =>
+                      setSelectedProduct({
+                        ...selectedProduct,
+                        short_code: e.target.value === "" ? null : Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label className="flex gap-2" htmlFor="barcode">
+                    Código de barras <Barcode height={14} />
+                  </Label>
+                  <Input
+                    placeholder="barcode"
+                    disabled={!isEditing}
+                    type="number"
+                    value={selectedProduct.barcode ?? ""}
+                    onChange={(e) =>
+                      setSelectedProduct({
+                        ...selectedProduct,
+                        barcode: e.target.value === "" ? null : Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="waste">Rubro</Label>
+                  <CategorySelectorRoot disabled={true}
+                    value={selectedProduct.category_id}
+                    onChange={(id) =>
+                      setSelectedProduct({ ...selectedProduct, category_id: id })
+                    }>
+                    <SelectCategory />
+                  </CategorySelectorRoot>
                 </div>
 
 
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="waste">Categoría</Label>
+
+
+                  <SubCategorySelectorRoot value={selectedProduct.sub_category_id?.toString() ?? ""} onChange={(id) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      sub_category_id: id ? Number(id) : null,
+                    })
+                  } disabled={true}>
+                    <SelectSubCategory />
+
+                  </SubCategorySelectorRoot>
+
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="waste">Marca</Label>
+
+                  <BrandSelectorRoot disabled={true}
+                    value={selectedProduct.brand_id?.toString() ?? ""}
+                    onChange={(id) =>
+                      setSelectedProduct({
+                        ...selectedProduct,
+                        brand_id: id ? Number(id) : null,
+                      })
+                    }>
+                    <SelectBrand />
+                  </BrandSelectorRoot>
+
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="product_name">Nombre</Label>
+                  <Input
+                    placeholder="product_name"
+                    disabled={!isEditing}
+                    type="text"
+                    value={selectedProduct.product_name}
+                    onChange={(e) =>
+                      setSelectedProduct({
+                        ...selectedProduct,
+                        product_name: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="w-full h-32 border border-dashed border-gray-300 rounded-md">
+                  {selectedProduct.public_image_src ? (
+                    <img src={selectedProduct.public_image_src} alt={selectedProduct.product_name} className="object-cover w-full h-full" />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      No hay imagen disponible
+                    </div>
+                  )}
+                </div>
+
+            
+              <div className="flex flex-col gap-2 col-span-2">
+                <Label htmlFor="observations">Observaciones</Label>
+                <Textarea
+                  placeholder=""
+                  disabled={!isEditing}
+                  value={selectedProduct.observations || undefined}
+                  onChange={(e) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      observations: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
 
 
 
-              </TabsContent>
+
+
+          </TabsContent> */}
 
               <TabsContent value="prices" className="mt-4">
                 {/* <ManageStockPrices
@@ -1071,7 +1042,8 @@ export function AddLotBtn({
           <div className="w-full h-full text-center  my-auto">
             Seleccionar un producto
           </div>
-        )}
+        )
+        }
 
         <DialogFooter
           className={` mt-auto translate-y-6 sticky bottom-0 right-0 bg-white border-t-1 border-t-gray-200 py-4`}
@@ -1121,7 +1093,7 @@ export function AddLotBtn({
 
 
         </DialogFooter>
-      </DialogContent>
+      </DialogContent >
     </Dialog >
   );
 }
