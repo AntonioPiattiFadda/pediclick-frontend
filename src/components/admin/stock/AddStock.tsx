@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AddLotBtn } from "../shared/addLotBtn";
+import { AddLotBtn } from "../shared/addStockBtn/addLotBtn";
 import type { Lot } from "@/types/lots";
 import { createLot } from "@/service/lots";
 

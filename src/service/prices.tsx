@@ -1,12 +1,21 @@
 import type { Price, PriceLogicType, PriceType } from "@/types/prices";
 import { supabase } from ".";
 
-export const getProductPrices = async (productId: number) => {
-  console.log("getProductPrices called with productId:", productId);
-  const { data: productPrices, error } = await supabase
+export const getProductPrices = async (productId: number, selectedStoreId: number | null) => {
+  console.log("getProductPrices called with:", { productId, selectedStoreId });
+  let query = supabase
     .from("prices")
     .select(`*`)
     .eq("product_id", productId);
+
+  if (selectedStoreId !== null) {
+    query = query.eq("store_id", selectedStoreId);
+  } else {
+    query = query.is("store_id", null);
+  }
+
+
+  const { data: productPrices, error } = await query;
 
   if (error) throw new Error(error.message);
 
@@ -23,7 +32,6 @@ export const getStockPrices = async (stockId: number) => {
 
   return { stockPrices, error: null };
 };
-
 
 
 export const getPreviousPrice = async (

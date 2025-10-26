@@ -19,26 +19,12 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from 'react-hot-toast';
-import { LotContainerSelector } from "../addLoadOrder/lotContainerSelector";
-import { emptyLot } from "./emptyFormData";
-import ProductSelector from "./productSelector";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ProductInfoAccordion } from "./ProductInfoDisplay";
-import { CreatePurchasingAgent, PurchasingAgentSelectorRoot, SelectPurchasingAgent } from "./purchasingAgentSelector";
+import { LotContainerSelector } from "../../addLoadOrder/lotContainerSelector";
+import { emptyLot } from "../emptyFormData";
+import ManageProductPricesContainer from "../manageProductPricesContainer";
+import { ProductInfoAccordion } from "../ProductInfoDisplay";
+import ProductSelector from "../productSelector";
+import StockAssignationContainer from "./stockassignationContainer";
 // import ManageStockPrices from "./manageStockPrices";
 
 
@@ -66,7 +52,9 @@ export function AddLotBtn({
 
   const [formData, setFormData] = useState<Lot>(emptyLot);
   const [selectedProduct, setSelectedProduct] = useState<Product>({} as Product);
+
   console.log({ selectedProduct });
+
   const [lotPrices, setLotPrices] = useState<Price[]>([]);
   const [tab, setTab] = useState("lot");
 
@@ -309,6 +297,16 @@ export function AddLotBtn({
 
     }
 
+    let final_cost_total: number | null = newTotalCost + newDownloadTotalCost + newDeliveryCostTotal;
+    let final_cost_per_unit: number | null = newCostPerUnit + newDownloadCostPerUnit + newDeliveryCostPerUnit;
+    let final_cost_per_bulk: number | null = newCostPerBulk + newDownloadCostPerBulk + newDeliveryCostPerBulk;
+
+    if (!bulkQuantityEquivalence) {
+      final_cost_per_bulk = null;
+      final_cost_total = null;
+      final_cost_per_unit = null;
+    }
+
     // actualizamos el formData con los nuevos valores calculados
     setFormData(prev => ({
       ...prev,
@@ -327,6 +325,10 @@ export function AddLotBtn({
       delivery_cost_total: newDeliveryCostTotal,
       delivery_cost_per_bulk: newDeliveryCostPerBulk,
       delivery_cost_per_unit: newDeliveryCostPerUnit,
+
+      final_cost_total,
+      final_cost_per_unit,
+      final_cost_per_bulk,
     }));
   };
 
@@ -342,7 +344,7 @@ export function AddLotBtn({
       </DialogTrigger>
       <DialogContent
         className={`border-4   ${isEditing ? " border-green-200 " : "border-transparent"
-          }  flex  flex-col gap-2 w-[850px] overflow-y-auto max-h-[90vh] min-h-[500px]`}
+          }  flex  flex-col gap-2 w-[950px] overflow-y-auto max-h-[90vh] min-h-[500px]`}
       >
         <DialogHeader>
           <DialogTitle>
@@ -367,29 +369,6 @@ export function AddLotBtn({
           />
         )}
 
-        {/* <ProductSelector
-          value={selectedProduct.product_id || 0}
-          onChange={setSelectedProduct}
-        /> */}
-
-        {/* {isProductSelected ? (
-          <RadioGroup defaultValue="comfortable" className="flex gap-2">
-            <div className="flex items-center gap-3">
-              <RadioGroupItem value="compact" id="r3" />
-              <Label htmlFor="r3">Todos los lotes</Label>
-            </div>
-            <div className="flex items-center gap-3">
-              <RadioGroupItem value="default" id="r1" />
-              <Label htmlFor="r1">Lte 1 </Label>
-            </div>
-            <div className="flex items-center gap-3">
-              <RadioGroupItem value="comfortable" id="r2" />
-              <Label htmlFor="r2">Lote 2</Label>
-            </div>
-
-          </RadioGroup>
-
-        )} */}
 
 
 
@@ -404,19 +383,11 @@ export function AddLotBtn({
             <Tabs value={tab} onValueChange={setTab} className="w-full">
               <TabsList className=" w-full">
                 <TabsTrigger value="lot">Lote</TabsTrigger>
-                {/* <TabsTrigger value="product">Producto</TabsTrigger> */}
                 <TabsTrigger value="prices">Precios</TabsTrigger>
-                <TabsTrigger value="sto">Stock</TabsTrigger>
+                <TabsTrigger value="stock">Stock</TabsTrigger>
 
               </TabsList>
-              {/* {tab === "product" && (
-                <div className="mt-2">
-                  <ProductEditSheet
-                    product={selectedProduct}
-                    onUpdated={(updated) => setSelectedProduct(updated)}
-                  />
-                </div>
-              )} */}
+
 
               <TabsContent value="lot" className="flex flex-col gap-2 mt-2">
                 <div className="grid grid-cols-3 gap-4 w-full">
@@ -515,15 +486,7 @@ export function AddLotBtn({
 
 
                   </div>
-
                 </div>
-
-
-
-
-
-
-
 
                 <div className="grid grid-cols-3 gap-4 w-full">
 
@@ -600,7 +563,7 @@ export function AddLotBtn({
 
                 </div>
 
-                <Accordion
+                {/* <Accordion
                   type="single"
                   collapsible
                   className="w-full mb-2"
@@ -740,7 +703,7 @@ export function AddLotBtn({
                     </AccordionContent>
                   </AccordionItem>
 
-                </Accordion>
+                </Accordion> */}
 
 
 
@@ -889,138 +852,23 @@ export function AddLotBtn({
                 </div>
               </TabsContent>
 
-              {/* <TabsContent value="product" className="mt-4">
-           
-
-              <div className="grid grid-cols-2 gap-4 w-full">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="lot_number">Código corto</Label>
-                  <Input
-                    placeholder="Código corto"
-                    disabled={!isEditing}
-                    type="number"
-                    value={selectedProduct.short_code ?? ""}
-                    onChange={(e) =>
-                      setSelectedProduct({
-                        ...selectedProduct,
-                        short_code: e.target.value === "" ? null : Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label className="flex gap-2" htmlFor="barcode">
-                    Código de barras <Barcode height={14} />
-                  </Label>
-                  <Input
-                    placeholder="barcode"
-                    disabled={!isEditing}
-                    type="number"
-                    value={selectedProduct.barcode ?? ""}
-                    onChange={(e) =>
-                      setSelectedProduct({
-                        ...selectedProduct,
-                        barcode: e.target.value === "" ? null : Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="waste">Rubro</Label>
-                  <CategorySelectorRoot disabled={true}
-                    value={selectedProduct.category_id}
-                    onChange={(id) =>
-                      setSelectedProduct({ ...selectedProduct, category_id: id })
-                    }>
-                    <SelectCategory />
-                  </CategorySelectorRoot>
-                </div>
-
-
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="waste">Categoría</Label>
-
-
-                  <SubCategorySelectorRoot value={selectedProduct.sub_category_id?.toString() ?? ""} onChange={(id) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      sub_category_id: id ? Number(id) : null,
-                    })
-                  } disabled={true}>
-                    <SelectSubCategory />
-
-                  </SubCategorySelectorRoot>
-
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="waste">Marca</Label>
-
-                  <BrandSelectorRoot disabled={true}
-                    value={selectedProduct.brand_id?.toString() ?? ""}
-                    onChange={(id) =>
-                      setSelectedProduct({
-                        ...selectedProduct,
-                        brand_id: id ? Number(id) : null,
-                      })
-                    }>
-                    <SelectBrand />
-                  </BrandSelectorRoot>
-
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="product_name">Nombre</Label>
-                  <Input
-                    placeholder="product_name"
-                    disabled={!isEditing}
-                    type="text"
-                    value={selectedProduct.product_name}
-                    onChange={(e) =>
-                      setSelectedProduct({
-                        ...selectedProduct,
-                        product_name: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="w-full h-32 border border-dashed border-gray-300 rounded-md">
-                  {selectedProduct.public_image_src ? (
-                    <img src={selectedProduct.public_image_src} alt={selectedProduct.product_name} className="object-cover w-full h-full" />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-gray-500">
-                      No hay imagen disponible
-                    </div>
-                  )}
-                </div>
-
-            
-              <div className="flex flex-col gap-2 col-span-2">
-                <Label htmlFor="observations">Observaciones</Label>
-                <Textarea
-                  placeholder=""
-                  disabled={!isEditing}
-                  value={selectedProduct.observations || undefined}
-                  onChange={(e) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      observations: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            </div>
-
-
-
-
-
-          </TabsContent> */}
-
               <TabsContent value="prices" className="mt-4">
+                <ManageProductPricesContainer
+                  productId={selectedProduct.product_id!}
+                  disabled={false}
+                  finalCost={{
+                    final_cost_total: formData?.final_cost_total || null,
+                    final_cost_per_unit: formData?.final_cost_per_unit || null,
+                    final_cost_per_bulk: formData?.final_cost_per_bulk || null,
+                  }}
+
+                // lotId={lotId}
+                // stockId={stockId}
+                // lotNumber={lotNumber}
+                // loadOrderId={loadOrderId}
+                // storeId={storeId}
+                />
+                {/* <PricesTab /> */}
                 {/* <ManageStockPrices
                   // lotId={2}
                   // stockId={3}
@@ -1036,6 +884,13 @@ export function AddLotBtn({
                 /> */}
 
               </TabsContent>
+
+              <TabsContent value="stock" className="flex flex-col gap-2 mt-2">
+                <StockAssignationContainer
+                  initial_stock_quantity={formData.initial_stock_quantity || 0}
+                />
+              </TabsContent>
+
             </Tabs>
           </>
         ) : (

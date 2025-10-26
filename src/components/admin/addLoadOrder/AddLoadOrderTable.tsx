@@ -13,7 +13,7 @@ import {
 import GetFollowingLotNumberBtn from "@/components/unassigned/getFollowingLotNumberBtn";
 import type { Lot } from "@/types/lots";
 import { useEffect, useRef, useState } from "react";
-import { AddLotBtn } from "../shared/addLotBtn";
+import { AddLotBtn } from "../shared/addStockBtn/addLotBtn";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
 import { LotContainerSelector } from "./lotContainerSelector";
 

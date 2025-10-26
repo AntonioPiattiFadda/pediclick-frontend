@@ -16,7 +16,7 @@ import {
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { StockMovement } from '../stock/stockMovement'
 import { DeleteTableElementPopUp } from './deleteTableElementPopUp'
-import ManageStockPrices from './manageStockPrices'
+import ManageStockPrices from './manageStockPricesUNUSED'
 import SalesHistory from '@/components/unassigned/salesHistory'
 import SalesStockHistory from '@/components/unassigned/salesStockHistory'
 import { ManageStockBtn } from './manageStockBtn'
