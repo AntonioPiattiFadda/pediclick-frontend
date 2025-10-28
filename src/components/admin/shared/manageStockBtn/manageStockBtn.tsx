@@ -14,22 +14,17 @@ import { Textarea } from "@/components/ui/textarea";
 import type { Lot } from "@/types/lots";
 import { Barcode, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import { LotContainerSelector } from "../addLoadOrder/lotContainerSelector";
-import { BrandSelectorRoot, SelectBrand } from "./brandSelector";
-import { CategorySelectorRoot, SelectCategory } from "./categorySelector";
-import { emptyLot } from "./emptyFormData";
-import { SelectSubCategory, SubCategorySelectorRoot } from "./subCategorySelector";
-
-
+import { LotContainerSelector } from "../../addLoadOrder/lotContainerSelector";
+import { BrandSelectorRoot, SelectBrand } from "../brandSelector";
+import { CategorySelectorRoot, SelectCategory } from "../categorySelector";
+import { emptyLot } from "../emptyFormData";
+import { SelectSubCategory, SubCategorySelectorRoot } from "../subCategorySelector";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-
-
-
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
@@ -40,43 +35,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getProduct } from "@/service/products";
-import { useQuery } from "@tanstack/react-query";
-import { CreatePurchasingAgent, PurchasingAgentSelectorRoot, SelectPurchasingAgent } from "./purchasingAgentSelector";
-import DisposeWaste from "./DisposeWaste";
-// import ManageStockPrices from "./manageStockPrices";
+import type { Product } from "@/types/products";
+import DisposeWaste from "../DisposeWaste";
+import { ProductInfoAccordion } from "../ProductInfoDisplay";
+import PricesAccordion from "../addStockBtn/pricesAccordion";
+import { CreatePurchasingAgent, PurchasingAgentSelectorRoot, SelectPurchasingAgent } from "../purchasingAgentSelector";
 
-
-// type CreationMode = "SHORT" | "LONG";
-
-// const creationModeOptions = [
-//   { label: "Corto", value: "SHORT" },
-//   { label: "Largo", value: "LONG" },
-// ];
-
-// const sellMeasurementModeOptions = [
-//   { label: "Unidad", value: "QUANTITY" },
-//   { label: "Kg", value: "WEIGHT" },
-// ];
 
 export function ManageStockBtn({
-  productId,
+  product,
+  open,
+  onOpenChange
 }: {
-  productId: number;
+  product: Product;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Lot>(emptyLot);
 
-  // const queryClient = useQueryClient();
-
-  const { data: selectedProduct, isLoading } = useQuery({
-    queryKey: ["product", productId],
-    queryFn: async () => {
-      const response = await getProduct(productId);
-      return response.product;
-    },
-    enabled: isModalOpen && !!productId,
-  });
+  const [selectedProduct, setSelectedProduct] = useState<Product>(product);
 
   console.log({ selectedProduct });
   // const [lotPrices, setLotPrices] = useState<Price[]>([]);
@@ -108,20 +85,6 @@ export function ManageStockBtn({
   //   setLotPrices([]);
   //   setFormData(emptyLot);
   // };
-
-  if (isLoading) {
-    return <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost">
-          <ChevronRight className="mr-2 h-4 w-4" />
-
-        </Button>
-      </DialogTrigger>
-      <DialogContent
-        className={`border-4 border-transparent  flex  flex-col gap-2 w-[750px] overflow-y-auto max-h-[90vh] min-h-[500px]`}
-      ></DialogContent>
-    </Dialog>
-  }
 
   const handleUpdateLotField = (field: string, rawValue: number | string) => {
     // determinamos si el campo debe tratarse como numérico
@@ -342,13 +305,11 @@ export function ManageStockBtn({
     }));
   };
 
-
-
   return (
-    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button variant="ghost">
-          <ChevronRight className="mr-2 h-4 w-4" />
+          <ChevronRight className=" h-4 w-4" />
 
         </Button>
       </DialogTrigger>
@@ -369,6 +330,25 @@ export function ManageStockBtn({
           value={selectedProduct.product_id || 0}
           onChange={setSelectedProduct}
         /> */}
+
+        <Accordion type="multiple" className="w-full">
+          <ProductInfoAccordion
+            product={selectedProduct}
+            onChangeSelectedProduct={(updated) => setSelectedProduct(updated)}
+          />
+
+          <PricesAccordion
+            productId={selectedProduct.product_id!}
+            finalCost={{
+              final_cost_total: formData?.final_cost_total || null,
+              final_cost_per_unit: formData?.final_cost_per_unit || null,
+              final_cost_per_bulk: formData?.final_cost_per_bulk || null,
+            }}
+          />
+
+
+
+        </Accordion>
 
 
         <RadioGroup className="flex gap-2 my-4">
@@ -393,10 +373,10 @@ export function ManageStockBtn({
 
         <>
           <Tabs value={tab} onValueChange={setTab} className="w-full">
-            <TabsList className="grid grid-cols-5 w-full">
+            <TabsList className="w-full">
               <TabsTrigger value="lot">Lote</TabsTrigger>
-              <TabsTrigger value="product">Producto</TabsTrigger>
-              <TabsTrigger value="prices">Precios</TabsTrigger>
+              {/* <TabsTrigger value="product">Producto</TabsTrigger>
+              <TabsTrigger value="prices">Precios</TabsTrigger> */}
               <TabsTrigger value="sto">Stock</TabsTrigger>
               <TabsTrigger value="transfer">Transformación</TabsTrigger>
             </TabsList>

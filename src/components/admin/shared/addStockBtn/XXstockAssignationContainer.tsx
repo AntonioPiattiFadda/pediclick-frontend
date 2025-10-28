@@ -54,7 +54,7 @@ export default function StockAssignationContainer({
 
     return (
         <Card>
-            <CardHeader>
+            <CardHeader className="w-full flex flex-row justify-between">
                 <CardTitle>Asignación de nuevo Stock</CardTitle>
                 <div className="flex gap-2 items-center">
                     <Label className="font-medium">Cantidad total a asignar:</Label>

@@ -1,12 +1,11 @@
 import {
-    Accordion,
     AccordionContent,
     AccordionItem,
-    AccordionTrigger,
+    AccordionTrigger
 } from "@/components/ui/accordion";
 import { Label } from "@/components/ui/label";
-import { ProductEditSheet } from "./productEditSheet";
 import type { Product } from "@/types/products";
+import { ProductEditSheet } from "./productEditSheet";
 
 type ProductInfoAccordionProps = {
     product: Product;
@@ -16,7 +15,7 @@ type ProductInfoAccordionProps = {
 
 export const ProductInfoAccordion = ({ product, customElement, onChangeSelectedProduct }: ProductInfoAccordionProps) => {
     return (
-        <Accordion type="single" collapsible className="w-full">
+        <>
             <AccordionItem value="product-info">
                 <AccordionTrigger className="text-sm font-medium">
                     Información del producto
@@ -66,7 +65,8 @@ export const ProductInfoAccordion = ({ product, customElement, onChangeSelectedP
                     </div>
                 </AccordionContent>
             </AccordionItem>
-        </Accordion>
+
+        </>
     );
 };
 

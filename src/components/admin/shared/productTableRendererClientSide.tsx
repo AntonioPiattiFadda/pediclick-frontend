@@ -3,6 +3,8 @@ import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import SalesHistory from '@/components/unassigned/salesHistory'
+import SalesStockHistory from '@/components/unassigned/salesStockHistory'
 import type { Lot } from '@/types/lots'
 import type { Product } from '@/types/products'
 import type { Stock } from '@/types/stocks'
@@ -16,10 +18,8 @@ import {
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { StockMovement } from '../stock/stockMovement'
 import { DeleteTableElementPopUp } from './deleteTableElementPopUp'
+import { ManageStockBtnContainer } from './manageStockBtn/manageStockBtnContainer'
 import ManageStockPrices from './manageStockPricesUNUSED'
-import SalesHistory from '@/components/unassigned/salesHistory'
-import SalesStockHistory from '@/components/unassigned/salesStockHistory'
-import { ManageStockBtn } from './manageStockBtn'
 
 const HeaderCell = ({ children }: { children: React.ReactNode }) => (
     <div className="">
@@ -52,7 +52,7 @@ const columns = [
             errorMsgTitle="Error al eliminar"
             errorMsgDescription="No se pudo eliminar el producto."
         />
-            <ManageStockBtn productId={Number(info.getValue()!)} />
+            <ManageStockBtnContainer productId={Number(info.getValue()!)} />
         </div>
         ,
 

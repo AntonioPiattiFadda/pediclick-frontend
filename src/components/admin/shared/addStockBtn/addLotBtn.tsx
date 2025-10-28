@@ -1,4 +1,5 @@
 import { adaptProductForDb } from "@/adapters/products";
+import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,6 +25,7 @@ import { emptyLot } from "../emptyFormData";
 import ManageProductPricesContainer from "../manageProductPricesContainer";
 import { ProductInfoAccordion } from "../ProductInfoDisplay";
 import ProductSelector from "../productSelector";
+import PricesAccordion from "./pricesAccordion";
 import StockAssignationContainer from "./XXstockAssignationContainer";
 // import ManageStockPrices from "./manageStockPrices";
 
@@ -370,20 +372,33 @@ export function AddLotBtn({
         )}
 
 
-
-
-
-
         {isProductSelected ? (
           <>
-            <ProductInfoAccordion
-              product={selectedProduct}
-              onChangeSelectedProduct={(updated) => setSelectedProduct(updated)}
-            />
+            <Accordion type="multiple" className="w-full">
+              <ProductInfoAccordion
+                product={selectedProduct}
+                onChangeSelectedProduct={(updated) => setSelectedProduct(updated)}
+              />
+
+              <PricesAccordion
+                productId={selectedProduct.product_id!}
+                finalCost={{
+                  final_cost_total: formData?.final_cost_total || null,
+                  final_cost_per_unit: formData?.final_cost_per_unit || null,
+                  final_cost_per_bulk: formData?.final_cost_per_bulk || null,
+                }}
+              />
+
+
+
+            </Accordion>
+
+
+
             <Tabs value={tab} onValueChange={setTab} className="w-full">
               <TabsList className=" w-full">
                 <TabsTrigger value="lot">Lote</TabsTrigger>
-                <TabsTrigger value="prices">Precios</TabsTrigger>
+                {/* <TabsTrigger value="prices">Precios</TabsTrigger> */}
                 <TabsTrigger value="stock">Stock</TabsTrigger>
 
               </TabsList>
