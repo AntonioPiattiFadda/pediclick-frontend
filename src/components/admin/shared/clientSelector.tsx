@@ -21,6 +21,15 @@ import {
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import type { Client } from "@/types/clients";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 // ---------- Context ----------
 interface ClientSelectorContextType {
@@ -115,35 +124,86 @@ const SelectClient = () => {
     );
 };
 
-// ---------- Create ----------
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { taxConditionsOpt } from "@/constants";
+
+
 const CreateClient = () => {
     const { onChange, disabled } = useClientSelectorContext();
     const queryClient = useQueryClient();
 
-    const [newClient, setNewClient] = useState("");
     const [open, setOpen] = useState(false);
+    const [formData, setFormData] = useState<Partial<Client>>({
+        full_name: "",
+        email: "",
+        phone: "",
+        address: "",
+        tax_ident: "",
+        tax_condition: "FINAL_CONSUMER",
+        billing_enabled: true,
+        credit_limit: 0,
+        current_balance: 0,
+        available_credit: 0,
+        is_active: true,
+    });
 
+    // 🔁 Mutación para crear cliente
     const createClientMutation = useMutation({
-        mutationFn: async (data: { newClient: string }) => {
-            return await createClient(data.newClient);
+        mutationFn: async (data: Partial<Client>) => {
+            toast.loading("Creando cliente...");
+
+            const adaptedClient = {
+                ...data,
+                available_credit: data.credit_limit || 0,
+            }
+            return await createClient(adaptedClient);
         },
-        onSuccess: (data) => {
+        onSuccess: (data: Client) => {
             queryClient.invalidateQueries({ queryKey: ["clients"] });
-            onChange(data.client_id);
+            onChange(data.client_id || null);
+            toast.success("Cliente creado correctamente");
             setOpen(false);
-            setNewClient("");
+            setFormData({
+                full_name: "",
+                email: "",
+                phone: "",
+                address: "",
+                tax_ident: "",
+                tax_condition: "FINAL_CONSUMER",
+                billing_enabled: true,
+                credit_limit: 0,
+                current_balance: 0,
+                available_credit: 0,
+                is_active: true,
+            });
         },
         onError: (error: any) => {
-            toast("Error al crear cliente", {
+            toast.error("Error al crear cliente", {
                 description: error.message,
             });
         },
     });
 
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleToggle = (name: keyof Client) => {
+        setFormData((prev) => ({ ...prev, [name]: !prev[name] }));
+    };
+
     const handleCreateClient = async () => {
-        if (!newClient) return;
+        if (!formData.full_name?.trim()) {
+            toast.error("El nombre del cliente es obligatorio");
+            return;
+        }
+
         try {
-            await createClientMutation.mutateAsync({ newClient });
+            await createClientMutation.mutateAsync(formData);
         } catch (err) {
             console.error("Error creating client:", err);
         }
@@ -156,32 +216,136 @@ const CreateClient = () => {
                     + Nuevo
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+
+            <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>Crear nuevo cliente</DialogTitle>
                     <DialogDescription>
-                        Ingresá el nombre del nuevo cliente que quieras crear.
+                        Completá los datos del cliente.
                     </DialogDescription>
                 </DialogHeader>
 
-                <Input
-                    value={newClient}
-                    disabled={createClientMutation.isLoading}
-                    onChange={(e) => setNewClient(e.target.value)}
-                    placeholder="Nombre del cliente"
-                />
+                <div className="grid gap-4 py-2">
+                    <div className="grid gap-1">
+                        <Label>Nombre / Razón social *</Label>
+                        <Input
+                            name="full_name"
+                            placeholder="Nombre..."
+                            value={formData.full_name || ""}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="grid gap-1">
+                        <Label>Email</Label>
+                        <Input
+                            name="email"
+                            type="email"
+                            placeholder="cliente@correo.com"
+                            value={formData.email || ""}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="grid gap-1">
+                            <Label>Teléfono</Label>
+                            <Input
+                                name="phone"
+                                placeholder="351..."
+                                value={formData.phone || ""}
+                                onChange={handleChange}
+                            />
+                        </div>
+                        <div className="grid gap-1">
+                            <Label>CUIT</Label>
+                            <Input
+                                name="tax_ident"
+                                placeholder="Numero de cuit"
+                                value={formData.tax_ident || ""}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid gap-1">
+                        <Label>Dirección</Label>
+                        <Input
+                            name="address"
+                            placeholder="Ingresa dirección"
+                            value={formData.address || ""}
+                            onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="grid gap-1">
+                            <Label>Cond. IVA</Label>
+                            <Select name="tax_condition"
+                                value={formData.tax_condition}
+                                onValueChange={(value) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        tax_condition: value as any,
+                                    }))
+                                }
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Seleccionar condición" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectLabel>Condiciones de IVA</SelectLabel>
+                                        {taxConditionsOpt.map((condition) => (
+                                            <SelectItem key={condition.value} value={condition.value}>
+                                                {condition.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+
+
+                            {/* <Input
+                                name="tax_condition"
+                                placeholder="Responsable inscripto"
+                                value={formData.tax_condition || ""}
+                                onChange={handleChange}
+                            /> */}
+                        </div>
+                        <div className="grid gap-1">
+                            <Label>Límite de crédito</Label>
+                            <Input
+                                name="credit_limit"
+                                type="number"
+                                placeholder="--"
+                                value={formData.credit_limit || ""}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between space-x-2">
+                        <Label htmlFor="billing_enabled">Facturación</Label>
+                        <Switch
+                            id="billing_enabled"
+                            checked={formData.billing_enabled}
+                            onCheckedChange={() => handleToggle("billing_enabled")}
+                        />
+                    </div>
+                </div>
 
                 <DialogFooter>
                     <Button
-                        disabled={createClientMutation.isLoading}
                         variant="outline"
+                        disabled={createClientMutation.isLoading}
                         onClick={() => setOpen(false)}
                     >
                         Cancelar
                     </Button>
                     <Button
-                        disabled={createClientMutation.isLoading}
                         onClick={handleCreateClient}
+                        disabled={createClientMutation.isLoading}
                     >
                         {createClientMutation.isLoading ? "Creando..." : "Crear"}
                     </Button>
@@ -190,6 +354,7 @@ const CreateClient = () => {
         </Dialog>
     );
 };
+
 
 // ---------- Compound export ----------
 export {

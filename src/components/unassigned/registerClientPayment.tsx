@@ -19,7 +19,7 @@ import { supabase } from "@/service";
 // Tipo de transacción
 type ClientTransaction = {
     transaction_id: string;
-    client_id: string;
+    client_id: number;
     order_id?: string;
     transaction_type: string;
     amount: number;
@@ -39,7 +39,7 @@ const RegisterClientPayment = ({
     clientName,
     currentBalance,
 }: {
-    clientId: string;
+    clientId: number | null;
     clientName: string;
     currentBalance: number;
 }) => {
@@ -86,7 +86,7 @@ const RegisterClientPayment = ({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="default">Registrar Pago</Button>
+                <Button variant="default">Pago</Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
                 <DialogHeader>

@@ -31,6 +31,8 @@ import TeamMembers from "./pages/admin/TeamMembers";
 import Clients from "./pages/admin/Clients";
 import { store } from "./stores/store";
 import LotContainers from "./pages/admin/LotContainers";
+import { TransferOrdersContainer } from "./components/admin/transferOrders.tsx/TransferOrdersContainer";
+import TransferOrderContainer from "./components/admin/transferOrder/TransferOrderContainer";
 
 const queryClient = new QueryClient();
 
@@ -132,6 +134,9 @@ const App = () => {
                       <Route path="/team-members" element={<TeamMembers />} />
                       <Route path="/load-orders" element={<LoadOrders />} />
                       <Route path="/load-orders/:load-order-id" element={<LoadOrder />} />
+
+                      <Route path="/transfer-orders" element={<TransferOrdersContainer />} />
+                      <Route path="/transfer-orders/:transfer-order-id" element={<TransferOrderContainer />} />
                       <Route path="/settings" element={<Settings />} />
                       <Route path="*" element={<NotFound />} />
                     </Route>

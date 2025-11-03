@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import CostBadges from "./CostBadges";
 import StorePricesTabContainer from "./StorePricesTabContainer";
-import UniversalPrices from "./UniversalPrices";
+import UniversalPricesContainer from "./UniversalPricesContainer";
 
 interface PricesDialogProps {
     productId: number;
@@ -91,7 +91,7 @@ export default function ManageProductPrices({
 
                     </TabsList>
 
-                    <UniversalPrices productId={productId} />
+                    <UniversalPricesContainer productId={productId} finalCost={finalCost} />
 
                     {stores.map((store) => (
                         <StorePricesTabContainer key={store.store_id} productId={productId} store={store} finalCost={finalCost} disabled={disabled} />

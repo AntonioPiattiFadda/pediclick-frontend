@@ -1,6 +1,5 @@
 
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import {
     Sheet,
     SheetContent,
@@ -9,11 +8,12 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
 import { getClientTransactions } from "@/service/clientTransactions";
 import type { ClientTransaction } from "@/types/clientTransactions";
-import { Loader2 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/utils";
+import { useQuery } from "@tanstack/react-query";
+import { FileClock, Loader2 } from "lucide-react";
+import { useMemo } from "react";
 
 const ClientHistoricalMvts = ({
     selectedClientId,
@@ -37,7 +37,7 @@ const ClientHistoricalMvts = ({
         <Sheet>
             <SheetTrigger asChild>
                 <Button variant="outline" disabled={!selectedClientId}>
-                    Ver historial de cuenta
+                    <FileClock />
                 </Button>
             </SheetTrigger>
 

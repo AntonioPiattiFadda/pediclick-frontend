@@ -16,11 +16,11 @@ export const getClients = async () => {
     return { clients, error };
 };
 
-export const createClient = async (name: string) => {
+export const createClient = async (clientData: Partial<Client>) => {
     const businessOwnerId = await getBusinessOwnerId();
     const { data, error } = await supabase
         .from("clients")
-        .insert({ full_name: name, business_owner_id: businessOwnerId })
+        .insert({ ...clientData, business_owner_id: businessOwnerId })
         .select()
         .single();
 

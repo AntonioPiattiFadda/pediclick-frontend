@@ -21,6 +21,8 @@ import {
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
+import { formatCurrency, formatDate } from "@/utils";
+import { taxConditionsOpt } from "@/constants";
 
 interface ClientsTableProps {
     clients: Client[];
@@ -67,7 +69,7 @@ export const ClientsTable = ({ clients, filter = "" }: ClientsTableProps) => {
                             </Button> */}
 
                             <DeleteTableElementPopUp
-                                elementId={client.client_id}
+                                elementId={client.client_id || ""}
                                 elementName={client.full_name}
                                 deleteFn={deleteClient}
                                 queryKey={["clients"]}
@@ -79,7 +81,7 @@ export const ClientsTable = ({ clients, filter = "" }: ClientsTableProps) => {
 
                             <ClientHistoricalMvts selectedClientId={client.client_id} />
 
-                            <RegisterClientPayment clientId={client.client_id} clientName={client.full_name} currentBalance={client.current_balance} />
+                            <RegisterClientPayment clientId={client.client_id || null} clientName={client.full_name} currentBalance={client.current_balance} />
                         </div>
                     );
                 },
@@ -109,29 +111,39 @@ export const ClientsTable = ({ clients, filter = "" }: ClientsTableProps) => {
                 header: "Dirección",
                 cell: ({ row }) => row.original.address || "-",
             },
+            // {
+            //     accessorKey: "city",
+            //     header: "Ciudad",
+            //     cell: ({ row }) => row.original.city || "-",
+            // },
+            // {
+            //     accessorKey: "province",
+            //     header: "Provincia",
+            //     cell: ({ row }) => row.original.province || "-",
+            // },
+            // {
+            //     accessorKey: "postal_code",
+            //     header: "Código Postal",
+            //     cell: ({ row }) => row.original.postal_code || "-",
+            // },
+            // {
+            //     accessorKey: "country",
+            //     header: "País",
+            //     cell: ({ row }) => row.original.country || "-",
+            // },
             {
-                accessorKey: "city",
-                header: "Ciudad",
-                cell: ({ row }) => row.original.city || "-",
+                accessorKey: "tax_condition",
+                header: "Condición de IVA",
+                cell: ({ row }) => taxConditionsOpt.find((opt) => opt.value === row.original.tax_condition)?.label || "--",
             },
             {
-                accessorKey: "province",
-                header: "Provincia",
-                cell: ({ row }) => row.original.province || "-",
-            },
-            {
-                accessorKey: "postal_code",
-                header: "Código Postal",
-                cell: ({ row }) => row.original.postal_code || "-",
-            },
-            {
-                accessorKey: "country",
-                header: "País",
-                cell: ({ row }) => row.original.country || "-",
+                accessorKey: "billing_enabled",
+                header: "Facturación",
+                cell: ({ row }) => (row.original.billing_enabled ? "Sí" : "No"),
             },
             {
                 accessorKey: "tax_ident",
-                header: "Ident. Fiscal",
+                header: "Numero de CUIT",
                 cell: ({ row }) => row.original.tax_ident || "-",
             },
             {
@@ -139,31 +151,41 @@ export const ClientsTable = ({ clients, filter = "" }: ClientsTableProps) => {
                 header: "Límite de crédito",
                 cell: ({ row }) =>
                     typeof row.original.credit_limit === "number"
-                        ? row.original.credit_limit
-                        : "-",
+                        ? formatCurrency(row.original.credit_limit)
+                        : "--",
             },
             {
                 accessorKey: "current_balance",
                 header: "Balance actual",
                 cell: ({ row }) =>
                     typeof row.original.current_balance === "number"
-                        ? row.original.current_balance
-                        : "-",
+                        ? formatCurrency(row.original.current_balance)
+                        : "--",
             },
+
+
             {
-                accessorKey: "is_active",
-                header: "Activo",
-                cell: ({ row }) => (row.original.is_active ? "Sí" : "No"),
+                accessorKey: "available_credit",
+                header: "Credito disponible",
+                cell: ({ row }) =>
+                    typeof row.original.available_credit === "number"
+                        ? formatCurrency(row.original.available_credit)
+                        : "--",
             },
+            // {
+            //     accessorKey: "is_active",
+            //     header: "Activo",
+            //     cell: ({ row }) => (row.original.is_active ? "Sí" : "No"),
+            // },
             {
                 accessorKey: "created_at",
                 header: "Creado",
-                cell: ({ row }) => row.original.created_at || "-",
+                cell: ({ row }) => formatDate(row.original.created_at) || "-",
             },
             {
                 accessorKey: "updated_at",
                 header: "Actualizado",
-                cell: ({ row }) => row.original.updated_at || "-",
+                cell: ({ row }) => formatDate(row.original.updated_at) || "-",
             },
 
         ];
