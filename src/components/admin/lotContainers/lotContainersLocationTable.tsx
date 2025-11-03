@@ -5,10 +5,13 @@ import { formatDate } from "@/utils";
 
 
 function getLocation(loc: LotContainersLocation) {
-    if (loc.store_name) return { type: "Tienda", name: loc.store_name };
-    if (loc.stock_room_name) return { type: "Depósito", name: loc.stock_room_name };
-    if (loc.client_name) return { type: "Cliente", name: loc.client_name };
-    if (loc.provider_name) return { type: "Proveedor", name: loc.provider_name };
+    console.log("loc", loc);
+    // if (loc.store_name) return { type: "Tienda", name: loc.store_name };
+
+    // if (loc.store_name) return { type: "Tienda", name: loc.store_name };
+    // if (loc.stock_room_name) return { type: "Depósito", name: loc.stock_room_name };
+    // if (loc.client_name) return { type: "Cliente", name: loc.client_name };
+    // if (loc.provider_name) return { type: "Proveedor", name: loc.provider_name };
     return { type: "-", name: "-" };
 }
 
@@ -39,8 +42,8 @@ const LotContainersLocationTable = ({ locations = [] }: { locations?: LotContain
                             .map((loc) => {
                                 const { type, name } = getLocation(loc);
                                 return (
-                                    <TableRow key={loc.lot_containers_location_id}>
-                                        <TableCell>{loc.lot_containers_location_id}</TableCell>
+                                    <TableRow key={loc.lot_container_location_id}>
+                                        <TableCell>{loc.lot_container_location_id}</TableCell>
                                         <TableCell>{loc.lot_container_id ?? "-"}</TableCell>
                                         <TableCell>{name}</TableCell>
                                         <TableCell>{type}</TableCell>

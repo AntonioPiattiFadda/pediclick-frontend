@@ -22,7 +22,6 @@ import { useEffect, useState } from "react";
 import toast from 'react-hot-toast';
 import { LotContainerSelector } from "../../addLoadOrder/lotContainerSelector";
 import { emptyLot } from "../emptyFormData";
-import ManageProductPricesContainer from "../manageProductPricesContainer";
 import { ProductInfoAccordion } from "../ProductInfoDisplay";
 import ProductSelector from "../productSelector";
 import PricesAccordion from "./pricesAccordion";
@@ -96,10 +95,6 @@ export function AddLotBtn({
     setLotPrices([]);
     setFormData(emptyLot);
   };
-
-
-
-
 
   const handleUpdateLotField = (field: string, rawValue: number | string) => {
     // determinamos si el campo debe tratarse como numérico
@@ -303,6 +298,8 @@ export function AddLotBtn({
     let final_cost_per_unit: number | null = newCostPerUnit + newDownloadCostPerUnit + newDeliveryCostPerUnit;
     let final_cost_per_bulk: number | null = newCostPerBulk + newDownloadCostPerBulk + newDeliveryCostPerBulk;
 
+    console.log({ final_cost_total, final_cost_per_unit, final_cost_per_bulk, bulkQuantityEquivalence });
+
     if (!bulkQuantityEquivalence) {
       final_cost_per_bulk = null;
       final_cost_total = null;
@@ -334,7 +331,7 @@ export function AddLotBtn({
     }));
   };
 
-
+  console.log(formData?.final_cost_total, formData?.final_cost_per_unit, formData?.final_cost_per_bulk);
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -867,38 +864,7 @@ export function AddLotBtn({
                 </div>
               </TabsContent>
 
-              <TabsContent value="prices" className="mt-4">
-                <ManageProductPricesContainer
-                  productId={selectedProduct.product_id!}
-                  disabled={false}
-                  finalCost={{
-                    final_cost_total: formData?.final_cost_total || null,
-                    final_cost_per_unit: formData?.final_cost_per_unit || null,
-                    final_cost_per_bulk: formData?.final_cost_per_bulk || null,
-                  }}
 
-                // lotId={lotId}
-                // stockId={stockId}
-                // lotNumber={lotNumber}
-                // loadOrderId={loadOrderId}
-                // storeId={storeId}
-                />
-                {/* <PricesTab /> */}
-                {/* <ManageStockPrices
-                  // lotId={2}
-                  // stockId={3}
-                  // lotNumber={4}
-                  // loadOrderId={5}
-                  // value,
-                  // onChange,
-
-                  disabled={false}
-                  storeId={0}
-                  productId={selectedProduct.product_id!}
-                  hasCost={false}
-                /> */}
-
-              </TabsContent>
 
               <TabsContent value="stock" className="flex flex-col gap-2 mt-2">
                 <StockAssignationContainer

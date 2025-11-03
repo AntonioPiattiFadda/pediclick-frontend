@@ -22,6 +22,21 @@ export const getProductPrices = async (productId: number, selectedStoreId: numbe
   return { productPrices, error: null };
 };
 
+export const getAllProductPrices = async (productId: number) => {
+  const query = supabase
+    .from("prices")
+    .select(`*`)
+    .eq("product_id", productId);
+
+  const { data: productPrices, error } = await query;
+
+  if (error) throw new Error(error.message);
+
+  return { productPrices, error: null };
+};
+
+
+
 export const getStockPrices = async (stockId: number) => {
   const { data: stockPrices, error } = await supabase
     .from("prices")

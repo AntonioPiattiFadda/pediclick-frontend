@@ -300,9 +300,7 @@ export default function ManageStockPrices({
                         const newPrice: Price = {
                             price_id: Math.random(), // Temporal, se reemplaza al guardar
                             isNew: true,
-                            lot_id: lotId,
                             product_id: productId,
-                            stock_id: stockId,
                             store_id: storeId,
                             price_number: value.length + 1,
                             price: cost_per_unit,
@@ -327,7 +325,7 @@ export default function ManageStockPrices({
 
     const handleCreatePrices = async () => {
         // TODO Validar los precios aca
-        const adaptedPrices = pricesAdapter(value, lotId, stockId, storeId);
+        const adaptedPrices = pricesAdapter(value, lotId);
         createPricesMutation.mutate(adaptedPrices);
     }
 

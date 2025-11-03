@@ -21,8 +21,7 @@ export const getLotContainersLocation = async () => {
   const { data, error } = await supabase
     .from("lot_containers_location")
     .select(
-      `*
-      `
+      `*`
     )
     .eq("business_owner_id", businessOwnerId);
   // stores(store_name),
@@ -32,6 +31,7 @@ export const getLotContainersLocation = async () => {
 
   console.log("getLotContainersLocation", data, error);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const adaptedLotContainersLocation = data?.map((loc: any) => ({
     ...loc,
     store_name: loc.store_name?.store_name ?? null,

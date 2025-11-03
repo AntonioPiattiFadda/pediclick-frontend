@@ -14,7 +14,7 @@ import { useMutation } from "@tanstack/react-query";
 import { DollarSign, Percent, Plus, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from 'react-hot-toast';
-
+import CostBadges from "./CostBadges";
 interface PricesDialogProps {
     productId: number;
     disabled?: boolean;
@@ -62,8 +62,6 @@ export default function ManageProductPrices({
 }: PricesDialogProps) {
 
     const lotId = 1;
-    const lotNumber = 1234;
-    const stockId = 1;
     const storeId = 1;
     // const queryClient = useQueryClient();
 
@@ -329,9 +327,7 @@ export default function ManageProductPrices({
                         const newPrice: Price = {
                             price_id: Math.random(), // Temporal, se reemplaza al guardar
                             isNew: true,
-                            lot_id: lotId,
                             product_id: productId,
-                            stock_id: stockId,
                             store_id: storeId,
                             price_number: value.length + 1,
                             price: 0,
@@ -356,7 +352,7 @@ export default function ManageProductPrices({
 
     const handleCreatePrices = async () => {
         // TODO Validar los precios aca
-        const adaptedPrices = pricesAdapter(value, lotId, stockId, storeId);
+        const adaptedPrices = pricesAdapter(value, lotId);
         createPricesMutation.mutate(adaptedPrices);
     }
 
@@ -364,32 +360,15 @@ export default function ManageProductPrices({
     //     onChange(productPrices); // Reset to original prices on cancel
     // }
 
+
+
     return (
         <Card className="p-0 border-none shadow-none">
 
             < CardContent className="p-0 border-none" >
                 <CardHeader className="p-0 flex flex-row justify-between mb-2" >
-                    <CardTitle>Precios del lote {lotNumber}</CardTitle>
-
-                    <div className="flex gap-2">
-
-                        <div className="flex gap-1">
-                            <Label>Costo total:</Label>
-                            <Badge variant={'secondary'}>{finalCost?.final_cost_total || '--'}</Badge>
-                        </div>
-
-                        <div className="flex gap-1">
-                            <Label>Costo por bulto:</Label>
-                            <Badge variant={'secondary'}>{finalCost?.final_cost_per_bulk || '--'}</Badge>
-                        </div>
-
-                        <div className="flex gap-1">
-                            <Label>Costo por unidad:</Label>
-                            <Badge variant={'secondary'}>{finalCost?.final_cost_per_unit || '--'}</Badge>
-                        </div>
-
-
-                    </div>
+                    <CardTitle>Costos:</CardTitle>
+                    <CostBadges finalCost={finalCost} />
                 </CardHeader >
 
 
@@ -442,16 +421,16 @@ export default function ManageProductPrices({
                                             if (previousPrice?.length === 0) {
                                                 toast.error("No se encontró un precio anterior para este producto.");
                                                 return
-                                            };
-                                            const otherPrices = value.filter(p => p.price_type !== "MINOR" || p.logic_type !== "QUANTITY_DISCOUNT");
-                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
-                                            onChange([...otherPrices, ...previousPricesWithNewFlag]);
-                                        }}
-                                        priceType="MINOR"
-                                        logicType="QUANTITY_DISCOUNT"
-                                        productId={productId}
-                                        storeId={storeId}
-                                    /> */}
+                                                };
+                                                const otherPrices = value.filter(p => p.price_type !== "MINOR" || p.logic_type !== "QUANTITY_DISCOUNT");
+                                                const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+                                                onChange([...otherPrices, ...previousPricesWithNewFlag]);
+                                                }}
+                                                priceType="MINOR"
+                                                logicType="QUANTITY_DISCOUNT"
+                                                productId={productId}
+                                                storeId={storeId}
+                                                /> */}
                                 </div>
                                 {renderCategory(value, "MINOR", "QUANTITY_DISCOUNT")}
                             </div>
@@ -463,16 +442,16 @@ export default function ManageProductPrices({
                                             if (previousPrice?.length === 0) {
                                                 toast.error("No se encontró un precio anterior para este producto.");
                                                 return
-                                            };
-                                            const otherPrices = value.filter(p => p.price_type !== "MINOR" || p.logic_type !== "SPECIAL");
-                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
-                                            onChange([...otherPrices, ...previousPricesWithNewFlag]);
-                                        }}
-                                        priceType="MINOR"
-                                        logicType="SPECIAL"
-                                        productId={productId}
-                                        storeId={storeId}
-                                    /> */}
+                                                };
+                                                const otherPrices = value.filter(p => p.price_type !== "MINOR" || p.logic_type !== "SPECIAL");
+                                                const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+                                                onChange([...otherPrices, ...previousPricesWithNewFlag]);
+                                                }}
+                                                priceType="MINOR"
+                                                logicType="SPECIAL"
+                                                productId={productId}
+                                                storeId={storeId}
+                                                /> */}
                                 </div>
                                 {renderCategory(value, "MINOR", "SPECIAL")}
                             </div>
@@ -484,16 +463,16 @@ export default function ManageProductPrices({
                                             if (previousPrice?.length === 0) {
                                                 toast.error("No se encontró un precio anterior para este producto.");
                                                 return
-                                            };
-                                            const otherPrices = value.filter(p => p.price_type !== "MINOR" || p.logic_type !== "LIMITED_OFFER");
-                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
-                                            onChange([...otherPrices, ...previousPricesWithNewFlag]);
-                                        }}
-                                        priceType="MINOR"
-                                        logicType="LIMITED_OFFER"
-                                        productId={productId}
-                                        storeId={storeId}
-                                    /> */}
+                                                };
+                                                const otherPrices = value.filter(p => p.price_type !== "MINOR" || p.logic_type !== "LIMITED_OFFER");
+                                                const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+                                                onChange([...otherPrices, ...previousPricesWithNewFlag]);
+                                                }}
+                                                priceType="MINOR"
+                                                logicType="LIMITED_OFFER"
+                                                productId={productId}
+                                                storeId={storeId}
+                                                /> */}
                                 </div>
                                 {renderCategory(value, "MINOR", "LIMITED_OFFER")}
                             </div>
@@ -511,16 +490,16 @@ export default function ManageProductPrices({
                                             if (previousPrice?.length === 0) {
                                                 toast.error("No se encontró un precio anterior para este producto.");
                                                 return
-                                            };
-                                            const otherPrices = value.filter(p => p.price_type !== "MAYOR" || p.logic_type !== "QUANTITY_DISCOUNT");
-                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
-                                            onChange([...otherPrices, ...previousPricesWithNewFlag]);
-                                        }}
-                                        priceType="MAYOR"
-                                        logicType="QUANTITY_DISCOUNT"
-                                        productId={productId}
-                                        storeId={storeId}
-                                    /> */}
+                                                };
+                                                const otherPrices = value.filter(p => p.price_type !== "MAYOR" || p.logic_type !== "QUANTITY_DISCOUNT");
+                                                const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+                                                onChange([...otherPrices, ...previousPricesWithNewFlag]);
+                                                }}
+                                                priceType="MAYOR"
+                                                logicType="QUANTITY_DISCOUNT"
+                                                productId={productId}
+                                                storeId={storeId}
+                                                /> */}
                                 </div>
                                 {renderCategory(value, "MAYOR", "QUANTITY_DISCOUNT")}
                             </div>
@@ -532,16 +511,16 @@ export default function ManageProductPrices({
                                             if (previousPrice?.length === 0) {
                                                 toast.error("No se encontró un precio anterior para este producto.");
                                                 return
-                                            };
-                                            const otherPrices = value.filter(p => p.price_type !== "MAYOR" || p.logic_type !== "SPECIAL");
-                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
-                                            onChange([...otherPrices, ...previousPricesWithNewFlag]);
-                                        }}
-                                        priceType="MAYOR"
-                                        logicType="SPECIAL"
-                                        productId={productId}
-                                        storeId={storeId}
-                                    /> */}
+                                                };
+                                                const otherPrices = value.filter(p => p.price_type !== "MAYOR" || p.logic_type !== "SPECIAL");
+                                                const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+                                                onChange([...otherPrices, ...previousPricesWithNewFlag]);
+                                                }}
+                                                priceType="MAYOR"
+                                                logicType="SPECIAL"
+                                                productId={productId}
+                                                storeId={storeId}
+                                                /> */}
                                 </div>
                                 {renderCategory(value, "MAYOR", "SPECIAL")}
                             </div>
@@ -553,16 +532,16 @@ export default function ManageProductPrices({
                                             if (previousPrice?.length === 0) {
                                                 toast.error("No se encontró un precio anterior para este producto.");
                                                 return
-                                            };
-                                            const otherPrices = value.filter(p => p.price_type !== "MAYOR" || p.logic_type !== "LIMITED_OFFER");
-                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
-                                            onChange([...otherPrices, ...previousPricesWithNewFlag]);
-                                        }}
-                                        priceType="MAYOR"
-                                        logicType="LIMITED_OFFER"
-                                        productId={productId}
-                                        storeId={storeId}
-                                    /> */}
+                                                };
+                                                const otherPrices = value.filter(p => p.price_type !== "MAYOR" || p.logic_type !== "LIMITED_OFFER");
+                                                const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+                                                onChange([...otherPrices, ...previousPricesWithNewFlag]);
+                                                }}
+                                                priceType="MAYOR"
+                                                logicType="LIMITED_OFFER"
+                                                productId={productId}
+                                                storeId={storeId}
+                                                /> */}
                                 </div>
                                 {renderCategory(value, "MAYOR", "LIMITED_OFFER")}
                             </div>
@@ -574,10 +553,11 @@ export default function ManageProductPrices({
                 <CardFooter>
                     {/* <DialogClose asChild>
                         <Button onClick={handleCancel} variant="outline">Cancelar</Button>
-                    </DialogClose> */}
+                        </DialogClose> */}
                     <Button disabled={createPricesMutation.isLoading} onClick={handleCreatePrices} type="submit">Guardar</Button>
                 </CardFooter>
             </CardContent >
         </Card >
     );
 }
+

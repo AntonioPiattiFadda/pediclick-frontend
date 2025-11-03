@@ -43,6 +43,7 @@ export const adaptProductsForClient = (products: any): Product[] => {
       };
       return lotData;
     });
+    console.log("formattedLots", formattedLots);
     return {
       product_id: product.product_id,
       public_image_src: product?.public_images?.public_image_src || null,

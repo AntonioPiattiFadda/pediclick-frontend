@@ -35,10 +35,14 @@ export const getProduct = async (productId: number) => {
       categories(category_name),
       sub_categories(sub_category_name),
       brands(brand_name),
-      lots(*)
-        `
+      lots(
+        *,
+        stock(*)
+      )
+      `
     )
     .eq("product_id", productId)
+    .is("deleted_at", null) // ✅ Solo productos activos
     .single();
 
   if (error) {

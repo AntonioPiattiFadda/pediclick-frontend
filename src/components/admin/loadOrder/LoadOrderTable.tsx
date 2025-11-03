@@ -29,8 +29,6 @@ interface LoadOrderTableProps {
 
 export const LoadOrderTable = ({ loadOrderData, expandedLots, toggleExpanded, loadOrderId }: LoadOrderTableProps) => {
 
-
-
   return (
     <div className="rounded-md">
       <Table>

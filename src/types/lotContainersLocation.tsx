@@ -1,20 +1,13 @@
 export type LotContainersLocation = {
-  lot_containers_location_id: number;
+  lot_container_location_id: number;
   lot_id: number | null;
   lot_container_id: number | null;
   quantity: number | null;
   created_at: string | null;
-
   store_id: number | null;
   stock_room_id: number | null;
   client_id: number | null;
   provider_id: number | null;
   updated_at?: string | null;
   deleted_at?: string | null;
-
-
-  store_name: string | null;
-  stock_room_name: string | null;
-  client_name: string | null;
-  provider_name: string | null;
 };

@@ -88,7 +88,7 @@ const RegisterClientPayment = ({
             <DialogTrigger asChild>
                 <Button variant="default">Registrar Pago</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Registrar Pago</DialogTitle>
                     <DialogDescription>

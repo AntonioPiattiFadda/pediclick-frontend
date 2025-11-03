@@ -4,9 +4,7 @@ export type PriceType = "MINOR" | "MAYOR";
 export type Price = {
   price_id?: number;
   isNew?: boolean; // Para identificar precios nuevos que aún no están en la base de datos
-  lot_id: number;
   store_id: number | null;
-  stock_id: number;
   price_number: number;
   product_id: number;
 

@@ -6,47 +6,11 @@ export const createLot = async (lot: Lot) => {
   const businessOwnerId = await getBusinessOwnerId();
   //Desestructurar el stock_movement y el stock porque seran en otra tabla
 
-  const adaptedLotData = {
-    client_key: crypto.randomUUID(),
-    expiration_date: lot.expiration_date || null,
-    product_id: lot.product_id,
-    expiration_date_notification: lot.expiration_date_notification,
-    lot_control: lot.lot_control,
-    is_sold_out: lot.is_sold_out,
-    has_lot_container: lot.has_lot_container,
-    is_parent_lot: lot.is_parent_lot,
-    is_expired: lot.is_expired,
-    // has_transport_cost: lot.has_transport_cost,    // 
 
-    initial_stock_quantity: lot.initial_stock_quantity ?? 0,
-    current_stock_quantity: lot.current_stock_quantity ?? 0,
-
-    purchase_cost_total: lot.purchase_cost_total ?? 0,
-    purchase_cost_per_unit: lot.purchase_cost_per_unit ?? 0,
-    purchase_cost_per_bulk: lot.purchase_cost_per_bulk ?? 0,
-
-    download_total_cost: lot.download_total_cost ?? 0,
-    download_cost_per_bulk: lot.download_cost_per_bulk ?? 0,
-    download_cost_per_unit: lot.download_cost_per_unit ?? 0,
-
-    delivery_cost_total: lot.delivery_cost_total ?? 0,
-    delivery_cost_per_bulk: lot.delivery_cost_per_bulk ?? 0,
-    delivery_cost_per_unit: lot.delivery_cost_per_unit ?? 0,
-
-    final_cost_total: lot.final_cost_total ?? 0,
-    final_cost_per_bulk: lot.final_cost_per_bulk ?? 0,
-    final_cost_per_unit: lot.final_cost_per_unit ?? 0,
-
-
-    updated_at: new Date().toISOString(),
-    lot_containers: lot.lot_containers || [],
-
-  }
-
-  console.log("adaptedLotData", adaptedLotData);
+  // console.log("adaptedLotData", adaptedLotData);
 
   const { data, error } = await supabase.rpc("create_lots_with_stock", {
-    p_lots: [adaptedLotData],
+    p_lots: [lot],
     p_business_owner_id: businessOwnerId,
   });
 

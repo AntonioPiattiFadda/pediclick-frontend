@@ -9,6 +9,7 @@ const AddStock = () => {
 
     const createLotMutation = useMutation({
         mutationFn: async (data: Lot) => {
+            console.log("Creating lot with data:", data);
             return await createLot(data);
         },
         onSuccess: () => {

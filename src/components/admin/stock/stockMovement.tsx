@@ -213,7 +213,7 @@ export function StockMovement({
             lotContainersToMove: {
                 quantity: lotContainersToMove.quantity,
                 auto: lotContainersToMove.auto,
-                lot_containers_location_id: selectedLotContainersLocation?.lot_containers_location_id,
+                lot_containers_location_id: selectedLotContainersLocation?.lot_container_location_id,
             }
         });
         await createMovement.mutateAsync({ newStockMovement: payload });

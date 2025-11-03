@@ -30,7 +30,7 @@ export default function StockAssignationContainer({
     // }
 
     const { data: stockRooms = [], isLoading: isLoadingStockRooms } = useQuery({
-        queryKey: ["stockRooms"],
+        queryKey: ["stock-rooms"],
         queryFn: async () => {
             const response = await getStockRooms();
             return response.stockRooms;

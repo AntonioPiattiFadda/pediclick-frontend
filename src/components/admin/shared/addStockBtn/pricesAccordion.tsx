@@ -1,5 +1,5 @@
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import ManageProductPricesContainer from '../manageProductPricesContainer';
+import ProductPricesViewerContainer from '../pricesManagement.tsx/ProductPricesViewerContainer';
 
 const PricesAccordion = ({ productId, finalCost }: {
     productId: number | null;
@@ -15,20 +15,13 @@ const PricesAccordion = ({ productId, finalCost }: {
                 Precios
             </AccordionTrigger>
             <AccordionContent>
-                <ManageProductPricesContainer
+                <ProductPricesViewerContainer
                     productId={productId!}
-                    disabled={false}
                     finalCost={{
                         final_cost_total: finalCost?.final_cost_total || null,
                         final_cost_per_unit: finalCost?.final_cost_per_unit || null,
                         final_cost_per_bulk: finalCost?.final_cost_per_bulk || null,
                     }}
-
-                // lotId={lotId}
-                // stockId={stockId}
-                // lotNumber={lotNumber}
-                // loadOrderId={loadOrderId}
-                // storeId={storeId}
                 />
             </AccordionContent>
         </AccordionItem>

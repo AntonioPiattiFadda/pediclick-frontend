@@ -153,6 +153,11 @@ const ProductSelector = ({
 
   const isSearchValueNumeric = /^\d+$/.test(inputValue.trim());
 
+  const isSearchExactMatch = options.some(
+    (option) =>
+      option.product_name.toLowerCase() === inputValue.trim().toLowerCase()
+  );
+
   return (
     <div className="relative w-full  inline-flex" ref={comboboxRef}>
       <button
@@ -196,8 +201,8 @@ const ProductSelector = ({
                 <li className="relative px-3 py-2 text-muted-foreground cursor-default select-none hover:bg-muted focus:bg-muted">
                   No se encontraron resultados
                 </li>
-                <li
-                  className={` ${inputValue && !isSearchValueNumeric ? "flex" : "hidden"
+                {/* <li
+                  className={` ${(inputValue && !isSearchValueNumeric && !isSearching) ? "flex" : "hidden"
                     } relative px-3 py-2 text-muted-foreground select-none hover:bg-muted focus:bg-muted`}
                 >
                   <button
@@ -217,34 +222,65 @@ const ProductSelector = ({
                       `Agregar "${inputValue}" como nombre de un nuevo producto`
                     )}
                   </button>
-                </li>
+                </li> */}
               </>
             ) : (
               options.map((option) => (
-                <li
-                  key={option.product_id}
-                  className="relative px-3 py-2 cursor-pointer select-none transition-colors duration-200 hover:bg-muted focus:bg-muted text-popover-foreground"
-                  role="option"
-                  aria-selected={value === option}
-                  onClick={() => {
-                    onChange(option);
-                    setIsOpen(false);
-                    setInputValue("");
-                  }}
-                >
-                  <span className="block truncate">{option.product_name}</span>
-                  {value === option && (
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-newDsForeground">
-                      <Check className="w-5 h-5" />
-                    </span>
-                  )}
-                </li>
+                <>
+                  <li
+                    key={option.product_id}
+                    className="relative px-3 py-2 cursor-pointer select-none transition-colors duration-200 hover:bg-muted focus:bg-muted text-popover-foreground"
+                    role="option"
+                    aria-selected={value === option}
+                    onClick={() => {
+                      onChange(option);
+                      setIsOpen(false);
+                      setInputValue("");
+                    }}
+                  >
+                    <span className="block truncate">{option.product_name}</span>
+                    {value === option && (
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-newDsForeground">
+                        <Check className="w-5 h-5" />
+                      </span>
+                    )}
+                  </li>
+
+                </>
               ))
+
+
+
             )}
+
+            <li
+              className={` ${(!isSearchExactMatch && !isSearchValueNumeric && inputValue) ? "flex" : "hidden"
+                } relative px-3 py-2 text-muted-foreground select-none hover:bg-muted focus:bg-muted`}
+            >
+              <button
+                onClick={() => {
+                  handleCreateProduct(inputValue);
+                }}
+                disabled={!inputValue || createProductMutation.isLoading}
+                className={` flex
+                     cursor-pointer  gap-2 items-center `}
+              >
+                {createProductMutation.isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <span>Agregando {inputValue}</span>
+                  </>
+                ) : (
+                  `Agregar "${inputValue}" como nombre de un nuevo producto`
+                )}
+              </button>
+            </li>
+
           </ul>
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 
