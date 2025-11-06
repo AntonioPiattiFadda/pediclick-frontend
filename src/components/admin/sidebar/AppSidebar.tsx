@@ -55,7 +55,7 @@ export const MENU_ITEMS: {
           title: "Marca",
           type: "button",
           children: <BrandSelectorRoot disabled={false} value={null} onChange={() => { }}>
-            <CreateBrand />
+            <CreateBrand isShortCut={true} />
           </BrandSelectorRoot>
         },
         {
