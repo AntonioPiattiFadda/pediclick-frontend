@@ -24,6 +24,13 @@ import { BarChart3, ChevronRight, Home, Package, type LucideProps } from "lucide
 import type React from "react";
 import { Link } from "react-router-dom";
 import { ClientSelectorRoot, CreateClient } from "../shared/clientSelector";
+import { CategorySelectorRoot, CreateCategory } from "../shared/categorySelector";
+import { BrandSelectorRoot, CreateBrand } from "../shared/brandSelector";
+import { CreateProvider, ProviderSelectorRoot } from "../shared/providersSelector";
+import { CreatePurchasingAgent, PurchasingAgentSelectorRoot } from "../shared/purchasingAgentSelector";
+import { CreateStockRoom, StockroomSelectorRoot } from "../shared/stockRoomSelector";
+import { CreateSubCategory, SubCategorySelectorRoot } from "../shared/subCategorySelector";
+import { CreateStore, StoreSelectorRoot } from "../shared/XXstoresSelector";
 
 /* eslint-disable react-refresh/only-export-components */
 export const MENU_ITEMS: {
@@ -45,23 +52,73 @@ export const MENU_ITEMS: {
       icon: Home,
       subItems: [
         {
-          title: "Artículo",
+          title: "Marca",
           type: "button",
-          children: <Button onClick={() => {
-            alert('crear articulo')
-          }}>Agregar Artículo</Button>,
+          children: <BrandSelectorRoot disabled={false} value={null} onChange={() => { }}>
+            <CreateBrand />
+          </BrandSelectorRoot>
+        },
+        {
+          title: "Categoría",
+          type: "button",
+          children: <CategorySelectorRoot disabled={false} value={null} onChange={() => { }}>
+            <CreateCategory />
+          </CategorySelectorRoot>
         },
         {
           title: "Cliente",
           type: "button",
           children: <ClientSelectorRoot value={null} onChange={() => { }}>
             <CreateClient />
-          </ClientSelectorRoot>,
+          </ClientSelectorRoot>
+          ,
         },
         {
-          title: "Categoría",
+          title: "Proveedor",
           type: "button",
-          children: <Button>Agregar Categoría</Button>,
+          children: <ProviderSelectorRoot value={null} onChange={() => { }}>
+            <CreateProvider />
+          </ProviderSelectorRoot>
+          ,
+        },
+        {
+          title: "Comprador",
+          type: "button",
+          children: <PurchasingAgentSelectorRoot value={null} onChange={() => { }}>
+            <CreatePurchasingAgent />
+          </PurchasingAgentSelectorRoot>
+          ,
+        },
+        {
+          title: "Sala de stock",
+          type: "button",
+          children: <StockroomSelectorRoot value={null} onChange={() => { }}>
+            <CreateStockRoom />
+          </StockroomSelectorRoot>
+          ,
+        },
+        {
+          title: "Subcategoría",
+          type: "button",
+          children: <SubCategorySelectorRoot value={null} onChange={() => { }}>
+            <CreateSubCategory />
+          </SubCategorySelectorRoot>
+          ,
+        },
+        {
+          title: "Subcategoría",
+          type: "button",
+          children: <StoreSelectorRoot value={null} onChange={() => { }}>
+            <CreateStore />
+          </StoreSelectorRoot>
+          ,
+        },
+        {
+          title: "Artículo",
+          type: "button",
+          children: <Button onClick={() => {
+            alert('crear articulo')
+          }}>Agregar Artículo</Button>,
         },
       ],
     },
