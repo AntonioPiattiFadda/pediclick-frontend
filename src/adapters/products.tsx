@@ -28,6 +28,7 @@ export const adaptProductForDb = (product: any): Product => {
 };
 
 export const adaptProductsForClient = (products: any): Product[] => {
+  console.log("Adapting products for client", products);
   return products.map((product: any) => {
     const formattedLots = (product.lots ?? []).map((lot: Lot) => {
       const lotData = {

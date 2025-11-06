@@ -16,3 +16,10 @@ export const taxConditionsOpt: { value: TaxConditionType; label: string }[] = [
         label: "Monotributista Trabajador Independiente Promovido",
     },
 ];
+
+export const transferOrderStatuses = {
+    PENDING: "Pendiente",
+    IN_TRANSIT: "En Tránsito",
+    COMPLETED: "Completado",
+    CANCELLED: "Cancelado",
+} as const;

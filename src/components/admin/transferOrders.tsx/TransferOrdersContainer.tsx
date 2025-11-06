@@ -6,38 +6,59 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getAllLoadOrders } from "@/service/loadOrders";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import TableSkl from "../sellPoints/ui/tableSkl";
 import { TransferOrdersTable } from "./TransferOrdersTable";
+import { createTransferOrder, getAllTransferOrders } from "@/service/transferOrders";
+import { useState } from "react";
+import type { TransferOrderType } from "@/types/transferOrders";
+import LocationsSelector from "../transferOrder/LocationSelector";
 
 export const TransferOrdersContainer = () => {
-  // const [searchTerm, setSearchTerm] = useState("");
-  // const [selectedCategory, setSelectedCategory] = useState("all");
-  // const [selectedStatus, setSelectedStatus] = useState("all");
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
+  const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
+  const [selectedLocationType, setSelectedLocationType] = useState<string | null>(null);
 
   const {
-    data: dbLoadOrders,
+    data: dbTransferOrders,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["load-orders"],
+    queryKey: ["transfer-orders"],
     queryFn: async () => {
-      const response = await getAllLoadOrders();
-      return response.dbLoadOrders;
-    }
+      const response = await getAllTransferOrders();
+      return response.dbTransferOrders as TransferOrderType[];
+    },
   });
 
+  const createMutation = useMutation<TransferOrderType, unknown, void>({
+    mutationFn: async () => {
+      const location = {
+        from_store_id: selectedLocationType === "STORE" ? selectedLocationId : null,
+        from_stock_room_id:
+          selectedLocationType === "STOCK_ROOM" ? selectedLocationId : null,
+      };
+      return await createTransferOrder(location);
+    },
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ["transfer-orders"] });
+      const id = created?.transfer_order_id;
+      if (id) navigate(`/transfer-orders/${id}`);
+    },
+  });
 
-  if (isLoading) {
-    return <TableSkl />;
-  }
+  if (isLoading) return <TableSkl />;
+  if (isError) return <TableSkl />;
 
-  if (isError) {
-    return <TableSkl />;
-  }
+  const formattedFromId =
+    selectedLocationType === "STORE"
+      ? `store-${selectedLocationId}`
+      : `stock-${selectedLocationId}`
+
+  const fromId = selectedLocationId ? formattedFromId : '';
 
   return (
     <div className="space-y-6">
@@ -45,58 +66,29 @@ export const TransferOrdersContainer = () => {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <CardTitle>Remitos</CardTitle>
-              <CardDescription>Gestiona tus remitos</CardDescription>
+              <CardTitle>Transferencias</CardTitle>
+              <CardDescription>Gestiona tus órdenes de transferencia</CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
-              <Link
-                to="/load-orders/add-load-order"
-                className="text-sm underline"
+              <LocationsSelector
+                direction="FROM"
+                onChangeSelectedLocation={(newLocationId, locationType) => {
+                  setSelectedLocationId(newLocationId);
+                  setSelectedLocationType(locationType);
+                }}
+                selectedLocationId={fromId}
+              />
+              <Button
+                onClick={() => createMutation.mutate()}
+                disabled={createMutation.isLoading || !selectedLocationId}
               >
-                <Button>Crear orden de carga</Button>
-              </Link>
+                {createMutation.isLoading ? "Creando..." : "Crear orden de transferencia"}
+              </Button>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Buscar productos por nombre, SKU..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las categorías</SelectItem>
-                <SelectItem value="electronics">Electrónicos</SelectItem>
-                <SelectItem value="smartphones">Smartphones</SelectItem>
-                <SelectItem value="audio">Audio</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-full md:w-40">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="active">Activo</SelectItem>
-                <SelectItem value="draft">Borrador</SelectItem>
-                <SelectItem value="out_of_stock">Sin stock</SelectItem>
-              </SelectContent>
-            </Select>
-          </div> */}
-
-          <TransferOrdersTable loadOrders={dbLoadOrders} />
+          <TransferOrdersTable transferOrders={dbTransferOrders ?? []} />
         </CardContent>
       </Card>
     </div>

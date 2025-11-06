@@ -139,61 +139,54 @@ export const getProductsByShortCode = async (
 //   return s.replace(/[%_]/g, (m) => `\\${m}`);
 // }
 
-export const getProductsByName = async (name: string) => {
+export const getProductsByName = async (name: string, withLots: boolean) => {
   const businessOwnerId = await getBusinessOwnerId();
 
   const q = name.trim();
   const isNumeric = /^\d+$/.test(q);
-  // const safe = escapeLike(q);
-
-  if (isNumeric) {
-    const { data: dbProducts, error } = await supabase
-      .from("products")
-      .select(
-        `
-      *,
-      public_images(public_image_src),
-      categories(category_name),
-      sub_categories(sub_category_name),
-      brands(brand_name)
-        `
-      )
-      .is("deleted_at", null)
-      .eq("business_owner_id", businessOwnerId)
-      .eq("short_code", parseInt(q))
-      .order("product_name", { ascending: true })
-      .limit(10);
 
 
-    if (error) throw new Error(error.message);
 
-    const products = adaptProductsForClient(dbProducts || []);
-    return { products, error: null };
-  }
 
-  const { data: dbProducts, error } = await supabase
+  // Base de la consulta
+  let query = supabase
     .from("products")
     .select(
-      `*,
-      public_images(public_image_src),
-      categories(category_name),
-      sub_categories(sub_category_name),
-      brands(brand_name)
-        `
+      `
+    *,
+    public_images(public_image_src),
+    categories(category_name),
+    sub_categories(sub_category_name),
+    brands(brand_name)
+    ${withLots ? ", lots(*, stock(*))" : ""}
+    `
     )
     .is("deleted_at", null)
     .eq("business_owner_id", businessOwnerId)
-    .ilike("product_name", `%${name}%`)
     .order("product_name", { ascending: true })
-    .limit(10);
+    .limit(3);
 
+  if (withLots) {
+    query = query.eq("lots.is_sold_out", false);
+  }
 
+  // Condición según tipo de búsqueda
+  if (isNumeric) {
+    query = query.eq("short_code", parseInt(q));
+  } else {
+    query = query.ilike("product_name", `%${q}%`);
+  }
+
+  // Ejecutar la consulta
+  const { data: dbProducts, error } = await query;
 
   if (error) throw new Error(error.message);
 
   const products = adaptProductsForClient(dbProducts || []);
   return { products, error: null };
 };
+
+
 
 export const checkIfShortCodeIsAvailable = async (
   shortCode: number,

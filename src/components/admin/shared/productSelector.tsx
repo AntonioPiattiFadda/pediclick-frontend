@@ -19,10 +19,14 @@ import { emptyProduct } from "./emptyFormData";
 const ProductSelector = ({
   value,
   onChange,
+  withLots = false,
 }: {
   value: Product;
   onChange: (value: Product) => void;
+  withLots?: boolean;
 }) => {
+
+
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(value.product_name || "");
   const [options, setOptions] = useState<Product[]>([]);
@@ -43,7 +47,7 @@ const ProductSelector = ({
       setError(null);
 
       try {
-        const data = await getProductsByName(searchValue);
+        const data = await getProductsByName(searchValue, withLots);
         console.log("Fetched products:", data);
 
         setOptions(data.products);
@@ -55,7 +59,7 @@ const ProductSelector = ({
         setIsSearching(false);
       }
     },
-    []
+    [withLots]
   );
 
   const debouncedFetchMicroOrganisms = useMemo(

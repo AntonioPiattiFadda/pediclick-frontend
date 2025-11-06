@@ -18,6 +18,19 @@ export const getStockRooms = async () => {
     return { stockRooms, error };
 };
 
+export const getStockRoomName = async (stockRoomId: number | null) => {
+    if (!stockRoomId) return null;
+    const { data: stockRoom, error } = await supabase
+        .from("stock_rooms")
+        .select("stock_room_name")
+        .eq("stock_room_id", stockRoomId)
+        .single();
+    if (error) {
+        throw new Error(error.message);
+    }
+    return stockRoom?.stock_room_name || null;
+}
+
 export const createStockRoom = async (stockRoomName: string) => {
     const businessOwnerId = await getBusinessOwnerId();
 

@@ -1,13 +1,13 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster as ReactHotToast } from 'react-hot-toast';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import RequireAuth from "./components/admin/auth/requireAuth";
 import { Layout } from "./components/Layout";
 import NotFound from "./pages/admin/NotFound";
 import Settings from "./pages/admin/Settings";
 import Stock from "./pages/admin/Stock";
-import { Toaster as ReactHotToast } from 'react-hot-toast';
 
 import { Provider } from "react-redux";
 import styles from "./App.module.css";
@@ -22,17 +22,17 @@ import AdminHome from "./pages/admin/AdminHome";
 import { ForgotPassword } from "./pages/admin/auth/ForgotPassword";
 import { SignIn } from "./pages/admin/auth/SignIn";
 import { SignUp } from "./pages/admin/auth/SignUp";
+import Clients from "./pages/admin/Clients";
 import Dashboard from "./pages/admin/Dashboard";
 import LoadOrder from "./pages/admin/LoadOrder";
 import LoadOrders from "./pages/admin/LoadOrders";
+import LotContainers from "./pages/admin/LotContainers";
 import NewLoadOrders from "./pages/admin/NewLoadOrder";
 import Stores from "./pages/admin/Stores";
 import TeamMembers from "./pages/admin/TeamMembers";
-import Clients from "./pages/admin/Clients";
+import TransferOrder from "./pages/admin/TransferOrder";
+import TransferOrders from "./pages/admin/TransferOrders";
 import { store } from "./stores/store";
-import LotContainers from "./pages/admin/LotContainers";
-import { TransferOrdersContainer } from "./components/admin/transferOrders.tsx/TransferOrdersContainer";
-import TransferOrderContainer from "./components/admin/transferOrder/TransferOrderContainer";
 
 const queryClient = new QueryClient();
 
@@ -135,8 +135,8 @@ const App = () => {
                       <Route path="/load-orders" element={<LoadOrders />} />
                       <Route path="/load-orders/:load-order-id" element={<LoadOrder />} />
 
-                      <Route path="/transfer-orders" element={<TransferOrdersContainer />} />
-                      <Route path="/transfer-orders/:transfer-order-id" element={<TransferOrderContainer />} />
+                      <Route path="/transfer-orders" element={<TransferOrders />} />
+                      <Route path="/transfer-orders/:transfer-order-id" element={<TransferOrder />} />
                       <Route path="/settings" element={<Settings />} />
                       <Route path="*" element={<NotFound />} />
                     </Route>

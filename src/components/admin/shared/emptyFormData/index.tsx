@@ -1,5 +1,6 @@
 import type { Lot } from "@/types/lots";
 import type { Price } from "@/types/prices";
+import type { Product } from "@/types/products";
 import type { StockMovement } from "@/types/stockMovements";
 
 export const emptyLotWithoutControl = {
@@ -34,16 +35,15 @@ export const emptyLotWithLotControl = {
   prices: [{ price: "", quantity: "", type: "PRIMARY" }],
 };
 
-export const emptyProduct = {
-  short_code: "",
+export const emptyProduct: Product = {
+  short_code: null,
   product_name: "",
   product_description: "",
-  category_id: "",
-  sub_category_id: "",
-  brand_id: "",
-  sale_unit_id: "",
-  barcode: "",
-  public_image_id: "",
+  category_id: null,
+  sub_category_id: null,
+  brand_id: null,
+  barcode: null,
+  public_image_id: null,
   observations: "",
   sell_measurement_mode: "QUANTITY",
   allow_stock_control: false,

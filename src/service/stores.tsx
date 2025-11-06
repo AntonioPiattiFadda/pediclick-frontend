@@ -22,6 +22,19 @@ export const createStore = async (formData: any) => {
   return data;
 };
 
+export const getStoreName = async (storeId: number | null) => {
+  if (!storeId) return null;
+  const { data: store, error } = await supabase
+    .from("stores")
+    .select("store_name")
+    .eq("store_id", storeId)
+    .single();
+  if (error) {
+    throw new Error(error.message);
+  }
+  return store?.store_name || null;
+}
+
 export const getUserStores = async () => {
   const businessOwnerId = await getBusinessOwnerId();
 
