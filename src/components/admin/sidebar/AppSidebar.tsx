@@ -1,3 +1,5 @@
+import MarketStoreLogo from "@/assets/icons/MarketStoreIcon.png";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -19,10 +21,9 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppSelector } from "@/hooks/useUserData";
 import { BarChart3, ChevronRight, Home, Package, type LucideProps } from "lucide-react";
-import { Link } from "react-router-dom";
-import MarketStoreLogo from "@/assets/icons/MarketStoreIcon.png";
 import type React from "react";
-import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { ClientSelectorRoot, CreateClient } from "../shared/clientSelector";
 
 /* eslint-disable react-refresh/only-export-components */
 export const MENU_ITEMS: {
@@ -49,6 +50,13 @@ export const MENU_ITEMS: {
           children: <Button onClick={() => {
             alert('crear articulo')
           }}>Agregar Artículo</Button>,
+        },
+        {
+          title: "Cliente",
+          type: "button",
+          children: <ClientSelectorRoot value={null} onChange={() => { }}>
+            <CreateClient />
+          </ClientSelectorRoot>,
         },
         {
           title: "Categoría",
