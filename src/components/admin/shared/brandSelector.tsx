@@ -20,6 +20,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { X } from "lucide-react";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 // ---------- Context ----------
 interface BrandSelectorContextType {
@@ -155,8 +156,7 @@ const CreateBrand = ({ isShortCut = false }: {
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {isShortCut ?
-                    <Button variant={'link'}>Marca</Button>
-                    : <Button
+                    <SidebarMenuButton>Marca</SidebarMenuButton> : <Button
                         className="border border-gray-200"
                         disabled={disabled}
                         variant="outline"

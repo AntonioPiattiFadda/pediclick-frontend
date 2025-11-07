@@ -52,6 +52,37 @@ export const MENU_ITEMS: {
       icon: Home,
       subItems: [
         {
+          title: "Categoría",
+          type: "button",
+          children: <CategorySelectorRoot disabled={false} value={null} onChange={() => { }}>
+            <CreateCategory isShortCut={true} />
+          </CategorySelectorRoot>
+        },
+        {
+          title: "Cliente",
+          type: "button",
+          children: <ClientSelectorRoot value={null} onChange={() => { }}>
+            <CreateClient isShortCut={true} />
+          </ClientSelectorRoot>
+          ,
+        },
+        {
+          title: "Comprador",
+          type: "button",
+          children: <PurchasingAgentSelectorRoot value={null} onChange={() => { }}>
+            <CreatePurchasingAgent isShortCut={true} />
+          </PurchasingAgentSelectorRoot>
+          ,
+        },
+        {
+          title: "Depósito",
+          type: "button",
+          children: <StockroomSelectorRoot value={null} onChange={() => { }}>
+            <CreateStockRoom isShortCut={true} />
+          </StockroomSelectorRoot>
+          ,
+        },
+        {
           title: "Marca",
           type: "button",
           children: <BrandSelectorRoot disabled={false} value={null} onChange={() => { }}>
@@ -59,67 +90,36 @@ export const MENU_ITEMS: {
           </BrandSelectorRoot>
         },
         {
-          title: "Categoría",
-          type: "button",
-          children: <CategorySelectorRoot disabled={false} value={null} onChange={() => { }}>
-            <CreateCategory />
-          </CategorySelectorRoot>
-        },
-        {
-          title: "Cliente",
-          type: "button",
-          children: <ClientSelectorRoot value={null} onChange={() => { }}>
-            <CreateClient />
-          </ClientSelectorRoot>
-          ,
-        },
-        {
           title: "Proveedor",
           type: "button",
           children: <ProviderSelectorRoot value={null} onChange={() => { }}>
-            <CreateProvider />
+            <CreateProvider isShortCut={true} />
           </ProviderSelectorRoot>
-          ,
-        },
-        {
-          title: "Comprador",
-          type: "button",
-          children: <PurchasingAgentSelectorRoot value={null} onChange={() => { }}>
-            <CreatePurchasingAgent />
-          </PurchasingAgentSelectorRoot>
-          ,
-        },
-        {
-          title: "Sala de stock",
-          type: "button",
-          children: <StockroomSelectorRoot value={null} onChange={() => { }}>
-            <CreateStockRoom />
-          </StockroomSelectorRoot>
           ,
         },
         {
           title: "Subcategoría",
           type: "button",
           children: <SubCategorySelectorRoot value={null} onChange={() => { }}>
-            <CreateSubCategory />
+            <CreateSubCategory isShortCut={true} />
           </SubCategorySelectorRoot>
           ,
         },
         {
-          title: "Subcategoría",
+          title: "Tienda",
           type: "button",
           children: <StoreSelectorRoot value={null} onChange={() => { }}>
-            <CreateStore />
+            <CreateStore isShortCut={true} />
           </StoreSelectorRoot>
           ,
         },
-        {
-          title: "Artículo",
-          type: "button",
-          children: <Button onClick={() => {
-            alert('crear articulo')
-          }}>Agregar Artículo</Button>,
-        },
+        // {
+        //   title: "Artículo",
+        //   type: "button",
+        //   children: <Button onClick={() => {
+        //     alert('crear articulo')
+        //   }}>Agregar Artículo</Button>,
+        // },
       ],
     },
     {

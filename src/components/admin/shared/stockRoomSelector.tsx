@@ -20,6 +20,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 // ---------- Context ----------
 interface StockRoomSelectorContextType {
@@ -116,7 +117,9 @@ const SelectStockRoom = () => {
 };
 
 // ---------- Create ----------
-const CreateStockRoom = () => {
+const CreateStockRoom = ({ isShortCut = false }: {
+    isShortCut?: boolean;
+}) => {
     const { onChange, disabled } = useStockRoomSelectorContext();
     const queryClient = useQueryClient();
 
@@ -132,6 +135,9 @@ const CreateStockRoom = () => {
             onChange(data.stockRoom.stock_room_id);
             setOpen(false);
             setNewStockRoom("");
+            if (isShortCut) {
+                toast.success("Depósito creado");
+            }
         },
         onError: (error: any) => {
             toast("Error al crear sala de stock", {
@@ -152,9 +158,14 @@ const CreateStockRoom = () => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button disabled={disabled} variant="outline">
-                    + Nuevo
-                </Button>
+                {isShortCut ?
+                    <SidebarMenuButton>Depósito</SidebarMenuButton> : <Button
+                        className="border border-gray-200"
+                        disabled={disabled}
+                        variant="outline"
+                    >
+                        + Nuevo
+                    </Button>}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

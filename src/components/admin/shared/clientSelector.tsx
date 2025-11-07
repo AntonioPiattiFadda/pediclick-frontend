@@ -127,9 +127,13 @@ const SelectClient = () => {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { taxConditionsOpt } from "@/constants";
+import { ShortCutBtn } from "./shortCutBtn";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 
-const CreateClient = () => {
+const CreateClient = ({ isShortCut = false }: {
+    isShortCut?: boolean;
+}) => {
     const { onChange, disabled } = useClientSelectorContext();
     const queryClient = useQueryClient();
 
@@ -177,6 +181,9 @@ const CreateClient = () => {
                 available_credit: 0,
                 is_active: true,
             });
+            if (isShortCut) {
+                toast.success("Cliente creado");
+            }
         },
         onError: (error: any) => {
             toast.error("Error al crear cliente", {
@@ -212,9 +219,15 @@ const CreateClient = () => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button disabled={disabled} variant="outline">
-                    + Nuevo
-                </Button>
+                {isShortCut ?
+                    <SidebarMenuButton>Cliente</SidebarMenuButton>
+                    : <Button
+                        className="border border-gray-200"
+                        disabled={disabled}
+                        variant="outline"
+                    >
+                        + Nuevo
+                    </Button>}
             </DialogTrigger>
 
             <DialogContent className="sm:max-w-[500px]">

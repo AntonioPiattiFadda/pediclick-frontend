@@ -9,13 +9,17 @@ import TableSkl from "../sellPoints/ui/tableSkl";
 import { ClientsTable } from "./ClientsTable";
 import { ClientSelectorRoot, CreateClient } from "../shared/clientSelector";
 import { formatCurrency } from "@/utils";
+import { getProviders } from "@/service/providers";
+import { CreateProvider, ProviderSelectorRoot } from "../shared/providersSelector";
+import { ProvidersTable } from "../providers/ProvidersTable";
+import type { Provider } from "@/types/providers";
 
 export const ClientsContainer = () => {
 
     const [searchTerm, setSearchTerm] = useState<string>("");
 
 
-    const { data: clients = [], isLoading, isError } = useQuery({
+    const { data: clients = [], isLoading : isLoadingClients, isError: isErrorClients } = useQuery({
         queryKey: ["clients"],
         queryFn: async () => {
             const response = await getClients();
@@ -23,13 +27,23 @@ export const ClientsContainer = () => {
         },
     });
 
-    if (isLoading) {
+    
+    const { data: providers = [], isLoading : isLoadingProviders, isError : isErrorProviders } = useQuery({
+        queryKey: ["providers"],
+        queryFn: async () => {
+            const response = await getProviders();
+            return (response.providers ?? []) as Provider[];
+        },
+    });
+    
+    if (isLoadingClients || isLoadingProviders) {
         return <TableSkl />;
     }
 
-    if (isError) {
-        return <TableSkl />;
+    if (isErrorClients || isErrorProviders) {
+        return <div>Error loading data.</div>;
     }
+    
 
     const totalClientsDebts = clients.reduce((total, client) => total + (client.current_balance || 0), 0);
     const totalClientsCreditLimit = clients.reduce((total, client) => total + (client.credit_limit || 0), 0);
@@ -114,14 +128,14 @@ export const ClientsContainer = () => {
                         </div>
 
                         <div>
-                            <ClientSelectorRoot value={null} onChange={() => { }}>
-                                <CreateClient />
-                            </ClientSelectorRoot>
+                            <ProviderSelectorRoot value={null} onChange={() => { }}>
+                                <CreateProvider />
+                            </ProviderSelectorRoot>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <ClientsTable clients={clients} filter={searchTerm} />
+                    <ProvidersTable providers={providers} filter={searchTerm} />
                 </CardContent>
             </Card>
         </div>
