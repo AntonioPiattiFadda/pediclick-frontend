@@ -6,14 +6,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { transferOrderStatuses } from "@/constants";
 import { getStockRoomName } from "@/service/stockRooms";
 import { getStoreName } from "@/service/stores";
-import { updateTransferOrder } from "@/service/transferOrders";
 import type { TransferOrderType } from "@/types/transferOrders";
 import { formatDate } from "@/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import TransferOrderItemsTable from "./TransferOrderItemsTable";
 import LocationsSelector from "./LocationSelector";
+import TransferOrderItemsTable from "./TransferOrderItemsTable";
+import { updateTransferOrderWithItems } from "@/service/transferOrders";
 
 const TransferOrder = ({
     transferOrder,
@@ -24,6 +24,16 @@ const TransferOrder = ({
 }) => {
     const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
     const [selectedLocationType, setSelectedLocationType] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (transferOrder.to_store_id) {
+            setSelectedLocationId(transferOrder.to_store_id);
+            setSelectedLocationType("STORE");
+        } else if (transferOrder.to_stock_room_id) {
+            setSelectedLocationId(transferOrder.to_stock_room_id);
+            setSelectedLocationType("STOCK_ROOM");
+        }
+    }, [transferOrder.to_store_id, transferOrder.to_stock_room_id]);
 
     const formattedFromId =
         selectedLocationType === "STORE"
@@ -38,26 +48,31 @@ const TransferOrder = ({
     const updateTransferOrderMutation = useMutation({
         mutationFn: async () => {
             const adaptedTransferOrder = {
+                transfer_order_id: transferOrderId,
+                created_at: formData.created_at,
                 assigned_user_id: formData.assigned_user_id,
                 from_store_id: formData.from_store_id,
                 from_stock_room_id: formData.from_stock_room_id,
                 to_store_id: selectedLocationType === "STORE" ? selectedLocationId : null,
                 to_stock_room_id: selectedLocationType === "STOCK_ROOM" ? selectedLocationId : null,
                 notes: formData.notes,
-                transfer_order_status: formData.transfer_order_status,
-                transfer_order_items: formData?.transfer_order_items ? formData?.transfer_order_items.map(item => ({
-                    product_id: item.product_id,
-                    lot_id: item.lot_id,
-                    quantity: item.quantity,
-                    is_transferred: item.is_transferred,
-                    transfer_order_id: item.transfer_order_id,
-                    // transfer_order_item_id: item.transfer_order_item_id,
-                    // created_at: item.created_at,
-                })) : [],
+                transfer_order_status: formData.transfer_order_status
             }
-            console.log("Adapted Transfer Order:", adaptedTransferOrder);
+            if (!formData.transfer_order_items) {
+                toast("Debes agregar items a la orden antes de actualizar");
+                return
+            }
+            const adaptedTransferOrderItems = formData.transfer_order_items.map((item) => ({
+                product_id: item.product_id,
+                lot_id: item.lot_id,
+                quantity: item.quantity,
+                is_transferred: item.is_transferred,
+                transfer_order_id: item.transfer_order_id,
+                // transfer_order_item_id: item.transfer_order_item_id,
+                // created_at: item.created_at,
+            }));
 
-            return await updateTransferOrder(transferOrderId, adaptedTransferOrder);
+            return await updateTransferOrderWithItems(adaptedTransferOrder, adaptedTransferOrderItems);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({
@@ -106,20 +121,22 @@ const TransferOrder = ({
 
 
 
-                <LocationsSelector
-                    direction="TO"
-                    onChangeSelectedLocation={(newLocationId, locationType) => {
-                        setSelectedLocationId(newLocationId);
-                        setSelectedLocationType(locationType);
-                    }}
-                    selectedLocationId={toId}
-                />
-                <Button
-                    onClick={() => updateTransferOrderMutation.mutate()}
-                    disabled={updateTransferOrderMutation.isLoading || !selectedLocationId || formData?.transfer_order_items.length === 0}
-                >
-                    Actualizar Orden
-                </Button>
+                <div className="flex gap-2              h-[45px] items-center">
+                    <LocationsSelector
+                        direction="TO"
+                        onChangeSelectedLocation={(newLocationId, locationType) => {
+                            setSelectedLocationId(newLocationId);
+                            setSelectedLocationType(locationType);
+                        }}
+                        selectedLocationId={toId}
+                    />
+                    <Button
+                        onClick={() => updateTransferOrderMutation.mutate()}
+                        disabled={updateTransferOrderMutation.isLoading || !selectedLocationId || (formData?.transfer_order_items && formData?.transfer_order_items.length === 0)}
+                    >
+                        Actualizar Orden
+                    </Button>
+                </div>
 
 
             </div>

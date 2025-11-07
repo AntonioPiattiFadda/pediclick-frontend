@@ -11,9 +11,7 @@ import { ClientSelectorRoot, CreateClient } from "../shared/clientSelector";
 import { formatCurrency } from "@/utils";
 
 export const ClientsContainer = () => {
-
     const [searchTerm, setSearchTerm] = useState<string>("");
-
 
     const { data: clients = [], isLoading, isError } = useQuery({
         queryKey: ["clients"],

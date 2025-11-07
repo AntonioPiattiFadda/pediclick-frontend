@@ -13,7 +13,6 @@ import type { Product } from "@/types/products";
 import type { TransferOrderStatus, TransferOrderType } from "@/types/transferOrders";
 import { toast } from "sonner";
 import { emptyProduct } from "../shared/emptyFormData";
-import LocationsSelector from "./LocationSelector";
 
 import {
     Select,
@@ -24,8 +23,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { StockLocationTableCell } from "./StockLocationTableCell";
 import type { Lot } from "@/types/lots";
+import { StockLocationTableCell } from "./StockLocationTableCell";
 
 const getMaxQtyInFromLocation = (lots: Lot[], fromStoreId: number | null | undefined, fromStockRoomId: number | null | undefined): number => {
     let total = 0;
@@ -221,7 +220,6 @@ export default function TransferOrderItemsTable({
                         const rowLots = row.product?.lots || [];
                         const maxQtyInFromLocation = getMaxQtyInFromLocation(rowLots, transferOrder.from_store_id, transferOrder.from_stock_room_id); // TODO calcular según ubicación origen
                         const isQtyNull = row.quantity === null;
-
                         return (<TableRow key={row.transfer_order_item_id}>
                             <TableCell className="align-top ">
                                 <div className="relative">

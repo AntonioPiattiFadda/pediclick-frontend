@@ -15,6 +15,11 @@ export type Stock = {
   | "TRANSFORMED"
   | "STOCKROOM";
 
+
+  reserved_for_transfering_quantity: number | null;
+  reserved_for_selling_quantity: number | null;
+
+
   transformed_from_product_id: number | null;
   transformed_to_product_id: number | null;
 

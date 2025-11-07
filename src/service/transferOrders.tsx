@@ -31,15 +31,18 @@ export const getTransferOrder = async (
     const businessOwnerId = await getBusinessOwnerId();
     const { data: dbTransferOrder, error } = await supabase
         .from("transfer_orders")
-        .select(
-            `
+        .select(`
+    *,
+    transfer_order_items(
       *,
-      transfer_order_items(*)
-    `
-        )
+      product:product_id(*)
+    )
+  `)
         .eq("business_owner_id", businessOwnerId)
         .eq("transfer_order_id", transferOrderId)
+        .is("deleted_at", null)
         .single();
+
 
     if (error) {
         throw new Error(error.message);
@@ -76,23 +79,33 @@ export const createTransferOrder = async (location: {
 /**
  * Patch/update a transfer order header fields
  */
-export const updateTransferOrder = async (
-    transferOrderId: number,
-    patch: Partial<TransferOrderType>
-) => {
-    const { data, error } = await supabase
-        .from("transfer_orders")
-        .update(patch)
-        .eq("transfer_order_id", transferOrderId)
-        .select()
-        .single();
+export async function updateTransferOrderWithItems(
+    order: TransferOrderType,
+    items: TransferOrderItem[]
+) {
+    console.log("🔄 Updating Transfer Order:", order, items);
+    // ✅ Convertir los datos a JSON limpio (sin referencias circulares ni campos opcionales que rompan el JSONB)
+    const orderJson = JSON.parse(JSON.stringify(order));
+    const itemsJson = items.map((i) => JSON.parse(JSON.stringify(i)));
+
+    console.log("Updating Transfer Order with items:", {
+        order: orderJson,
+        items: itemsJson,
+    });
+
+    const { data, error } = await supabase.rpc("update_transfer_order_with_items", {
+        p_transfer_order: orderJson,
+        p_transfer_order_items: itemsJson,
+    });
 
     if (error) {
-        throw new Error(error.message);
+        console.error("❌ Error updating transfer order:", error);
+        throw error;
     }
 
-    return data as TransferOrderType;
-};
+    console.log("✅ Transfer order updated:", data);
+    return data;
+}
 
 /**
  * Upsert items (create/update). Sends minimal set of allowed fields.
@@ -164,14 +177,15 @@ export const setTransferOrderStatus = async (
 /**
  * Delete a transfer order by id
  */
-// export const deleteTransferOrder = async (transferOrderId: number | string) => {
-//     const { error } = await supabase
-//         .from("transfer_orders")
-//         .eq("transfer_order_id", transferOrderId);
+export const deleteTransferOrder = async (transferOrderId: number | string) => {
+    const { error } = await supabase
+        .from("transfer_orders")
+        .update({ deleted_at: new Date() })
+        .eq("transfer_order_id", transferOrderId);
 
-//     if (error) {
-//         throw new Error(error.message);
-//     }
+    if (error) {
+        throw new Error(error.message);
+    }
 
-//     return { success: true };
-// };
+    return { success: true };
+};

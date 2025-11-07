@@ -186,7 +186,6 @@ export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) 
                             </SubCategorySelectorRoot>
 
                         </div>
-
                         <div className="flex flex-col gap-2 col-span-2">
                             <Label htmlFor="brand">Marca</Label>
                             <BrandSelectorRoot disabled={false}

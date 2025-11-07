@@ -13,6 +13,9 @@ import { formatDate } from "@/utils";
 // import { deleteTransferOrder } from "@/service/transferOrders";
 import { transferOrderStatuses } from "@/constants";
 import type { TransferOrderType } from "@/types/transferOrders";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { deleteTransferOrder } from "@/service/transferOrders";
 
 interface TransferOrdersTableProps {
   transferOrders: TransferOrderType[];
@@ -20,6 +23,25 @@ interface TransferOrdersTableProps {
 
 export const TransferOrdersTable = ({ transferOrders }: TransferOrdersTableProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const deleteOrderMutation = useMutation({
+    mutationFn: (id: string | number) => deleteTransferOrder(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transfer-orders"] });
+      toast("Orden eliminada", {
+        description: "La orden se eliminó correctamente.",
+      });
+
+    },
+    onError: () => {
+      toast("Error al eliminar la orden", {
+        description: "Intentá nuevamente más tarde.",
+      });
+    },
+  });
+
+
 
   return (
     <div className="rounded-md">
@@ -43,8 +65,8 @@ export const TransferOrdersTable = ({ transferOrders }: TransferOrdersTableProps
                     elementId={to.transfer_order_id}
                     elementName={to.transfer_order_id?.toString()}
                     deleteFn={async (id: string | number) => {
-                      // await deleteTransferOrder(id);
-                      // return { success: true };
+                      await deleteOrderMutation.mutateAsync(id);
+
                     }}
                     queryKey={["transfer-orders"]}
                     successMsgTitle="Transferencia eliminada"
