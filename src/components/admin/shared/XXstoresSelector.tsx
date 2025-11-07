@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 // ---------- Context ----------
 interface StoreSelectorContextType {
@@ -120,7 +121,9 @@ const SelectStore = () => {
 };
 
 // ---------- Create ----------
-const CreateStore = () => {
+const CreateStore = ({ isShortCut = false }: {
+  isShortCut?: boolean;
+}) => {
   const { onChange, disabled } = useStoreSelectorContext();
   const queryClient = useQueryClient();
 
@@ -137,6 +140,9 @@ const CreateStore = () => {
       onChange(store?.store_id ?? null);
       setOpen(false);
       setNewStore("");
+      if (isShortCut) {
+        toast.success("Marca creada");
+      }
     },
     onError: (error: {
       message: string
@@ -159,9 +165,14 @@ const CreateStore = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button disabled={disabled} variant="outline">
-          + Nuevo
-        </Button>
+        {isShortCut ?
+          <SidebarMenuButton>Tienda</SidebarMenuButton> : <Button
+            className="border border-gray-200"
+            disabled={disabled}
+            variant="outline"
+          >
+            + Nuevo
+          </Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

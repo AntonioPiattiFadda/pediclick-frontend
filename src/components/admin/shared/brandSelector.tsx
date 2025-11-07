@@ -20,6 +20,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { X } from "lucide-react";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 // ---------- Context ----------
 interface BrandSelectorContextType {
@@ -113,7 +114,9 @@ const SelectBrand = () => {
 };
 
 // ---------- Create ----------
-const CreateBrand = () => {
+const CreateBrand = ({ isShortCut = false }: {
+    isShortCut?: boolean;
+}) => {
     const { onChange, disabled } = useBrandSelectorContext();
     const queryClient = useQueryClient();
 
@@ -129,6 +132,9 @@ const CreateBrand = () => {
             onChange(data.brand_id);
             setOpen(false);
             setNewBrand("");
+            if (isShortCut) {
+                toast.success("Marca creada");
+            }
         },
         onError: (error: any) => {
             toast("Error al crear marca", {
@@ -149,13 +155,15 @@ const CreateBrand = () => {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button
-                    className="border border-gray-200"
-                    disabled={disabled}
-                    variant="outline"
-                >
-                    + Nuevo
-                </Button>
+                {isShortCut ?
+                    <SidebarMenuButton>Marca</SidebarMenuButton> : <Button
+                        className="border border-gray-200"
+                        disabled={disabled}
+                        variant="outline"
+                    >
+                        + Nuevo
+                    </Button>}
+
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

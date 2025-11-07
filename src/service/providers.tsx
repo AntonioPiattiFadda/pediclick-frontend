@@ -7,7 +7,9 @@ export const getProviders = async () => {
   const { data: providers, error } = await supabase
     .from("providers")
     .select("*")
+    .is("deleted_at", null) // Exclude soft-deleted providers
     .eq("business_owner_id", businessOwnerId);
+    
 
   if (error) {
     throw new Error(error.message);
@@ -30,3 +32,17 @@ export const createProvider = async (name: string) => {
 
   return data;
 };
+
+export const deleteProvider = async (id: string | number) => {
+    const { error } = await supabase
+        .from("providers")
+        .update({deleted_at: new Date().toISOString()})
+        .eq("provider_id", id);
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return true;
+};
+

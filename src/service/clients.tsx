@@ -34,7 +34,7 @@ export const createClient = async (clientData: Partial<Client>) => {
 export const deleteClient = async (id: string | number) => {
     const { error } = await supabase
         .from("clients")
-        .delete()
+        .update({deleted_at: new Date().toISOString()})
         .eq("client_id", id);
 
     if (error) {

@@ -10,6 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { createSubCategory, getSubCategories } from "@/service/subCategories";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
@@ -113,7 +114,9 @@ const SelectSubCategory = () => {
 };
 
 // ---------- Create ----------
-const CreateSubCategory = () => {
+const CreateSubCategory = ({ isShortCut = false }: {
+  isShortCut?: boolean;
+}) => {
   const { onChange, disabled } = useSubCategorySelectorContext();
   const queryClient = useQueryClient();
 
@@ -129,6 +132,9 @@ const CreateSubCategory = () => {
       onChange(data.sub_category_id);
       setOpen(false);
       setNewSubCategory("");
+      if (isShortCut) {
+        toast.success("Subcategoría creada");
+      }
     },
     onError: (error: any) => {
       toast("Error al crear subcategoría", {
@@ -149,13 +155,14 @@ const CreateSubCategory = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          className="border border-gray-200"
-          disabled={disabled}
-          variant="outline"
-        >
-          + Nuevo
-        </Button>
+        {isShortCut ?
+          <SidebarMenuButton>Subcategoría</SidebarMenuButton> : <Button
+            className="border border-gray-200"
+            disabled={disabled}
+            variant="outline"
+          >
+            + Nuevo
+          </Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

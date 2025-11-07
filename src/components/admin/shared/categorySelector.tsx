@@ -20,6 +20,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { X } from "lucide-react";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 // ---------- Context ----------
 interface CategorySelectorContextType {
@@ -115,7 +116,9 @@ const SelectCategory = () => {
 };
 
 // ---------- Create ----------
-const CreateCategory = () => {
+const CreateCategory = ({ isShortCut = false }: {
+  isShortCut?: boolean;
+}) => {
   const { onChange, disabled } = useCategorySelectorContext();
   const queryClient = useQueryClient();
 
@@ -131,6 +134,9 @@ const CreateCategory = () => {
       onChange(data.category_id);
       setOpen(false);
       setNewCategory("");
+      if (isShortCut) {
+        toast.success("Categoria creada");
+      }
     },
     onError: (error: any) => {
       toast("Error al crear rubro", {
@@ -151,13 +157,14 @@ const CreateCategory = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          className="border border-gray-200"
-          disabled={disabled}
-          variant="outline"
-        >
-          + Nuevo
-        </Button>
+        {isShortCut ?
+          <SidebarMenuButton>Categoría</SidebarMenuButton> : <Button
+            className="border border-gray-200"
+            disabled={disabled}
+            variant="outline"
+          >
+            + Nuevo
+          </Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

@@ -23,6 +23,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { X } from "lucide-react";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 // ---------- Context ----------
 interface PurchasingAgentSelectorContextType {
@@ -118,7 +119,9 @@ const SelectPurchasingAgent = () => {
 };
 
 // ---------- Create ----------
-const CreatePurchasingAgent = () => {
+const CreatePurchasingAgent = ({ isShortCut = false }: {
+  isShortCut?: boolean;
+}) => {
   const { onChange, disabled } = usePurchasingAgentSelectorContext();
   const queryClient = useQueryClient();
 
@@ -134,6 +137,9 @@ const CreatePurchasingAgent = () => {
       onChange(data.purchasing_agent_id);
       setOpen(false);
       setNewPurchasingAgent("");
+      if (isShortCut) {
+        toast.success("Comprador creado");
+      }
     },
     onError: (error: any) => {
       toast("Error al crear agente de compra", {
@@ -154,9 +160,14 @@ const CreatePurchasingAgent = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="border border-gray-200" disabled={disabled} variant="outline">
-          + Nuevo
-        </Button>
+        {isShortCut ?
+          <SidebarMenuButton>Comprador</SidebarMenuButton> : <Button
+            className="border border-gray-200"
+            disabled={disabled}
+            variant="outline"
+          >
+            + Nuevo
+          </Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

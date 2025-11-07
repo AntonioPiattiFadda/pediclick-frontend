@@ -24,6 +24,13 @@ import { BarChart3, ChevronRight, Home, Package, type LucideProps } from "lucide
 import type React from "react";
 import { Link } from "react-router-dom";
 import { ClientSelectorRoot, CreateClient } from "../shared/clientSelector";
+import { CategorySelectorRoot, CreateCategory } from "../shared/categorySelector";
+import { BrandSelectorRoot, CreateBrand } from "../shared/brandSelector";
+import { CreateProvider, ProviderSelectorRoot } from "../shared/providersSelector";
+import { CreatePurchasingAgent, PurchasingAgentSelectorRoot } from "../shared/purchasingAgentSelector";
+import { CreateStockRoom, StockroomSelectorRoot } from "../shared/stockRoomSelector";
+import { CreateSubCategory, SubCategorySelectorRoot } from "../shared/subCategorySelector";
+import { CreateStore, StoreSelectorRoot } from "../shared/XXstoresSelector";
 
 /* eslint-disable react-refresh/only-export-components */
 export const MENU_ITEMS: {
@@ -45,24 +52,74 @@ export const MENU_ITEMS: {
       icon: Home,
       subItems: [
         {
-          title: "Artículo",
+          title: "Categoría",
           type: "button",
-          children: <Button onClick={() => {
-            alert('crear articulo')
-          }}>Agregar Artículo</Button>,
+          children: <CategorySelectorRoot disabled={false} value={null} onChange={() => { }}>
+            <CreateCategory isShortCut={true} />
+          </CategorySelectorRoot>
         },
         {
           title: "Cliente",
           type: "button",
           children: <ClientSelectorRoot value={null} onChange={() => { }}>
-            <CreateClient />
-          </ClientSelectorRoot>,
+            <CreateClient isShortCut={true} />
+          </ClientSelectorRoot>
+          ,
         },
         {
-          title: "Categoría",
+          title: "Comprador",
           type: "button",
-          children: <Button>Agregar Categoría</Button>,
+          children: <PurchasingAgentSelectorRoot value={null} onChange={() => { }}>
+            <CreatePurchasingAgent isShortCut={true} />
+          </PurchasingAgentSelectorRoot>
+          ,
         },
+        {
+          title: "Depósito",
+          type: "button",
+          children: <StockroomSelectorRoot value={null} onChange={() => { }}>
+            <CreateStockRoom isShortCut={true} />
+          </StockroomSelectorRoot>
+          ,
+        },
+        {
+          title: "Marca",
+          type: "button",
+          children: <BrandSelectorRoot disabled={false} value={null} onChange={() => { }}>
+            <CreateBrand isShortCut={true} />
+          </BrandSelectorRoot>
+        },
+        {
+          title: "Proveedor",
+          type: "button",
+          children: <ProviderSelectorRoot value={null} onChange={() => { }}>
+            <CreateProvider isShortCut={true} />
+          </ProviderSelectorRoot>
+          ,
+        },
+        {
+          title: "Subcategoría",
+          type: "button",
+          children: <SubCategorySelectorRoot value={null} onChange={() => { }}>
+            <CreateSubCategory isShortCut={true} />
+          </SubCategorySelectorRoot>
+          ,
+        },
+        {
+          title: "Tienda",
+          type: "button",
+          children: <StoreSelectorRoot value={null} onChange={() => { }}>
+            <CreateStore isShortCut={true} />
+          </StoreSelectorRoot>
+          ,
+        },
+        // {
+        //   title: "Artículo",
+        //   type: "button",
+        //   children: <Button onClick={() => {
+        //     alert('crear articulo')
+        //   }}>Agregar Artículo</Button>,
+        // },
       ],
     },
     {

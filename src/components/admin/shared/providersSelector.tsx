@@ -20,6 +20,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { X } from "lucide-react";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 // ---------- Context ----------
 interface ProviderSelectorContextType {
@@ -114,7 +115,9 @@ const SelectProvider = () => {
 };
 
 // ---------- Create ----------
-const CreateProvider = () => {
+const CreateProvider = ({ isShortCut = false }: {
+  isShortCut?: boolean;
+}) => {
   const { onChange, disabled } = useProviderSelectorContext();
   const queryClient = useQueryClient();
 
@@ -130,6 +133,9 @@ const CreateProvider = () => {
       onChange(data.provider_id);
       setOpen(false);
       setNewProvider("");
+      if (isShortCut) {
+        toast.success("Proveedor creado");
+      }
     },
     onError: (error: any) => {
       toast("Error al crear proveedor", {
@@ -150,9 +156,14 @@ const CreateProvider = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="border border-gray-200" disabled={disabled} variant="outline">
-          + Nuevo
-        </Button>
+        {isShortCut ?
+          <SidebarMenuButton>Proveedor</SidebarMenuButton> : <Button
+            className="border border-gray-200"
+            disabled={disabled}
+            variant="outline"
+          >
+            + Nuevo
+          </Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
