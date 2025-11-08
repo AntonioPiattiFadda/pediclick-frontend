@@ -39,7 +39,7 @@ const RegisterClientPayment = ({
     clientName,
     currentBalance,
 }: {
-    clientId: number | null;
+    clientId: number;
     clientName: string;
     currentBalance: number;
 }) => {

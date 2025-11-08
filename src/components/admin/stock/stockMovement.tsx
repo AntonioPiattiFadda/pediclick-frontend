@@ -23,8 +23,8 @@ import { formatStockLocation } from "@/utils/stock";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
-import { CreateStockRoom, SelectStockRoom, StockroomSelectorRoot } from "../shared/stockRoomSelector";
-import { CreateStore, SelectStore, StoreSelectorRoot } from "../shared/XXstoresSelector";
+import { CreateStockRoom, SelectStockRoom, StockroomSelectorRoot } from "../shared/selectors/stockRoomSelector";
+import { CreateStore, SelectStore, StoreSelectorRoot } from "../shared/selectors/XXstoresSelector";
 
 type StockWithRelations = Stock & {
     stores?: { store_name?: string } | null;

@@ -14,7 +14,7 @@ import {
   type SetStateAction,
 } from "react";
 import { toast } from "sonner";
-import { emptyProduct } from "./emptyFormData";
+import { emptyProduct } from "../emptyFormData";
 
 const ProductSelector = ({
   value,
@@ -48,7 +48,6 @@ const ProductSelector = ({
 
       try {
         const data = await getProductsByName(searchValue, withLots);
-        console.log("Fetched products:", data);
 
         setOptions(data.products);
       } catch (err) {
@@ -162,6 +161,8 @@ const ProductSelector = ({
       option.product_name.toLowerCase() === inputValue.trim().toLowerCase()
   );
 
+  const productValue = value.short_code ? `${value.short_code} - ${value.product_name}` : value.product_name;
+
   return (
     <div className="relative w-full  inline-flex" ref={comboboxRef}>
       <button
@@ -172,7 +173,7 @@ const ProductSelector = ({
         aria-expanded={isOpen}
       >
         <span className="block truncate text-black">
-          {value.product_name || "Codigo corto o nombre..."}
+          {productValue || "Codigo corto o nombre..."}
         </span>
         <ChevronDown className="w-5 h-5 text-muted-foreground" />
       </button>
@@ -188,6 +189,21 @@ const ProductSelector = ({
               placeholder="Buscar por codigo o por nombre..."
               value={inputValue}
               onChange={handleInputChange}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+
+                  // Si hay resultados, seleccionamos el primero
+                  if (options.length > 0) {
+                    handleSelectProduct(options[0]);
+                  } else if (!isSearchValueNumeric && inputValue.trim()) {
+                    // Si no hay resultados y no es un valor numérico, creamos el producto
+                    handleCreateProduct(inputValue.trim());
+                  } else {
+                    toast("No se encontró ningún producto con ese nombre o código.");
+                  }
+                }
+              }}
             />
           </div>
           <ul className="max-h-60 overflow-auto py-1 text-base" role="listbox">

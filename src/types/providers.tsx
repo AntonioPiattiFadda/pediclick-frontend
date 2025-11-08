@@ -1,6 +1,7 @@
 export interface Provider {
   provider_id: string;
   provider_name: string;
+  short_code: string;
 
   //TODO Agregar mas datos porque pueden tener cuenta corriente tmb
   business_owner_id: string;

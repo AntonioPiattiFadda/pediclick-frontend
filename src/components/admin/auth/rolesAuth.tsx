@@ -12,10 +12,10 @@ const RolesAuth = () => {
 
   const currentPath = location.pathname;
   const currentMenuItem = MENU_ITEMS.find((item) =>
-    currentPath.startsWith(item.url)
+    currentPath.startsWith(item?.url || "")
   );
   const hasRouteAccess = currentMenuItem
-    ? currentMenuItem.roles.includes(role)
+    ? currentMenuItem.roles.includes(role as 'OWNER' | 'MANAGER' | 'EMPLOYEE')
     : false;
 
   if (!hasRouteAccess) {

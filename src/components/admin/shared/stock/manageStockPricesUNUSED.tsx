@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import GetPreviousPrices from "@/components/admin/shared/getPreviousPrice";
+import GetPreviousPrices from "@/components/admin/shared/stock/getPreviousPrice";
 import { createPrices, getStockPrices } from "@/service/prices";
 import type { Price, PriceLogicType } from "@/types/prices";
 import { pricesTypeAndLogicOptions } from "@/utils/prices";

@@ -95,6 +95,9 @@ export type BaseLot = {
   purchasing_agent_commision_unit_value: number | null; // Input tipo numero, solo si buyer_commission_type es FIXED
 
 
+  created_at?: string;
+  deleted_at?: string;
+
 };
 
 export type LotWithControl = BaseLot & {

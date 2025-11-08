@@ -7,6 +7,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { deleteProvider } from "@/service/providers";
 import type { Provider } from "@/types/providers";
 import { formatDate } from "@/utils";
 import type { ColumnDef, PaginationState } from "@tanstack/react-table";
@@ -19,10 +20,6 @@ import {
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
-import { deleteClient } from "@/service/clients";
-import { deleteProvider } from "@/service/providers";
-import ClientHistoricalMvts from "@/components/unassigned/clientHistoricalMvts";
-import RegisterClientPayment from "@/components/unassigned/registerClientPayment";
 
 interface ProvidersTableProps {
     providers: Provider[];
@@ -82,7 +79,7 @@ export const ProvidersTable = ({ providers, filter = "" }: ProvidersTableProps) 
                             {/* <ClientHistoricalMvts selectedClientId={provider.client_id} /> */}
 
                             {/* <RegisterClientPayment clientId={client.client_id || null} clientName={client.full_name} currentBalance={client.current_balance} /> */}
-                       
+
                         </div>
                     );
                 },

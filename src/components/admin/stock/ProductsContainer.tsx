@@ -13,11 +13,11 @@ import { useState } from "react";
 import { ProductTableRendererClientSide } from "../shared/productTableRendererClientSide";
 import TableSkl from "./ui/tableSkl";
 import { Button } from "@/components/ui/button";
-import { CategorySelectorRoot, SelectCategory } from "../shared/categorySelector";
-import { SelectSubCategory, SubCategorySelectorRoot } from "../shared/subCategorySelector";
-import { SelectStockRoom, StockroomSelectorRoot } from "../shared/stockRoomSelector";
+import { CategorySelectorRoot, SelectCategory } from "../shared/selectors/categorySelector";
+import { SelectSubCategory, SubCategorySelectorRoot } from "../shared/selectors/subCategorySelector";
+import { SelectStockRoom, StockroomSelectorRoot } from "../shared/selectors/stockRoomSelector";
 import AddStock from "./AddStock";
-import { SelectStore, StoreSelectorRoot } from "../shared/XXstoresSelector";
+import { SelectStore, StoreSelectorRoot } from "../shared/selectors/XXstoresSelector";
 
 
 
@@ -27,7 +27,7 @@ export const ProductsContainer = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStore, setSelectedStore] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null);
   const [selectedStockRoom, setSelectedStockRoom] = useState<number | null>(null);
 
   const {
@@ -134,7 +134,9 @@ export const ProductsContainer = () => {
               <SelectCategory />
             </CategorySelectorRoot>
 
-            <SubCategorySelectorRoot value={selectedSubCategory ?? ""} onChange={setSelectedSubCategory} disabled={false}>
+            <SubCategorySelectorRoot
+              value={selectedSubCategory ?? null}
+              onChange={setSelectedSubCategory} disabled={false}>
               <SelectSubCategory />
             </SubCategorySelectorRoot>
 

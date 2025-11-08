@@ -14,7 +14,7 @@ import { StockMovement } from "../stock/stockMovement";
 import { formatStockLocation, type StockWithRelations } from "@/utils/stock";
 import type { Lot } from "@/types/lots";
 import type { Stock } from "@/types/stocks";
-import ManageStockPrices from "../shared/manageStockPricesUNUSED";
+import ManageStockPrices from "../shared/stock/manageStockPricesUNUSED";
 
 interface LoadOrderTableProps {
   loadOrderData: {

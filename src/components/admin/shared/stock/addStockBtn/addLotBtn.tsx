@@ -20,14 +20,13 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from 'react-hot-toast';
-import { LotContainerSelector } from "../../addLoadOrder/lotContainerSelector";
-import { emptyLot } from "../emptyFormData";
 import { ProductInfoAccordion } from "../ProductInfoDisplay";
-import ProductSelector from "../productSelector";
+import ProductSelector from "../../selectors/productSelector";
 import PricesAccordion from "./pricesAccordion";
 import StockAssignationContainer from "./XXstockAssignationContainer";
+import { emptyLot } from "../../emptyFormData";
+import { LotContainerSelector } from "@/components/admin/addLoadOrder/lotContainerSelector";
 // import ManageStockPrices from "./manageStockPrices";
-
 
 // type CreationMode = "SHORT" | "LONG";
 
@@ -356,7 +355,7 @@ export function AddLotBtn({
           </DialogTitle>
           {/* <DialogDescription>
             Completá la información del nuevo elemento que querés publicar.
-          </DialogDescription> */}
+            </DialogDescription> */}
         </DialogHeader>
 
         {!isEditing && (
@@ -580,30 +579,30 @@ export function AddLotBtn({
                   collapsible
                   className="w-full mb-2"
                   defaultValue=""
-                >
+                  >
                   <AccordionItem value="item-1">
-                    <AccordionTrigger>Comisiones</AccordionTrigger>
-                    <AccordionContent className="flex flex-col gap-4 text-balance">
+                  <AccordionTrigger>Comisiones</AccordionTrigger>
+                  <AccordionContent className="flex flex-col gap-4 text-balance">
 
                       <div className="grid grid-cols-3 gap-4 w-full">
-                        <div className="flex flex-col gap-2 -mt-2">
+                      <div className="flex flex-col gap-2 -mt-2">
                           <Label className="mt-2">Comprador</Label>
                           <PurchasingAgentSelectorRoot
-                            value={formData.purchasing_agent_id}
-                            onChange={(value) =>
-                              setFormData({ ...formData, purchasing_agent_id: value })
-                            }
-                            disabled={false}>
-                            <SelectPurchasingAgent />
-                            <CreatePurchasingAgent />
+                          value={formData.purchasing_agent_id}
+                          onChange={(value) =>
+                          setFormData({ ...formData, purchasing_agent_id: value })
+                          }
+                          disabled={false}>
+                          <SelectPurchasingAgent />
+                          <CreatePurchasingAgent />
                           </PurchasingAgentSelectorRoot>
-
+                          
                         </div>
-
+                        
 
                         <div className="flex flex-col gap-2">
-                          <Label htmlFor="purchasing_agent_commision_type">Tipo de comisión del comprador</Label>
-                          <Select
+                        <Label htmlFor="purchasing_agent_commision_type">Tipo de comisión del comprador</Label>
+                        <Select
                             value={formData.purchasing_agent_commision_type || undefined}
                             onValueChange={(value) => handleUpdateLotField("purchasing_agent_commision_type", value)}>
                             <SelectTrigger className="w-full">
@@ -611,94 +610,94 @@ export function AddLotBtn({
                             </SelectTrigger>
                             <SelectContent>
                               <SelectGroup>
-                                <SelectLabel>Tipo de comision</SelectLabel>
-                                <SelectItem value="TOTAL_PERCENTAGE">Porcentaje</SelectItem>
-                                <SelectItem value="BY_UNIT">Por Unidad</SelectItem>
-                                <SelectItem value="NONE">Ninguno</SelectItem>
+                              <SelectLabel>Tipo de comision</SelectLabel>
+                              <SelectItem value="TOTAL_PERCENTAGE">Porcentaje</SelectItem>
+                              <SelectItem value="BY_UNIT">Por Unidad</SelectItem>
+                              <SelectItem value="NONE">Ninguno</SelectItem>
                               </SelectGroup>
-                            </SelectContent>
-                          </Select>
+                              </SelectContent>
+                              </Select>
                         </div>
-
-
+                        
+                        
                         {formData.purchasing_agent_commision_type === "BY_UNIT" && (
                           <div className="flex flex-col gap-2">
-                            <Label htmlFor="purchasing_agent_commision_unit_value">Valor por unidad</Label>
-                            <Input
-                              placeholder="Valor por unidad"
-                              // disabled={!isEditing}
+                          <Label htmlFor="purchasing_agent_commision_unit_value">Valor por unidad</Label>
+                          <Input
+                          placeholder="Valor por unidad"
+                          // disabled={!isEditing}
                               type="number"
                               value={formData.purchasing_agent_commision_unit_value || undefined}
                               onChange={(e) => handleUpdateLotField("purchasing_agent_commision_unit_value", Number(e.target.value))}
-                            />
-                          </div>
-                        )}
-
-                        {formData.purchasing_agent_commision_type === "TOTAL_PERCENTAGE" && (
+                              />
+                              </div>
+                              )}
+                              
+                              {formData.purchasing_agent_commision_type === "TOTAL_PERCENTAGE" && (
                           <div className="flex flex-col gap-2">
-                            <Label htmlFor="purchasing_agent_commision_percentage">Porcentaje de comisión</Label>
+                          <Label htmlFor="purchasing_agent_commision_percentage">Porcentaje de comisión</Label>
                             <Input
-                              placeholder="Porcentaje de comisión"
-                              // disabled={!isEditing}
-                              type="number"
-                              value={formData.purchasing_agent_commision_percentage || undefined}
-                              onChange={(e) => handleUpdateLotField("purchasing_agent_commision_percentage", Number(e.target.value))}
+                            placeholder="Porcentaje de comisión"
+                            // disabled={!isEditing}
+                            type="number"
+                            value={formData.purchasing_agent_commision_percentage || undefined}
+                            onChange={(e) => handleUpdateLotField("purchasing_agent_commision_percentage", Number(e.target.value))}
                             />
                           </div>
-                        )}
+                          )}
 
-                      </div>
+                          </div>
 
-                      <div className="grid grid-cols-3 gap-4 w-full">
-
-                        <div className="flex flex-col gap-2 -mt-2">
+                          <div className="grid grid-cols-3 gap-4 w-full">
+                          
+                          <div className="flex flex-col gap-2 -mt-2">
                           <Label className="mt-2">Productor</Label>
                           <PurchasingAgentSelectorRoot value={formData.purchasing_agent_id}
-                            onChange={(value) =>
+                          onChange={(value) =>
                               setFormData({ ...formData, purchasing_agent_id: value })
                             }
                             disabled={false}>
                             <SelectPurchasingAgent />
                             <CreatePurchasingAgent />
-                          </PurchasingAgentSelectorRoot>
-
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                          <Label htmlFor="productor_commission_type">Tipo de comisión del productor</Label>
-                          <Select
+                            </PurchasingAgentSelectorRoot>
+                            
+                            </div>
+                            
+                            <div className="flex flex-col gap-2">
+                            <Label htmlFor="productor_commission_type">Tipo de comisión del productor</Label>
+                            <Select
                             value={formData.productor_commission_type || undefined}
                             onValueChange={(value) => handleUpdateLotField("productor_commission_type", value)}>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Tipo de comisión del productor" />
+                            <SelectValue placeholder="Tipo de comisión del productor" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectGroup>
-                                <SelectLabel>Tipo de comision</SelectLabel>
-                                <SelectItem value="TOTAL_PERCENTAGE">Porcentaje</SelectItem>
+                              <SelectLabel>Tipo de comision</SelectLabel>
+                              <SelectItem value="TOTAL_PERCENTAGE">Porcentaje</SelectItem>
                                 <SelectItem value="BY_UNIT">Por Unidad</SelectItem>
                                 <SelectItem value="NONE">Ninguno</SelectItem>
-                              </SelectGroup>
+                                </SelectGroup>
                             </SelectContent>
-                          </Select>
+                            </Select>
                         </div>
-
+                        
                         {formData.productor_commission_type === "BY_UNIT" && (
                           <div className="flex flex-col gap-2">
-                            <Label htmlFor="productor_commission_unit_value">Valor por unidad</Label>
-                            <Input
+                          <Label htmlFor="productor_commission_unit_value">Valor por unidad</Label>
+                          <Input
                               placeholder="Valor por unidad"
                               // disabled={!isEditing}
                               type="number"
                               value={formData.productor_commission_unit_value || undefined}
                               onChange={(e) => handleUpdateLotField("productor_commission_unit_value", Number(e.target.value))}
                             />
-                          </div>
-                        )}
+                            </div>
+                            )}
                         {formData.productor_commission_type === "TOTAL_PERCENTAGE" && (
                           <div className="flex flex-col gap-2">
-                            <Label htmlFor="productor_commission_percentage">Porcentaje de comisión</Label>
-                            <Input
+                          <Label htmlFor="productor_commission_percentage">Porcentaje de comisión</Label>
+                          <Input
                               placeholder="Porcentaje de comisión"
                               // disabled={!isEditing}
                               type="number"
@@ -707,25 +706,25 @@ export function AddLotBtn({
                             />
                           </div>
                         )}
-
-                      </div>
-
-
-
-                    </AccordionContent>
-                  </AccordionItem>
-
-                </Accordion> */}
+                        
+                        </div>
+                        
+                        
+                        
+                        </AccordionContent>
+                        </AccordionItem>
+                        
+                        </Accordion> */}
 
 
 
                 {/* 
                 
                 productor_commission_type: CommissionType; // Radio button
-
+                
                 productor_commission_percentage: number | null; // Input tipo numero, solo si productor_commission_type es BY_UNIT
                 productor_commission_unit_value: number | null; // Input tipo numero, solo si productor_commission_type es FIXED
-
+                
                 purchasing_agent_id: number | null; // Selector de comprador
                 purchasing_agent_commision_type: w; // Radio button
                 purchasing_agent_commision_percentage: number | null; // Input tipo numero, solo si purchasing_agent_commision_type es TOTAL_PERCENTAGE
@@ -768,13 +767,13 @@ export function AddLotBtn({
                   {/* <div className="flex flex-col gap-2">
                     <Label htmlFor="delivery_price">Costo de entrega</Label>
                     <Input
-                      placeholder="Costo de entrega"
-                      // disabled={!isEditing}
-                      type="number"
-                      value={formData.delivery_price || undefined}
-                      onChange={(e) => handleUpdateLotField("delivery_price", Number(e.target.value))}
+                    placeholder="Costo de entrega"
+                    // disabled={!isEditing}
+                    type="number"
+                    value={formData.delivery_price || undefined}
+                    onChange={(e) => handleUpdateLotField("delivery_price", Number(e.target.value))}
                     />
-                  </div> */}
+                    </div> */}
 
                 </div>
 
@@ -808,20 +807,20 @@ export function AddLotBtn({
 
                   {/* <div className="flex flex-col gap-2 relative col-span-2">
                     <Label className="mt-2 absolute -top-4">
-                      Cantidad por mayor / menor
+                    Cantidad por mayor / menor
                     </Label>
                     <div className="grid grid-cols-4 gap-4 mt-3">
-                      <div>
-                        <Label className="text-xs" htmlFor="company">
-                          Cantidad por mayor
-                        </Label>
-                        <Input
-                          id="company"
-                          type="string"
-                          value={
-                            formData.sale_units_equivalence.mayor.quantity_in_base
-                          }
-                          onChange={(e) =>
+                    <div>
+                    <Label className="text-xs" htmlFor="company">
+                    Cantidad por mayor
+                    </Label>
+                    <Input
+                    id="company"
+                    type="string"
+                    value={
+                      formData.sale_units_equivalence.mayor.quantity_in_base
+                      }
+                      onChange={(e) =>
                             setFormData({
                               ...formData,
                               sale_units_equivalence: {
@@ -829,38 +828,38 @@ export function AddLotBtn({
                                 mayor: {
                                   ...formData.sale_units_equivalence.mayor,
                                   quantity_in_base: Number(e.target.value) as unknown as 0,
-                                },
-                              },
-                            })
+                                  },
+                                  },
+                                  })
                           }
                         />
-                      </div>
-                      <div>
+                        </div>
+                        <div>
                         <Label className="text-xs" htmlFor="company">
                           Cantidad por menor
-                        </Label>
+                          </Label>
                         <Input
-                          id="company"
-                          type="string"
-                          value={
-                            formData.sale_units_equivalence.minor.quantity_in_base
+                        id="company"
+                        type="string"
+                        value={
+                          formData.sale_units_equivalence.minor.quantity_in_base
                           }
                           onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              sale_units_equivalence: {
-                                ...formData.sale_units_equivalence,
+                          setFormData({
+                            ...formData,
+                            sale_units_equivalence: {
+                              ...formData.sale_units_equivalence,
                                 minor: {
                                   ...formData.sale_units_equivalence.minor,
                                   quantity_in_base: Number(e.target.value) as unknown as 0,
                                 },
                               },
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-                  </div> */}
+                              })
+                              }
+                              />
+                              </div>
+                              </div>
+                              </div> */}
                 </div>
               </TabsContent>
 
@@ -892,7 +891,7 @@ export function AddLotBtn({
 
           {/* <DialogClose asChild>
             <Button disabled={createLotMutation.isLoading} variant="outline">
-              Cancelar
+            Cancelar
             </Button>
           </DialogClose> */}
           {tab === 'lot' ? (
@@ -911,11 +910,11 @@ export function AddLotBtn({
 
                 {/* {isEditing ? (
                 <Button variant={"outline"} onClick={() => setIsEditing(false)}>
-                  Cancelar
+                Cancelar
                 </Button>
-              ) : (
-                <Button onClick={() => setIsEditing(true)}>Modificar</Button>
-              )} */}
+                ) : (
+                  <Button onClick={() => setIsEditing(true)}>Modificar</Button>
+                  )} */}
 
 
                 <Button disabled={loading} onClick={handleSubmit}>{
@@ -933,3 +932,4 @@ export function AddLotBtn({
     </Dialog >
   );
 }
+

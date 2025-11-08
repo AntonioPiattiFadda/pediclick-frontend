@@ -145,9 +145,6 @@ export const getProductsByName = async (name: string, withLots: boolean) => {
   const q = name.trim();
   const isNumeric = /^\d+$/.test(q);
 
-
-
-
   // Base de la consulta
   let query = supabase
     .from("products")

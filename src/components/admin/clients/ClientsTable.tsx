@@ -81,7 +81,11 @@ export const ClientsTable = ({ clients, filter = "" }: ClientsTableProps) => {
 
                             <ClientHistoricalMvts selectedClientId={client.client_id} />
 
-                            <RegisterClientPayment clientId={client.client_id || null} clientName={client.full_name} currentBalance={client.current_balance} />
+                            <RegisterClientPayment
+                                clientId={client.client_id || 0}
+                                clientName={client.full_name}
+                                currentBalance={client.current_balance}
+                            />
                         </div>
                     );
                 },

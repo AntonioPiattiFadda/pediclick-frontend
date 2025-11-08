@@ -31,4 +31,6 @@ export const emptyStock: Stock = {
   transformed_from_product_id: null,
   transformed_to_product_id: null,
   last_updated: null,
+  reserved_for_transfering_quantity: 0,
+  reserved_for_selling_quantity: 0,
 };

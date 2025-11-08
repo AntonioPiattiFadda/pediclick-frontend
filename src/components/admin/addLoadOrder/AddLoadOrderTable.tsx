@@ -13,9 +13,9 @@ import {
 import GetFollowingLotNumberBtn from "@/components/unassigned/getFollowingLotNumberBtn";
 import type { Lot } from "@/types/lots";
 import { useEffect, useRef, useState } from "react";
-import { AddLotBtn } from "../shared/addStockBtn/addLotBtn";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
 import { LotContainerSelector } from "./lotContainerSelector";
+import { AddLotBtn } from "../shared/stock/addStockBtn/addLotBtn";
 
 type EditableCellProps = {
   value: string | number | null | undefined;

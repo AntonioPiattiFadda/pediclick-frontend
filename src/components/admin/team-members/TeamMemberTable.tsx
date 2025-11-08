@@ -11,7 +11,6 @@ import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
 import { ROLES } from "./RoleInfoPopover";
 import { deleteTeamMember } from "@/service/profiles";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
-// import { AddLotBtn } from "../shared/addLotBtn";
 import type { UserProfile } from "@/types/users";
 
 interface TeamMemberTableProps {

@@ -7,10 +7,10 @@ import { Search } from "lucide-react";
 import { useState } from "react";
 import TableSkl from "../sellPoints/ui/tableSkl";
 import { ClientsTable } from "./ClientsTable";
-import { ClientSelectorRoot, CreateClient } from "../shared/clientSelector";
+import { ClientSelectorRoot, CreateClient } from "../shared/selectors/clientSelector";
 import { formatCurrency } from "@/utils";
 import { getProviders } from "@/service/providers";
-import { CreateProvider, ProviderSelectorRoot } from "../shared/providersSelector";
+import { CreateProvider, ProviderSelectorRoot } from "../shared/selectors/providersSelector";
 import { ProvidersTable } from "../providers/ProvidersTable";
 import type { Provider } from "@/types/providers";
 

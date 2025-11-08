@@ -19,7 +19,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { CreateProvider, ProviderSelectorRoot, SelectProvider } from "../shared/providersSelector";
+import { CreateProvider, ProviderSelectorRoot, SelectProvider } from "../shared/selectors/providersSelector";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 import { emptyLoadOrder } from "./emptyFormData";
 

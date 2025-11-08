@@ -14,13 +14,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ImageSelector } from "../stock/addEditProduct/ImageSelector";
+import { ImageSelector } from "../../stock/addEditProduct/ImageSelector";
 import { adaptProductForDb } from "@/adapters/products";
 import { getProduct, updateProduct } from "@/service/products";
 import { toast } from "sonner";
-import { CategorySelectorRoot, CreateCategory, SelectCategory } from "./categorySelector";
-import { BrandSelectorRoot, CreateBrand, SelectBrand } from "./brandSelector";
-import { CreateSubCategory, SelectSubCategory, SubCategorySelectorRoot } from "./subCategorySelector";
+import { CategorySelectorRoot, CreateCategory, SelectCategory } from "../selectors/categorySelector";
+import { BrandSelectorRoot, CreateBrand, SelectBrand } from "../selectors/brandSelector";
+import { CreateSubCategory, SelectSubCategory, SubCategorySelectorRoot } from "../selectors/subCategorySelector";
 import ShortCodeSelector from "./shortCodeSelector";
 
 interface ProductEditSheetProps {
@@ -174,7 +174,7 @@ export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) 
                         <div className="flex flex-col gap-2">
                             <Label htmlFor="sub_category">Categoría</Label>
                             <SubCategorySelectorRoot disabled={false}
-                                value={formData.sub_category_id?.toString() ?? ""}
+                                value={formData.sub_category_id || null}
                                 onChange={(id) =>
                                     setFormData((p) => ({
                                         ...p,

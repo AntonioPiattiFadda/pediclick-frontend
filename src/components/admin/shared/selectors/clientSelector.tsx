@@ -10,17 +10,6 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { createClient, getClients } from "@/service/clients";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-    createContext,
-    useContext,
-    useState,
-    type ReactNode,
-} from "react";
-import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
-import type { Client } from "@/types/clients";
 import {
     Select,
     SelectContent,
@@ -29,7 +18,18 @@ import {
     SelectLabel,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
+import { createClient, getClients } from "@/service/clients";
+import type { Client } from "@/types/clients";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
+import {
+    createContext,
+    useContext,
+    useState,
+    type ReactNode,
+} from "react";
+import { toast } from "sonner";
 
 // ---------- Context ----------
 interface ClientSelectorContextType {
@@ -77,7 +77,7 @@ const ClientSelectorRoot = ({ value, onChange, disabled = false, children }: Roo
                 isLoading,
             }}
         >
-            <div className="flex items-center gap-2 w-full">{children}</div>
+            <div className="flex items-center gap-2 w-full h-10">{children}</div>
         </ClientSelectorContext.Provider>
     );
 };
@@ -88,13 +88,13 @@ const SelectClient = () => {
         useClientSelectorContext();
 
     if (isLoading) {
-        return <Input placeholder="Buscando tus clientes..." disabled />;
+        return <Input className="h-10" placeholder="Buscando tus clientes..." disabled />;
     }
 
     return (
         <>
             <select
-                className="w-full border rounded px-2 py-2"
+                className="w-full border rounded px-2 py-2 h-10"
                 disabled={disabled}
                 value={value === null ? "" : value}
                 onChange={(e) =>
@@ -115,9 +115,9 @@ const SelectClient = () => {
                     disabled={disabled}
                     size="icon"
                     onClick={() => onChange(null)}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-red-500 hover:text-red-700 h-10"
                 >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-5 h-10" />
                 </Button>
             )}
         </>
@@ -125,10 +125,9 @@ const SelectClient = () => {
 };
 
 import { Label } from "@/components/ui/label";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { Switch } from "@/components/ui/switch";
 import { taxConditionsOpt } from "@/constants";
-import { ShortCutBtn } from "./shortCutBtn";
-import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 
 const CreateClient = ({ isShortCut = false }: {
@@ -371,7 +370,5 @@ const CreateClient = ({ isShortCut = false }: {
 
 // ---------- Compound export ----------
 export {
-    ClientSelectorRoot,
-    SelectClient,
-    CreateClient,
+    ClientSelectorRoot, CreateClient, SelectClient
 };

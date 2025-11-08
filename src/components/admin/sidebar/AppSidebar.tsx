@@ -1,5 +1,4 @@
 import MarketStoreLogo from "@/assets/icons/MarketStoreIcon.png";
-import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -23,14 +22,14 @@ import { useAppSelector } from "@/hooks/useUserData";
 import { BarChart3, ChevronRight, Home, Package, type LucideProps } from "lucide-react";
 import type React from "react";
 import { Link } from "react-router-dom";
-import { ClientSelectorRoot, CreateClient } from "../shared/clientSelector";
-import { CategorySelectorRoot, CreateCategory } from "../shared/categorySelector";
-import { BrandSelectorRoot, CreateBrand } from "../shared/brandSelector";
-import { CreateProvider, ProviderSelectorRoot } from "../shared/providersSelector";
-import { CreatePurchasingAgent, PurchasingAgentSelectorRoot } from "../shared/purchasingAgentSelector";
-import { CreateStockRoom, StockroomSelectorRoot } from "../shared/stockRoomSelector";
-import { CreateSubCategory, SubCategorySelectorRoot } from "../shared/subCategorySelector";
-import { CreateStore, StoreSelectorRoot } from "../shared/XXstoresSelector";
+import { CategorySelectorRoot, CreateCategory } from "../shared/selectors/categorySelector";
+import { ClientSelectorRoot, CreateClient } from "../shared/selectors/clientSelector";
+import { CreateProductPresentation, ProductPresentationSelectorRoot } from "../shared/selectors/productPresentationSelector";
+import { CreateProvider, ProviderSelectorRoot } from "../shared/selectors/providersSelector";
+import { CreatePurchasingAgent, PurchasingAgentSelectorRoot } from "../shared/selectors/purchasingAgentSelector";
+import { CreateStockRoom, StockroomSelectorRoot } from "../shared/selectors/stockRoomSelector";
+import { CreateSubCategory, SubCategorySelectorRoot } from "../shared/selectors/subCategorySelector";
+import { CreateStore, StoreSelectorRoot } from "../shared/selectors/XXstoresSelector";
 
 /* eslint-disable react-refresh/only-export-components */
 export const MENU_ITEMS: {
@@ -85,9 +84,9 @@ export const MENU_ITEMS: {
         {
           title: "Marca",
           type: "button",
-          children: <BrandSelectorRoot disabled={false} value={null} onChange={() => { }}>
-            <CreateBrand isShortCut={true} />
-          </BrandSelectorRoot>
+          children: <ProductPresentationSelectorRoot productId={null} disabled={false} value={null} onChange={() => { }}>
+            <CreateProductPresentation isShortCut={true} />
+          </ProductPresentationSelectorRoot>
         },
         {
           title: "Proveedor",
@@ -282,7 +281,7 @@ export function AppSidebar() {
                             return (
                               <SidebarMenuSubItem key={subItem.title}>
                                 <SidebarMenuSubButton asChild>
-                                  <Link to={subItem.url}>
+                                  <Link to={subItem.url || '#'}>
                                     <span>{subItem.title}</span>
                                   </Link>
                                 </SidebarMenuSubButton>

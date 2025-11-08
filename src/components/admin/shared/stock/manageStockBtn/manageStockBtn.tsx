@@ -10,9 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Lot } from "@/types/lots";
 import type { Product } from "@/types/products";
 import { useState } from "react";
-import { ProductInfoAccordion } from "../stock/ProductInfoDisplay";
-import PricesAccordion from "../stock/addStockBtn/pricesAccordion";
-import StockLocationTable from "../stock/manageStockBtn/StockLocationTable";
+import { ProductInfoAccordion } from "../ProductInfoDisplay";
+import PricesAccordion from "../addStockBtn/pricesAccordion";
+import StockLocationTable from "./StockLocationTable";
 
 
 export function ManageStockBtn({

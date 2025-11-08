@@ -1,4 +1,4 @@
-import ProductSelector from "@/components/admin/shared/productSelector";
+import ProductSelector from "@/components/admin/shared/selectors/productSelector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -105,7 +105,8 @@ export default function TransferOrderItemsTable({
 
     const handleAddElement = () => {
         if (!allowEdit) return;
-        const newItem: TransferOrderType["transfer_order_items"][0] = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const newItem: any = {
             transfer_order_item_id: Math.random(), // Temporary ID for React key
             transfer_order_id: transferOrder.transfer_order_id,
             product_id: undefined,
@@ -120,7 +121,8 @@ export default function TransferOrderItemsTable({
         });
     };
 
-    const handleRemoveItem = (itemId: number) => {
+    const handleRemoveItem = (itemId: number | undefined) => {
+        if (itemId === undefined) return;
         if (!allowEdit) return;
         const updatedItems = rows.filter((item) => item.transfer_order_item_id !== itemId);
         onChangeOrder?.({
@@ -130,13 +132,14 @@ export default function TransferOrderItemsTable({
     };
 
     const handleSelectProduct = (
-        row: TransferOrderType["transfer_order_items"][0],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        row: any,
         product: Product,
     ) => {
         if (!allowEdit) return;
         const updatedItems = rows.map((item) =>
             item.transfer_order_item_id === row.transfer_order_item_id
-                ? { ...item, product_id: product.product_id, product }
+                ? { ...item, product_id: product.product_id ?? null, product }
                 : item
         );
         onChangeOrder?.({

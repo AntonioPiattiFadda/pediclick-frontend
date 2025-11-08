@@ -9,7 +9,7 @@ export const getProviders = async () => {
     .select("*")
     .is("deleted_at", null) // Exclude soft-deleted providers
     .eq("business_owner_id", businessOwnerId);
-    
+
 
   if (error) {
     throw new Error(error.message);
@@ -18,11 +18,11 @@ export const getProviders = async () => {
   return { providers, error };
 };
 
-export const createProvider = async (name: string) => {
+export const createProvider = async (name: string, shortCode: string) => {
   const businessOwnerId = await getBusinessOwnerId();
   const { data, error } = await supabase
     .from("providers")
-    .insert({ provider_name: name, business_owner_id: businessOwnerId })
+    .insert({ provider_name: name, short_code: shortCode, business_owner_id: businessOwnerId })
     .select()
     .single();
 
@@ -34,15 +34,15 @@ export const createProvider = async (name: string) => {
 };
 
 export const deleteProvider = async (id: string | number) => {
-    const { error } = await supabase
-        .from("providers")
-        .update({deleted_at: new Date().toISOString()})
-        .eq("provider_id", id);
+  const { error } = await supabase
+    .from("providers")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("provider_id", id);
 
-    if (error) {
-        throw new Error(error.message);
-    }
+  if (error) {
+    throw new Error(error.message);
+  }
 
-    return true;
+  return true;
 };
 

@@ -18,8 +18,8 @@ import {
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { StockMovement } from '../stock/stockMovement'
 import { DeleteTableElementPopUp } from './deleteTableElementPopUp'
-import { ManageStockBtnContainer } from './manageStockBtn/manageStockBtnContainer'
-import ManageStockPrices from './manageStockPricesUNUSED'
+import { ManageStockBtnContainer } from './stock/manageStockBtn/manageStockBtnContainer'
+import ManageStockPrices from './stock/manageStockPricesUNUSED'
 
 const HeaderCell = ({ children }: { children: React.ReactNode }) => (
     <div className="">

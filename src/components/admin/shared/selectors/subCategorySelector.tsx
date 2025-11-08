@@ -24,8 +24,8 @@ import { toast } from "sonner";
 
 // ---------- Context ----------
 interface SubCategorySelectorContextType {
-  value: string;
-  onChange: (id: string) => void;
+  value: number | null;
+  onChange: (id: number | null) => void;
   disabled: boolean;
   subCategories: any[];
   isLoading: boolean;
@@ -43,8 +43,8 @@ function useSubCategorySelectorContext() {
 
 // ---------- Root ----------
 interface RootProps {
-  value: string;
-  onChange: (id: string) => void;
+  value: number | null;
+  onChange: (id: number | null) => void;
   disabled?: boolean;
   children: ReactNode;
 }
@@ -87,8 +87,10 @@ const SelectSubCategory = () => {
       <select
         className={`${disabled && "opacity-50 cursor-not-allowed"} w-full border border-gray-200 rounded px-2 py-2 text-gray-500`}
         disabled={disabled}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={value === null ? "" : value}
+        onChange={(e) =>
+          onChange(e.target.value === "" ? null : Number(e.target.value))
+        }
       >
         <option disabled value="">Sin Categoría</option>
         {(subCategories ?? []).map((cat) => (
@@ -102,7 +104,7 @@ const SelectSubCategory = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => onChange("")}
+          onClick={() => onChange(null)}
           disabled={disabled}
           className="text-red-500 hover:text-red-700"
         >
