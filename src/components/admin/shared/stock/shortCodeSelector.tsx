@@ -39,7 +39,7 @@ const ShortCodeSelector = ({ value, onChange, productId }: Props) => {
                 } else {
                     setStatus("unavailable");
                     setHelpText(
-                        "Código asignado productos con stock disponible: "
+                        "Código asignado a: "
                     );
                 }
             } catch {

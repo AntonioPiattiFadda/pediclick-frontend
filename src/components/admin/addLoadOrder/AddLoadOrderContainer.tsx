@@ -12,8 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import GetFollowingLoadOrderNumberBtn from "@/components/unassigned/getFollowingLoadOrderNumberBtn";
-import { createLoadOrder } from "@/service/loadOrders";
 import type { LoadOrder } from "@/types/loadOrders";
+import type { LotContainersLocation } from "@/types/lotContainersLocation";
+import type { Stock } from "@/types/stocks";
 import { updateLotWithCalculations } from "@/utils/lots";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -29,24 +30,15 @@ export const AddLoadOrderContainer = () => {
 
   const [formData, setFormData] = useState<LoadOrder>(emptyLoadOrder);
 
-
-  // const { data: providers, isLoading: isLoadingProviders } = useQuery({
-  //   queryKey: ["providers"],
-  //   queryFn: async () => {
-  //     const response = await getProviders();
-  //     return response.providers;
-  //   },
-  // });
-
-  // TODO Falta asignTo y receptor_id
-  //TODO FALTA RENDIMIENTO Y COMISION
+  const [stock, setStock] = useState<Stock[]>([]);
+  const [lotContainersLocation, setLotContainersLocation] = useState<LotContainersLocation[]>([]);
 
   const createLoadOrderMutation = useMutation({
-    mutationFn: async (data: LoadOrder) => {
-      console.log("Creating load order with data:", data);
+    mutationFn: async () => {
       //FIXME - FILTRAT LOS LOT_CONTAINERS QUE TENGAN LOT_CONTAINER_ID NULL
-      const { loadOrder, lots, prices } = adaptLoadOrderForSubmission(data);
-      return await createLoadOrder(loadOrder, lots, prices);
+      const { loadOrder, lots } = adaptLoadOrderForSubmission(formData);
+      console.log('CARGA DE LOAD ORDER', loadOrder, lots, stock, lotContainersLocation);
+      // return await createLoadOrder(loadOrder, lots, stock, lotContainersLocation);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["load-orders"] });
@@ -81,7 +73,7 @@ export const AddLoadOrderContainer = () => {
     if (!formData) return;
 
     try {
-      await createLoadOrderMutation.mutateAsync(formData);
+      await createLoadOrderMutation.mutateAsync();
       setFormData(emptyLoadOrder);
     } catch (error) {
       console.error("Error creating load order:", error);
@@ -292,7 +284,7 @@ export const AddLoadOrderContainer = () => {
         <CardContent>
           <AddLoadOrderTable
             loadOrderLots={formData.lots ?? []}
-            onAddElementToLoadOrder={(newLot) => {
+            onAddElementToLoadOrder={(newLot, newStock, newLotContainersLocation) => {
               const newLots = [...(formData.lots ?? []), newLot];
               // const totalDownload = computeTotalDownloadCost(newLots);
               setFormData({
@@ -300,6 +292,9 @@ export const AddLoadOrderContainer = () => {
                 lots: newLots,
                 // total_download_cost: totalDownload,
               });
+
+              setStock((prevStock) => [...prevStock, ...newStock]);
+              setLotContainersLocation((prevLocations) => [...prevLocations, ...newLotContainersLocation]);
             }}
             onUpdateLot={(index, patch) => {
               setFormData((prev) => {

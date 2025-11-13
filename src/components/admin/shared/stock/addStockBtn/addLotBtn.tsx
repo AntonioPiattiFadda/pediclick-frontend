@@ -12,20 +12,25 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import GetFollowingLotNumberBtn from "@/components/unassigned/getFollowingLotNumberBtn";
+import type { LotContainersLocation } from "@/types/lotContainersLocation";
 import type { Lot } from "@/types/lots";
 import type { Price } from "@/types/prices";
+import type { ProductPresentation } from "@/types/product_presentation";
 import type { Product } from "@/types/products";
+import type { Stock } from "@/types/stocks";
+import { formatSmartNumber } from "@/utils";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from 'react-hot-toast';
-import { ProductInfoAccordion } from "../ProductInfoDisplay";
+import { emptyLot } from "../../emptyFormData";
+import { CreateProductPresentation, ProductPresentationSelectorRoot, SelectProductPresentation } from "../../selectors/productPresentationSelector";
 import ProductSelector from "../../selectors/productSelector";
+import { ProductEditSheet } from "../productEditSheet";
 import PricesAccordion from "./pricesAccordion";
 import StockAssignationContainer from "./XXstockAssignationContainer";
-import { emptyLot } from "../../emptyFormData";
-import { LotContainerSelector } from "@/components/admin/addLoadOrder/lotContainerSelector";
+import { Card } from "@/components/ui/card";
+
 // import ManageStockPrices from "./manageStockPrices";
 
 // type CreationMode = "SHORT" | "LONG";
@@ -44,16 +49,22 @@ export function AddLotBtn({
   onAddElement,
   loading = false,
 }: {
-  onAddElement: (lot: Lot) => void;
+  onAddElement: (lot: Lot, stock: Stock[], lotContainersLocation: LotContainersLocation[]) => void;
   loading?: boolean;
 }) {
   // const [creationMode, setCreationMode] = useState<CreationMode>("SHORT");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [formData, setFormData] = useState<Lot>(emptyLot);
-  const [selectedProduct, setSelectedProduct] = useState<Product>({} as Product);
+  const [stock, setStock] = useState<Stock[]>([]);
+  console.log(stock);
+  const [lotContainersLocation, setLotContainersLocation] = useState<LotContainersLocation[]>([]);
+  console.log(lotContainersLocation);
 
-  console.log({ selectedProduct });
+  const [selectedProduct, setSelectedProduct] = useState<Product>({} as Product);
+  const [selectedProductPresentation, setSelectedProductPresentation] = useState<ProductPresentation | null>(null);
+
+  // console.log({ selectedProduct });
 
   const [lotPrices, setLotPrices] = useState<Price[]>([]);
   const [tab, setTab] = useState("lot");
@@ -75,12 +86,23 @@ export function AddLotBtn({
     };
     //TODO ACTUALIZAR PRODUCTO SI ESTA EN MODO EDICION
     //TODO AGREGAR AL REMITO
+    const adaptedStock = stock.map(s => ({
+      ...s,
+      product_id: selectedProduct.product_id!,
+      lot_id: formData.lot_id!,
+    }));
+
+    const adaptedLotContainersLocation = lotContainersLocation.map(loc => ({
+      ...loc,
+      lot_id: formData.lot_id!,
+    }));
     onAddElement({
       ...formData,
       product_name: selectedProduct.product_name,
       product_id: selectedProduct.product_id,
+      product_presentation_id: selectedProductPresentation?.product_presentation_id || null,
       prices: lotPrices,
-    } as Lot);
+    } as Lot, adaptedStock as Stock[], adaptedLotContainersLocation as LotContainersLocation[]);
 
     if (!loading) {
       handleClose();
@@ -93,6 +115,10 @@ export function AddLotBtn({
     setSelectedProduct(adaptProductForDb({} as Product));
     setLotPrices([]);
     setFormData(emptyLot);
+    setSelectedProductPresentation(null);
+    setStock([]);
+    setLotContainersLocation([]);
+
   };
 
   const handleUpdateLotField = (field: string, rawValue: number | string) => {
@@ -117,7 +143,7 @@ export function AddLotBtn({
     const currentInitialStock = formData.initial_stock_quantity ?? 0;
 
 
-    const bulkQuantityEquivalence = formData.bulk_quantity_equivalence ?? 0;
+    const bulkQuantityEquivalence = selectedProductPresentation?.bulk_quantity_equivalence ?? 0;
 
     const currentTotalCost = formData.purchase_cost_total ?? 0;
     const currentCostPerUnit = formData.purchase_cost_per_unit ?? 0;
@@ -297,8 +323,6 @@ export function AddLotBtn({
     let final_cost_per_unit: number | null = newCostPerUnit + newDownloadCostPerUnit + newDeliveryCostPerUnit;
     let final_cost_per_bulk: number | null = newCostPerBulk + newDownloadCostPerBulk + newDeliveryCostPerBulk;
 
-    console.log({ final_cost_total, final_cost_per_unit, final_cost_per_bulk, bulkQuantityEquivalence });
-
     if (!bulkQuantityEquivalence) {
       final_cost_per_bulk = null;
       final_cost_total = null;
@@ -311,26 +335,24 @@ export function AddLotBtn({
       initial_stock_quantity: newInitialStock,
 
 
-      purchase_cost_total: newTotalCost,
-      purchase_cost_per_unit: newCostPerUnit,
-      purchase_cost_per_bulk: newCostPerBulk,
+      purchase_cost_total: formatSmartNumber(newTotalCost),
+      purchase_cost_per_unit: formatSmartNumber(newCostPerUnit),
+      purchase_cost_per_bulk: formatSmartNumber(newCostPerBulk),
 
 
-      download_total_cost: newDownloadTotalCost,
-      download_cost_per_bulk: newDownloadCostPerBulk,
-      download_cost_per_unit: newDownloadCostPerUnit,
+      download_total_cost: formatSmartNumber(newDownloadTotalCost),
+      download_cost_per_bulk: formatSmartNumber(newDownloadCostPerBulk),
+      download_cost_per_unit: formatSmartNumber(newDownloadCostPerUnit),
 
-      delivery_cost_total: newDeliveryCostTotal,
-      delivery_cost_per_bulk: newDeliveryCostPerBulk,
-      delivery_cost_per_unit: newDeliveryCostPerUnit,
+      delivery_cost_total: formatSmartNumber(newDeliveryCostTotal),
+      delivery_cost_per_bulk: formatSmartNumber(newDeliveryCostPerBulk),
+      delivery_cost_per_unit: formatSmartNumber(newDeliveryCostPerUnit),
 
-      final_cost_total,
-      final_cost_per_unit,
-      final_cost_per_bulk,
+      final_cost_total: formatSmartNumber(final_cost_total || 0),
+      final_cost_per_unit: formatSmartNumber(final_cost_per_unit || 0),
+      final_cost_per_bulk: formatSmartNumber(final_cost_per_bulk || 0),
     }));
   };
-
-  console.log(formData?.final_cost_total, formData?.final_cost_per_unit, formData?.final_cost_per_bulk);
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -345,13 +367,26 @@ export function AddLotBtn({
           }  flex  flex-col gap-2 w-[950px] overflow-y-auto max-h-[90vh] min-h-[500px]`}
       >
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="flex flex-row gap-2 items-center">
             {isEditing
               ? "Editando producto"
               : `${selectedProduct.product_name
                 ? "Agregar stock a Producto: " + selectedProduct.product_name
                 : "Elegir producto"
               }`}
+            {selectedProduct?.public_image_src && (
+              <div>
+                <img className="w-6 h-6" src={selectedProduct?.public_image_src || ""} />
+              </div>
+            )}
+            {selectedProduct.product_id && (
+              <div className="mx-auto">
+                <ProductEditSheet
+                  product={selectedProduct}
+                  onUpdated={(updated) => setSelectedProduct(updated)}
+                />
+              </div>
+            )}
           </DialogTitle>
           {/* <DialogDescription>
             Completá la información del nuevo elemento que querés publicar.
@@ -371,13 +406,25 @@ export function AddLotBtn({
         {isProductSelected ? (
           <>
             <Accordion type="multiple" className="w-full">
-              <ProductInfoAccordion
+              {/* <ProductInfoAccordion
                 product={selectedProduct}
                 onChangeSelectedProduct={(updated) => setSelectedProduct(updated)}
-              />
+              /> */}
+
+              <div className="mt-2">
+                <ProductPresentationSelectorRoot
+                  productId={selectedProduct.product_id!}
+                  value={selectedProductPresentation}
+                  onChange={setSelectedProductPresentation}
+                >
+                  <SelectProductPresentation />
+                  <CreateProductPresentation />
+                </ProductPresentationSelectorRoot>
+              </div>
+
 
               <PricesAccordion
-                productId={selectedProduct.product_id!}
+                productPresentationId={selectedProductPresentation?.product_presentation_id ?? null}
                 finalCost={{
                   final_cost_total: formData?.final_cost_total || null,
                   final_cost_per_unit: formData?.final_cost_per_unit || null,
@@ -390,191 +437,209 @@ export function AddLotBtn({
             </Accordion>
 
 
+            <div className="grid grid-cols-2 gap-4 w-full">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="initial_stock_quantity">Stock nuevo</Label>
+                <Input
+                  type="number"
+                  placeholder="--"
+                  // disabled={!isEditing}
+                  value={formData.initial_stock_quantity || undefined}
+                  onChange={(e) => handleUpdateLotField("initial_stock_quantity", Number(e.target.value))}
+                />
+
+              </div>
+            </div>
+
+
+
 
             <Tabs value={tab} onValueChange={setTab} className="w-full">
               <TabsList className=" w-full">
-                <TabsTrigger value="lot">Lote</TabsTrigger>
+                <TabsTrigger value="lot">Costos</TabsTrigger>
                 {/* <TabsTrigger value="prices">Precios</TabsTrigger> */}
-                <TabsTrigger value="stock">Stock</TabsTrigger>
+                <TabsTrigger value="stock">Asignación</TabsTrigger>
 
               </TabsList>
 
 
               <TabsContent value="lot" className="flex flex-col gap-2 mt-2">
-                <div className="grid grid-cols-3 gap-4 w-full">
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="lot_number">Nro de Lote</Label>
-                    <div className="grid grid-cols-[1fr_50px] gap-2">
-                      <Input
-                        placeholder="Nro de Lote"
-                        // disabled={!isEditing}
-                        type="number"
-                        value={formData.lot_number ?? ""}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            lot_number: e.target.value === "" ? null : Number(e.target.value),
-                          })
-                        }
-                      />
-                      <GetFollowingLotNumberBtn onClick={(nextLotNumber) => {
-                        setFormData({
-                          ...formData,
-                          lot_number: nextLotNumber,
-                        });
-                      }} productId={selectedProduct.product_id!} />
-                    </div>
-                  </div>
+                <Card className="border-none p-2 shadow-none bg-transparent">
 
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="initial_stock_quantity">Stock nuevo</Label>
-                    <Input
+                  {/* <div className="grid grid-cols-2 gap-4 w-full">
+                 <div className="flex flex-col gap-2">
+                 <Label htmlFor="lot_number">Nro de Lote</Label>
+                 <div className="grid grid-cols-[1fr_50px] gap-2">
+                 <Input
+                 placeholder="Nro de Lote"
+                 // disabled={!isEditing}
+                 type="number"
+                 value={formData.lot_number ?? ""}
+                 onChange={(e) =>
+                 setFormData({
+                  ...formData,
+                  lot_number: e.target.value === "" ? null : Number(e.target.value),
+                  })
+                  }
+                  />
+                  <GetFollowingLotNumberBtn onClick={(nextLotNumber) => {
+                    setFormData({
+                      ...formData,
+                      lot_number: nextLotNumber,
+                      });
+                      }} productId={selectedProduct.product_id!} />
+                      </div>
+                      </div> 
+                      
+                      <div className="flex flex-col gap-2">
+                      <Label htmlFor="initial_stock_quantity">Stock nuevo</Label>
+                      <Input
                       type="number"
                       placeholder="Stock nuevo"
                       // disabled={!isEditing}
                       value={formData.initial_stock_quantity || undefined}
                       onChange={(e) => handleUpdateLotField("initial_stock_quantity", Number(e.target.value))}
-                    />
-
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="bulk_quantity_equivalence">Cantidad por bulto</Label>
-                    <div className=" gap-2">
-                      <Input
-                        placeholder="Cantidad por bulto"
-                        // disabled={!isEditing}
-                        type="number"
-                        value={formData.bulk_quantity_equivalence ?? ""}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            bulk_quantity_equivalence: e.target.value === "" ? null : Number(e.target.value),
-                          })
-                        }
                       />
+                      
+                      </div> 
+                      
+                      <div className="flex flex-col gap-2">
+                      <Label htmlFor="bulk_quantity_equivalence">Cantidad por bulto</Label>
+                      <div className=" gap-2">
+                      <Input
+                      placeholder="Cantidad por bulto"
+                      // disabled={!isEditing}
+                      type="number"
+                      value={selectedProductPresentation?.bulk_quantity_equivalence ?? ""}
+                      onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        bulk_quantity_equivalence: e.target.value === "" ? null : Number(e.target.value),
+                        })
+                        }
+                        />
+                        </div>
+                        </div> 
+                        
+                        </div> */}
+
+
+
+                  <div className="grid grid-cols-3 gap-4 w-full">
+
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="purchase_cost_total">Costo neto total</Label>
+                      <Input
+                        type="number"
+                        placeholder="Costo neto total"
+                        // disabled={!isEditing}
+                        value={formData.purchase_cost_total || undefined}
+                        onChange={(e) => handleUpdateLotField("purchase_cost_total", Number(e.target.value))}
+                      />
+
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="cost_per_unit">Costo neto por bulto</Label>
+                      <Input
+                        type="number"
+                        placeholder="Costo neto por bulto"
+                        // disabled={!isEditing}
+                        value={formData.purchase_cost_per_bulk || undefined}
+                        onChange={(e) => handleUpdateLotField("purchase_cost_per_bulk", Number(e.target.value))}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="cost_per_unit">Costo neto por unidad/Kg</Label>
+                      <Input
+                        type="number"
+                        placeholder="Costo neto por unidad/Kg"
+                        // disabled={!isEditing}
+                        value={formData.purchase_cost_per_unit || undefined}
+                        onChange={(e) => handleUpdateLotField("purchase_cost_per_unit", Number(e.target.value))}
+                      />
+
+
                     </div>
                   </div>
 
-                </div>
+                  <div className="grid grid-cols-3 gap-4 w-full">
+
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="delivery_cost_total">Costo de envio total</Label>
+                      <Input
+                        type="number"
+                        placeholder="Costo de envio total"
+                        // disabled={!isEditing}
+                        value={formData.delivery_cost_total || undefined}
+                        onChange={(e) => handleUpdateLotField("delivery_cost_total", Number(e.target.value))}
+                      />
+
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="cost_per_unit">Costo de envio por bulto</Label>
+                      <Input
+                        type="number"
+                        placeholder="Costo de envio por bulto"
+                        // disabled={!isEditing}
+                        value={formData.delivery_cost_per_bulk || undefined}
+                        onChange={(e) => handleUpdateLotField("delivery_cost_per_bulk", Number(e.target.value))}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="cost_per_unit">Costo de envio por unidad/Kg</Label>
+                      <Input
+                        type="number"
+                        placeholder="Costo de envio por unidad/Kg"
+                        // disabled={!isEditing}
+                        value={formData.delivery_cost_per_unit || undefined}
+                        onChange={(e) => handleUpdateLotField("delivery_cost_per_unit", Number(e.target.value))}
+                      />
 
 
-
-                <div className="grid grid-cols-3 gap-4 w-full">
-
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="purchase_cost_total">Costo neto total</Label>
-                    <Input
-                      type="number"
-                      placeholder="Costo neto total"
-                      // disabled={!isEditing}
-                      value={formData.purchase_cost_total || undefined}
-                      onChange={(e) => handleUpdateLotField("purchase_cost_total", Number(e.target.value))}
-                    />
-
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="cost_per_unit">Costo neto por bulto</Label>
-                    <Input
-                      type="number"
-                      placeholder="Costo neto por bulto"
-                      // disabled={!isEditing}
-                      value={formData.purchase_cost_per_bulk || undefined}
-                      onChange={(e) => handleUpdateLotField("purchase_cost_per_bulk", Number(e.target.value))}
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="cost_per_unit">Costo neto por unidad/Kg</Label>
-                    <Input
-                      type="number"
-                      placeholder="Costo neto por unidad/Kg"
-                      // disabled={!isEditing}
-                      value={formData.purchase_cost_per_unit || undefined}
-                      onChange={(e) => handleUpdateLotField("purchase_cost_per_unit", Number(e.target.value))}
-                    />
-
-
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4 w-full">
-
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="delivery_cost_total">Costo de envio total</Label>
-                    <Input
-                      type="number"
-                      placeholder="Costo de envio total"
-                      // disabled={!isEditing}
-                      value={formData.delivery_cost_total || undefined}
-                      onChange={(e) => handleUpdateLotField("delivery_cost_total", Number(e.target.value))}
-                    />
+                    </div>
 
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="cost_per_unit">Costo de envio por bulto</Label>
-                    <Input
-                      type="number"
-                      placeholder="Costo de envio por bulto"
-                      // disabled={!isEditing}
-                      value={formData.delivery_cost_per_bulk || undefined}
-                      onChange={(e) => handleUpdateLotField("delivery_cost_per_bulk", Number(e.target.value))}
-                    />
+                  <div className="grid grid-cols-3 gap-4 w-full">
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="download_total_cost">Costo total de descarga</Label>
+                      <Input
+                        placeholder="Costo total de descarga"
+                        // disabled={!isEditing}
+                        type="number"
+                        value={formData.download_total_cost || undefined}
+                        onChange={(e) => handleUpdateLotField("download_total_cost", Number(e.target.value))}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="download_cost_per_bulk">Costo de descarga por bulto</Label>
+                      <Input
+                        placeholder="Costo de descarga por bulto"
+                        // disabled={!isEditing}
+                        type="number"
+                        value={formData.download_cost_per_bulk || undefined}
+                        onChange={(e) => handleUpdateLotField("download_cost_per_bulk", Number(e.target.value))}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="download_cost_per_unit">Costo de descarga por unidad/Kg</Label>
+                      <Input
+                        placeholder="Costo de descarga por unidad/Kg"
+                        // disabled={!isEditing}
+                        type="number"
+                        value={formData.download_cost_per_unit || undefined}
+                        onChange={(e) => handleUpdateLotField("download_cost_per_unit", Number(e.target.value))}
+                      />
+                    </div>
+
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="cost_per_unit">Costo de envio por unidad/Kg</Label>
-                    <Input
-                      type="number"
-                      placeholder="Costo de envio por unidad/Kg"
-                      // disabled={!isEditing}
-                      value={formData.delivery_cost_per_unit || undefined}
-                      onChange={(e) => handleUpdateLotField("delivery_cost_per_unit", Number(e.target.value))}
-                    />
-
-
-                  </div>
-
-                </div>
-
-                <div className="grid grid-cols-3 gap-4 w-full">
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="download_total_cost">Costo total de descarga</Label>
-                    <Input
-                      placeholder="Costo total de descarga"
-                      // disabled={!isEditing}
-                      type="number"
-                      value={formData.download_total_cost || undefined}
-                      onChange={(e) => handleUpdateLotField("download_total_cost", Number(e.target.value))}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="download_cost_per_bulk">Costo de descarga por bulto</Label>
-                    <Input
-                      placeholder="Costo de descarga por bulto"
-                      // disabled={!isEditing}
-                      type="number"
-                      value={formData.download_cost_per_bulk || undefined}
-                      onChange={(e) => handleUpdateLotField("download_cost_per_bulk", Number(e.target.value))}
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="download_cost_per_unit">Costo de descarga por unidad/Kg</Label>
-                    <Input
-                      placeholder="Costo de descarga por unidad/Kg"
-                      // disabled={!isEditing}
-                      type="number"
-                      value={formData.download_cost_per_unit || undefined}
-                      onChange={(e) => handleUpdateLotField("download_cost_per_unit", Number(e.target.value))}
-                    />
-                  </div>
-
-                </div>
-
-                {/* <Accordion
+                  {/* <Accordion
                   type="single"
                   collapsible
                   className="w-full mb-2"
@@ -583,86 +648,86 @@ export function AddLotBtn({
                   <AccordionItem value="item-1">
                   <AccordionTrigger>Comisiones</AccordionTrigger>
                   <AccordionContent className="flex flex-col gap-4 text-balance">
-
+                  
+                  <div className="grid grid-cols-3 gap-4 w-full">
+                  <div className="flex flex-col gap-2 -mt-2">
+                  <Label className="mt-2">Comprador</Label>
+                  <PurchasingAgentSelectorRoot
+                  value={formData.purchasing_agent_id}
+                  onChange={(value) =>
+                  setFormData({ ...formData, purchasing_agent_id: value })
+                  }
+                  disabled={false}>
+                  <SelectPurchasingAgent />
+                  <CreatePurchasingAgent />
+                  </PurchasingAgentSelectorRoot>
+                  
+                  </div>
+                  
+                  
+                  <div className="flex flex-col gap-2">
+                  <Label htmlFor="purchasing_agent_commision_type">Tipo de comisión del comprador</Label>
+                  <Select
+                  value={formData.purchasing_agent_commision_type || undefined}
+                  onValueChange={(value) => handleUpdateLotField("purchasing_agent_commision_type", value)}>
+                  <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Tipo de comisión del comprador" />
+                  </SelectTrigger>
+                  <SelectContent>
+                  <SelectGroup>
+                  <SelectLabel>Tipo de comision</SelectLabel>
+                  <SelectItem value="TOTAL_PERCENTAGE">Porcentaje</SelectItem>
+                  <SelectItem value="BY_UNIT">Por Unidad</SelectItem>
+                  <SelectItem value="NONE">Ninguno</SelectItem>
+                  </SelectGroup>
+                  </SelectContent>
+                  </Select>
+                  </div>
+                  
+                  
+                  {formData.purchasing_agent_commision_type === "BY_UNIT" && (
+                    <div className="flex flex-col gap-2">
+                    <Label htmlFor="purchasing_agent_commision_unit_value">Valor por unidad</Label>
+                    <Input
+                    placeholder="Valor por unidad"
+                    // disabled={!isEditing}
+                    type="number"
+                    value={formData.purchasing_agent_commision_unit_value || undefined}
+                    onChange={(e) => handleUpdateLotField("purchasing_agent_commision_unit_value", Number(e.target.value))}
+                    />
+                    </div>
+                    )}
+                    
+                    {formData.purchasing_agent_commision_type === "TOTAL_PERCENTAGE" && (
+                      <div className="flex flex-col gap-2">
+                      <Label htmlFor="purchasing_agent_commision_percentage">Porcentaje de comisión</Label>
+                      <Input
+                      placeholder="Porcentaje de comisión"
+                      // disabled={!isEditing}
+                      type="number"
+                      value={formData.purchasing_agent_commision_percentage || undefined}
+                      onChange={(e) => handleUpdateLotField("purchasing_agent_commision_percentage", Number(e.target.value))}
+                      />
+                      </div>
+                      )}
+                      
+                      </div>
+                      
                       <div className="grid grid-cols-3 gap-4 w-full">
+                      
                       <div className="flex flex-col gap-2 -mt-2">
-                          <Label className="mt-2">Comprador</Label>
-                          <PurchasingAgentSelectorRoot
-                          value={formData.purchasing_agent_id}
-                          onChange={(value) =>
-                          setFormData({ ...formData, purchasing_agent_id: value })
-                          }
-                          disabled={false}>
-                          <SelectPurchasingAgent />
-                          <CreatePurchasingAgent />
-                          </PurchasingAgentSelectorRoot>
-                          
-                        </div>
-                        
-
-                        <div className="flex flex-col gap-2">
-                        <Label htmlFor="purchasing_agent_commision_type">Tipo de comisión del comprador</Label>
-                        <Select
-                            value={formData.purchasing_agent_commision_type || undefined}
-                            onValueChange={(value) => handleUpdateLotField("purchasing_agent_commision_type", value)}>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Tipo de comisión del comprador" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectGroup>
-                              <SelectLabel>Tipo de comision</SelectLabel>
-                              <SelectItem value="TOTAL_PERCENTAGE">Porcentaje</SelectItem>
-                              <SelectItem value="BY_UNIT">Por Unidad</SelectItem>
-                              <SelectItem value="NONE">Ninguno</SelectItem>
-                              </SelectGroup>
-                              </SelectContent>
-                              </Select>
-                        </div>
-                        
-                        
-                        {formData.purchasing_agent_commision_type === "BY_UNIT" && (
-                          <div className="flex flex-col gap-2">
-                          <Label htmlFor="purchasing_agent_commision_unit_value">Valor por unidad</Label>
-                          <Input
-                          placeholder="Valor por unidad"
-                          // disabled={!isEditing}
-                              type="number"
-                              value={formData.purchasing_agent_commision_unit_value || undefined}
-                              onChange={(e) => handleUpdateLotField("purchasing_agent_commision_unit_value", Number(e.target.value))}
-                              />
-                              </div>
-                              )}
-                              
-                              {formData.purchasing_agent_commision_type === "TOTAL_PERCENTAGE" && (
-                          <div className="flex flex-col gap-2">
-                          <Label htmlFor="purchasing_agent_commision_percentage">Porcentaje de comisión</Label>
-                            <Input
-                            placeholder="Porcentaje de comisión"
-                            // disabled={!isEditing}
-                            type="number"
-                            value={formData.purchasing_agent_commision_percentage || undefined}
-                            onChange={(e) => handleUpdateLotField("purchasing_agent_commision_percentage", Number(e.target.value))}
-                            />
-                          </div>
-                          )}
-
-                          </div>
-
-                          <div className="grid grid-cols-3 gap-4 w-full">
-                          
-                          <div className="flex flex-col gap-2 -mt-2">
-                          <Label className="mt-2">Productor</Label>
-                          <PurchasingAgentSelectorRoot value={formData.purchasing_agent_id}
-                          onChange={(value) =>
-                              setFormData({ ...formData, purchasing_agent_id: value })
-                            }
-                            disabled={false}>
-                            <SelectPurchasingAgent />
-                            <CreatePurchasingAgent />
-                            </PurchasingAgentSelectorRoot>
-                            
-                            </div>
-                            
+                      <Label className="mt-2">Productor</Label>
+                      <PurchasingAgentSelectorRoot value={formData.purchasing_agent_id}
+                      onChange={(value) =>
+                      setFormData({ ...formData, purchasing_agent_id: value })
+                      }
+                      disabled={false}>
+                      <SelectPurchasingAgent />
+                      <CreatePurchasingAgent />
+                      </PurchasingAgentSelectorRoot>
+                      
+                      </div>
+                      
                             <div className="flex flex-col gap-2">
                             <Label htmlFor="productor_commission_type">Tipo de comisión del productor</Label>
                             <Select
@@ -672,53 +737,53 @@ export function AddLotBtn({
                             <SelectValue placeholder="Tipo de comisión del productor" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectGroup>
-                              <SelectLabel>Tipo de comision</SelectLabel>
-                              <SelectItem value="TOTAL_PERCENTAGE">Porcentaje</SelectItem>
-                                <SelectItem value="BY_UNIT">Por Unidad</SelectItem>
-                                <SelectItem value="NONE">Ninguno</SelectItem>
-                                </SelectGroup>
+                            <SelectGroup>
+                            <SelectLabel>Tipo de comision</SelectLabel>
+                            <SelectItem value="TOTAL_PERCENTAGE">Porcentaje</SelectItem>
+                            <SelectItem value="BY_UNIT">Por Unidad</SelectItem>
+                            <SelectItem value="NONE">Ninguno</SelectItem>
+                            </SelectGroup>
                             </SelectContent>
                             </Select>
-                        </div>
-                        
-                        {formData.productor_commission_type === "BY_UNIT" && (
-                          <div className="flex flex-col gap-2">
-                          <Label htmlFor="productor_commission_unit_value">Valor por unidad</Label>
-                          <Input
+                            </div>
+                            
+                            {formData.productor_commission_type === "BY_UNIT" && (
+                              <div className="flex flex-col gap-2">
+                              <Label htmlFor="productor_commission_unit_value">Valor por unidad</Label>
+                              <Input
                               placeholder="Valor por unidad"
                               // disabled={!isEditing}
                               type="number"
                               value={formData.productor_commission_unit_value || undefined}
                               onChange={(e) => handleUpdateLotField("productor_commission_unit_value", Number(e.target.value))}
-                            />
-                            </div>
-                            )}
-                        {formData.productor_commission_type === "TOTAL_PERCENTAGE" && (
-                          <div className="flex flex-col gap-2">
-                          <Label htmlFor="productor_commission_percentage">Porcentaje de comisión</Label>
-                          <Input
-                              placeholder="Porcentaje de comisión"
-                              // disabled={!isEditing}
-                              type="number"
-                              value={formData.productor_commission_percentage || undefined}
-                              onChange={(e) => handleUpdateLotField("productor_commission_percentage", Number(e.target.value))}
-                            />
-                          </div>
-                        )}
-                        
-                        </div>
-                        
-                        
-                        
-                        </AccordionContent>
-                        </AccordionItem>
-                        
-                        </Accordion> */}
+                              />
+                              </div>
+                              )}
+                              {formData.productor_commission_type === "TOTAL_PERCENTAGE" && (
+                                <div className="flex flex-col gap-2">
+                                <Label htmlFor="productor_commission_percentage">Porcentaje de comisión</Label>
+                                <Input
+                                placeholder="Porcentaje de comisión"
+                                // disabled={!isEditing}
+                                type="number"
+                                value={formData.productor_commission_percentage || undefined}
+                                onChange={(e) => handleUpdateLotField("productor_commission_percentage", Number(e.target.value))}
+                                />
+                                </div>
+                                )}
+                                
+                                </div>
+                                
+                                
+                                
+                                </AccordionContent>
+                                </AccordionItem>
+                                
+                                </Accordion> */}
 
 
 
-                {/* 
+                  {/* 
                 
                 productor_commission_type: CommissionType; // Radio button
                 
@@ -732,39 +797,39 @@ export function AddLotBtn({
 
 
 
-                <div className="grid grid-cols-2 gap-4 w-full">
+                  <div className="grid grid-cols-2 gap-4 w-full">
 
-                  <div className="flex flex-col gap-2">
-                    <div className="flex gap-2">
-                      <Label htmlFor="expiration_date">
-                        Fecha de vencimiento. | Activar notificacion
-                      </Label>
-                      <input
-                        type="checkbox"
-                        checked={formData.expiration_date_notification}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <Label htmlFor="expiration_date">
+                          Fecha de vencimiento. | Activar notificacion
+                        </Label>
+                        <input
+                          type="checkbox"
+                          checked={formData.expiration_date_notification}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              expiration_date_notification: e.target.checked,
+                            })
+                          }
+                        />
+                      </div>
+                      <Input
+                        placeholder="Fecha de vencimiento"
+                        // disabled={!isEditing}
+                        type="date"
+                        value={formData.expiration_date ?? ""}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            expiration_date_notification: e.target.checked,
+                            expiration_date: e.target.value,
                           })
                         }
                       />
                     </div>
-                    <Input
-                      placeholder="Fecha de vencimiento"
-                      // disabled={!isEditing}
-                      type="date"
-                      value={formData.expiration_date ?? ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          expiration_date: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
 
-                  {/* <div className="flex flex-col gap-2">
+                    {/* <div className="flex flex-col gap-2">
                     <Label htmlFor="delivery_price">Costo de entrega</Label>
                     <Input
                     placeholder="Costo de entrega"
@@ -775,37 +840,21 @@ export function AddLotBtn({
                     />
                     </div> */}
 
-                </div>
+                  </div>
 
 
 
 
 
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="waste">Vacíos</Label>
-                  <LotContainerSelector
-                    disabled={false}
-                    assignments={formData.lot_containers ?? []}
-                    initialQuantity={formData.initial_stock_quantity || 0}
-                    onChange={(next) =>
-                      setFormData({
-                        ...formData,
-                        lot_containers: next,
-                        has_lot_container: (next ?? []).some(
-                          (a) => (Number(a?.quantity) || 0) > 0
-                        ),
-                      })
-                    }
-                  />
-                </div>
 
 
-                <div className="grid grid-cols-2 gap-4 w-full">
+
+                  <div className="grid grid-cols-2 gap-4 w-full">
 
 
 
 
-                  {/* <div className="flex flex-col gap-2 relative col-span-2">
+                    {/* <div className="flex flex-col gap-2 relative col-span-2">
                     <Label className="mt-2 absolute -top-4">
                     Cantidad por mayor / menor
                     </Label>
@@ -821,54 +870,66 @@ export function AddLotBtn({
                       formData.sale_units_equivalence.mayor.quantity_in_base
                       }
                       onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              sale_units_equivalence: {
-                                ...formData.sale_units_equivalence,
-                                mayor: {
-                                  ...formData.sale_units_equivalence.mayor,
-                                  quantity_in_base: Number(e.target.value) as unknown as 0,
-                                  },
-                                  },
-                                  })
-                          }
-                        />
-                        </div>
-                        <div>
-                        <Label className="text-xs" htmlFor="company">
-                          Cantidad por menor
-                          </Label>
-                        <Input
-                        id="company"
-                        type="string"
-                        value={
-                          formData.sale_units_equivalence.minor.quantity_in_base
-                          }
-                          onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            sale_units_equivalence: {
-                              ...formData.sale_units_equivalence,
-                                minor: {
-                                  ...formData.sale_units_equivalence.minor,
-                                  quantity_in_base: Number(e.target.value) as unknown as 0,
-                                },
-                              },
-                              })
+                      setFormData({
+                        ...formData,
+                        sale_units_equivalence: {
+                          ...formData.sale_units_equivalence,
+                          mayor: {
+                            ...formData.sale_units_equivalence.mayor,
+                            quantity_in_base: Number(e.target.value) as unknown as 0,
+                            },
+                            },
+                            })
+                            }
+                            />
+                            </div>
+                            <div>
+                            <Label className="text-xs" htmlFor="company">
+                            Cantidad por menor
+                            </Label>
+                            <Input
+                            id="company"
+                            type="string"
+                            value={
+                              formData.sale_units_equivalence.minor.quantity_in_base
                               }
-                              />
-                              </div>
-                              </div>
-                              </div> */}
-                </div>
+                              onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                sale_units_equivalence: {
+                                  ...formData.sale_units_equivalence,
+                                  minor: {
+                                    ...formData.sale_units_equivalence.minor,
+                                    quantity_in_base: Number(e.target.value) as unknown as 0,
+                                    },
+                                    },
+                                    })
+                                    }
+                                    />
+                                    </div>
+                                    </div>
+                                    </div> */}
+                  </div>
+                </Card>
               </TabsContent>
 
 
 
               <TabsContent value="stock" className="flex flex-col gap-2 mt-2">
                 <StockAssignationContainer
+                  disabled={false}
                   initial_stock_quantity={formData.initial_stock_quantity || 0}
+                  stock={stock}
+                  onChangeStock={(nextStock) => {
+                    setStock(nextStock)
+                  }}
+                  lotContainersLocations={lotContainersLocation}
+                  onChangeLotContainersLocations={(newLotContainers: LotContainersLocation[]) => {
+                    setLotContainersLocation(newLotContainers);
+                  }}
                 />
+
+
               </TabsContent>
 
             </Tabs>
@@ -894,21 +955,21 @@ export function AddLotBtn({
             Cancelar
             </Button>
           </DialogClose> */}
-          {tab === 'lot' ? (
-            Object.keys(selectedProduct).length > 0 && (
-              <>
-                <DialogClose asChild>
-                  <Button disabled={loading} variant={"outline"} onClick={() => {
-                    setSelectedProduct({} as Product);
-                    setFormData(emptyLot);
-                    setLotPrices([]);
-                    setIsEditing(false);
-                  }}>
-                    Cancelar
-                  </Button>
-                </DialogClose>
 
-                {/* {isEditing ? (
+          {Object.keys(selectedProduct).length > 0 && (
+            <>
+              <DialogClose asChild>
+                <Button disabled={loading} variant={"outline"} onClick={() => {
+                  setSelectedProduct({} as Product);
+                  setFormData(emptyLot);
+                  setLotPrices([]);
+                  setIsEditing(false);
+                }}>
+                  Cancelar
+                </Button>
+              </DialogClose>
+
+              {/* {isEditing ? (
                 <Button variant={"outline"} onClick={() => setIsEditing(false)}>
                 Cancelar
                 </Button>
@@ -917,15 +978,11 @@ export function AddLotBtn({
                   )} */}
 
 
-                <Button disabled={loading} onClick={handleSubmit}>{
-                  loading ? "Agregando..." : "Agregar"}</Button>
+              <Button disabled={loading} onClick={handleSubmit}>{
+                loading ? "Agregando..." : "Agregar"}</Button>
 
-              </>
-            )
-          ) : (
-            null
+            </>
           )}
-
 
         </DialogFooter>
       </DialogContent >

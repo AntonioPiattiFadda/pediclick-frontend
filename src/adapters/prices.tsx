@@ -10,7 +10,7 @@ export const pricesAdapter = (prices: any[], storeId: number | null): Price[] =>
         price: p.price,
         qty_per_price: p.qty_per_price,
         profit_percentage: p.profit_percentage,
-        product_id: p.product_id,
+        product_presentation_id: p.product_presentation_id,
         price_type: p.price_type,
         logic_type: p.logic_type,
         observations: p.observations,

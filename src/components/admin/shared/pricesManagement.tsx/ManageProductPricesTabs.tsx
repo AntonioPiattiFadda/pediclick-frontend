@@ -15,7 +15,7 @@ import StorePricesTabContainer from "./StorePricesTabContainer";
 import UniversalPricesContainer from "./UniversalPricesContainer";
 
 interface PricesDialogProps {
-    productId: number;
+    productPresentationId: number;
     disabled?: boolean;
     finalCost: {
         final_cost_total: number | null;
@@ -25,7 +25,7 @@ interface PricesDialogProps {
 }
 
 export default function ManageProductPrices({
-    productId,
+    productPresentationId,
     disabled = false,
     finalCost
 }: PricesDialogProps) {
@@ -39,6 +39,8 @@ export default function ManageProductPrices({
         },
     });
 
+
+    console.log("Stores in productPresentationId:", productPresentationId);
 
     if (isStoreLoading) {
         return (
@@ -91,10 +93,10 @@ export default function ManageProductPrices({
 
                     </TabsList>
 
-                    <UniversalPricesContainer productId={productId} finalCost={finalCost} />
+                    <UniversalPricesContainer productPresentationId={productPresentationId} finalCost={finalCost} />
 
                     {stores.map((store) => (
-                        <StorePricesTabContainer key={store.store_id} productId={productId} store={store} finalCost={finalCost} disabled={disabled} />
+                        <StorePricesTabContainer key={store.store_id} productPresentationId={productPresentationId} store={store} finalCost={finalCost} disabled={disabled} />
                     ))}
 
 

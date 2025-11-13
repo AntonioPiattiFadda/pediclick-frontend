@@ -3,11 +3,11 @@ import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import SalesHistory from '@/components/unassigned/salesHistory'
-import SalesStockHistory from '@/components/unassigned/salesStockHistory'
+import { deleteProductPresentation } from '@/service/productPresentations'
+import { deleteProduct } from '@/service/products'
 import type { Lot } from '@/types/lots'
+import type { ProductPresentation } from '@/types/product_presentation'
 import type { Product } from '@/types/products'
-import type { Stock } from '@/types/stocks'
 import {
     createColumnHelper,
     flexRender,
@@ -16,10 +16,10 @@ import {
     useReactTable,
 } from '@tanstack/react-table'
 import { ChevronDown, ChevronRight } from 'lucide-react'
-import { StockMovement } from '../stock/stockMovement'
 import { DeleteTableElementPopUp } from './deleteTableElementPopUp'
 import { ManageStockBtnContainer } from './stock/manageStockBtn/manageStockBtnContainer'
-import ManageStockPrices from './stock/manageStockPricesUNUSED'
+import LotsAndStockProductPresentationTableCell from './stock/LotsAndStockProductPresentationTableCell'
+import LotContainersProductPresentationTableCell from './stock/LotContainersProductPresentationTableCell'
 
 const HeaderCell = ({ children }: { children: React.ReactNode }) => (
     <div className="">
@@ -31,42 +31,20 @@ const HeaderCell = ({ children }: { children: React.ReactNode }) => (
 const columnHelper = createColumnHelper<Product>()
 
 const columns = [
-    columnHelper.accessor('product_id', {
-        header: () => <HeaderCell>Acciones</HeaderCell>,
-        cell: info => <div className='flex gap-2'>                <DeleteTableElementPopUp
-            elementId={info.getValue() || ''}
-            queryKey={['products']}
-            deleteFn={async (id) => {
-                // Simula una llamada a una API para eliminar el producto
-                return new Promise((resolve) => {
-                    setTimeout(() => {
-                        console.log(`Producto eliminado: ${id}`);
-                        resolve(true);
-                    }, 1000);
-                });
-            }}
-            elementName="el producto"
-            size="icon"
-            successMsgTitle="Elemento eliminado"
-            successMsgDescription="El producto ha sido eliminado correctamente."
-            errorMsgTitle="Error al eliminar"
-            errorMsgDescription="No se pudo eliminar el producto."
-        />
-            <ManageStockBtnContainer productId={Number(info.getValue()!)} />
-        </div>
-        ,
-
-        footer: info => info.column.id,
-    }),
-
     // Nombre
-    columnHelper.accessor("product_name", {
+    columnHelper.accessor("nameAndCode", {
         header: () => <HeaderCell>Nombre</HeaderCell>,
-        cell: (info) => info.getValue(),
+        cell: (info) => {
+
+            const { name, short_code } = info.getValue() as { name: string; short_code: number | null };
+            console.log("Rendering Name Cell:", name, short_code);
+            return (<div>
+                <div className="font-medium">{name}</div>
+                <div className="text-sm text-muted-foreground">Código: {short_code ?? "--"}</div>
+            </div>)
+        },
         footer: (info) => info.column.id,
     }),
-
-
 
     // Categoría
     columnHelper.accessor((row) => row.categories?.category_name ?? "--", {
@@ -93,31 +71,31 @@ const columns = [
     }),
 
     // Código de barras
-    columnHelper.accessor("barcode", {
-        header: () => <HeaderCell>Barcode</HeaderCell>,
-        cell: (info) => info.getValue() ?? "--",
-        footer: (info) => info.column.id,
-    }),
+    // columnHelper.accessor("barcode", {
+    //     header: () => <HeaderCell>Barcode</HeaderCell>,
+    //     cell: (info) => info.getValue() ?? "--",
+    //     footer: (info) => info.column.id,
+    // }),
 
     // Control de stock
-    columnHelper.accessor("allow_stock_control", {
-        header: () => <HeaderCell>Con control de stock</HeaderCell>,
-        cell: (info) => (info.getValue() ? "Sí" : "No"),
-        footer: (info) => info.column.id,
-    }),
+    // columnHelper.accessor("allow_stock_control", {
+    //     header: () => <HeaderCell>Con control de stock</HeaderCell>,
+    //     cell: (info) => (info.getValue() ? "Sí" : "No"),
+    //     footer: (info) => info.column.id,
+    // }),
 
-    columnHelper.accessor("lots", {
-        header: () => <HeaderCell>Tiene stock</HeaderCell>,
-        cell: (info) => (Array.isArray(info.getValue()) && (info.getValue()?.length ?? 0) > 0 ? "Sí" : "No"),
-        footer: (info) => info.column.id,
-    }),
+    // columnHelper.accessor("lots", {
+    //     header: () => <HeaderCell>Tiene stock</HeaderCell>,
+    //     cell: (info) => (Array.isArray(info.getValue()) && (info.getValue()?.length ?? 0) > 0 ? "Sí" : "No"),
+    //     footer: (info) => info.column.id,
+    // }),
 
     // Control de lotes
-    columnHelper.accessor("lot_control", {
-        header: () => <HeaderCell>Lotes</HeaderCell>,
-        cell: (info) => (info.getValue() ? "Sí" : "No"),
-        footer: (info) => info.column.id,
-    }),
+    // columnHelper.accessor("lot_control", {
+    //     header: () => <HeaderCell>Lotes</HeaderCell>,
+    //     cell: (info) => (info.getValue() ? "Sí" : "No"),
+    //     footer: (info) => info.column.id,
+    // }),
 
     // Fecha creación
     columnHelper.accessor("created_at", {
@@ -128,95 +106,160 @@ const columns = [
                 : "--",
         footer: (info) => info.column.id,
     }),
+
+    columnHelper.accessor('product_id', {
+        header: () => <HeaderCell>Acciones</HeaderCell>,
+        cell: info => <div className='flex gap-2'>                <DeleteTableElementPopUp
+            elementId={info.getValue() || ''}
+            queryKey={['products']}
+            deleteFn={async (id) => {
+                await deleteProduct(Number(id));
+            }}
+            elementName="el producto"
+            size="icon"
+            successMsgTitle="Elemento eliminado"
+            successMsgDescription="El producto ha sido eliminado correctamente."
+            errorMsgTitle="Error al eliminar"
+            errorMsgDescription="No se pudo eliminar el producto."
+        />
+        </div>
+        ,
+
+        footer: info => info.column.id,
+    }),
 ]
 
 // FIXME DEberia ser igual que en la tabla del loadOrder UNIFICAR
 
-const lotColumnHelper = createColumnHelper<Lot>();
+const lotColumnHelper = createColumnHelper<ProductPresentation>();
+
+
+//  product_presentation_id: number;
+//     product_presentation_name: string;
+//     product_id: number;
+//     short_code: number;
+//     created_at: string;
+
+//     bulk_quantity_equivalence: number | null;
+
+
+//     lots?: Lot[];
 
 const lotColumns = [
-    // lotColumnHelper.accessor("lot_id", {
-    //     header: "ID Lote",
-    //     cell: info => info.getValue(),
-    // }),
-    lotColumnHelper.accessor("lot_number", {
-        header: "Número de Lote",
+    lotColumnHelper.accessor("product_presentation_name", {
+        header: "Presentación",
         cell: info => info.getValue() ?? "--",
     }),
-    lotColumnHelper.accessor("expiration_date", {
-        header: "Vencimiento",
+
+    lotColumnHelper.accessor("bulk_quantity_equivalence", {
+        header: "Unidad/Kg por presentación",
         cell: info => {
             const value = info.getValue() as string | null;
-            return value ? new Date(value).toLocaleDateString("es-AR") : "--";
+            return value ? value : "--";
         },
     }),
-    // lotColumnHelper.accessor("current_quantity", {
-    //     header: "Cantidad",
-    //     cell: info => info.getValue() ?? 0,
-    // }),
 
-    lotColumnHelper.accessor("stockData", {
-        header: "Mover Stock",
+    lotColumnHelper.accessor("lots", {
+        header: "Stock Disponible",
         cell: info => {
-            const stockData = info.getValue() as {
-                stock?: Stock;
-                lot_number: number,
-                lot_id: number,
-                totalQty: number | null,
-            };
+            const lots: Lot[] = info.getValue() as Lot[];
+            return <LotsAndStockProductPresentationTableCell lots={lots} />;
 
-            if (!stockData.stock) return <span>--</span>;
-
-
-
-            return <div className='flex  gap-2'>
-                <StockMovement
-                    lotId={stockData.lot_id}
-                    aditionalQueryKey={["products"]}
-                />
-
-                <SalesStockHistory lotId={stockData.lot_id} />
-                <SalesHistory lotId={stockData.lot_id} />
-            </div>
         }
     }),
 
-
-
-    lotColumnHelper.accessor("stockData", {
-        header: "Precios",
-        cell: (info) => {
-            const stockData = info.getValue() as {
-                purchase_cost_per_unit: number | null;
-                stock?: Stock;
-                lot_number: number,
-                lot_id: number,
-            };
-
-            console.log("Stock Data in Lot Column:", stockData);
-
-            if (!stockData) return <span>--</span>;
-
-            const { stock } = stockData;
-            const isStore = !!stock?.store_id;
-
-            return isStore ? (
-                <ManageStockPrices
-                    hasCost={stockData.purchase_cost_per_unit != null && stockData.purchase_cost_per_unit > 0}
-                    loadOrderId={123} // 👈 ID real
-                    storeId={stock?.store_id ?? null}
-                    productId={stock?.product_id ?? 0}
-                    lotNumber={stockData.lot_number ?? 0}
-                    stockId={stock?.stock_id || 0}
-                    cost_per_unit={stockData.purchase_cost_per_unit ?? 0}
-                    lotId={stockData.lot_id ?? 0}
-                />
-            ) : (
-                <span>Sin precios</span>
-            );
-        },
+    lotColumnHelper.accessor("lots", {
+        header: "Vacíos",
+        cell: info => {
+            const lots: Lot[] = info.getValue() as Lot[];
+            return <LotContainersProductPresentationTableCell lots={lots} />;
+        }
     }),
 
+    // lotColumnHelper.accessor("stockData", {
+    //     header: "Mover Stock",
+    //     cell: info => {
+    //         const stockData = info.getValue() as {
+    //             stock?: Stock;
+    //             lot_number: number,
+    //             lot_id: number,
+    //             totalQty: number | null,
+    //         };
+
+    //         if (!stockData.stock) return <span>--</span>;
+
+
+
+    //         return <div className='flex  gap-2'>
+    //             <StockMovement
+    //                 lotId={stockData.lot_id}
+    //                 aditionalQueryKey={["products"]}
+    //             />
+
+    //             <SalesStockHistory lotId={stockData.lot_id} />
+    //             <SalesHistory lotId={stockData.lot_id} />
+    //         </div>
+    //     }
+    // }),
+
+    // lotColumnHelper.accessor("stockData", {
+    //     header: "Precios",
+    //     cell: (info) => {
+    //         const stockData = info.getValue() as {
+    //             purchase_cost_per_unit: number | null;
+    //             stock?: Stock;
+    //             lot_number: number,
+    //             lot_id: number,
+    //         };
+
+    //         console.log("Stock Data in Lot Column:", stockData);
+
+    //         if (!stockData) return <span>--</span>;
+
+    //         const { stock } = stockData;
+    //         const isStore = !!stock?.store_id;
+
+    //         return isStore ? (
+    //             <ManageStockPrices
+    //                 hasCost={stockData.purchase_cost_per_unit != null && stockData.purchase_cost_per_unit > 0}
+    //                 loadOrderId={123} // 👈 ID real
+    //                 storeId={stock?.store_id ?? null}
+    //                 productId={stock?.product_id ?? 0}
+    //                 lotNumber={stockData.lot_number ?? 0}
+    //                 stockId={stock?.stock_id || 0}
+    //                 cost_per_unit={stockData.purchase_cost_per_unit ?? 0}
+    //                 lotId={stockData.lot_id ?? 0}
+    //             />
+    //         ) : (
+    //             <span>Sin precios</span>
+    //         );
+    //     },
+    // }),
+
+
+    lotColumnHelper.accessor("product_presentation_id", {
+        header: "Acciones",
+        cell: info => <div className='w-10'>
+            <DeleteTableElementPopUp
+                elementId={info.getValue() || ''}
+                queryKey={['products']}
+                deleteFn={async (id) => {
+                    await deleteProductPresentation(Number(id));
+                }}
+                elementName="la presentación"
+                size="icon"
+                successMsgTitle="Presentación eliminada"
+                successMsgDescription="La presentación ha sido eliminada correctamente."
+                errorMsgTitle="Error al eliminar"
+                errorMsgDescription="No se pudo eliminar la presentación."
+            />
+            <ManageStockBtnContainer productPresentationId={Number(info.getValue()!)} />
+
+        </div>
+        ,
+
+        footer: info => info.column.id,
+    }),
 ];
 
 // <StockMovement
@@ -253,7 +296,7 @@ export function ProductTableRendererClientSide({
             pagination,
         },
         // lots are a different type (Lot[]), so coerce types to satisfy the table generics
-        getSubRows: (row: any) => (row.lots ?? []) as unknown as Product[],  // return the children array as sub-rows
+        getSubRows: (row: any) => (row.product_presentations ?? []) as unknown as Product[],  // return the children array as sub-rows
     })
 
     return (
@@ -306,13 +349,13 @@ export function ProductTableRendererClientSide({
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {row.original.lots?.map((lot: any, idx: number) => (
+                                                {row.original.product_presentations?.map((presentation: ProductPresentation, idx: number) => (
                                                     <TableRow key={idx}>
                                                         {lotColumns.map((col: any, j) => (
                                                             <TableCell key={j}>
                                                                 {typeof col.cell === "function"
-                                                                    ? col.cell({ getValue: () => lot[col.accessorKey], row: { original: lot } })
-                                                                    : lot[col.accessorKey]}
+                                                                    ? col.cell({ getValue: () => presentation[col.accessorKey as keyof ProductPresentation], row: { original: presentation } })
+                                                                    : presentation[col.accessorKey as keyof ProductPresentation]}
                                                             </TableCell>
                                                         ))}
                                                     </TableRow>

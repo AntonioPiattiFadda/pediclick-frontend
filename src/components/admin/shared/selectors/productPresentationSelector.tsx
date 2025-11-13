@@ -26,6 +26,7 @@ import { X } from "lucide-react";
 import {
     createContext,
     useContext,
+    useMemo,
     useState,
     type ReactNode,
 } from "react";
@@ -33,22 +34,17 @@ import { Label } from "recharts";
 import ProductSelector from "./productSelector";
 import type { Product } from "@/types/products";
 import toast from "react-hot-toast";
-
-export type ProductPresentation = {
-    product_presentation_id: number;
-    product_presentation_name: string;
-    product_id: number;
-    short_code: number;
-    created_at: string;
-};
+import { debounce } from "lodash";
+import type { ProductPresentation } from "@/types/product_presentation";
 
 // ---------- Context ----------
 interface ProductPresentationSelectorContextType {
-    value: number | null;
-    onChange: (id: number | null) => void;
+    value: ProductPresentation | null;
+    onChange: (id: ProductPresentation | null) => void;
     disabled: boolean;
     presentations: ProductPresentation[];
     isLoading: boolean;
+    productId: number | null;
 }
 
 const ProductPresentationSelectorContext =
@@ -66,8 +62,8 @@ function useProductPresentationSelectorContext() {
 // ---------- Root ----------
 interface RootProps {
     productId: number | null;
-    value: number | null;
-    onChange: (id: number | null) => void;
+    value: ProductPresentation | null;
+    onChange: (id: ProductPresentation | null) => void;
     disabled?: boolean;
     children: ReactNode;
 }
@@ -79,6 +75,8 @@ const ProductPresentationSelectorRoot = ({
     disabled = false,
     children,
 }: RootProps) => {
+    console.log("ProductPresentationSelectorRoot render", productId, value);
+
     const { data: presentations, isLoading } = useQuery({
         queryKey: ["product_presentations", productId],
         queryFn: async () => {
@@ -88,6 +86,7 @@ const ProductPresentationSelectorRoot = ({
         enabled: !!productId,
     });
 
+
     return (
         <ProductPresentationSelectorContext.Provider
             value={{
@@ -96,6 +95,9 @@ const ProductPresentationSelectorRoot = ({
                 disabled,
                 presentations: presentations ?? [],
                 isLoading,
+                productId
+
+
             }}
         >
             <div className="flex items-center gap-2 w-full h-10">{children}</div>
@@ -114,14 +116,23 @@ const SelectProductPresentation = () => {
         if (shortCode === null) return;
         const matched = presentations.find((p) => p.short_code === shortCode);
         if (matched) {
-            onChange(matched.product_presentation_id);
+            debouncedToast.cancel();
+            onChange(matched);
         } else {
             onChange(null);
-            toast("No se encontró una presentación con ese código corto", {
-                icon: "⚠️",
-            });
+            debouncedToast(`No se encontró una presentación con ese código: ${shortCode}`);
         }
     };
+
+    const debouncedToast = useMemo(
+        () =>
+            debounce((msg: string) => {
+                toast(`${msg}`, {
+                    icon: "⚠️",
+                });
+            }, 500),
+        []
+    );
 
     if (isLoading) {
         return (
@@ -132,6 +143,8 @@ const SelectProductPresentation = () => {
             />
         );
     }
+
+
 
     return (
         <>
@@ -148,10 +161,10 @@ const SelectProductPresentation = () => {
 
             <Select
                 disabled={disabled}
-                value={value === null ? "" : String(value)}
+                value={value === null ? "" : String(value.product_presentation_id)}
                 onValueChange={(val) => {
-                    onChange(val === "" ? null : Number(val));
-                    setShortCode(null);
+                    onChange(val === "" ? null : presentations.find((p) => p.product_presentation_id === Number(val)) || null);
+                    setShortCode(presentations.find((p) => p.product_presentation_id === Number(val))?.short_code || null);
                 }}
             >
                 <SelectTrigger className="h-11 w-full">
@@ -165,12 +178,20 @@ const SelectProductPresentation = () => {
                                 key={p.product_presentation_id}
                                 value={String(p.product_presentation_id)}
                             >
-                                {p.product_presentation_name}
+                                {`${p.short_code ?? ''} ${p.short_code ? '-' : ''} ${p.product_presentation_name}`}
                             </SelectItem>
                         ))}
                     </SelectGroup>
                 </SelectContent>
             </Select>
+
+            <Input
+                className={`border border-gray-200 h-9 w-22 `}
+                value={presentations.find((p) => p.product_presentation_id === value?.product_presentation_id)?.bulk_quantity_equivalence ?? ''}
+                placeholder="Unidad/Kg por presentación"
+                disabled
+
+            />
 
             {value && (
                 <Button
@@ -192,30 +213,32 @@ const CreateProductPresentation = ({
 }: {
     isShortCut?: boolean;
 }) => {
-    const { onChange, disabled } = useProductPresentationSelectorContext();
+    const { onChange, disabled, productId } = useProductPresentationSelectorContext();
     const queryClient = useQueryClient();
 
     const [newPresentation, setNewPresentation] = useState("");
     const [product, setProduct] = useState<Product>({} as Product);
-    const [newShortCode, setNewShortCode] = useState("");
+    const [newShortCode, setNewShortCode] = useState<number | null>(null);
+    const [newBulkQuantityEquivalence, setNewBulkQuantityEquivalence] = useState<number | null>(null);
     const [open, setOpen] = useState(false);
 
     const createMutation = useMutation({
         mutationFn: async (data: {
             name: string;
-            shortCode: string;
+            shortCode: number | null;
             productId: number;
+            bulkQuantityEquivalence: number | null;
         }) => {
-            return await createProductPresentation(data.name, data.shortCode, data.productId);
+            return await createProductPresentation(data.name, data.shortCode, data.productId, data.bulkQuantityEquivalence);
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({
-                queryKey: ["product_presentations", product?.product_id],
+                queryKey: ["product_presentations", productId ? productId : product?.product_id],
             });
             onChange(data.product_presentation_id);
             setOpen(false);
             setNewPresentation("");
-            setNewShortCode("");
+            setNewShortCode(null);
             if (isShortCut) {
                 toast("Presentación creada", { icon: "✅" });
             }
@@ -228,12 +251,13 @@ const CreateProductPresentation = ({
     });
 
     const handleCreate = async () => {
-        if (!newPresentation || !product?.product_id) return;
+        if (!newPresentation || (productId === null && !product?.product_id)) return;
         try {
             await createMutation.mutateAsync({
                 name: newPresentation,
                 shortCode: newShortCode,
-                productId: product.product_id,
+                productId: productId ? productId : product.product_id || 0,
+                bulkQuantityEquivalence: newBulkQuantityEquivalence,
             });
         } catch (err) {
             console.error("Error creating presentation:", err);
@@ -264,6 +288,13 @@ const CreateProductPresentation = ({
                     </DialogDescription>
                 </DialogHeader>
 
+                {productId === null && (
+                    <>
+                        <Label className="mt-2 mb-1">Producto</Label>
+                        <ProductSelector value={product} onChange={setProduct} />
+                    </>
+                )}
+
                 <Input
                     value={newPresentation}
                     disabled={createMutation.isLoading}
@@ -273,15 +304,24 @@ const CreateProductPresentation = ({
 
                 <Label className="mt-2 mb-1">Código corto</Label>
                 <Input
-                    value={newShortCode}
+                    value={newShortCode === null ? "" : String(newShortCode)}
                     type="number"
                     disabled={createMutation.isLoading}
-                    onChange={(e) => setNewShortCode(e.target.value)}
+                    onChange={(e) => setNewShortCode(e.target.value === "" ? null : Number(e.target.value))}
                     placeholder="Código corto"
                 />
 
-                <Label className="mt-2 mb-1">Producto</Label>
-                <ProductSelector value={product} onChange={setProduct} />
+                <Label className="mt-2 mb-1">Código corto</Label>
+                <Input
+                    value={newBulkQuantityEquivalence === null ? "" : String(newBulkQuantityEquivalence)}
+                    type="number"
+                    disabled={createMutation.isLoading}
+                    onChange={(e) => setNewBulkQuantityEquivalence(e.target.value === "" ? null : Number(e.target.value))}
+                    placeholder="Unidad/Kg por presentacion"
+                />
+
+
+
 
                 <DialogFooter>
                     <Button
@@ -292,7 +332,7 @@ const CreateProductPresentation = ({
                         Cancelar
                     </Button>
                     <Button
-                        disabled={createMutation.isLoading || !newPresentation || !product?.product_id}
+                        disabled={createMutation.isLoading || !newPresentation || (productId === null && !product?.product_id)}
                         onClick={handleCreate}
                     >
                         {createMutation.isLoading ? "Creando..." : "Crear"}

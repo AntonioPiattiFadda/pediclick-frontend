@@ -1,12 +1,13 @@
 export type Stock = {
-  stock_id?: number;
+  stock_id?: number | null;
   product_id?: number;
   store_id: number | null;
   stock_room_id: number | null;
   current_quantity: number;
   lot_id: number;
-  min_notification: number;
-  max_notification: number;
+  min_notification: number | null;
+  max_notification: number | null;
+  isNew?: boolean;
   stock_type:
   | "STORE"
   | "WASTE"

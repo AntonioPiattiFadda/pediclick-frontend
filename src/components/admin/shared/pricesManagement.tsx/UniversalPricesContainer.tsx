@@ -4,8 +4,8 @@ import { getProductPrices } from '@/service/prices';
 import { useQuery } from '@tanstack/react-query';
 import UniversalPrices from './UniversalPrices';
 
-const UniversalPricesContainer = ({ productId, finalCost }: {
-    productId: number;
+const UniversalPricesContainer = ({ productPresentationId, finalCost }: {
+    productPresentationId: number;
     finalCost: {
         final_cost_total: number | null;
         final_cost_per_unit: number | null;
@@ -14,15 +14,18 @@ const UniversalPricesContainer = ({ productId, finalCost }: {
 }) => {
 
     const { data: productPrices = [], isLoading, isError } = useQuery({
-        queryKey: ["prices", productId],
+        queryKey: ["prices", productPresentationId],
         queryFn: async () => {
-            const response = await getProductPrices(productId, null);
+            const response = await getProductPrices(productPresentationId, null);
             return response.productPrices;
         },
         staleTime: Infinity,
         cacheTime: 0,
-        enabled: !!productId,
+        enabled: !!productPresentationId,
     });
+
+    console.log("Rendering ProductPricesViewer...", productPresentationId);
+    console.log("Product Prices:", productPrices);
 
     if (isLoading) {
         return <div>Cargando...</div>;
@@ -32,11 +35,10 @@ const UniversalPricesContainer = ({ productId, finalCost }: {
         return <div>Error al cargar los precios.</div>;
     }
 
-    console.log("Universal Product Prices:", productPrices);
 
     return (
         <UniversalPrices
-            productId={productId}
+            productPresentationId={productPresentationId}
             finalCost={finalCost}
             disabled={false}
             productPrices={productPrices}

@@ -1,16 +1,16 @@
 import type { Lot } from "@/types/lots";
 import { supabase } from ".";
 import { getBusinessOwnerId } from "./profiles";
+import type { LotContainersLocation } from "@/types/lotContainersLocation";
+import type { Stock } from "@/types/stocks";
 
-export const createLot = async (lot: Lot) => {
+export const createLot = async (lot: Lot, stock: Stock[], lotContainersLocation: LotContainersLocation[]) => {
   const businessOwnerId = await getBusinessOwnerId();
-  //Desestructurar el stock_movement y el stock porque seran en otra tabla
 
-
-  // console.log("adaptedLotData", adaptedLotData);
-
-  const { data, error } = await supabase.rpc("create_lots_with_stock", {
-    p_lots: [lot],
+  const { data, error } = await supabase.rpc("add_stock", {
+    p_lot: lot,
+    p_stocks: stock,
+    p_lot_containers_location: lotContainersLocation,
     p_business_owner_id: businessOwnerId,
   });
 
@@ -18,13 +18,12 @@ export const createLot = async (lot: Lot) => {
   console.log("error creating lot", error);
 
   if (error) {
-    console.error("Error creating lots:", error);
+    console.error("Error creating lot:", error);
     throw error;
   }
 
   return data;
-}
-
+};
 
 export const getFollowingLotNumber = async (productId: number): Promise<number> => {
   const { data, error } = await supabase

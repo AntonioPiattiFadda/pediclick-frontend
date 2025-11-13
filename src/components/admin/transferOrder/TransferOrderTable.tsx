@@ -8,13 +8,12 @@ import {
 } from "@/components/ui/table";
 // import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
 // import { ROLES } from "./RoleInfoPopover";
+import type { Lot } from "@/types/lots";
+import type { Stock } from "@/types/stocks";
+import { formatStockLocation, type StockWithRelations } from "@/utils/stock";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Fragment } from "react/jsx-runtime";
 import { StockMovement } from "../stock/stockMovement";
-import { formatStockLocation, type StockWithRelations } from "@/utils/stock";
-import type { Lot } from "@/types/lots";
-import type { Stock } from "@/types/stocks";
-import ManageStockPrices from "../shared/stock/manageStockPricesUNUSED";
 
 interface LoadOrderTableProps {
   loadOrderData: {
@@ -48,7 +47,7 @@ export const TransferOrderTable = ({ loadOrderData, expandedLots, toggleExpanded
               console.log("Rendering lot:", lot.purchase_cost_per_unit);
               const hasStock = stocks.length > 0;
               const isExpanded = !!(lot.lot_id && expandedLots[lot.lot_id]);
-              const hasCost = lot.purchase_cost_total !== null && lot.purchase_cost_total > 0;
+              // const hasCost = lot.purchase_cost_total !== null && lot.purchase_cost_total > 0;
               return (
                 <Fragment key={lot.lot_id ?? Math.random()}>
                   <TableRow>
@@ -103,7 +102,7 @@ export const TransferOrderTable = ({ loadOrderData, expandedLots, toggleExpanded
                                     .sort((a, b) => (a?.stock_id ?? 0) - (b?.stock_id ?? 0))
                                     .map((stockItem: Stock) => {
                                       console.log("Stock Item:", stockItem);
-                                      const { typeLabel, nameLabel, isStore } = formatStockLocation(stockItem);
+                                      const { typeLabel, nameLabel } = formatStockLocation(stockItem);
 
                                       return (
                                         <TableRow key={stockItem.stock_id}>
@@ -117,7 +116,7 @@ export const TransferOrderTable = ({ loadOrderData, expandedLots, toggleExpanded
                                           </TableCell>
                                           <TableCell>{typeLabel}</TableCell>
                                           <TableCell>{stockItem.current_quantity}</TableCell>
-                                          <TableCell>{isStore ?
+                                          {/* <TableCell>{isStore ?
                                             <ManageStockPrices
                                               hasCost={hasCost}
                                               loadOrderId={loadOrderId}
@@ -126,7 +125,7 @@ export const TransferOrderTable = ({ loadOrderData, expandedLots, toggleExpanded
                                               lotNumber={lot.lot_number || 0}
                                               stockId={stockItem?.stock_id || 0}
                                               cost_per_unit={lot?.purchase_cost_per_unit || 0} lotId={lot.lot_id || 0} />
-                                            : <span>Sin precios</span>}</TableCell>
+                                            : <span>Sin precios</span>}</TableCell> */}
 
 
                                         </TableRow>

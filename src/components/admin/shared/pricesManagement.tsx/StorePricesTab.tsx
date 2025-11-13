@@ -12,8 +12,8 @@ import { DollarSign, Percent, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const StorePricesTab = ({ key, productId, store, finalCost, disabled, productPrices }: {
-    productId: number;
+const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled, productPrices }: {
+    productPresentationId: number;
     store: Store;
     key: string;
     finalCost: {
@@ -43,7 +43,7 @@ const StorePricesTab = ({ key, productId, store, finalCost, disabled, productPri
             return await createPrices(adaptedPrices, pricesToDelete);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["prices", productId], });
+            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId], });
             toast.success("Precios actualizados correctamente");
         },
         onError: (error: {
@@ -288,7 +288,7 @@ const StorePricesTab = ({ key, productId, store, finalCost, disabled, productPri
                         const newPrice: Price = {
                             price_id: Math.random(), // Temporal, se reemplaza al guardar
                             isNew: true,
-                            product_id: productId,
+                            product_presentation_id: productPresentationId,
                             store_id: storeId,
                             price_number: value.length + 1,
                             price: 0,

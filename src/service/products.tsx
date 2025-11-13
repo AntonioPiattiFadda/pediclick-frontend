@@ -3,12 +3,52 @@ import type { Product } from "@/types/products";
 import { supabase } from ".";
 import { getBusinessOwnerId } from "./profiles";
 
+// export const getAllProducts = async () => {
+//   const businessOwnerId = await getBusinessOwnerId();
+//   const { data: dbProducts, error } = await supabase
+//     .rpc("get_products_with_available_lots", {
+//       p_business_owner_id: businessOwnerId,
+//     });
+
+
+//   console.log("dbProducts", dbProducts, error);
+
+//   if (error) {
+//     throw new Error(error.message);
+//   }
+
+
+//   const products = adaptProductsForClient(dbProducts);
+//   console.log("adaptedProducts", products);
+
+
+//   return { products, error };
+// };
+
 export const getAllProducts = async () => {
   const businessOwnerId = await getBusinessOwnerId();
   const { data: dbProducts, error } = await supabase
-    .rpc("get_products_with_available_lots", {
-      p_business_owner_id: businessOwnerId,
-    });
+    .from("products")
+    .select(`
+  *,
+  public_images(public_image_src),
+  categories(category_name),
+  sub_categories(sub_category_name),
+  brands(brand_name),
+  product_presentations!inner (
+    *,
+    lots(
+      *,
+      lot_containers_location(*),
+      stock(*)
+    )
+  )
+`)
+    .is("product_presentations.deleted_at", null)
+    .is("deleted_at", null)
+    .eq("business_owner_id", businessOwnerId)
+    .order("product_name", { ascending: true });
+
 
 
   console.log("dbProducts", dbProducts, error);
@@ -148,20 +188,19 @@ export const getProductsByName = async (name: string, withLots: boolean) => {
   // Base de la consulta
   let query = supabase
     .from("products")
-    .select(
-      `
-    *,
-    public_images(public_image_src),
-    categories(category_name),
-    sub_categories(sub_category_name),
-    brands(brand_name)
+    .select(`
+    product_id,
+    product_name,
+    short_code,
+    updated_at,
+    public_images(public_image_src)
     ${withLots ? ", lots(*, stock(*))" : ""}
-    `
-    )
+  `)
     .is("deleted_at", null)
     .eq("business_owner_id", businessOwnerId)
     .order("product_name", { ascending: true })
     .limit(3);
+
 
   if (withLots) {
     query = query.eq("lots.is_sold_out", false);
@@ -196,7 +235,6 @@ export const checkIfShortCodeIsAvailable = async (
     p_business_owner_id: businessOwnerId,
   });
 
-  console.log("checkIfShortCodeIsAvailable", { data, error });
 
   if (error) {
     console.error("checkIfShortCodeIsAvailable RPC error", error);

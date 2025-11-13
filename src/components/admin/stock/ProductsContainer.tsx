@@ -42,6 +42,8 @@ export const ProductsContainer = () => {
     },
   });
 
+  console.log("ProductsContainer products", products);
+
   const filteredProducts = products.filter((product) => {
     const matchesSearchTerm = product.product_name
       .toLowerCase()
@@ -53,17 +55,17 @@ export const ProductsContainer = () => {
 
     const matchesBarcode = product.barcode?.toString().includes(searchTerm);
 
-    const matchesStore = selectedStore
-      ? product.lots?.some((lot) =>
-        lot.stock?.some((stock) => stock.store_id === selectedStore)
-      )
-      : true;
+    // const matchesStore = selectedStore
+    //   ? product.lots?.some((lot) =>
+    //     lot.stock?.some((stock) => stock.store_id === selectedStore)
+    //   )
+    //   : true;
 
-    const matchesStockRoom = selectedStockRoom
-      ? product.lots?.some((lot) =>
-        lot.stock?.some((stock) => stock.stock_room_id === selectedStockRoom)
-      )
-      : true;
+    // const matchesStockRoom = selectedStockRoom
+    //   ? product.lots?.some((lot) =>
+    //     lot.stock?.some((stock) => stock.stock_room_id === selectedStockRoom)
+    //   )
+    //   : true;
 
     const matchesCategory = selectedCategory
       ? product.category_id === selectedCategory
@@ -74,8 +76,8 @@ export const ProductsContainer = () => {
       : true;
 
     return (
-      matchesStore &&
-      matchesStockRoom &&
+      // matchesStore &&
+      // matchesStockRoom &&
       matchesCategory &&
       matchesSubCategory &&
       (matchesSearchTerm || matchesShortCode || matchesBarcode)

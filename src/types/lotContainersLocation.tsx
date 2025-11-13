@@ -10,4 +10,7 @@ export type LotContainersLocation = {
   provider_id: number | null;
   updated_at?: string | null;
   deleted_at?: string | null;
+
+  lot_container_name?: string | null;
+
 };

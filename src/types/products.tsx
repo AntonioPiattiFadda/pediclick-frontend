@@ -1,4 +1,4 @@
-import type { Lot } from "./lots";
+import type { ProductPresentation } from "./product_presentation";
 
 export type SellMeasurementMode = "QUANTITY" | "WEIGHT";
 
@@ -44,6 +44,11 @@ export interface Product {
   // tracks_stock: boolean;
 
 
+  nameAndCode?: {
+    name: string;
+    short_code: number | null;
+  };
+
   //El formato en que viene de base de datos.
   public_images?: {
     public_image_src: string;
@@ -62,7 +67,9 @@ export interface Product {
     sale_unit_name: string;
   };
 
-  lots?: Lot[];
+  product_presentations?: ProductPresentation[];
+
+  // lots?: Lot[];
 }
 
 

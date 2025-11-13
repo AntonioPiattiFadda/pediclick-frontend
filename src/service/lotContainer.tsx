@@ -62,17 +62,9 @@ export const getLotContainersMovements = async (lotContainerId: number) => {
   return { lotContainersMovements, error };
 };
 
-
-
-
 export const createLotContainer = async (
-  {
-    lot_container_name,
-    lot_container_price,
-  }: {
-    lot_container_name: string;
-    lot_container_price: string;
-  }
+  lot_container_name: string,
+  lot_container_price: number | null,
 ) => {
   const businessOwnerId = await getBusinessOwnerId();
   const { data, error } = await supabase
@@ -91,3 +83,5 @@ export const createLotContainer = async (
 
   return data;
 };
+
+

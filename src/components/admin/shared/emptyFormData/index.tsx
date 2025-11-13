@@ -74,9 +74,6 @@ export const emptyLot: Lot = {
   purchase_cost_total: null,
   purchase_cost_per_unit: null,
 
-
-  bulk_quantity_equivalence: null,
-
   final_cost_total: null,
   final_cost_per_bulk: null,
   final_cost_per_unit: null,
@@ -103,6 +100,11 @@ export const emptyLot: Lot = {
 
 
   lot_control: false,
+
+  product_presentation_id: null,
+  is_derived: false,
+  is_transformed: false,
+  quantity_transformed: null
 };
 
 export const emptyPrices: Price[] = [];

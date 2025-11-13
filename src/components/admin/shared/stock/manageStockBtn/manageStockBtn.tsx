@@ -8,25 +8,24 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Lot } from "@/types/lots";
-import type { Product } from "@/types/products";
+import type { ProductPresentation } from "@/types/product_presentation";
 import { useState } from "react";
-import { ProductInfoAccordion } from "../ProductInfoDisplay";
-import PricesAccordion from "../addStockBtn/pricesAccordion";
 import StockLocationTable from "./StockLocationTable";
+import PricesAccordion from "../addStockBtn/pricesAccordion";
 
 
 export function ManageStockBtn({
-  product,
+  productPresentation,
 
 }: {
-  product: Product;
+  productPresentation: ProductPresentation;
 
 }) {
-  const [selectedProduct, setSelectedProduct] = useState<Product>(product);
-  const [lots] = useState<Lot[]>(product?.lots || []);
-
-  const lotsLength = product?.lots?.length || 0;
-  const sortedLots = product?.lots?.slice().sort((a, b) => {
+  const [selectedProductPresentation, setSelectedProductPresentation] = useState<ProductPresentation>(productPresentation);
+  console.log("setSelectedProductPresentation:", setSelectedProductPresentation);
+  const [lots] = useState<Lot[]>(productPresentation?.lots || []);
+  const lotsLength = productPresentation?.lots?.length || 0;
+  const sortedLots = productPresentation?.lots?.slice().sort((a, b) => {
     if (a.lot_id && b.lot_id) {
       return a.lot_id - b.lot_id;
     }
@@ -293,7 +292,7 @@ export function ManageStockBtn({
     <>
       <DialogHeader>
         <DialogTitle>
-          {`Manejar stock a Producto: ${selectedProduct?.product_name}`}
+          {`Manejar stock a Producto: ${selectedProductPresentation?.product_presentation_name}`}
         </DialogTitle>
         {/* <DialogDescription>
             Completá la información del nuevo elemento que querés publicar.
@@ -302,13 +301,13 @@ export function ManageStockBtn({
 
 
       <Accordion type="multiple" className="w-full">
-        <ProductInfoAccordion
+        {/* <ProductInfoAccordion
           product={selectedProduct}
           onChangeSelectedProduct={(updated) => setSelectedProduct(updated)}
-        />
+        /> */}
 
         <PricesAccordion
-          productId={selectedProduct.product_id!}
+          productPresentationId={selectedProductPresentation.product_presentation_id!}
           finalCost={{
             final_cost_total: final_cost_total,
             final_cost_per_unit: final_cost_per_unit,
@@ -367,9 +366,9 @@ export function ManageStockBtn({
       <DialogFooter
         className={` mt-auto translate-y-6 sticky bottom-0 right-0 bg-white border-t-1 border-t-gray-200 py-4`}
       >
-        {selectedProduct?.updated_at && (
+        {selectedProductPresentation?.updated_at && (
           <span className="mr-auto h-full my-auto">
-            Ultima actualización: {selectedProduct.updated_at}
+            Ultima actualización: {selectedProductPresentation?.updated_at}
           </span>
         )}
 

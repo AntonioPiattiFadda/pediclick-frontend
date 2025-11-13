@@ -4,31 +4,30 @@ import {
     DialogContent,
     DialogTrigger
 } from "@/components/ui/dialog";
-import { getProduct } from "@/service/products";
+import { Spinner } from "@/components/ui/spinner";
+import { getProductPresentation } from "@/service/productPresentations";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { ManageStockBtn } from "./manageStockBtn";
-import { Spinner } from "@/components/ui/spinner";
 
 
 export function ManageStockBtnContainer({
-    productId,
+    productPresentationId,
 }: {
-    productId: number;
+    productPresentationId: number;
 }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const { data: product, isLoading, isError } = useQuery({
-        queryKey: ["product", productId],
+    const { data: productPresentation, isLoading, isError } = useQuery({
+        queryKey: ["product-presentation", productPresentationId],
         queryFn: async () => {
-            const response = await getProduct(productId);
-            return response.product;
+            const response = await getProductPresentation(productPresentationId);
+            return response.presentation;
         },
-        enabled: isModalOpen && !!productId,
+        enabled: isModalOpen && !!productPresentationId,
     });
 
-    console.log({ product, isLoading, isError });
 
 
     return (<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -45,9 +44,9 @@ export function ManageStockBtnContainer({
                 <div className="w-full h-[500px] flex items-center justify-center">
                     <Spinner />
                 </div>
-            ) : product ? (
+            ) : productPresentation ? (
                 <ManageStockBtn
-                    product={product}
+                    productPresentation={productPresentation}
                 />
             ) : (
                 isError && <span>Error loading product data.</span>

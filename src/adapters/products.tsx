@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Lot } from "@/types/lots";
+import type { ProductPresentation } from "@/types/product_presentation";
 import type { Product } from "@/types/products";
-import type { Stock } from "@/types/stocks";
 
 
 export const adaptProductForDb = (product: any): Product => {
@@ -23,28 +22,27 @@ export const adaptProductForDb = (product: any): Product => {
       minor: Number(product.equivalence_minor_mayor_selling?.minor) || null,
       mayor: Number(product.equivalence_minor_mayor_selling?.mayor) || null,
     },
-    lots: product.lots as Lot[] | undefined,
+    product_presentations: product.product_presentations as ProductPresentation[] | undefined,
   };
 };
 
 export const adaptProductsForClient = (products: any): Product[] => {
   console.log("Adapting products for client", products);
   return products.map((product: any) => {
-    const formattedLots = (product.lots ?? []).map((lot: Lot) => {
-      const lotData = {
-        //TODO No mapear todo el lote porque no es necesario en la tabla y hace el objeto muy gigante
-        ...lot,
-        stockData: {
-          purchase_cost_per_unit: lot.purchase_cost_per_unit,
-          lot_number: lot.lot_number,
-          lot_id: lot.lot_id,
-          totalQty: lot?.stock?.reduce((sum, s) => sum + (s?.current_quantity ?? 0), 0),
-          stock: (lot.stock as Stock[] | undefined)?.length ? (lot.stock as Stock[])[0] : undefined,
-        }
-      };
-      return lotData;
-    });
-    console.log("formattedLots", formattedLots);
+    // const formattedLots = (product.lots ?? []).map((lot: Lot) => {
+    //   const lotData = {
+    //     //TODO No mapear todo el lote porque no es necesario en la tabla y hace el objeto muy gigante
+    //     ...lot,
+    //     stockData: {
+    //       purchase_cost_per_unit: lot.purchase_cost_per_unit,
+    //       lot_number: lot.lot_number,
+    //       lot_id: lot.lot_id,
+    //       totalQty: lot?.stock?.reduce((sum, s) => sum + (s?.current_quantity ?? 0), 0),
+    //       stock: (lot.stock as Stock[] | undefined)?.length ? (lot.stock as Stock[])[0] : undefined,
+    //     }
+    //   };
+    //   return lotData;
+    // });
     return {
       product_id: product.product_id,
       public_image_src: product?.public_images?.public_image_src || null,
@@ -62,8 +60,12 @@ export const adaptProductsForClient = (products: any): Product[] => {
       sub_categories: product.sub_categories,
       brands: product.brands,
       has_stock: product.lots ? product.lots.length > 0 : false,
-      lots: formattedLots,
+      product_presentations: product.product_presentations,
       created_at: product.created_at,
+      nameAndCode: {
+        name: product.product_name,
+        short_code: product.short_code,
+      }
 
     }
   });

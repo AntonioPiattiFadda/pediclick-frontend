@@ -68,3 +68,16 @@ export function formatCurrency(value: number) {
     return `$${value?.toFixed?.(2) ?? value}`;
   }
 }
+
+export function formatSmartNumber(num: number): number {
+  if (num == null || isNaN(num)) return 0;
+
+  const rounded = Math.round(num * 100) / 100; // redondea a 2 decimales
+  const fixed = rounded.toFixed(2); // "423.00" o "423.40"
+
+  // Si termina en .00 → convertir a entero
+  if (fixed.endsWith(".00")) return parseInt(fixed, 10);
+
+  // Si tiene decimales, eliminar ceros y punto final si hace falta
+  return parseFloat(fixed.replace(/0+$/, "").replace(/\.$/, ""));
+}

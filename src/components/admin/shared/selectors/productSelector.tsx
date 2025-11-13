@@ -258,7 +258,7 @@ const ProductSelector = ({
                       setInputValue("");
                     }}
                   >
-                    <span className="block truncate">{option.product_name}</span>
+                    <span className="block truncate">{`${option.short_code ?? ''} ${option.short_code ? '-' : ''} ${option.product_name}`}</span>
                     {value === option && (
                       <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-newDsForeground">
                         <Check className="w-5 h-5" />

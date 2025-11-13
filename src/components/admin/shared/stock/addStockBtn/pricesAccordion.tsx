@@ -1,8 +1,8 @@
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import ProductPricesViewerContainer from '../../pricesManagement.tsx/ProductPricesViewerContainer';
 
-const PricesAccordion = ({ productId, finalCost }: {
-    productId: number | null;
+const PricesAccordion = ({ productPresentationId, finalCost }: {
+    productPresentationId: number | null;
     finalCost?: {
         final_cost_total: number | null;
         final_cost_per_unit: number | null;
@@ -10,13 +10,15 @@ const PricesAccordion = ({ productId, finalCost }: {
     };
 }) => {
     return (
-        <AccordionItem value="prices">
+        <AccordionItem disabled={productPresentationId === null} value="prices"
+            className={`${productPresentationId === null ? 'opacity-50 pointer-events-none' : ''}`}
+        >
             <AccordionTrigger className="text-sm font-medium">
                 Precios
             </AccordionTrigger>
             <AccordionContent>
                 <ProductPricesViewerContainer
-                    productId={productId!}
+                    productPresentationId={productPresentationId!}
                     finalCost={{
                         final_cost_total: finalCost?.final_cost_total || null,
                         final_cost_per_unit: finalCost?.final_cost_per_unit || null,

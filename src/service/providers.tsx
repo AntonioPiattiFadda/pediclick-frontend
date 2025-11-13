@@ -3,7 +3,6 @@ import { getBusinessOwnerId } from "./profiles";
 
 export const getProviders = async () => {
   const businessOwnerId = await getBusinessOwnerId();
-  console.log("Business Owner ID:", businessOwnerId); // Debug log
   const { data: providers, error } = await supabase
     .from("providers")
     .select("*")

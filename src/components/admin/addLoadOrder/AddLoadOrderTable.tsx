@@ -14,8 +14,10 @@ import GetFollowingLotNumberBtn from "@/components/unassigned/getFollowingLotNum
 import type { Lot } from "@/types/lots";
 import { useEffect, useRef, useState } from "react";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
-import { LotContainerSelector } from "./lotContainerSelector";
+// import { LotContainerSelector } from "./lotContainerSelectorUNUSED";
 import { AddLotBtn } from "../shared/stock/addStockBtn/addLotBtn";
+import type { Stock } from "@/types/stocks";
+import type { LotContainersLocation } from "@/types/lotContainersLocation";
 
 type EditableCellProps = {
   value: string | number | null | undefined;
@@ -118,6 +120,7 @@ function LotContainerCell({
   disabled = false,
   onSave,
 }: LotContainerCellProps) {
+  console.log("onSave:", onSave);
   const [open, setOpen] = useState(false);
   const totalAssigned = (assignments ?? []).reduce(
     (sum, a) => sum + (Number(a?.quantity) || 0),
@@ -142,12 +145,12 @@ function LotContainerCell({
       </PopoverTrigger>
       <PopoverContent className="w-[600px]">
         <div className="flex flex-col gap-3">
-          <LotContainerSelector
+          {/* <LotContainerSelector
             assignments={assignments ?? []}
             initialQuantity={Number(initialStock) || 0}
             disabled={disabled}
             onChange={(next) => onSave(next)}
-          />
+          /> */}
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cerrar
@@ -166,7 +169,7 @@ export const AddLoadOrderTable = ({
   onDeleteLot,
 }: {
   loadOrderLots: Lot[];
-  onAddElementToLoadOrder: (lot: Lot) => void;
+  onAddElementToLoadOrder: (lot: Lot, stock: Stock[], lotContainersLocation: LotContainersLocation[]) => void;
   onUpdateLot?: (index: number, patch: Partial<Lot>) => void;
   onDeleteLot?: (index: number) => void;
 }) => {

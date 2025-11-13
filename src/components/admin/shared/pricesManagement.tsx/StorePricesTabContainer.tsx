@@ -4,8 +4,8 @@ import type { Store } from '@/types/stores';
 import { useQuery } from '@tanstack/react-query';
 import StorePricesTab from './StorePricesTab';
 
-const StorePricesTabContainer = ({ key, productId, store, finalCost, disabled }: {
-    productId: number;
+const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost, disabled }: {
+    productPresentationId: number;
     store: Store;
     key: string;
     finalCost: {
@@ -17,14 +17,14 @@ const StorePricesTabContainer = ({ key, productId, store, finalCost, disabled }:
 }) => {
 
     const { data: productPrices = [], isLoading, isError } = useQuery({
-        queryKey: ["prices", productId, store.store_id],
+        queryKey: ["prices", productPresentationId, store.store_id],
         queryFn: async () => {
-            const response = await getProductPrices(productId, store.store_id);
+            const response = await getProductPrices(productPresentationId, store.store_id);
             return response.productPrices;
         },
         staleTime: Infinity,
         cacheTime: 0,
-        enabled: !!productId,
+        enabled: !!productPresentationId,
     });
 
     if (isLoading) {
@@ -46,7 +46,7 @@ const StorePricesTabContainer = ({ key, productId, store, finalCost, disabled }:
     return (
         <StorePricesTab
             key={key}
-            productId={productId}
+            productPresentationId={productPresentationId}
             store={store}
             finalCost={finalCost}
             disabled={disabled}

@@ -23,20 +23,16 @@ type Props = {
         final_cost_per_unit: number | null;
         final_cost_per_bulk: number | null;
     };
-    productId: number;
+    productPresentationId: number;
 };
 
-export default function ProductPricesViewer({ productPrices, finalCost, stores, productId }: Props) {
+export default function ProductPricesViewer({ productPrices, finalCost, stores, productPresentationId }: Props) {
 
     const getStoreName = (storeId: number | null) => {
         if (!storeId) return "Universal (todas)";
         const store = stores.find((s) => s.store_id === storeId);
         return store ? store.store_name : "Desconocida";
     };
-
-    console.log("Product Prices:", productPrices);
-    console.log("Stores:", stores);
-    console.log("Final Cost:", finalCost);
 
     if (productPrices.length === 0) {
         return (
@@ -45,7 +41,7 @@ export default function ProductPricesViewer({ productPrices, finalCost, stores, 
                     <div className=" flex flex-col gap-2 items-center  justify-center py-4 text-muted-foreground">
                         No hay precios registrados para este producto.
                         <ManageProductPrices
-                            productId={productId!}
+                            productPresentationId={productPresentationId!}
                             disabled={false}
                             finalCost={{
                                 final_cost_total: finalCost?.final_cost_total || null,
@@ -76,7 +72,7 @@ export default function ProductPricesViewer({ productPrices, finalCost, stores, 
 
                 <div>
                     <ManageProductPrices
-                        productId={productId!}
+                        productPresentationId={productPresentationId!}
                         disabled={false}
                         finalCost={{
                             final_cost_total: finalCost?.final_cost_total || null,

@@ -30,6 +30,7 @@ import { CreatePurchasingAgent, PurchasingAgentSelectorRoot } from "../shared/se
 import { CreateStockRoom, StockroomSelectorRoot } from "../shared/selectors/stockRoomSelector";
 import { CreateSubCategory, SubCategorySelectorRoot } from "../shared/selectors/subCategorySelector";
 import { CreateStore, StoreSelectorRoot } from "../shared/selectors/XXstoresSelector";
+import { Transformation } from "../shared/transformation/Transformation";
 
 /* eslint-disable react-refresh/only-export-components */
 export const MENU_ITEMS: {
@@ -110,6 +111,12 @@ export const MENU_ITEMS: {
           children: <StoreSelectorRoot value={null} onChange={() => { }}>
             <CreateStore isShortCut={true} />
           </StoreSelectorRoot>
+          ,
+        },
+        {
+          title: "Transformación",
+          type: "button",
+          children: <Transformation />
           ,
         },
         // {

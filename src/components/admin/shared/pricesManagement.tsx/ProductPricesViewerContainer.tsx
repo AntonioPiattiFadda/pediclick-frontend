@@ -1,10 +1,10 @@
-import { getAllProductPrices } from "@/service/prices";
+import { getAllProductPresentationPrices } from "@/service/prices";
 import { getUserStores } from "@/service/stores";
 import { useQuery } from "@tanstack/react-query";
 import ProductPricesViewer from "./ProductPricesViewer";
 
-const ProductPricesViewerContainer = ({ productId, finalCost }: {
-    productId: number;
+const ProductPricesViewerContainer = ({ productPresentationId, finalCost }: {
+    productPresentationId: number;
     finalCost: {
         final_cost_total: number | null;
         final_cost_per_unit: number | null;
@@ -24,35 +24,50 @@ const ProductPricesViewerContainer = ({ productId, finalCost }: {
         },
     });
 
+    // const {
+    //     data: productPrices = [],
+    //     isLoading: isPricesLoading,
+    //     isError: isPricesError,
+    // } = useQuery({
+    //     queryKey: ["prices", productId],
+    //     queryFn: async () => {
+    //         const response = await getAllProductPrices(productId);
+    //         return response.productPrices;
+    //     },
+    // });
+
     const {
-        data: productPrices = [],
-        isLoading: isPricesLoading,
-        isError: isPricesError,
+        data: productPresentationPrices = [],
+        isLoading: isPresentationPricesLoading,
+        isError: isPresentationPricesError,
     } = useQuery({
-        queryKey: ["prices", productId],
+        queryKey: ["prices", productPresentationId],
         queryFn: async () => {
-            const response = await getAllProductPrices(productId);
-            return response.productPrices;
+            const response = await getAllProductPresentationPrices(productPresentationId);
+            return response.productPresentationPrices;
         },
     });
 
-    console.log("Stores in Container:", stores);
-    console.log("Product Prices in Container:", productPrices);
+    console.log("productPresentationPrices...", productPresentationPrices);
 
 
-    if (isLoading || isPricesLoading) {
+    // console.log("Stores in Container:", stores);
+    // console.log("Product Prices in Container:", productPrices);
+
+
+    if (isLoading || isPresentationPricesLoading) {
         return <div>Loading...</div>;
     }
 
-    if (isError || isPricesError) {
+    if (isError || isPresentationPricesError) {
         return <div>Error loading stores.</div>;
     }
 
     return (
         <ProductPricesViewer
-            productId={productId}
+            productPresentationId={productPresentationId}
             stores={stores}
-            productPrices={productPrices}
+            productPrices={productPresentationPrices}
             finalCost={{
                 final_cost_total: finalCost?.final_cost_total || null,
                 final_cost_per_unit: finalCost?.final_cost_per_unit || null,

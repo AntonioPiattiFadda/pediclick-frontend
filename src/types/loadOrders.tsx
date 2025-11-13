@@ -38,6 +38,7 @@ export type LoadOrder = {
 
   lots?: Lot[]; // Esto no va a ir en el formulario. Se crea automaticamente al crear el remito
 
+
   //NOTE LO AGREGO? SI porque le tengo que dar un cierre al remito?
   status?: "PENDING" | "COMPLETED" | "CANCELED"; // Por defecto pending
 

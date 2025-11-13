@@ -35,6 +35,22 @@ export const getAllProductPrices = async (productId: number) => {
   return { productPrices, error: null };
 };
 
+export const getAllProductPresentationPrices = async (productPresentationId: number) => {
+  const query = supabase
+    .from("prices")
+    .select(`*`)
+    .eq("product_presentation_id", productPresentationId);
+
+  const { data: productPresentationPrices, error } = await query;
+
+  if (error) throw new Error(error.message);
+
+  return { productPresentationPrices, error: null };
+};
+
+
+
+
 
 
 export const getStockPrices = async (stockId: number) => {

@@ -1,3 +1,4 @@
+import type { LotContainersLocation } from "./lotContainersLocation";
 import type { Price } from "./prices";
 import type { Stock } from "./stocks";
 
@@ -16,6 +17,8 @@ export type BaseLot = {
 
   //Cree una tabla intermedia al pedo porque el lote tiene que estar asociado a un producto
   product_id: number;
+  product_presentation_id: number | null;
+
   lot_number: number | null;
   expiration_date: string | null;
   expiration_date_notification: boolean;
@@ -78,7 +81,7 @@ export type BaseLot = {
   //NOTE informacion de la compra. Si esta liquidado
 
 
-  bulk_quantity_equivalence: number | null;
+  // bulk_quantity_equivalence: number | null;
 
   delivery_cost_total: number | null;
   delivery_cost_per_unit: number | null;
@@ -98,6 +101,12 @@ export type BaseLot = {
   created_at?: string;
   deleted_at?: string;
 
+  is_derived: boolean;
+  is_transformed: boolean;
+  quantity_transformed: number | null;
+
+
+  lot_containers_location?: LotContainersLocation[];
 };
 
 export type LotWithControl = BaseLot & {

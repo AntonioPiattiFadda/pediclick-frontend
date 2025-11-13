@@ -11,8 +11,8 @@ import { DollarSign, Percent, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const UniversalPrices = ({ productId, finalCost, disabled, productPrices }: {
-    productId: number;
+const UniversalPrices = ({ productPresentationId, finalCost, disabled, productPrices }: {
+    productPresentationId: number;
     finalCost: {
         final_cost_total: number | null;
         final_cost_per_unit: number | null;
@@ -22,24 +22,21 @@ const UniversalPrices = ({ productId, finalCost, disabled, productPrices }: {
     productPrices: Price[];
 }) => {
 
-    console.log(finalCost)
-    console.log("productPrices:", productPrices);
     const queryClient = useQueryClient();
-
+    console.log("UniversalPrices rendering...", productPresentationId);
 
 
     const [value, onChange] = useState<Price[]>(productPrices);
-    console.log("value state:", value);
+
     const [pricesToDelete, setPricesToDelete] = useState<number[]>([]);
 
-    console.log("value:", value);
 
     const createPricesMutation = useMutation({
         mutationFn: async (adaptedPrices: Price[]) => {
             return await createPrices(adaptedPrices, pricesToDelete);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["prices", productId], });
+            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId], });
             toast.success("Precios actualizados correctamente");
         },
         onError: (error: {
@@ -284,7 +281,7 @@ const UniversalPrices = ({ productId, finalCost, disabled, productPrices }: {
                         const newPrice: Price = {
                             price_id: Math.random(), // Temporal, se reemplaza al guardar
                             isNew: true,
-                            product_id: productId,
+                            product_presentation_id: productPresentationId,
                             store_id: null,
                             price_number: value.length + 1,
                             price: 0,
@@ -309,7 +306,9 @@ const UniversalPrices = ({ productId, finalCost, disabled, productPrices }: {
 
     const handleCreatePrices = async () => {
         // TODO Validar los precios aca
+        console.log("Creating prices...", value);
         const adaptedPrices = pricesAdapter(value, null);
+        console.log("Adapted prices to create:", adaptedPrices);
         createPricesMutation.mutate(adaptedPrices);
     }
 

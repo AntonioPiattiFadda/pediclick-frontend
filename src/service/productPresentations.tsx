@@ -20,7 +20,6 @@ export const productPresentationConstraints: SubapaseConstrains[] = [{
 
 export const getProductPresentations = async (productId: number | null) => {
   const businessOwnerId = await getBusinessOwnerId();
-  console.log("Business Owner ID:", businessOwnerId); // Debug log
   const { data: presentations, error } = await supabase
     .from("product_presentations")
     .select("*")
@@ -35,17 +34,39 @@ export const getProductPresentations = async (productId: number | null) => {
   return { presentations, error };
 };
 
-export const createProductPresentation = async (name: string, shortCode: string, productId: number) => {
+export const getProductPresentation = async (productPresentationId: number | null) => {
+  const businessOwnerId = await getBusinessOwnerId();
+  const { data: presentation, error } = await supabase
+    .from("product_presentations")
+    .select(`
+    *,
+    products(product_name),
+    lots(*
+      , stock(*)
+    )
+    `)
+    .is("deleted_at", null) // Exclude soft-deleted providers
+    .eq("business_owner_id", businessOwnerId)
+    .eq("product_presentation_id", productPresentationId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { presentation, error };
+};
+
+export const createProductPresentation = async (name: string, shortCode: number | null, productId: number, bulkQuantityEquivalence: number | null) => {
   const businessOwnerId = await getBusinessOwnerId();
   const { data, error } = await supabase
     .from("product_presentations")
-    .insert({ product_presentation_name: name, short_code: shortCode, business_owner_id: businessOwnerId, product_id: productId })
+    .insert({ product_presentation_name: name, short_code: shortCode, business_owner_id: businessOwnerId, product_id: productId, bulk_quantity_equivalence: bulkQuantityEquivalence })
     .select()
     .single();
 
   if (error) {
     handleSupabaseError(error, productPresentationConstraints);
-    // throw new Error(error.message);
   }
 
   return data;

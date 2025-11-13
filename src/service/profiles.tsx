@@ -144,7 +144,6 @@ export const getBusinessOwnerId = async () => {
   //FIXME aca hago una llamada extra pero es mas seguro
   const businessOwnerId =
     userData.role === "OWNER" ? userId : userData.business_owner_id;
-  console.log("Business Owner ID:", businessOwnerId); // Debug log
 
   return businessOwnerId;
 };

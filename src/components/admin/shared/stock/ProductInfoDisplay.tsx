@@ -23,11 +23,11 @@ export const ProductInfoAccordion = ({ product, customElement, onChangeSelectedP
                 <AccordionContent>
                     <div className="grid grid-cols-4 gap-3 text-xs text-gray-700">
                         <InfoItem label="Código corto" value={product.short_code ?? "—"} />
-                        <InfoItem label="Código de barras" value={product.barcode ?? "—"} />
+                        {/* <InfoItem label="Código de barras" value={product.barcode ?? "—"} />
                         <InfoItem label="Rubro" value={product.categories?.category_name ?? "—"} />
 
                         <InfoItem label="Categoría" value={product.sub_categories?.sub_category_name ?? "—"} />
-                        <InfoItem label="Marca" value={product.brands?.brand_name ?? "—"} />
+                        <InfoItem label="Marca" value={product.brands?.brand_name ?? "—"} /> */}
                         <InfoItem label="Nombre" value={product.product_name ?? "—"} />
 
                         <div className="col-span-1 flex items-center gap-2 mt-2">
@@ -45,14 +45,14 @@ export const ProductInfoAccordion = ({ product, customElement, onChangeSelectedP
                             )}
                         </div>
 
-                        {product.observations && (
+                        {/* {product.observations && (
                             <div className="col-span-3 mt-2">
                                 <Label className="text-xs text-gray-600">Observaciones</Label>
                                 <div className="border border-gray-200 bg-gray-50 rounded-md py-1.5 px-2 mt-1 text-gray-800 text-xs leading-snug">
                                     {product.observations}
                                 </div>
                             </div>
-                        )}
+                        )} */}
 
 
                         <div className="mt-2">

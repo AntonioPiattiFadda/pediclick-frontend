@@ -103,6 +103,7 @@ const App = () => {
           <Provider store={store}>
 
             <BrowserRouter>
+
               <Layout>
                 <Routes>
                   <Route element={<PublicRoutesAuthCheck />}>

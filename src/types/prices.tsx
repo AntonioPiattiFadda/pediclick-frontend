@@ -6,7 +6,7 @@ export type Price = {
   isNew?: boolean; // Para identificar precios nuevos que aún no están en la base de datos
   store_id: number | null;
   price_number: number;
-  product_id: number;
+  product_presentation_id: number;
 
   price: number;
   qty_per_price: number;
