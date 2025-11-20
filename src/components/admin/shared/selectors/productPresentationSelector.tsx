@@ -22,7 +22,7 @@ import {
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { createProductPresentation, getProductPresentations } from "@/service/productPresentations";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { X } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 import {
     createContext,
     useContext,
@@ -35,7 +35,7 @@ import ProductSelector from "./productSelector";
 import type { Product } from "@/types/products";
 import toast from "react-hot-toast";
 import { debounce } from "lodash";
-import type { ProductPresentation } from "@/types/product_presentation";
+import type { ProductPresentation } from "@/types/productPresentation";
 
 // ---------- Context ----------
 interface ProductPresentationSelectorContextType {
@@ -66,6 +66,8 @@ interface RootProps {
     onChange: (id: ProductPresentation | null) => void;
     disabled?: boolean;
     children: ReactNode;
+    isFetchWithLots?: boolean;
+    isFetchedWithLotContainersLocation?: boolean;
 }
 
 const ProductPresentationSelectorRoot = ({
@@ -74,18 +76,22 @@ const ProductPresentationSelectorRoot = ({
     onChange,
     disabled = false,
     children,
+    isFetchWithLots = false,
+    isFetchedWithLotContainersLocation = false,
 }: RootProps) => {
-    console.log("ProductPresentationSelectorRoot render", productId, value);
 
-    const { data: presentations, isLoading } = useQuery({
+    const { data: presentations, isLoading, isError } = useQuery({
         queryKey: ["product_presentations", productId],
         queryFn: async () => {
-            const response = await getProductPresentations(productId);
+            const response = await getProductPresentations(productId, isFetchWithLots, isFetchedWithLotContainersLocation);
             return response.presentations;
         },
         enabled: !!productId,
     });
 
+    if (isError) {
+        return <div>Error loading product presentations.</div>;
+    }
 
     return (
         <ProductPresentationSelectorContext.Provider
@@ -106,7 +112,9 @@ const ProductPresentationSelectorRoot = ({
 };
 
 // ---------- Select ----------
-const SelectProductPresentation = () => {
+const SelectProductPresentation = ({ children }: {
+    children?: ReactNode;
+}) => {
     const { value, onChange, disabled, presentations, isLoading } =
         useProductPresentationSelectorContext();
 
@@ -148,64 +156,76 @@ const SelectProductPresentation = () => {
 
     return (
         <>
-            <Input
-                className={`border border-gray-200 h-9 w-22 `}
-                value={shortCode === null ? "" : String(shortCode)}
-                placeholder="Cód.."
-                onChange={(e) => {
-                    const value = e.target.value;
-                    handleShortCodeMatch(Number(value) || null);
-                    setShortCode(Number(value) || null);
-                }}
-            />
+            <div className="flex w-full border border-gray-200 rounded-md ">
 
-            <Select
-                disabled={disabled}
-                value={value === null ? "" : String(value.product_presentation_id)}
-                onValueChange={(val) => {
-                    onChange(val === "" ? null : presentations.find((p) => p.product_presentation_id === Number(val)) || null);
-                    setShortCode(presentations.find((p) => p.product_presentation_id === Number(val))?.short_code || null);
-                }}
-            >
-                <SelectTrigger className="h-11 w-full">
-                    <SelectValue placeholder="Seleccionar presentación" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectGroup>
-                        <SelectLabel>Presentaciones</SelectLabel>
-                        {presentations?.map((p) => (
-                            <SelectItem
-                                key={p.product_presentation_id}
-                                value={String(p.product_presentation_id)}
-                            >
-                                {`${p.short_code ?? ''} ${p.short_code ? '-' : ''} ${p.product_presentation_name}`}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SelectContent>
-            </Select>
+                <Input
+                    className={`  border-none    h-9 w-14 `}
+                    value={shortCode === null ? "" : String(shortCode)}
+                    placeholder="Cód.."
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        handleShortCodeMatch(Number(value) || null);
+                        setShortCode(Number(value) || null);
+                    }}
+                />
+                <div className="h-full w-1 bg-gray-100"></div>
 
-            <Input
+                <Select
+                    disabled={disabled}
+                    value={value === null ? "" : String(value.product_presentation_id)}
+                    onValueChange={(val) => {
+                        onChange(val === "" ? null : presentations.find((p) => p.product_presentation_id === Number(val)) || null);
+                        setShortCode(presentations.find((p) => p.product_presentation_id === Number(val))?.short_code || null);
+                    }}
+                >
+                    <SelectTrigger className="h-11 w-full border-none">
+                        <SelectValue placeholder="Seleccionar presentación" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectLabel>Presentaciones</SelectLabel>
+                            {presentations?.map((p) => (
+                                <SelectItem
+                                    key={p.product_presentation_id}
+                                    value={String(p.product_presentation_id)}
+                                >
+                                    {`${p.short_code ?? ''} ${p.short_code ? '-' : ''} ${p.product_presentation_name} `}   {`${p.bulk_quantity_equivalence && `X${p.bulk_quantity_equivalence}`}`}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* <Input
                 className={`border border-gray-200 h-9 w-22 `}
                 value={presentations.find((p) => p.product_presentation_id === value?.product_presentation_id)?.bulk_quantity_equivalence ?? ''}
                 placeholder="Unidad/Kg por presentación"
                 disabled
 
-            />
+            /> */}
 
-            {value && (
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onChange(null)}
-                    className="text-red-500 hover:text-red-700 h-9"
-                >
-                    <X className="w-5 h-5" />
-                </Button>
-            )}
+            {children}
         </>
     );
 };
+
+const CancelProductPresentationSelection = () => {
+    const { value, onChange } =
+        useProductPresentationSelectorContext();
+
+    return value && (
+        <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onChange(null)}
+            className="text-red-500 hover:text-red-700 h-9"
+        >
+            <X className="w-5 h-5" />
+        </Button>
+    )
+
+}
 
 // ---------- Create ----------
 const CreateProductPresentation = ({
@@ -271,11 +291,12 @@ const CreateProductPresentation = ({
                     <SidebarMenuButton>Presentación</SidebarMenuButton>
                 ) : (
                     <Button
-                        className="border border-gray-200 h-9"
+                        size={'icon'}
+                        className="border border-gray-200"
                         disabled={disabled}
                         variant="outline"
                     >
-                        + Nuevo
+                        <PlusCircle className="w-5 h-5 " />
                     </Button>
                 )}
             </DialogTrigger>
@@ -348,4 +369,5 @@ export {
     CreateProductPresentation,
     ProductPresentationSelectorRoot,
     SelectProductPresentation,
+    CancelProductPresentationSelection,
 };

@@ -9,7 +9,6 @@ import { getAllProducts } from "@/service/products";
 //   // const productsWithUnitPrice = data.filter((product) => {
 //   //   return product.unit_prices.length > 0;
 //   // });
-// console.log()
 //   return data.map((product) => ({
 //     id: product.id,
 //     name: product.product_name,
@@ -64,7 +63,6 @@ const ItemListContainer = () => {
         // }
       })
       .catch((error) => {
-        console.log(error);
         console.error(error);
       });
   }, [searchString, searchedCategory]);
@@ -83,7 +81,7 @@ const ItemListContainer = () => {
         </>
       ) : (
         <>
-        <h1>Items list container</h1>
+          <h1>Items list container</h1>
           {/* <ItemList items={items} /> */}
         </>
       )}

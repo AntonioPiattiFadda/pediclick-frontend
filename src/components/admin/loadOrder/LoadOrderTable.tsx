@@ -44,7 +44,6 @@ export const LoadOrderTable = ({ loadOrderData, expandedLots, toggleExpanded, lo
         <TableBody>
           {loadOrderData.length > 0 ? (
             loadOrderData.map(({ lot, stocks, totalQty }) => {
-              console.log("Rendering lot:", lot.purchase_cost_per_unit);
               const hasStock = stocks.length > 0;
               const isExpanded = !!(lot.lot_id && expandedLots[lot.lot_id]);
               // const hasCost = lot.purchase_cost_total !== null && lot.purchase_cost_total > 0;
@@ -101,7 +100,6 @@ export const LoadOrderTable = ({ loadOrderData, expandedLots, toggleExpanded, lo
                                   stocks
                                     .sort((a, b) => (a?.stock_id ?? 0) - (b?.stock_id ?? 0))
                                     .map((stockItem: Stock) => {
-                                      console.log("Stock Item:", stockItem);
                                       const { typeLabel, nameLabel } = formatStockLocation(stockItem);
 
                                       return (

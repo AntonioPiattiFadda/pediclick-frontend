@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { deleteProductPresentation } from '@/service/productPresentations'
 import { deleteProduct } from '@/service/products'
 import type { Lot } from '@/types/lots'
-import type { ProductPresentation } from '@/types/product_presentation'
+import type { ProductPresentation } from '@/types/productPresentation'
 import type { Product } from '@/types/products'
 import {
     createColumnHelper,
@@ -37,7 +37,6 @@ const columns = [
         cell: (info) => {
 
             const { name, short_code } = info.getValue() as { name: string; short_code: number | null };
-            console.log("Rendering Name Cell:", name, short_code);
             return (<div>
                 <div className="font-medium">{name}</div>
                 <div className="text-sm text-muted-foreground">Código: {short_code ?? "--"}</div>
@@ -109,19 +108,20 @@ const columns = [
 
     columnHelper.accessor('product_id', {
         header: () => <HeaderCell>Acciones</HeaderCell>,
-        cell: info => <div className='flex gap-2'>                <DeleteTableElementPopUp
-            elementId={info.getValue() || ''}
-            queryKey={['products']}
-            deleteFn={async (id) => {
-                await deleteProduct(Number(id));
-            }}
-            elementName="el producto"
-            size="icon"
-            successMsgTitle="Elemento eliminado"
-            successMsgDescription="El producto ha sido eliminado correctamente."
-            errorMsgTitle="Error al eliminar"
-            errorMsgDescription="No se pudo eliminar el producto."
-        />
+        cell: info => <div className='flex gap-2 justify-end'>
+            <DeleteTableElementPopUp
+                elementId={info.getValue() || ''}
+                queryKey={['products']}
+                deleteFn={async (id) => {
+                    await deleteProduct(Number(id));
+                }}
+                elementName="el producto"
+                size="icon"
+                successMsgTitle="Elemento eliminado"
+                successMsgDescription="El producto ha sido eliminado correctamente."
+                errorMsgTitle="Error al eliminar"
+                errorMsgDescription="No se pudo eliminar el producto."
+            />
         </div>
         ,
 
@@ -212,7 +212,6 @@ const lotColumns = [
     //             lot_id: number,
     //         };
 
-    //         console.log("Stock Data in Lot Column:", stockData);
 
     //         if (!stockData) return <span>--</span>;
 
@@ -239,7 +238,7 @@ const lotColumns = [
 
     lotColumnHelper.accessor("product_presentation_id", {
         header: "Acciones",
-        cell: info => <div className='w-10'>
+        cell: info => <div className='w-10 flex gap-2'>
             <DeleteTableElementPopUp
                 elementId={info.getValue() || ''}
                 queryKey={['products']}
@@ -274,9 +273,6 @@ export function ProductTableRendererClientSide({
 }: {
     defaultData: Product[]
 }) {
-    console.log("Rendering ProductTableRendererClientSide with data:", defaultData);
-    // const [data, setData] = React.useState(() => [...defaultData])
-
 
 
     const [pagination, setPagination] = React.useState({

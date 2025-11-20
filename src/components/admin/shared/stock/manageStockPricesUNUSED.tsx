@@ -48,7 +48,6 @@
 //     productId,
 //     hasCost
 // }: PricesDialogProps) {
-//     console.log(productId)
 //     const [open, setOpen] = useState(false);
 //     const queryClient = useQueryClient();
 
@@ -61,7 +60,6 @@
 //         enabled: !!stockId,
 //     });
 
-//     console.log("stockPrices:", stockPrices);
 
 //     const [value, onChange] = useState<Price[]>(stockPrices);
 //     const [pricesToDelete, setPricesToDelete] = useState<number[]>([]);
@@ -70,7 +68,6 @@
 //         onChange(stockPrices);
 //     }, [stockPrices]);
 
-//     console.log("value:", value);
 
 //     const createPricesMutation = useMutation({
 //         mutationFn: async (adaptedPrices: Price[]) => {

@@ -29,7 +29,6 @@ export const getLotContainersLocation = async () => {
   // sub_categories(sub_category_name),
   // brands(brand_name)
 
-  console.log("getLotContainersLocation", data, error);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const adaptedLotContainersLocation = data?.map((loc: any) => ({
@@ -40,7 +39,6 @@ export const getLotContainersLocation = async () => {
     provider_name: loc.provider_name?.provider_name ?? null
   }));
 
-  console.log("adaptedLotContainersLocation", adaptedLotContainersLocation);
 
   if (error) {
     throw new Error(error.message);

@@ -37,7 +37,6 @@ const SalesHistory = ({
     //     });
     // }, [sales]);
 
-    console.log("salesWithTotals:", sales);
 
     return (
         <Sheet>

@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { formatCurrency } from '@/utils/prices';
 
 const CostBadges = ({ finalCost }: {
     finalCost: {
@@ -7,16 +8,17 @@ const CostBadges = ({ finalCost }: {
         final_cost_per_bulk: number | null;
     };
 }) => {
+
     return (
         <div className="flex gap-4 flex-wrap text-sm">
             <Badge variant="secondary">
-                Costo total: {finalCost.final_cost_total?.toFixed(2) ?? "--"}
+                Costo total: {formatCurrency(finalCost.final_cost_total || 0)}
             </Badge>
             <Badge variant="secondary">
-                Costo por bulto: {finalCost.final_cost_per_bulk?.toFixed(2) ?? "--"}
+                Costo por bulto: {formatCurrency(finalCost.final_cost_per_bulk || 0)}
             </Badge>
             <Badge variant="secondary">
-                Costo por unidad: {finalCost.final_cost_per_unit?.toFixed(2) ?? "--"}
+                Costo por unidad: {formatCurrency(finalCost.final_cost_per_unit || 0)}
             </Badge>
         </div>
     )

@@ -1,6 +1,7 @@
 import { adaptProductForDb } from "@/adapters/products";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -10,12 +11,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput
+} from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { LotContainersLocation } from "@/types/lotContainersLocation";
 import type { Lot } from "@/types/lots";
 import type { Price } from "@/types/prices";
-import type { ProductPresentation } from "@/types/product_presentation";
+import type { ProductPresentation } from "@/types/productPresentation";
 import type { Product } from "@/types/products";
 import type { Stock } from "@/types/stocks";
 import { formatSmartNumber } from "@/utils";
@@ -29,7 +35,9 @@ import ProductSelector from "../../selectors/productSelector";
 import { ProductEditSheet } from "../productEditSheet";
 import PricesAccordion from "./pricesAccordion";
 import StockAssignationContainer from "./XXstockAssignationContainer";
-import { Card } from "@/components/ui/card";
+
+
+
 
 // import ManageStockPrices from "./manageStockPrices";
 
@@ -57,14 +65,11 @@ export function AddLotBtn({
 
   const [formData, setFormData] = useState<Lot>(emptyLot);
   const [stock, setStock] = useState<Stock[]>([]);
-  console.log(stock);
   const [lotContainersLocation, setLotContainersLocation] = useState<LotContainersLocation[]>([]);
-  console.log(lotContainersLocation);
 
   const [selectedProduct, setSelectedProduct] = useState<Product>({} as Product);
   const [selectedProductPresentation, setSelectedProductPresentation] = useState<ProductPresentation | null>(null);
 
-  // console.log({ selectedProduct });
 
   const [lotPrices, setLotPrices] = useState<Price[]>([]);
   const [tab, setTab] = useState("lot");
@@ -261,12 +266,9 @@ export function AddLotBtn({
       case "download_total_cost": {
         newDownloadTotalCost = value as number;
         if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
-        console.log({ currentInitialStock });
-        console.log({ value });
         newDownloadCostPerBulk = value as number / currentInitialStock;
         newDownloadCostPerUnit = newDownloadCostPerBulk / bulkQuantityEquivalence;
 
-        console.log({ newDownloadCostPerBulk, newDownloadCostPerUnit });
         break;
       }
       case "productor_commission_type":
@@ -529,13 +531,24 @@ export function AddLotBtn({
 
                     <div className="flex flex-col gap-2">
                       <Label htmlFor="purchase_cost_total">Costo neto total</Label>
-                      <Input
+                      <InputGroup >
+                        <InputGroupInput
+                          type="number"
+                          value={formData.purchase_cost_total || undefined}
+                          placeholder="Costo neto total"
+                          onChange={(e) => handleUpdateLotField("purchase_cost_total", Number(e.target.value))}
+
+                        />
+                        <InputGroupAddon align="inline-start">
+                          $
+                        </InputGroupAddon>
+                      </InputGroup>
+                      {/* <Input
                         type="number"
                         placeholder="Costo neto total"
                         // disabled={!isEditing}
                         value={formData.purchase_cost_total || undefined}
-                        onChange={(e) => handleUpdateLotField("purchase_cost_total", Number(e.target.value))}
-                      />
+                      /> */}
 
                     </div>
 

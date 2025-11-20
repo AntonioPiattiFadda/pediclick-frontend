@@ -41,7 +41,6 @@ export const LotContainersContainer = () => {
     });
 
 
-    console.log(lotContainers, lotContainersLocation);
 
     if (isLoadingLotContainers || isLoadingLotContainersLocation) {
         return <TableSkl />;

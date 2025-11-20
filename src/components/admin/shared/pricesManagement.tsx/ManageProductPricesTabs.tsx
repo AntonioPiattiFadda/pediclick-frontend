@@ -40,7 +40,6 @@ export default function ManageProductPrices({
     });
 
 
-    console.log("Stores in productPresentationId:", productPresentationId);
 
     if (isStoreLoading) {
         return (

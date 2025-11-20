@@ -18,15 +18,15 @@ const LocationsSelector = ({
     selectedLocationId,
     onChangeSelectedLocation,
     flexDirection = "row",
-    direction = "FROM",
+    label = '',
+    placeholder = '',
 }: {
-    selectedLocationId?: string;
+    selectedLocationId?: string | null;
     onChangeSelectedLocation: (newLocationsId: number | null, locationType: "STORE" | "STOCK_ROOM") => void;
     flexDirection?: "row" | "column";
-    direction: "FROM" | "TO";
+    label: string;
+    placeholder: string;
 }) => {
-
-
 
     const {
         data: stores = [],
@@ -58,9 +58,7 @@ const LocationsSelector = ({
 
     const handleChangeLocation = (value: string) => {
         const [type, id] = value.split("-");
-        console.log(type, id);
         const parsedId = Number(id);
-
         if (type === "store") {
             onChangeSelectedLocation(parsedId, "STORE");
         } else if (type === "stock") {
@@ -69,17 +67,15 @@ const LocationsSelector = ({
     };
 
 
-
-
-    return (<div className={`flex gap-2 ${flexDirection === "row" ? "flex-row items-center" : "flex-col"}`} >
-        <label>{direction === "FROM" ? "Desde" : "Hasta"}:</label>
-        <Select value={selectedLocationId} onValueChange={(newLocation) => handleChangeLocation(newLocation)}>
-            <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={direction === "FROM" ? "Desde" : "Hasta"} />
+    return (<div className={`flex gap-2 w-full ${flexDirection === "row" ? "flex-row items-center" : "flex-col"}`} >
+        {label && <label>{label}:</label>}
+        <Select value={selectedLocationId ?? ""} onValueChange={(newLocation) => handleChangeLocation(newLocation)}>
+            <SelectTrigger className="w-full">
+                <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent>
                 <SelectGroup>
-                    <SelectLabel>{direction === "FROM" ? "Desde" : "Hasta"}</SelectLabel>
+                    <SelectLabel>{label}</SelectLabel>
                     {stores.map((store: Store) => (
                         <SelectItem key={`store-${store.store_id}`} value={`store-${store.store_id}`}>
                             {store.store_name}

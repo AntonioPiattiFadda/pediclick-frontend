@@ -9,3 +9,15 @@ export const pricesTypeAndLogicOptions = {
         { value: "LIMITED_OFFER", label: "Oferta limitada" },
     ],
 };
+
+export const formatCurrency = (
+    value: number,
+    locale: string = 'es-AR',
+    currency: string = 'ARS'
+): string => {
+    return (value).toLocaleString(locale, {
+        style: 'currency',
+        currency,
+    });
+};
+

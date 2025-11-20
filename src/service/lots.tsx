@@ -14,8 +14,6 @@ export const createLot = async (lot: Lot, stock: Stock[], lotContainersLocation:
     p_business_owner_id: businessOwnerId,
   });
 
-  console.log("created lot", data);
-  console.log("error creating lot", error);
 
   if (error) {
     console.error("Error creating lot:", error);
@@ -32,9 +30,6 @@ export const getFollowingLotNumber = async (productId: number): Promise<number> 
     .eq("product_id", productId)
     .order("lot_number", { ascending: false }) // ordenar de mayor a menor
     .limit(1)
-
-  console.log("maxLot", data);
-  console.log("error", error);
 
   if (error && error.code !== "PGRST116") {
     // PGRST116 = no rows found, lo tratamos como "no hay lotes"

@@ -21,8 +21,9 @@ import {
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
-import { formatCurrency, formatDate } from "@/utils";
 import { taxConditionsOpt } from "@/constants";
+import { formatCurrency } from "@/utils/prices";
+import { formatDate } from "@/utils";
 
 interface ClientsTableProps {
     clients: Client[];

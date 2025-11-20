@@ -1,4 +1,4 @@
-import type { ProductPresentation } from "./product_presentation";
+import type { ProductPresentation } from "./productPresentation";
 import type { Product } from "./products";
 
 export type TransformationDetail = {
@@ -8,7 +8,10 @@ export type TransformationDetail = {
     lot_id: number | null;
     is_origin: boolean;
     product_presentation_id: number | null;
-    quantity: number;
+    quantity: number | null;
+
+    // lot_container_id: number | null;
+    // lot_container_quantity: number | null;
 
     product?: Product | null;
     product_presentation: ProductPresentation | null;

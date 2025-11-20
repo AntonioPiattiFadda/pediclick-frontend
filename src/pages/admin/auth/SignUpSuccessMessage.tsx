@@ -53,8 +53,8 @@ const SignUpSuccessMessage: React.FC<Props> = ({ email }) => {
       {/* Card */}
       <div
         className={`max-w-lg mx-auto transition-all duration-1000 transform ${showMessage
-            ? "scale-100 opacity-100 translate-y-0"
-            : "scale-75 opacity-0 translate-y-8"
+          ? "scale-100 opacity-100 translate-y-0"
+          : "scale-75 opacity-0 translate-y-8"
           }`}
       >
         <CardContent>

@@ -3,23 +3,34 @@
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
+    DialogTrigger
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { SidebarMenuButton } from "@/components/ui/sidebar"
+import { Textarea } from "@/components/ui/textarea"
+import type { Product } from "@/types/products"
 import type { Transformation } from "@/types/transformation"
 import type { TransformationDetail } from "@/types/transformationDetails"
+import { formatDateToDDMMYY } from "@/utils"
 import { PlusCircle, Trash } from "lucide-react"
 import { useState } from "react"
+import { ProductPresentationSelectorRoot, SelectProductPresentation } from "../selectors/productPresentationSelector"
 import ProductSelector from "../selectors/productSelector"
-import type { Product } from "@/types/products"
-import { CreateProductPresentation, ProductPresentationSelectorRoot, SelectProductPresentation } from "../selectors/productPresentationSelector"
 
 const generateNewTransformationDetail = (isOrigin: boolean, newTransformationId: number) => {
     return {
@@ -29,7 +40,7 @@ const generateNewTransformationDetail = (isOrigin: boolean, newTransformationId:
         product_id: null,
         is_origin: isOrigin,
         product_presentation_id: null,
-        quantity: 0,
+        quantity: null,
         product: null,
         product_presentation: null,
     }
@@ -66,10 +77,13 @@ export function Transformation() {
     const showFromTrash = fromTransformationDetails.length > 1;
     const showToTrash = toTransformationDetails.length > 1;
 
+    const fromTotalCost = 251
+    const fromTotalQty = 100
+
     console.log(showToTrash, setToTransformationDetails);
 
     return (
-        <Dialog>
+        <Dialog >
             <form>
                 <DialogTrigger asChild>
                     <SidebarMenuButton>Transformacion</SidebarMenuButton>
@@ -81,56 +95,104 @@ export function Transformation() {
                             Realiza transformaciones de productos aquí.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-[1fr_auto_1fr] gap-2 border border-gray-200 rounded-lg">
 
-                        <div className="flex flex-col gap-2">
-
-                            {fromTransformationDetails.map((td) => (
+                        <div className="flex flex-col gap-2 max-h-[80vh] overflow-y-auto p-4">
+                            <div className="flex justify-between">
+                                <span className="col-span-6">Desde:</span>
+                                <div className="flex gap-2">
+                                    <span>Costo Total: ${fromTotalCost}</span>
+                                    <span>Cantitad Total: ${fromTotalQty}</span>
+                                </div>
+                            </div>
+                            {fromTransformationDetails.map((td, index) => (
                                 <div
                                     key={td.transformation_detail_id}
+                                    className="grid grid-cols-6
+                                    gap-2"
                                 >
-                                    <ProductSelector
-                                        value={td.product ?? {} as Product}
-                                        onChange={
-                                            (product: Product) => {
-                                                const productIndex = fromTransformationDetails.findIndex((item) => item.transformation_detail_id === td.transformation_detail_id);
-                                                const updatedDetails = [...fromTransformationDetails];
-                                                updatedDetails[productIndex] = {
-                                                    ...updatedDetails[productIndex],
-                                                    product_id: product?.product_id || null,
-                                                    product: product,
+                                    <div className="col-span-3  flex flex-col gap-1">
+                                        <Label>Producto Nro: {index + 1}</Label>
+                                        <ProductSelector
+                                            value={td.product ?? {} as Product}
+                                            onChange={
+                                                (product: Product) => {
+                                                    const productIndex = fromTransformationDetails.findIndex((item) => item.transformation_detail_id === td.transformation_detail_id);
+                                                    const updatedDetails = [...fromTransformationDetails];
+                                                    updatedDetails[productIndex] = {
+                                                        ...updatedDetails[productIndex],
+                                                        product_id: product?.product_id || null,
+                                                        product: product,
+                                                    };
+                                                    setFromTransformationDetails(updatedDetails);
+
+                                                }}
+                                        />
+                                    </div>
+                                    <div className="col-span-3  flex flex-col gap-1">
+                                        <Label>Presentación</Label>
+                                        <ProductPresentationSelectorRoot
+                                            productId={td.product_id}
+                                            value={td.product_presentation}
+                                            onChange={(presentation) => {
+                                                const fromTransformationDetailIndex = fromTransformationDetails.findIndex((item) => item.transformation_detail_id === td.transformation_detail_id);
+
+                                                const updatedFromTransformationDetails = [...fromTransformationDetails];
+                                                updatedFromTransformationDetails[fromTransformationDetailIndex] = {
+                                                    ...updatedFromTransformationDetails[fromTransformationDetailIndex],
+                                                    product_presentation_id: presentation?.product_presentation_id ?? null,
+                                                    product_presentation: presentation,
                                                 };
-                                                setFromTransformationDetails(updatedDetails);
+
+                                                setFromTransformationDetails(updatedFromTransformationDetails);
 
                                             }}
-                                    />
+                                            isFetchWithLots={true}
+                                        >
+                                            <SelectProductPresentation />
+                                        </ProductPresentationSelectorRoot>
+                                    </div>
 
-                                    <ProductPresentationSelectorRoot
-                                        productId={td.product_id}
-                                        value={td.product_presentation}
-                                        onChange={(presentation) => {
-                                            const fromTransformationDetailIndex = fromTransformationDetails.findIndex((item) => item.transformation_detail_id === td.transformation_detail_id);
 
-                                            const updatedFromTransformationDetails = [...fromTransformationDetails];
-                                            updatedFromTransformationDetails[fromTransformationDetailIndex] = {
-                                                ...updatedFromTransformationDetails[fromTransformationDetailIndex],
-                                                product_presentation_id: presentation?.product_presentation_id ?? null,
-                                                product_presentation: presentation,
-                                            };
+                                    <div className="flex flex-col gap-1  col-span-2">
+                                        <Label>Lote</Label>
+                                        <Select
+                                            value={td.lot_id ? String(td.lot_id) : undefined}
+                                            onValueChange={(value) => {
+                                                const fromTransformationDetailIndex = fromTransformationDetails.findIndex((item) => item.transformation_detail_id === td.transformation_detail_id);
 
-                                            setFromTransformationDetails(updatedFromTransformationDetails);
+                                                const updatedFromTransformationDetails = [...fromTransformationDetails];
+                                                updatedFromTransformationDetails[fromTransformationDetailIndex] = {
+                                                    ...updatedFromTransformationDetails[fromTransformationDetailIndex],
+                                                    lot_id: Number(value),
+                                                };
+                                                setFromTransformationDetails(updatedFromTransformationDetails);
+                                            }
+                                            } >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Selecciona el lote" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectLabel>Lotes</SelectLabel>
+                                                    {td.product_presentation?.lots?.map((lot) => (
+                                                        <SelectItem key={lot.lot_id} value={String(lot.lot_id)}>{formatDateToDDMMYY(lot.created_at || '')}</SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
 
-                                        }}
-                                    >
-                                        <SelectProductPresentation />
-                                        <CreateProductPresentation />
-                                    </ProductPresentationSelectorRoot>
-
-                                    <span>{td.product_presentation_id} {td.product_presentation?.lots?.map(lot => lot.stock).join(', ')}</span>
-                                    <span>{td.lot_id}</span>
-                                    <Input value={td.quantity} onChange={(e) => {
-                                        setFromTransformationDetails((prev) => prev.map((item) => item.transformation_detail_id === td.transformation_detail_id ? { ...item, quantity: Number((e.target as HTMLInputElement).value) } : item));
-                                    }} />
+                                    <div className="flex flex-col gap-1">
+                                        <Label>Cantidad</Label>
+                                        <Input
+                                            placeholder="Cantidad"
+                                            type="number"
+                                            value={td.quantity ?? ''}
+                                            onChange={(e) => {
+                                                setFromTransformationDetails((prev) => prev.map((item) => item.transformation_detail_id === td.transformation_detail_id ? { ...item, quantity: Number((e.target as HTMLInputElement).value) } : item));
+                                            }} />
+                                    </div>
 
                                     {showFromTrash && (
                                         <Button
@@ -155,23 +217,23 @@ export function Transformation() {
 
                         </div>
 
-                        <div className="bg-green-200">
+                        <div className="p-4 border-r border-l border-gray-200  flex flex-col gap-2">
+                            <Label>Costo de transformación</Label>
                             <Input value={transformation.transformation_cost} onChange={(e) => {
                                 setTransformation((prev) => ({ ...prev, transformation_cost: Number((e.target as HTMLInputElement).value) }));
                             }} />
-                            <Input value={transformation.notes} onChange={(e) => {
-                                setTransformation((prev) => ({ ...prev, notes: (e.target as HTMLInputElement).value }));
+                            <Label>Notas</Label>
+                            <Textarea value={transformation.notes} onChange={(e) => {
+                                setTransformation((prev) => ({ ...prev, notes: (e.target as HTMLTextAreaElement).value }));
                             }} />
                         </div>
 
-                        <div className="bg-red-200"></div>
+                        <div className="flex flex-col gap-2 max-h-[80vh] overflow-y-auto p-4"></div>
 
                     </div>
                     <DialogFooter>
-                        <DialogClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                        </DialogClose>
-                        <Button type="submit">Save changes</Button>
+
+                        <Button type="submit">Transformar</Button>
                     </DialogFooter>
                 </DialogContent>
             </form>

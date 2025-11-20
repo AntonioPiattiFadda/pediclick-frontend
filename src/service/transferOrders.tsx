@@ -12,6 +12,7 @@ export const getAllTransferOrders = async () => {
         .from("transfer_orders")
         .select("*")
         .eq("business_owner_id", businessOwnerId)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
     if (error) {
@@ -48,6 +49,23 @@ export const getTransferOrder = async (
         throw new Error(error.message);
     }
 
+    console.log("Fetched Transfer Order:", dbTransferOrder);
+
+    // const adaptedTransferOrder = {
+    //     ...dbTransferOrder,
+    //     transfer_order_items: dbTransferOrder.transfer_order_items.map(() => {
+    //         const adaptedOI = {
+    //             ...dbTransferOrder.transfer_order_items,
+    //             isNew: false,
+    //         }
+    //         console.log("adaptedOI:", adaptedOI);
+    //         return {
+    //             ...dbTransferOrder.transfer_order_items,
+    //             isNew: false,
+    //         }
+    //     }) || []
+    // };
+
     return { dbTransferOrder: (dbTransferOrder as TransferOrderType) ?? null, error: null };
 };
 
@@ -83,15 +101,10 @@ export async function updateTransferOrderWithItems(
     order: TransferOrderType,
     items: TransferOrderItem[]
 ) {
-    console.log("🔄 Updating Transfer Order:", order, items);
     // ✅ Convertir los datos a JSON limpio (sin referencias circulares ni campos opcionales que rompan el JSONB)
     const orderJson = JSON.parse(JSON.stringify(order));
     const itemsJson = items.map((i) => JSON.parse(JSON.stringify(i)));
 
-    console.log("Updating Transfer Order with items:", {
-        order: orderJson,
-        items: itemsJson,
-    });
 
     const { data, error } = await supabase.rpc("update_transfer_order_with_items", {
         p_transfer_order: orderJson,
@@ -103,7 +116,6 @@ export async function updateTransferOrderWithItems(
         throw error;
     }
 
-    console.log("✅ Transfer order updated:", data);
     return data;
 }
 

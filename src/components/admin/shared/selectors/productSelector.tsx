@@ -114,19 +114,17 @@ const ProductSelector = ({
 
   const createProductMutation = useMutation({
     mutationFn: async (data: { completedInformation: any }) => {
-      console.log("Creating product with data:", data);
       return await createProduct(data.completedInformation);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      console.log(data);
       handleSelectProduct(data);
       // setIsModalOpen(false);
       // toast("Producto creado exitosamente", {
       //   description: "El producto ha sido creado correctamente.",
       //   action: {
       //     label: "Undo",
-      //     onClick: () => console.log("Undo"),
+      //     onClick: ,
       //   },
       // });
       // setFormData(emptyProduct);
@@ -136,7 +134,7 @@ const ProductSelector = ({
         description: "Intentá nuevamente más tarde.",
         action: {
           label: "Undo",
-          onClick: () => console.log("Undo"),
+          onClick: () => { },
         },
       });
     },

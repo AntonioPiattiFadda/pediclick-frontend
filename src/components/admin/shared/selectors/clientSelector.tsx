@@ -33,8 +33,8 @@ import { toast } from "sonner";
 
 // ---------- Context ----------
 interface ClientSelectorContextType {
-    value: number | null;
-    onChange: (id: number | null) => void;
+    value: Client | null;
+    onChange: (client: Client | null) => void;
     disabled: boolean;
     clients: Client[];
     isLoading: boolean;
@@ -52,8 +52,8 @@ function useClientSelectorContext() {
 
 // ---------- Root ----------
 interface RootProps {
-    value: number | null;
-    onChange: (id: number | null) => void;
+    value: Client | null;
+    onChange: (client: Client | null) => void;
     disabled?: boolean;
     children: ReactNode;
 }
@@ -96,9 +96,15 @@ const SelectClient = () => {
             <select
                 className="w-full border rounded px-2 py-2 h-10"
                 disabled={disabled}
-                value={value === null ? "" : value}
-                onChange={(e) =>
-                    onChange(e.target.value === "" ? null : Number(e.target.value))
+                value={value === null ? "" : value.client_id}
+                onChange={(e) => {
+                    const selectedId = Number(e.target.value);
+                    const selectedClient = clients.find(
+                        (client) => client?.client_id === selectedId
+                    ) || null;
+                    onChange(selectedClient);
+                }
+
                 }
             >
                 <option disabled value="">Sin Cliente</option>
@@ -164,7 +170,7 @@ const CreateClient = ({ isShortCut = false }: {
         },
         onSuccess: (data: Client) => {
             queryClient.invalidateQueries({ queryKey: ["clients"] });
-            onChange(data.client_id || null);
+            onChange(data || null);
             toast.success("Cliente creado correctamente");
             setOpen(false);
             setFormData({

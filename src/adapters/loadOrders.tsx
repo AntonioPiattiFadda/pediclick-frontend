@@ -4,7 +4,6 @@ import { v4 as uuid } from "uuid";
 export const adaptLoadOrderForSubmission = (formData: LoadOrder) => {
   const { lots, ...loadOrder } = formData;
 
-  console.log("Original Load Order:", formData);
 
   const adaptedLots = (lots ?? []).map((lot) => {
     const client_key = uuid(); // 👈 genera clave única por lote
@@ -23,7 +22,6 @@ export const adaptLoadOrderForSubmission = (formData: LoadOrder) => {
 
   //Obtener los lot containers con el lote y para ver como manejamos la informacion de su ubicacion y sus movimientos
 
-  console.log("Adapted Load Order:", { loadOrder, adaptedLots, adaptedPrices });
 
   return {
     loadOrder,

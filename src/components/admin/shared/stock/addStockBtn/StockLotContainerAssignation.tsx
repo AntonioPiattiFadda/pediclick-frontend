@@ -52,7 +52,6 @@ const StockLotContainerAssignation = ({
             };
             updatedLotContainersLocations = [...(lotContainersLocations || []), newLotContainersLocation];
         }
-        console.log("NupdatedLotContainersLocations:", updatedLotContainersLocations);
         onChangeLotContainersLocation(updatedLotContainersLocations);
     };
 
@@ -85,7 +84,6 @@ const StockLotContainerAssignation = ({
             };
             updatedLotContainersLocations = [...(lotContainersLocations || []), newLotContainersLocation];
         }
-        console.log("NupdatedLotContainersLocations:", updatedLotContainersLocations);
         onChangeLotContainersLocation(updatedLotContainersLocations);
     };
 
@@ -127,7 +125,6 @@ const StockLotContainerAssignation = ({
                                         lot_container_price: 0,
                                     }}
                                     onChange={(value) => {
-                                        console.log("Selected Lot Container:", value);
                                         handleUpdateLotContainersLocationLotContainer(value?.lot_container_id || null, value?.lot_container_name || null);
 
                                     }}

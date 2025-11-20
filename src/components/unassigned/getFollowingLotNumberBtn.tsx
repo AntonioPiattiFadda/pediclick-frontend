@@ -13,7 +13,6 @@ const GetFollowingLotNumberBtn = ({
     const [loading, setLoading] = useState(false);
     const handleGetFollowingLotNumber = async () => {
         // Lógica para obtener el siguiente número de lote
-        console.log("Obteniendo el siguiente número de lote para el producto ID:", productId);
         try {
             setLoading(true);
             const nextLotNumber = await getFollowingLotNumber(productId);

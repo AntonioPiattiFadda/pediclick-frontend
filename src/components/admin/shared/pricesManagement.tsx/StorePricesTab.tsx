@@ -26,17 +26,13 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
 }) => {
 
     const storeId = store.store_id;
-    console.log(finalCost)
-    console.log("productPrices:", productPrices);
     const queryClient = useQueryClient();
 
 
 
     const [value, onChange] = useState<Price[]>(productPrices);
-    console.log("value state:", value);
     const [pricesToDelete, setPricesToDelete] = useState<number[]>([]);
 
-    console.log("value:", value);
 
     const createPricesMutation = useMutation({
         mutationFn: async (adaptedPrices: Price[]) => {
@@ -109,7 +105,6 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
     //     const price = round2(prevPerUnit * units);
     //     const profit_percentage = round2((prevPerUnit / finalCost.final_cost_per_unit - 1) * 100);
 
-    //     console.log({ ...row, qty_per_price: units, price, profit_percentage });
 
     //     return { ...row, qty_per_price: units, price, profit_percentage };
     // }
@@ -322,7 +317,6 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
     // }
 
 
-    console.log("Product Prices for store", store.store_name, ":", productPrices);
 
 
     return (

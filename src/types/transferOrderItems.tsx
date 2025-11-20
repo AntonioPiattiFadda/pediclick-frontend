@@ -1,3 +1,7 @@
+import type { LotContainerMovement } from "./lotContainerMovements";
+import type { LotContainersLocation } from "./lotContainersLocation";
+import type { Lot } from "./lots";
+import type { ProductPresentation } from "./productPresentation";
 import type { Product } from "./products";
 
 export interface TransferOrderItem {
@@ -11,4 +15,10 @@ export interface TransferOrderItem {
 
     isNew?: boolean;
     product?: Product | null;
+    product_presentation?: ProductPresentation | null;
+    lot?: Lot | null;
+
+    lot_container_location?: LotContainersLocation | null;
+
+    lot_container_movements?: LotContainerMovement | null;
 }

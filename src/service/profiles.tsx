@@ -5,6 +5,7 @@ import {
   setLocalStorage,
 } from "@/utils/localStorageUtils";
 import { getUserId, supabase } from ".";
+import type { UserProfile } from "@/types/users";
 
 export const insertNewAdminUser = async (email: string, userUid: string) => {
   const { data, error } = await supabase
@@ -178,8 +179,8 @@ export const getUserTeamMembers = async () => {
   return { teamMembers, error };
 };
 
-export const createTeamMember = async (newUserData: any) => {
-  const userId = await getBusinessOwnerId();
+export const createTeamMember = async (newUserData: Omit<UserProfile, "id" | "is_verified">) => {
+  const businessOwnerId = await getBusinessOwnerId();
 
   const { error: createUserError, data: user } = await createNewUser(
     newUserData.email,
@@ -194,17 +195,27 @@ export const createTeamMember = async (newUserData: any) => {
     throw error;
   }
 
-  const newUserDataFormatted = {
+  if (!newUserUID) {
+    const error = new Error("");
+    error.message = "No se pudo crear el usuario de autenticación.";
+    throw error;
+  }
+
+  const newUserDataFormatted: Omit<UserProfile, "password"> = {
     id: newUserUID,
     email: newUserData.email,
-    role: newUserData.role,
+    role: 'EMPLOYEE',
     full_name: newUserData.full_name,
-    avatar_url: newUserData.avatar_url,
     address: newUserData.address,
     phone: newUserData.phone,
     is_verified: false,
     store_id: newUserData.store_id,
-    parent_user_id: userId,
+    business_owner_id: businessOwnerId,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    deleted_at: null,
+    short_code: newUserData.short_code,
+    stock_room_id: newUserData.stock_room_id,
   };
 
   const { data, error: newUserError } = await supabase

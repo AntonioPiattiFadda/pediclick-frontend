@@ -18,33 +18,60 @@ export const productPresentationConstraints: SubapaseConstrains[] = [{
 
 
 
-export const getProductPresentations = async (productId: number | null) => {
+export const getProductPresentations = async (
+  productId: number | null,
+  isFetchWithLots: boolean = false,
+  isFetchedWithLotContainersLocation: boolean = false
+) => {
   const businessOwnerId = await getBusinessOwnerId();
-  const { data: presentations, error } = await supabase
+
+  const lotsSelect = isFetchWithLots
+    ? isFetchedWithLotContainersLocation
+      ? `
+        *,
+        lots(
+          *,
+          stock(*),
+          lot_containers_location(
+            *
+          )
+        )
+      `
+      : `
+        *,
+        lots(
+          *,
+          stock(*)
+        )
+      `
+    : "*";
+
+  const query = supabase
     .from("product_presentations")
-    .select("*")
-    .is("deleted_at", null) // Exclude soft-deleted providers
+    .select(lotsSelect)
+    .is("deleted_at", null)
     .eq("business_owner_id", businessOwnerId)
     .eq("product_id", productId);
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  const { data: presentations, error } = await query;
+
+  if (error) throw new Error(error.message);
 
   return { presentations, error };
 };
+
 
 export const getProductPresentation = async (productPresentationId: number | null) => {
   const businessOwnerId = await getBusinessOwnerId();
   const { data: presentation, error } = await supabase
     .from("product_presentations")
     .select(`
-    *,
-    products(product_name),
-    lots(*
+      *,
+      products(product_name),
+      lots(*
       , stock(*)
-    )
-    `)
+      )
+        `)
     .is("deleted_at", null) // Exclude soft-deleted providers
     .eq("business_owner_id", businessOwnerId)
     .eq("product_presentation_id", productPresentationId)

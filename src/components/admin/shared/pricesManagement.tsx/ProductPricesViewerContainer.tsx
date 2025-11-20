@@ -48,11 +48,9 @@ const ProductPricesViewerContainer = ({ productPresentationId, finalCost }: {
         },
     });
 
-    console.log("productPresentationPrices...", productPresentationPrices);
 
 
-    // console.log("Stores in Container:", stores);
-    // console.log("Product Prices in Container:", productPrices);
+
 
 
     if (isLoading || isPresentationPricesLoading) {

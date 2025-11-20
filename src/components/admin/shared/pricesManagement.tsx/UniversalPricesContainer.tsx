@@ -24,8 +24,7 @@ const UniversalPricesContainer = ({ productPresentationId, finalCost }: {
         enabled: !!productPresentationId,
     });
 
-    console.log("Rendering ProductPricesViewer...", productPresentationId);
-    console.log("Product Prices:", productPrices);
+
 
     if (isLoading) {
         return <div>Cargando...</div>;

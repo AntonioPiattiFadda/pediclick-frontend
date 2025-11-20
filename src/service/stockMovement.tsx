@@ -4,7 +4,6 @@ import { supabase } from ".";
 export const createStockMovement = async (formData: StockMovement) => {
     //TODO Agregar el business_owner_id al llamado y el stock id a la lot_containers_location nueva
 
-    console.log("createStockMovement called with formData:", formData);
 
     const { data: stockMovementData, error: stockMovementError } = await supabase
         .rpc("transfer_stock", {
@@ -68,14 +67,12 @@ export const getStockSalesHistory = async (lotId: number) => {
 
 
 export const getSalesHistoryByProductOrLot = async (lotId: number) => {
-    console.log("getSalesHistoryByProductOrLot called with lotId:", lotId);
     const { data, error } = await supabase
         .rpc("get_sales_history_by_product_or_lots", {
             p_product_id: null,
             p_lot_id: lotId
         });
 
-    console.log("get_sales_history_by_product_or_lot:", data, error);
 
     if (error) console.error(error);
 

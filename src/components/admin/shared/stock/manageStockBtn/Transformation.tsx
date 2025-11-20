@@ -1,4 +1,4 @@
-import type { ProductPresentation } from "@/types/product_presentation"
+import type { ProductPresentation } from "@/types/productPresentation"
 
 const Transformation = ({ fromProductPresentationId }:
     {

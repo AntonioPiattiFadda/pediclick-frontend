@@ -1,4 +1,4 @@
-import type { ProductPresentation } from "./product_presentation";
+import type { ProductPresentation } from "./productPresentation";
 
 export type SellMeasurementMode = "QUANTITY" | "WEIGHT";
 

@@ -27,7 +27,6 @@ export const getLotStocks = async (lotId: number) => {
     lot_containers_location: stock?.lot_containers_location[0] || [],
   })) || [];
 
-  console.log("getLotStocks", lotId, adaptedLotStock, error);
 
   if (error) {
     throw new Error(error.message);

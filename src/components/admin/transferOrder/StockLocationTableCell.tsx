@@ -11,15 +11,16 @@ import {
 import type { Lot } from "@/types/lots"
 import StockLocationTable from "../shared/stock/manageStockBtn/StockLocationTable"
 
-export function StockLocationTableCell({ lots, productName, maxQtyInFromLocation }: { lots: Lot[], productName: string, maxQtyInFromLocation: number | null }) {
+export function StockLocationTableCell({ lots, productName, disabled = false }: { lots: Lot[], productName: string, disabled?: boolean }) {
 
 
     return (
         <div className="flex gap-2 items-center">
-            <span>{maxQtyInFromLocation}</span>
-            <Sheet>
+            <Sheet open={disabled ? false : undefined}>
                 <SheetTrigger asChild>
-                    <Button variant="outline">Stock total</Button>
+                    <Button
+                        disabled={disabled}
+                        variant="outline">Stock total</Button>
                 </SheetTrigger>
                 <SheetContent side={'bottom'}>
                     <SheetHeader>

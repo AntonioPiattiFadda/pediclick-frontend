@@ -6,14 +6,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { transferOrderStatuses } from "@/constants";
 import { getStockRoomName } from "@/service/stockRooms";
 import { getStoreName } from "@/service/stores";
+import { updateTransferOrderWithItems } from "@/service/transferOrders";
 import type { TransferOrderType } from "@/types/transferOrders";
+import type { UserProfile } from "@/types/users";
 import { formatDate } from "@/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { CancelTeamMemberSelection, SelectTeamMember, TeamMemberSelectorRoot } from "../shared/selectors/TeamMemberSelector";
 import LocationsSelector from "./LocationSelector";
 import TransferOrderItemsTable from "./TransferOrderItemsTable";
-import { updateTransferOrderWithItems } from "@/service/transferOrders";
 
 const TransferOrder = ({
     transferOrder,
@@ -43,6 +45,9 @@ const TransferOrder = ({
     const toId = selectedLocationId ? formattedFromId : '';
 
     const [formData, setFormData] = useState<TransferOrderType>(transferOrder)
+
+    const [selectedTeamMember, setSelectedTeamMember] = useState<UserProfile | null>(null);
+
     const queryClient = useQueryClient();
 
     const updateTransferOrderMutation = useMutation({
@@ -116,6 +121,15 @@ const TransferOrder = ({
                     <p className="text-muted-foreground flex gap-2">    Desde:{fromLocationName ? fromLocationName : <Spinner />}</p>
                     <p className="text-muted-foreground flex gap-2">    Estado:<Badge>{transferOrderStatuses[formData.transfer_order_status] ?? "--"}</Badge></p>
 
+                    <div className="flex flex-col gap-2 mt-2">
+                        <Label>Asignada a:</Label>
+                        <TeamMemberSelectorRoot value={selectedTeamMember} onChange={setSelectedTeamMember} >
+                            <SelectTeamMember />
+                            <CancelTeamMemberSelection />
+                            {/* <CreateTeamMember /> */}
+                        </TeamMemberSelectorRoot>
+                    </div>
+
 
                 </div>
 
@@ -123,12 +137,14 @@ const TransferOrder = ({
 
                 <div className="flex gap-2              h-[45px] items-center">
                     <LocationsSelector
-                        direction="TO"
                         onChangeSelectedLocation={(newLocationId, locationType) => {
                             setSelectedLocationId(newLocationId);
                             setSelectedLocationType(locationType);
                         }}
                         selectedLocationId={toId}
+                        flexDirection="row"
+                        label='Hasta'
+                        placeholder='Seleccionar ubicación'
                     />
                     <Button
                         onClick={() => updateTransferOrderMutation.mutate()}

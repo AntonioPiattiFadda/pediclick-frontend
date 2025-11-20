@@ -26,16 +26,13 @@ export default function StockAssignationContainer({
     lotContainersLocations: LotContainersLocation[];
     onChangeLotContainersLocations: (nextLotContainersLocations: LotContainersLocation[]) => void;
 }) {
-    console.log("StockAssignationContainer rendered", stock);
-    console.log("StockAssignationContainer rendered", lotContainersLocations);
+
     // const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
     // const prevSelectedStoreId = useRef<number | null>(null);
     // // TODO: Obtener la tienda seleccionada desde el contexto o estado global si es necesario
-    // console.log("Selected Store ID:", selectedStoreId);
     // const queryClient = useQueryClient();
 
     // const handleSelectStore = (storeId: number | null) => {
-    //     console.log("Store selected:", storeId);
     //     queryClient.invalidateQueries({ queryKey: ["prices", productId, prevSelectedStoreId.current] });
     //     setSelectedStoreId(storeId);
     //     prevSelectedStoreId.current = storeId;
@@ -118,7 +115,6 @@ export default function StockAssignationContainer({
                 last_updated: null,
             };
             updatedStock = [...(stock || []), newStockEntry];
-            console.log("NupdatedStock:", updatedStock);
         }
         onChangeStock(updatedStock);
     };
@@ -186,7 +182,6 @@ export default function StockAssignationContainer({
                                 <StockLotContainerAssignation
                                     lotContainersLocations={lotContainersLocations}
                                     onChangeLotContainersLocation={(newLotContainerLocations) => {
-                                        console.log("Updating lot container locations from store:", store.store_id, newLotContainerLocations);
                                         onChangeLotContainersLocations(newLotContainerLocations);
                                     }}
                                     store_id={store.store_id}

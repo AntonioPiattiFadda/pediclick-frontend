@@ -11,15 +11,12 @@ import { getBusinessOwnerId } from "./profiles";
 //     });
 
 
-//   console.log("dbProducts", dbProducts, error);
-
 //   if (error) {
 //     throw new Error(error.message);
 //   }
 
 
 //   const products = adaptProductsForClient(dbProducts);
-//   console.log("adaptedProducts", products);
 
 
 //   return { products, error };
@@ -49,18 +46,11 @@ export const getAllProducts = async () => {
     .eq("business_owner_id", businessOwnerId)
     .order("product_name", { ascending: true });
 
-
-
-  console.log("dbProducts", dbProducts, error);
-
   if (error) {
     throw new Error(error.message);
   }
 
-
   const products = adaptProductsForClient(dbProducts);
-  console.log("adaptedProducts", products);
-
 
   return { products, error };
 };
@@ -86,14 +76,11 @@ export const getProduct = async (productId: number) => {
     .single();
 
   if (error) {
-    console.log("getProduct error", error);
     throw new Error(error.message);
   }
-  console.log("XAtaptar", dbProduct);
 
   const product = adaptProductsForClient([dbProduct])[0];
 
-  console.log("adaptedProductSingle", product);
 
   return { product, error };
 };
@@ -107,7 +94,6 @@ export const updateProduct = async (
     .update(productData)
     .eq("product_id", productId);
 
-  console.log("updateProduct", data, error);
 
   if (error) {
     throw new Error(error.message);
@@ -166,7 +152,6 @@ export const getProductsByShortCode = async (
 
   // .ilike("short_code", `%${shortCode}%`);
 
-  console.log(dbProducts, error);
 
   if (error) throw new Error(error.message);
 

@@ -25,7 +25,6 @@ const DisposeWaste = ({ lotId }: {
 
     const createLoadOrderMutation = useMutation({
         mutationFn: async () => {
-            console.log("Creating waste stock movement with data:", wasteData);
             return await createStockMovement(wasteData);
         },
         onSuccess: () => {

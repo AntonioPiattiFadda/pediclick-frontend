@@ -69,20 +69,21 @@ export const TransferOrdersContainer = () => {
               <CardTitle>Transferencias</CardTitle>
               <CardDescription>Gestiona tus órdenes de transferencia</CardDescription>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="grid grid-cols-[2fr_1fr] gap-4 w-[500px]">
               <LocationsSelector
-                direction="FROM"
                 onChangeSelectedLocation={(newLocationId, locationType) => {
                   setSelectedLocationId(newLocationId);
                   setSelectedLocationType(locationType);
                 }}
                 selectedLocationId={fromId}
+                label="Desde"
+                placeholder="Seleccionar ubicación"
               />
               <Button
                 onClick={() => createMutation.mutate()}
                 disabled={createMutation.isLoading || !selectedLocationId}
               >
-                {createMutation.isLoading ? "Creando..." : "Crear orden de transferencia"}
+                {createMutation.isLoading ? "Creando..." : "Nueva transferencia"}
               </Button>
             </div>
           </div>

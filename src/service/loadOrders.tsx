@@ -46,7 +46,6 @@ export const createLoadOrder = async (
   prices: Price[]
 ) => {
 
-  console.log("Creating load order with data:", { loadOrder, lots, prices });
   const businessOwnerId = await getBusinessOwnerId();
 
   const reqBody = {
@@ -103,7 +102,6 @@ export const getLoadOrder = async (loadOrderId: string,): Promise<{ dbLoadOrder:
     .eq("load_order_id", loadOrderId)
     .single();
 
-  console.log("Raw LoadOrder data:", dbLoadOrder, error);
 
   if (error) {
     throw new Error(error.message);
@@ -142,8 +140,6 @@ export const getFollowingLoadOrderNumber = async (): Promise<number> => {
     .order("load_order_number", { ascending: false }) // ordenar de mayor a menor
     .limit(1)
 
-  console.log("maxLoadOrder", data);
-  console.log("error", error);
 
   if (error && error.code !== "PGRST116") {
     // PGRST116 = no rows found, lo tratamos como "no hay lotes"

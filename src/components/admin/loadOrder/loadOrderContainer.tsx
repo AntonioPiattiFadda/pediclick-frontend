@@ -28,7 +28,6 @@ const LoadOrderContainer = () => {
         },
     });
 
-    console.log("LoadOrder data:", loadOrder);
 
     const [expandedLots, setExpandedLots] = useState<Record<number, boolean>>({});
 

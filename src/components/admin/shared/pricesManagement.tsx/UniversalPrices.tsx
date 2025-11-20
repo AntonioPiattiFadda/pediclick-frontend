@@ -23,7 +23,6 @@ const UniversalPrices = ({ productPresentationId, finalCost, disabled, productPr
 }) => {
 
     const queryClient = useQueryClient();
-    console.log("UniversalPrices rendering...", productPresentationId);
 
 
     const [value, onChange] = useState<Price[]>(productPrices);
@@ -102,7 +101,6 @@ const UniversalPrices = ({ productPresentationId, finalCost, disabled, productPr
     //     const price = round2(prevPerUnit * units);
     //     const profit_percentage = round2((prevPerUnit / finalCost.final_cost_per_unit - 1) * 100);
 
-    //     console.log({ ...row, qty_per_price: units, price, profit_percentage });
 
     //     return { ...row, qty_per_price: units, price, profit_percentage };
     // }
@@ -306,9 +304,7 @@ const UniversalPrices = ({ productPresentationId, finalCost, disabled, productPr
 
     const handleCreatePrices = async () => {
         // TODO Validar los precios aca
-        console.log("Creating prices...", value);
         const adaptedPrices = pricesAdapter(value, null);
-        console.log("Adapted prices to create:", adaptedPrices);
         createPricesMutation.mutate(adaptedPrices);
     }
 

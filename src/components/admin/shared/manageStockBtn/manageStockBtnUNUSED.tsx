@@ -208,12 +208,9 @@
 //   //     case "download_total_cost": {
 //   //       newDownloadTotalCost = value as number;
 //   //       if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
-//   //       console.log({ currentInitialStock });
-//   //       console.log({ value });
 //   //       newDownloadCostPerBulk = value as number / currentInitialStock;
 //   //       newDownloadCostPerUnit = newDownloadCostPerBulk / bulkQuantityEquivalence;
 
-//   //       console.log({ newDownloadCostPerBulk, newDownloadCostPerUnit });
 //   //       break;
 //   //     }
 //   //     case "productor_commission_type":

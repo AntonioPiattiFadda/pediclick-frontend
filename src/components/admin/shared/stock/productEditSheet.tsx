@@ -32,7 +32,6 @@ export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) 
     const [open, setOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    console.log("ProductEditSheet product", product);
 
     const [formData, setFormData] = useState<Partial<Product>>({
         product_id: product.product_id,

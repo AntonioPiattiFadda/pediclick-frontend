@@ -28,9 +28,9 @@ const LotContainersProductPresentationTableCell = ({ lots }: { lots: Lot[] }) =>
     if (!showDetails) {
         return (
             <div>
-                <div className='flex gap-2'>
+                <div className='flex gap-2 items-center'>
                     <Label>Detalles por lote</Label>
-                    <Switch checked={showDetails} onCheckedChange={setShowDetails} className="mb-4" />
+                    <Switch checked={showDetails} onCheckedChange={setShowDetails} />
                 </div>
                 <div className="mb-4">
                     <div className="font-semibold mb-2">Todos los Vacíos: {reducedLotContainersLocation}</div>
@@ -45,7 +45,7 @@ const LotContainersProductPresentationTableCell = ({ lots }: { lots: Lot[] }) =>
         <div>
             <div className='flex gap-2'>
                 <Label>Detalles por lote</Label>
-                <Switch checked={showDetails} onCheckedChange={setShowDetails} className="mb-4" />
+                <Switch checked={showDetails} onCheckedChange={setShowDetails} />
             </div>
             {lots.map((lot) => (
                 <div key={lot.lot_id} className="mb-4">

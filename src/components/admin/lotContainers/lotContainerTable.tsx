@@ -2,7 +2,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import type { LotContainer } from "@/types/lotContainers";
 import LotContainerHistoricalMvts from "./lotContainerHistoricalMvts";
-import { formatCurrency, formatDate } from "@/utils";
+import { formatDate } from "@/utils";
+import { formatCurrency } from "@/utils/prices";
 
 const LotContainerTable = ({ lotContainers = [] }: { lotContainers?: LotContainer[] }) => {
     return (

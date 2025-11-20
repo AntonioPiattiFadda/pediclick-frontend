@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/sheet";
 import { getClientTransactions } from "@/service/clientTransactions";
 import type { ClientTransaction } from "@/types/clientTransactions";
-import { formatCurrency, formatDate } from "@/utils";
+import { formatDate } from "@/utils";
+import { formatCurrency } from "@/utils/prices";
 import { useQuery } from "@tanstack/react-query";
 import { FileClock, Loader2 } from "lucide-react";
 import { useMemo } from "react";

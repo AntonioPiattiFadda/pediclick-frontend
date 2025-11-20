@@ -50,24 +50,15 @@ export const formatDateToDDMMYYHHMM = (isoString: string): string => {
 };
 
 
-//NOTE: Me lo hizo Kilo
 export function formatDate(value?: string) {
   if (!value) return "--";
   try {
-    return new Date(value).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" });
+    return new Date(value).toLocaleString("es-AR", { weekday: "short", day: "numeric", month: "numeric" });
   } catch {
     return value;
   }
 }
 
-
-export function formatCurrency(value: number) {
-  try {
-    return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 2 }).format(value);
-  } catch {
-    return `$${value?.toFixed?.(2) ?? value}`;
-  }
-}
 
 export function formatSmartNumber(num: number): number {
   if (num == null || isNaN(num)) return 0;

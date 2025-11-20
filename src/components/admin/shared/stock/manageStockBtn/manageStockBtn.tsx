@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Lot } from "@/types/lots";
-import type { ProductPresentation } from "@/types/product_presentation";
+import type { ProductPresentation } from "@/types/productPresentation";
 import { useState } from "react";
 import StockLocationTable from "./StockLocationTable";
 import PricesAccordion from "../addStockBtn/pricesAccordion";
@@ -21,8 +21,7 @@ export function ManageStockBtn({
   productPresentation: ProductPresentation;
 
 }) {
-  const [selectedProductPresentation, setSelectedProductPresentation] = useState<ProductPresentation>(productPresentation);
-  console.log("setSelectedProductPresentation:", setSelectedProductPresentation);
+  const [selectedProductPresentation] = useState<ProductPresentation>(productPresentation);
   const [lots] = useState<Lot[]>(productPresentation?.lots || []);
   const lotsLength = productPresentation?.lots?.length || 0;
   const sortedLots = productPresentation?.lots?.slice().sort((a, b) => {
