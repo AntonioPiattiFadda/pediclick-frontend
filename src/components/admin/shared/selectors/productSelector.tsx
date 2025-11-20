@@ -20,10 +20,12 @@ const ProductSelector = ({
   value,
   onChange,
   withLots = false,
+  disabled = false,
 }: {
   value: Product;
   onChange: (value: Product) => void;
   withLots?: boolean;
+  disabled?: boolean;
 }) => {
 
 
@@ -165,7 +167,7 @@ const ProductSelector = ({
     <div className="relative w-full  inline-flex" ref={comboboxRef}>
       <button
         onClick={handleComboboxToggle}
-        disabled={createProductMutation.isLoading}
+        disabled={createProductMutation.isLoading || disabled}
         className={`flex items-center justify-between border-none w-full h-10 px-3 py-2 text-sm text-left border-2 border-newDsBorder  text-newDsForeground rounded-md shadow-sm hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-input transition-colors duration-200   `}
         aria-haspopup="listbox"
         aria-expanded={isOpen}

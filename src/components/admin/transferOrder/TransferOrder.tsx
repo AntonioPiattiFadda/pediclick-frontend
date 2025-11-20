@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { CancelTeamMemberSelection, SelectTeamMember, TeamMemberSelectorRoot } from "../shared/selectors/TeamMemberSelector";
 import LocationsSelector from "./LocationSelector";
 import TransferOrderItemsTable from "./TransferOrderItemsTable";
+import { useSearchParams } from "react-router-dom";
 
 const TransferOrder = ({
     transferOrder,
@@ -110,6 +111,10 @@ const TransferOrder = ({
         getFromLocationName(fromLocation, fromLocationType);
     }, [fromLocation, fromLocationType]);
 
+    const [searchParams] = useSearchParams();
+    const isUpdating = searchParams.get("updating") === "true" ? true : false;
+    const isTransferring = searchParams.get("transferring") === "true" ? true : false;
+
     return (
         <div className="space-y-6 ">
             <div className="w-full flex justify-between">
@@ -123,17 +128,16 @@ const TransferOrder = ({
 
                     <div className="flex flex-col gap-2 mt-2">
                         <Label>Asignada a:</Label>
-                        <TeamMemberSelectorRoot value={selectedTeamMember} onChange={setSelectedTeamMember} >
+                        <TeamMemberSelectorRoot
+                            disabled={updateTransferOrderMutation.isLoading || isTransferring}
+                            value={selectedTeamMember}
+                            onChange={setSelectedTeamMember} >
                             <SelectTeamMember />
                             <CancelTeamMemberSelection />
                             {/* <CreateTeamMember /> */}
                         </TeamMemberSelectorRoot>
                     </div>
-
-
                 </div>
-
-
 
                 <div className="flex gap-2              h-[45px] items-center">
                     <LocationsSelector
@@ -145,6 +149,7 @@ const TransferOrder = ({
                         flexDirection="row"
                         label='Hasta'
                         placeholder='Seleccionar ubicación'
+                        disabled={updateTransferOrderMutation.isLoading || isTransferring}
                     />
                     <Button
                         onClick={() => updateTransferOrderMutation.mutate()}
@@ -154,16 +159,15 @@ const TransferOrder = ({
                     </Button>
                 </div>
 
-
             </div>
             <TransferOrderItemsTable
                 transferOrder={formData}
                 onChangeOrder={(updatedOrder) => {
                     setFormData(updatedOrder);
                 }}
-
+                isUpdating={isUpdating}
+                isTransferring={isTransferring}
             />
-
             <div>
                 <Label className="mb-2">Observaciones</Label>
                 <Textarea value={formData?.notes ?? ""} onChange={(e) => {

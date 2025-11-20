@@ -29,14 +29,14 @@ export const getAllTransferOrders = async () => {
 export const getTransferOrder = async (
     transferOrderId: string | number
 ): Promise<{ dbTransferOrder: TransferOrderType | null; error: string | null }> => {
+
     const businessOwnerId = await getBusinessOwnerId();
+
     const { data: dbTransferOrder, error } = await supabase
         .from("transfer_orders")
-        .select(`
-    *,
-    transfer_order_items(
-      *,
-      product:product_id(*)
+        .select(`*,    
+            transfer_order_items(*,      
+            product:product_id(*)
     )
   `)
         .eq("business_owner_id", businessOwnerId)
@@ -49,24 +49,23 @@ export const getTransferOrder = async (
         throw new Error(error.message);
     }
 
-    console.log("Fetched Transfer Order:", dbTransferOrder);
+    const adaptedTransferOrder = {
+        ...dbTransferOrder,
+        transfer_order_items: dbTransferOrder.transfer_order_items.map((item: TransferOrderItem) => {
+            const adaptedOI = {
+                ...item,
+                isNew: false,
+                product: item.product ?? null,
+                product_presentation: item.product?.product_presentation ?? null,
+                lot: item.lot ?? null,
+                lot_container_location: item.lot_container_location ?? null,
+                lot_container_movements: item.lot_container_movements ?? null,
+            }
+            return adaptedOI;
+        }) || []
+    };
 
-    // const adaptedTransferOrder = {
-    //     ...dbTransferOrder,
-    //     transfer_order_items: dbTransferOrder.transfer_order_items.map(() => {
-    //         const adaptedOI = {
-    //             ...dbTransferOrder.transfer_order_items,
-    //             isNew: false,
-    //         }
-    //         console.log("adaptedOI:", adaptedOI);
-    //         return {
-    //             ...dbTransferOrder.transfer_order_items,
-    //             isNew: false,
-    //         }
-    //     }) || []
-    // };
-
-    return { dbTransferOrder: (dbTransferOrder as TransferOrderType) ?? null, error: null };
+    return { dbTransferOrder: (adaptedTransferOrder as TransferOrderType) ?? null, error: null };
 };
 
 /**

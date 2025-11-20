@@ -57,15 +57,15 @@ import { useSearchParams } from "react-router-dom";
 export default function TransferOrderItemsTable({
     transferOrder,
     onChangeOrder,
+    isUpdating,
+    isTransferring
 }: {
     transferOrder: TransferOrderType;
     onChangeOrder?: (updatedOrder: TransferOrderType) => void;
+    isUpdating: boolean;
+    isTransferring: boolean;
 }) {
-    const [searchParams] = useSearchParams();
-    const isUpdating = searchParams.get("updating") === "true" ? true : false;
-    const isOnlyTransfering = searchParams.get("transferring") === "true" ? true : false;
 
-    const allowEdit = isUpdating || isOnlyTransfering;
 
     // Mutations
     // const upsertMutation = useMutation({
@@ -102,7 +102,7 @@ export default function TransferOrderItemsTable({
     // });
 
     const handleAddElement = () => {
-        if (!allowEdit) return;
+        if (!isTransferring) return;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const newItem: any = {
             transfer_order_item_id: Math.random(), // Temporary ID for React key
@@ -122,7 +122,7 @@ export default function TransferOrderItemsTable({
 
     const handleRemoveItem = (itemId: number | undefined) => {
         if (itemId === undefined) return;
-        if (!allowEdit) return;
+        if (!isTransferring) return;
         const updatedItems = rows.filter((item) => item.transfer_order_item_id !== itemId);
         onChangeOrder?.({
             ...transferOrder,
@@ -135,7 +135,7 @@ export default function TransferOrderItemsTable({
         row: any,
         product: Product,
     ) => {
-        if (!allowEdit) return;
+        if (!isTransferring) return;
         const updatedItems = rows.map((item) =>
             item.transfer_order_item_id === row.transfer_order_item_id
                 ? {
@@ -173,9 +173,14 @@ export default function TransferOrderItemsTable({
                         <TableHead className="w-[120px]">Stock disponible</TableHead>
                         <TableHead className="w-40">Cantidad</TableHead>
                         <TableHead className="w-40">Vacíos</TableHead>
-                        <TableHead className="w-40">Lote</TableHead>
+                        {!isTransferring && (
+                            <TableHead className="w-40">Lote</TableHead>
+                        )}
                         <TableHead className="w-40">Transferido</TableHead>
-                        <TableHead className="text-right w-10">Acciones</TableHead>
+                        {!isTransferring && (
+                            <TableHead className="text-right w-10">Acciones</TableHead>
+                        )}
+
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -218,6 +223,7 @@ export default function TransferOrderItemsTable({
                                     <ProductSelector
                                         value={row.product || emptyProduct}
                                         onChange={(p) => handleSelectProduct(row, p)}
+                                        disabled={isTransferring}
                                     />
                                     <ProductPresentationSelectorRoot
                                         productId={row?.product_id}
@@ -239,7 +245,7 @@ export default function TransferOrderItemsTable({
 
                                             });
                                         }}
-                                        disabled={false}
+                                        disabled={isTransferring}
                                         isFetchWithLots={true}
                                         isFetchedWithLotContainersLocation={true}
                                     >
@@ -304,7 +310,7 @@ export default function TransferOrderItemsTable({
                                     <InputGroupInput
                                         value={row.lot_container_movements?.quantity ?? ""}
                                         onChange={(e) => {
-                                            if (!allowEdit) return;
+                                            if (!isTransferring) return;
                                             if (maxLotContainerLocationQty !== null && Number(e.target.value) > maxLotContainerLocationQty) {
                                                 toast.error(`La cantidad de vacios no puede ser mayor al disponible (${maxLotContainerLocationQty}).`);
                                                 return;
@@ -338,58 +344,58 @@ export default function TransferOrderItemsTable({
 
 
                             </TableCell>
+                            {!isTransferring && (
+                                <TableCell className="align-top w-36 ">
 
-                            <TableCell className="align-top w-36 ">
+                                    <Select
+                                        value={row?.lot_id ? String(row.lot_id) : "null"}
+                                        onValueChange={(value) => {
+                                            if (!isTransferring) return;
 
-                                <Select
-                                    value={row?.lot_id ? String(row.lot_id) : "null"}
-                                    onValueChange={(value) => {
-                                        if (!allowEdit) return;
+                                            const lotId = value === "null" ? null : Number(value);
 
-                                        const lotId = value === "null" ? null : Number(value);
+                                            const updatedItems = rows.map((item) =>
+                                                item.transfer_order_item_id === row.transfer_order_item_id
+                                                    ? {
+                                                        ...item,
+                                                        lot_id: lotId,
+                                                        selected_lot: item.product_presentation?.lots.find(l => l.lot_id === lotId) ?? null
+                                                    }
+                                                    : item
+                                            );
 
-                                        const updatedItems = rows.map((item) =>
-                                            item.transfer_order_item_id === row.transfer_order_item_id
-                                                ? {
-                                                    ...item,
-                                                    lot_id: lotId,
-                                                    selected_lot: item.product_presentation?.lots.find(l => l.lot_id === lotId) ?? null
-                                                }
-                                                : item
-                                        );
+                                            onChangeOrder?.({
+                                                ...transferOrder,
+                                                transfer_order_items: updatedItems,
+                                            });
+                                        }}
 
-                                        onChangeOrder?.({
-                                            ...transferOrder,
-                                            transfer_order_items: updatedItems,
-                                        });
-                                    }}
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Seleccionar lote" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectLabel>Lots</SelectLabel>
+                                                {rowLots.map((lot: Lot) => {
+                                                    return <SelectItem
+                                                        key={lot.lot_id
+                                                            ? lot.lot_id
+                                                            : Math.random()}
+                                                        value={lot.lot_id ? String(lot.lot_id) : "null"}
 
-                                >
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="Seleccionar lote" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectLabel>Lots</SelectLabel>
-                                            {rowLots.map((lot: Lot) => {
-                                                return <SelectItem
-                                                    key={lot.lot_id
-                                                        ? lot.lot_id
-                                                        : Math.random()}
-                                                    value={lot.lot_id ? String(lot.lot_id) : "null"}
+                                                    >
+                                                        {formatDate(lot.created_at)}
+                                                    </SelectItem>
+                                                })}
 
-                                                >
-                                                    {formatDate(lot.created_at)}
-                                                </SelectItem>
-                                            })}
-
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
 
 
-                            </TableCell>
-
+                                </TableCell>
+                            )}
                             <TableCell className="align-top w-36 " >
                                 <div className="w-full h-10 flex items-center justify-center ">
 
@@ -412,39 +418,42 @@ export default function TransferOrderItemsTable({
                                                 transfer_order_items: updatedItems,
                                             });
                                         }}
-                                        disabled={!allowEdit}
+                                        disabled={!isTransferring}
                                     />
                                 </div>
                             </TableCell>
 
-
-                            <TableCell className="text-right align-top w-20 ">
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    disabled={!allowEdit}
-                                    onClick={() => handleRemoveItem(row.transfer_order_item_id)}
-                                >
-                                    <Trash />
-                                </Button>
-                            </TableCell>
+                            {!isTransferring && (
+                                <TableCell className="text-right align-top w-20 ">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        disabled={!isTransferring}
+                                        onClick={() => handleRemoveItem(row.transfer_order_item_id)}
+                                    >
+                                        <Trash />
+                                    </Button>
+                                </TableCell>
+                            )}
                         </TableRow>)
                     })
                     }
 
-                    <TableRow className="border-none">
-                        <TableCell className="" >
+                    {!isTransferring && (
+                        <TableRow className="border-none">
+                            <TableCell className="" >
 
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={!allowEdit}
-                                onClick={handleAddElement}
-                            >
-                                Agregar Elemento
-                            </Button>
-                        </TableCell>
-                    </TableRow>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!isTransferring}
+                                    onClick={handleAddElement}
+                                >
+                                    Agregar Elemento
+                                </Button>
+                            </TableCell>
+                        </TableRow>
+                    )}
 
                     <div className="h-60">
 

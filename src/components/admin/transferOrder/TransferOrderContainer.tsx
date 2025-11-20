@@ -21,8 +21,6 @@ const TransferOrderContainer = () => {
         },
     });
 
-
-
     if (isLoading)
         return (
             <div className="space-y-6">
@@ -32,10 +30,7 @@ const TransferOrderContainer = () => {
     if (isError || !transferOrder)
         return <div className="pt-14">Error al cargar la transferencia.</div>;
 
-    console.log("Transfer Order Data:", transferOrder);
-
     return (<TransferOrder transferOrder={transferOrder} transferOrderId={transferOrderId} />
-
     );
 };
 

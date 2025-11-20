@@ -20,12 +20,14 @@ const LocationsSelector = ({
     flexDirection = "row",
     label = '',
     placeholder = '',
+    disabled = false,
 }: {
     selectedLocationId?: string | null;
     onChangeSelectedLocation: (newLocationsId: number | null, locationType: "STORE" | "STOCK_ROOM") => void;
     flexDirection?: "row" | "column";
     label: string;
     placeholder: string;
+    disabled?: boolean;
 }) => {
 
     const {
@@ -70,7 +72,7 @@ const LocationsSelector = ({
     return (<div className={`flex gap-2 w-full ${flexDirection === "row" ? "flex-row items-center" : "flex-col"}`} >
         {label && <label>{label}:</label>}
         <Select value={selectedLocationId ?? ""} onValueChange={(newLocation) => handleChangeLocation(newLocation)}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full" disabled={disabled}>
                 <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent>
