@@ -24,6 +24,7 @@ import type React from "react";
 import { Link } from "react-router-dom";
 import { CategorySelectorRoot, CreateCategory } from "../shared/selectors/categorySelector";
 import { ClientSelectorRoot, CreateClient } from "../shared/selectors/clientSelector";
+import { CreateIva, IvaSelectorRoot } from "../shared/selectors/ivaSelector";
 import { CreateProductPresentation, ProductPresentationSelectorRoot } from "../shared/selectors/productPresentationSelector";
 import { CreateProvider, ProviderSelectorRoot } from "../shared/selectors/providersSelector";
 import { CreatePurchasingAgent, PurchasingAgentSelectorRoot } from "../shared/selectors/purchasingAgentSelector";
@@ -119,6 +120,15 @@ export const MENU_ITEMS: {
           children: <Transformation />
           ,
         },
+        {
+          title: "Iva",
+          type: "button",
+          children: <IvaSelectorRoot value={null} onChange={() => { }}>
+            <CreateIva isShortCut={true} />
+          </IvaSelectorRoot>
+          ,
+        },
+        
         // {
         //   title: "Artículo",
         //   type: "button",

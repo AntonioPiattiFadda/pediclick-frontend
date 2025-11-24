@@ -1,6 +1,6 @@
 export type Iva = {
     iva_id: number;
-    percentage: number;
     iva_number: number;
-    short_code: number;
+    iva_percentage: number;
+    bussiness_owner_id: number;
 };
