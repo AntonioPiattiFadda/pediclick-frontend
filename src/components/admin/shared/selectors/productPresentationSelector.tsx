@@ -45,6 +45,8 @@ interface ProductPresentationSelectorContextType {
     presentations: ProductPresentation[];
     isLoading: boolean;
     productId: number | null;
+    shortCode: number | null;
+    onChangeCode: (code: number | null) => void;
 }
 
 const ProductPresentationSelectorContext =
@@ -68,6 +70,7 @@ interface RootProps {
     children: ReactNode;
     isFetchWithLots?: boolean;
     isFetchedWithLotContainersLocation?: boolean;
+
 }
 
 const ProductPresentationSelectorRoot = ({
@@ -89,6 +92,8 @@ const ProductPresentationSelectorRoot = ({
         enabled: !!productId,
     });
 
+    const [shortCode, setShortCode] = useState<number | null>(value?.short_code || null);
+
     if (isError) {
         return <div>Error loading product presentations.</div>;
     }
@@ -101,7 +106,10 @@ const ProductPresentationSelectorRoot = ({
                 disabled,
                 presentations: presentations ?? [],
                 isLoading,
-                productId
+                productId,
+                shortCode,
+                onChangeCode: setShortCode,
+
 
 
             }}
@@ -115,10 +123,9 @@ const ProductPresentationSelectorRoot = ({
 const SelectProductPresentation = ({ children }: {
     children?: ReactNode;
 }) => {
-    const { value, onChange, disabled, presentations, isLoading } =
+    const { value, onChange, disabled, presentations, isLoading, shortCode, onChangeCode } =
         useProductPresentationSelectorContext();
 
-    const [shortCode, setShortCode] = useState<number | null>(null);
 
     const handleShortCodeMatch = (shortCode: number | null) => {
         if (shortCode === null) return;
@@ -160,12 +167,13 @@ const SelectProductPresentation = ({ children }: {
 
                 <Input
                     className={`  border-none    h-9 w-14 `}
+                    disabled={disabled}
                     value={shortCode === null ? "" : String(shortCode)}
                     placeholder="Cód.."
                     onChange={(e) => {
                         const value = e.target.value;
                         handleShortCodeMatch(Number(value) || null);
-                        setShortCode(Number(value) || null);
+                        onChangeCode(Number(value) || null);
                     }}
                 />
                 <div className="h-full w-1 bg-gray-100"></div>
@@ -175,7 +183,7 @@ const SelectProductPresentation = ({ children }: {
                     value={value === null ? "" : String(value.product_presentation_id)}
                     onValueChange={(val) => {
                         onChange(val === "" ? null : presentations.find((p) => p.product_presentation_id === Number(val)) || null);
-                        setShortCode(presentations.find((p) => p.product_presentation_id === Number(val))?.short_code || null);
+                        onChangeCode(presentations.find((p) => p.product_presentation_id === Number(val))?.short_code || null);
                     }}
                 >
                     <SelectTrigger className="h-11 w-full border-none">
@@ -211,14 +219,17 @@ const SelectProductPresentation = ({ children }: {
 };
 
 const CancelProductPresentationSelection = () => {
-    const { value, onChange } =
+    const { value, onChange, onChangeCode } =
         useProductPresentationSelectorContext();
 
     return value && (
         <Button
             variant="ghost"
             size="icon"
-            onClick={() => onChange(null)}
+            onClick={() => {
+                onChangeCode(null);
+                onChange(null)
+            }}
             className="text-red-500 hover:text-red-700 h-9"
         >
             <X className="w-5 h-5" />

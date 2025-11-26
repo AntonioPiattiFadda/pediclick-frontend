@@ -12,7 +12,9 @@ export interface Product {
   product_description: string | null;
   category_id: number | null;
   sub_category_id: number | null;
+  provider_id: number | null;
   brand_id: number | null;
+  iva_id: number | null;
   barcode: number | null;
   public_image_id: number | null;
   public_image_src?: string | null;

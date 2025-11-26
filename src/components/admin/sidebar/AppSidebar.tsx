@@ -24,6 +24,7 @@ import type React from "react";
 import { Link } from "react-router-dom";
 import { CategorySelectorRoot, CreateCategory } from "../shared/selectors/categorySelector";
 import { ClientSelectorRoot, CreateClient } from "../shared/selectors/clientSelector";
+import { CreateIva, IvaSelectorRoot } from "../shared/selectors/ivaSelector";
 import { CreateProductPresentation, ProductPresentationSelectorRoot } from "../shared/selectors/productPresentationSelector";
 import { CreateProvider, ProviderSelectorRoot } from "../shared/selectors/providersSelector";
 import { CreatePurchasingAgent, PurchasingAgentSelectorRoot } from "../shared/selectors/purchasingAgentSelector";
@@ -31,6 +32,7 @@ import { CreateStockRoom, StockroomSelectorRoot } from "../shared/selectors/stoc
 import { CreateSubCategory, SubCategorySelectorRoot } from "../shared/selectors/subCategorySelector";
 import { CreateStore, StoreSelectorRoot } from "../shared/selectors/XXstoresSelector";
 import { Transformation } from "../shared/transformation/Transformation";
+import CreateProductCreator from "../shared/creator/productCreator";
 
 /* eslint-disable react-refresh/only-export-components */
 export const MENU_ITEMS: {
@@ -119,6 +121,22 @@ export const MENU_ITEMS: {
           children: <Transformation />
           ,
         },
+        {
+          title: "Iva",
+          type: "button",
+          children: <IvaSelectorRoot value={null} onChange={() => { }}>
+            <CreateIva isShortCut={true} />
+          </IvaSelectorRoot>
+          ,
+        },
+        {
+          title: "Producto",
+          type: "button",
+          children: 
+            <CreateProductCreator isShortCut={true} onChange={() => { }} />
+          ,
+        },
+        
         // {
         //   title: "Artículo",
         //   type: "button",

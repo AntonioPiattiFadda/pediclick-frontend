@@ -1,3 +1,4 @@
+export type MovementStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED' | 'IN_TRANSIT';
 export interface LotContainerMovement {
     lot_container_movement_id: number;
     created_at: string;
@@ -27,4 +28,11 @@ export interface LotContainerMovement {
     to_provider_name: string | null;
     from_client_name: string | null;
     to_client_name: string | null;
+
+
+    transfer_order_item_id?: number | null;
+    status: MovementStatus;
+
+
+    lot_containers_location_id: number | null;
 }

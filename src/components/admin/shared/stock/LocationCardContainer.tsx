@@ -19,8 +19,7 @@ const LocationCardContainer = ({ location }: {
 
     return (
         <div key={location.lot_container_location_id} className="mb-1">
-            Cantidad: {location.quantity}
-            Ubicacion: {isLoading ? 'Cargando...' : isError ? 'Error al cargar' : locationName || 'No asignado'}
+            {isLoading ? 'Cargando...' : isError ? 'Error al cargar' : locationName || 'No asignado'}: {location.quantity}
         </div>
     )
 }

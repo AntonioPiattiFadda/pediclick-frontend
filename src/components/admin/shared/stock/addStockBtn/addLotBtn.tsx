@@ -36,23 +36,6 @@ import { ProductEditSheet } from "../productEditSheet";
 import PricesAccordion from "./pricesAccordion";
 import StockAssignationContainer from "./XXstockAssignationContainer";
 
-
-
-
-// import ManageStockPrices from "./manageStockPrices";
-
-// type CreationMode = "SHORT" | "LONG";
-
-// const creationModeOptions = [
-//   { label: "Corto", value: "SHORT" },
-//   { label: "Largo", value: "LONG" },
-// ];
-
-// const sellMeasurementModeOptions = [
-//   { label: "Unidad", value: "QUANTITY" },
-//   { label: "Kg", value: "WEIGHT" },
-// ];
-
 export function AddLotBtn({
   onAddElement,
   loading = false,
@@ -69,7 +52,6 @@ export function AddLotBtn({
 
   const [selectedProduct, setSelectedProduct] = useState<Product>({} as Product);
   const [selectedProductPresentation, setSelectedProductPresentation] = useState<ProductPresentation | null>(null);
-
 
   const [lotPrices, setLotPrices] = useState<Price[]>([]);
   const [tab, setTab] = useState("lot");

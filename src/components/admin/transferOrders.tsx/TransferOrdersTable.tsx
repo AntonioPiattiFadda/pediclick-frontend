@@ -71,7 +71,7 @@ export const TransferOrdersTable = ({ transferOrders }: TransferOrdersTableProps
 
                 <TableCell>{fromLocationId ?? "--"}</TableCell>
                 <TableCell>{toLocationId ?? "--"}</TableCell>
-                <TableCell>{transferOrderStatuses[to.transfer_order_status] ?? "--"}</TableCell>
+                <TableCell>{transferOrderStatuses[to.status] ?? "--"}</TableCell>
                 <TableCell>{to.assigned_user_id ?? "--"}</TableCell>
                 <TableCell>{formatDate(to?.created_at ?? "--") || "--"}</TableCell>
                 <TableCell>

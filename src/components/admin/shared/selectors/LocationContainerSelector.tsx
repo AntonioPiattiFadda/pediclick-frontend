@@ -99,7 +99,7 @@ const SelectLotContainer = () => {
                 ))}
             </select>
 
-            {value && (
+            {/* {value && (
                 <Button
                     variant="ghost"
                     size="icon"
@@ -109,7 +109,7 @@ const SelectLotContainer = () => {
                 >
                     <X className="w-5 h-5" />
                 </Button>
-            )}
+            )} */}
         </>
     );
 };
@@ -211,9 +211,30 @@ const CreateLotContainer = ({ isShortCut = false }: {
     );
 };
 
+// -------- Cancel ----------
+const CancelLotContainerSelection = () => {
+    const { value, onChange } = useLotContainerSelectorContext();
+
+    return (
+        value && (
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                    onChange(null);
+                }}
+                className="text-red-500 hover:text-red-700 h-9"
+            >
+                <X className="w-5 h-5" />
+            </Button>
+        )
+    );
+};
+
 // ---------- Compound export ----------
 export {
     LotContainerSelectorRoot,
     SelectLotContainer,
     CreateLotContainer,
+    CancelLotContainerSelection,
 };

@@ -17,8 +17,8 @@ const StockCardContainer = ({ stock }: {
 
     return (
         <div key={stock.stock_id} className="mb-1">
-            Cantidad: {stock.current_quantity}
-            Ubicacion: {isLoading ? 'Cargando...' : isError ? 'Error al cargar' : locationName || 'No asignado'}
+            {isLoading ? 'Cargando...' : isError ? 'Error al cargar' : locationName || 'No asignado'}: {stock.current_quantity}
+
         </div>
     )
 }

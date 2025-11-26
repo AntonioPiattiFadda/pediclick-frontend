@@ -21,166 +21,166 @@ import {
 } from "@/components/ui/select";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, EyeClosed, PlusCircle, X } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 import {
     createContext,
     useContext,
-    useMemo,
     useState,
-    type ReactNode,
+    type ReactNode
 } from "react";
 import toast from "react-hot-toast";
-import { debounce } from "lodash";
 
-import type { UserProfile } from "@/types/users";
-import { createTeamMember, getUserTeamMembers } from "@/service/profiles";
-import LocationsSelector from "../../transferOrder/LocationSelector";
 import { Label } from "@/components/ui/label";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { createIva, getIva } from "@/service/iva";
+import type { Iva } from "@/types/iva";
 
 // ---------- Context ----------
-interface TeamMemberSelectorContextType {
-    value: UserProfile | null;
-    onChange: (member: UserProfile | null) => void;
+interface IvaSelectorContextType {
+    value: Iva | null;
+    onChange: (iva: Iva | null) => void;
     disabled: boolean;
-    teamMembers: UserProfile[];
+    iva: Iva[];
     isLoading: boolean;
-    shortCode: number | null;
-    onChangeShortCode: (code: number | null) => void;
+    // shortCode: number | null;
 }
 
-const TeamMemberSelectorContext =
-    createContext<TeamMemberSelectorContextType | null>(null);
+const IvaSelectorContext =
+    createContext<IvaSelectorContextType | null>(null);
 
-function useTeamMemberSelectorContext() {
-    const ctx = useContext(TeamMemberSelectorContext);
+function useIvaSelectorContext() {
+    const ctx = useContext(IvaSelectorContext);
     if (!ctx)
         throw new Error(
-            "TeamMemberSelector components must be used inside Root"
+            "IvaSelector components must be used inside Root"
         );
     return ctx;
 }
 
 // ---------- Root ----------
 interface RootProps {
-    value: UserProfile | null;
-    onChange: (member: UserProfile | null) => void;
+    value: Iva | null;
+    onChange: (iva: Iva | null) => void;
     disabled?: boolean;
     children: ReactNode;
     storeId?: number | null;
-    shortCode?: number | null;
-    onChangeShortCode?: (code: number | null) => void;
+    // shortCode?: number | null;
+    // onChangeShortCode?: (code: number | null) => void;
 }
 
-const TeamMemberSelectorRoot = ({
+const IvaSelectorRoot = ({
     value,
     onChange,
     disabled = false,
     children,
-    storeId = null
+    // storeId = null
 }: RootProps) => {
 
-    const { data: teamMembers, isLoading, isError } = useQuery({
-        queryKey: ["team_members", storeId],
+    const { data: iva, isLoading, isError } = useQuery({
+        queryKey: ["iva"],
         queryFn: async () => {
-            const response = await getUserTeamMembers();
-            return response.teamMembers;
+            const response = await getIva();
+            return response.ivas;
         },
         enabled: true,
     });
-
-    const [shortCode, setShortCode] = useState<number | null>(value?.short_code ?? null);
+    // const [shortCode, setShortCode] = useState<number | null>(null);
 
     if (isError) {
-        return <div>Error loading team members.</div>;
+        return <div>Error loading iva.</div>;
     }
 
     return (
-        <TeamMemberSelectorContext.Provider
+        <IvaSelectorContext.Provider
             value={{
                 value,
                 onChange,
                 disabled,
-                teamMembers: teamMembers ?? [],
+                iva: iva ?? [],
                 isLoading,
-                shortCode,
-                onChangeShortCode: setShortCode,
+                // shortCode,
             }}
         >
             <div className="flex items-center gap-2 w-full h-10">{children}</div>
-        </TeamMemberSelectorContext.Provider>
+        </IvaSelectorContext.Provider>
     );
 };
 
 // ---------- Select ----------
-const SelectTeamMember = ({ children }: { children?: ReactNode }) => {
-    const { value, onChange, disabled, teamMembers, isLoading, shortCode, onChangeShortCode } =
-        useTeamMemberSelectorContext();
+const SelectIva = ({ children }: { children?: ReactNode }) => {
+    const { value, onChange, disabled, iva, isLoading, } =
+        useIvaSelectorContext();
 
 
-    const handleCodeMatch = (code: number) => {
-        if (!code) return;
-        const matched = teamMembers.find((m) => m.short_code === code);
-        if (matched) {
-            onChange(matched);
-            debouncedToast.cancel();
-        } else {
-            onChange(null);
-            debouncedToast(`No se encontró un miembro con el código: ${code}`);
-        }
-    };
+    // const handleCodeMatch = (code: number) => {
+    //     if (!code) return;
+    //     const matched = iva.find((m) => m.short_code === code);
+    //     if (matched) {
+    //         onChange(matched);
+    //         debouncedToast.cancel();
+    //     } else {
+    //         onChange(null);
+    //         debouncedToast(`No se encontró un miembro con el código: ${code}`);
+    //     }
+    // };
 
-    const debouncedToast = useMemo(
-        () =>
-            debounce((msg: string) => {
-                toast(msg, { icon: "⚠️" });
-            }, 500),
-        []
-    );
+    // const debouncedToast = useMemo(
+    //     () =>
+    //         debounce((msg: string) => {
+    //             toast(msg, { icon: "⚠️" });
+    //         }, 500),
+    //     []
+    // );
 
-    if (isLoading) {
-        return (
-            <Input
-                className="h-10"
-                placeholder="Buscando miembros..."
-                disabled
-            />
-        );
-    }
+    // if (isLoading) {
+    //     return (
+    //         <Input
+    //             className="h-10"
+    //             placeholder="Buscando miembros..."
+    //             disabled
+    //         />
+    //     );
+    // }
 
     return (
         <>
             <div className="flex w-full border border-gray-200 rounded-md ">
-                <Input
+                {/* <Input
                     className={`  border-none    h-9 w-14 `}
                     value={shortCode ?? ""}
                     placeholder="Código"
-                    disabled={disabled}
                     onChange={(e) => {
                         const val = e.target.value;
                         onChangeShortCode(Number(val));
                         handleCodeMatch(Number(val));
                     }}
-                />
+                /> */}
 
+                {/* <Select
+                    disabled={disabled}
+                    value={value?.iva_id ?? ""}
+                    onValueChange={(val) => {
+                        const m = iva.find((m) => m.iva_id === val) || null;
+                        onChange(m);
+                        // onChangeShortCode(m?.short_code ?? null);
+                    }}
+                > */}
                 <Select
                     disabled={disabled}
-                    value={value?.id ?? ""}
+                    value={value?.iva_id?.toString() ?? ""}
                     onValueChange={(val) => {
-                        const m = teamMembers.find((m) => m.id === val) || null;
+                        const m = iva.find((m) => m.iva_id === Number(val)) || null;
                         onChange(m);
-                        onChangeShortCode(m?.short_code ?? null);
                     }}
                 >
                     <SelectTrigger className="h-11 w-full border-none">
-                        <SelectValue placeholder="Seleccionar miembro" />
+                        <SelectValue placeholder="Seleccionar iva" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
-                            <SelectLabel>Miembros del equipo</SelectLabel>
-                            {teamMembers.map((m) => (
-                                <SelectItem key={m.id} value={m.id}>
-                                    {`${m.short_code} - ${m.full_name}`}
+                            <SelectLabel>Iva</SelectLabel>
+                            {iva.map((m) => (
+                                <SelectItem key={m.iva_id} value={m.iva_id.toString()}>
+                                    {`${m.iva_number}`}
                                 </SelectItem>
                             ))}
                         </SelectGroup>
@@ -194,8 +194,8 @@ const SelectTeamMember = ({ children }: { children?: ReactNode }) => {
 };
 
 // -------- Cancel ----------
-const CancelTeamMemberSelection = () => {
-    const { value, onChange, onChangeShortCode } = useTeamMemberSelectorContext();
+const CancelIvaSelection = () => {
+    const { value, onChange } = useIvaSelectorContext();
 
     return (
         value && (
@@ -204,7 +204,6 @@ const CancelTeamMemberSelection = () => {
                 size="icon"
                 onClick={() => {
                     onChange(null);
-                    onChangeShortCode(null);
                 }}
                 className="text-red-500 hover:text-red-700 h-9"
             >
@@ -215,17 +214,17 @@ const CancelTeamMemberSelection = () => {
 };
 
 // ---------- Create ----------
-const CreateTeamMember = ({
+const CreateIva = ({
     isShortCut = false,
 }: {
     isShortCut?: boolean;
 }) => {
-    const { onChange, disabled } = useTeamMemberSelectorContext();
+    const { onChange, disabled } = useIvaSelectorContext();
     const queryClient = useQueryClient();
 
-    const [newTeamMemberData, setNewTeamMemberData] = useState<UserProfile>({} as UserProfile);
+    const [newIvaData, setNewIvaData] = useState<Iva>({} as Iva);
 
-    const [showPassword, setShowPassword] = useState(false);
+    // const [showPassword, setShowPassword] = useState(false);
 
 
 
@@ -233,14 +232,14 @@ const CreateTeamMember = ({
 
     const mutation = useMutation({
         mutationFn: async () => {
-            return await createTeamMember(newTeamMemberData);
+            return await createIva(newIvaData);
         },
-        onSuccess: (created: { data: UserProfile }) => {
-            queryClient.invalidateQueries({ queryKey: ["team_members"] });
+        onSuccess: (created: { data: Iva }) => {
+            queryClient.invalidateQueries({ queryKey: ["iva"] });
             onChange(created.data);
             setOpen(false);
 
-            if (isShortCut) toast("Miembro creado", { icon: "✅" });
+            if (isShortCut) toast("Iva creado", { icon: "✅" });
         },
         onError: (error: any) => {
             toast(error.message, { icon: "⚠️" });
@@ -248,17 +247,17 @@ const CreateTeamMember = ({
     });
 
     const handleCreate = async () => {
-        if (!newTeamMemberData.full_name || !newTeamMemberData.email || !newTeamMemberData.password) return;
+        if (!newIvaData.iva_number ) return;
         await mutation.mutateAsync();
     };
 
-    const formattedLocationId = newTeamMemberData.store_id ? `store-${newTeamMemberData.store_id}` : newTeamMemberData.stock_room_id ? `stock-${newTeamMemberData.stock_room_id}` : null;
+    // const formattedLocationId = newIvaData.store_id ? `store-${newTeamMemberData.store_id}` : newTeamMemberData.stock_room_id ? `stock-${newTeamMemberData.stock_room_id}` : null;
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {isShortCut ? (
-                    <SidebarMenuButton>Miembro</SidebarMenuButton>
+                    <SidebarMenuButton>Iva</SidebarMenuButton>
                 ) : (
                     <Button
                         size="icon"
@@ -273,23 +272,23 @@ const CreateTeamMember = ({
 
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Crear nuevo miembro</DialogTitle>
+                    <DialogTitle>Crear nuevo iva</DialogTitle>
                     <DialogDescription>
-                        Completá los datos para crear el miembro del equipo.
+                        Completá los datos para crear el iva.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="flex flex-col gap-2">
-                    <Label>Nombre completo*</Label>
+                    <Label>Numero de Iva</Label>
                     <Input
-                        value={newTeamMemberData.full_name}
+                        value={newIvaData.iva_number}
                         disabled={mutation.isLoading}
-                        onChange={(e) => setNewTeamMemberData({ ...newTeamMemberData, full_name: e.target.value })}
-                        placeholder="Nombre completo"
+                        onChange={(e) => setNewIvaData({ ...newIvaData, iva_number: Number(e.target.value) })}
+                        placeholder="Numero de Iva"
                     />
                 </div>
 
-                <div className="flex flex-col gap-2">
+                {/* <div className="flex flex-col gap-2">
                     <Label>Email*</Label>
                     <Input
                         value={newTeamMemberData.email}
@@ -297,9 +296,9 @@ const CreateTeamMember = ({
                         onChange={(e) => setNewTeamMemberData({ ...newTeamMemberData, email: e.target.value })}
                         placeholder="Email"
                     />
-                </div>
+                </div> */}
 
-                <div className="flex flex-col gap-2">
+                {/* <div className="flex flex-col gap-2">
                     <Label>Contraseña*</Label>
                     <InputGroup>
                         <InputGroupInput
@@ -316,9 +315,9 @@ const CreateTeamMember = ({
 
                         </InputGroupAddon>
                     </InputGroup>
-                </div>
+                </div> */}
 
-                <div className="flex flex-col gap-2">
+                {/* <div className="flex flex-col gap-2">
                     <Label>Código corto</Label>
                     <Input
                         value={newTeamMemberData.short_code ?? undefined}
@@ -326,9 +325,9 @@ const CreateTeamMember = ({
                         onChange={(e) => setNewTeamMemberData({ ...newTeamMemberData, short_code: Number(e.target.value) })}
                         placeholder="Código corto"
                     />
-                </div>
+                </div> */}
 
-                <div className="flex flex-col gap-2">
+                {/* <div className="flex flex-col gap-2">
                     <Label>Asignación</Label>
                     <LocationsSelector
                         selectedLocationId={formattedLocationId}
@@ -343,7 +342,7 @@ const CreateTeamMember = ({
                         label=''
                         placeholder=''
                     />
-                </div>
+                </div> */}
 
                 <DialogFooter>
                     <Button
@@ -356,9 +355,7 @@ const CreateTeamMember = ({
                     <Button
                         disabled={
                             mutation.isLoading ||
-                            !newTeamMemberData.full_name ||
-                            !newTeamMemberData.email ||
-                            !newTeamMemberData.password
+                            !newIvaData.iva_number 
                         }
                         onClick={handleCreate}
                     >
@@ -372,10 +369,9 @@ const CreateTeamMember = ({
 
 // ---------- Exports ----------
 export {
-    TeamMemberSelectorRoot,
-    SelectTeamMember,
-    CancelTeamMemberSelection,
-    CreateTeamMember,
+    CancelIvaSelection,
+    CreateIva, IvaSelectorRoot,
+    SelectIva
 };
 
 

@@ -59,7 +59,6 @@ export function formatDate(value?: string) {
   }
 }
 
-
 export function formatSmartNumber(num: number): number {
   if (num == null || isNaN(num)) return 0;
 
@@ -71,4 +70,8 @@ export function formatSmartNumber(num: number): number {
 
   // Si tiene decimales, eliminar ceros y punto final si hace falta
   return parseFloat(fixed.replace(/0+$/, "").replace(/\.$/, ""));
+}
+
+export function createClientKey(prefix: string) {
+  return `${prefix}_${crypto.randomUUID()}`;
 }

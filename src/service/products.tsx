@@ -27,17 +27,26 @@ export const getAllProducts = async () => {
   const { data: dbProducts, error } = await supabase
     .from("products")
     .select(`
-  *,
+  product_id,
+  product_name,
+  short_code,
   public_images(public_image_src),
   categories(category_name),
   sub_categories(sub_category_name),
   brands(brand_name),
   product_presentations!inner (
-    *,
+    product_presentation_id,
+    product_presentation_name,
+    bulk_quantity_equivalence,
     lots(
-      *,
-      lot_containers_location(*),
-      stock(*)
+      lot_id,
+      created_at,
+      is_sold_out,
+      expiration_date,
+      stock(
+        *,
+        lot_containers_location(*)
+      )
     )
   )
 `)
@@ -49,6 +58,8 @@ export const getAllProducts = async () => {
   if (error) {
     throw new Error(error.message);
   }
+
+  console.log("dbProducts", dbProducts);
 
   const products = adaptProductsForClient(dbProducts);
 
