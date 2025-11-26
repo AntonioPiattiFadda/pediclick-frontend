@@ -32,6 +32,7 @@ import { CreateStockRoom, StockroomSelectorRoot } from "../shared/selectors/stoc
 import { CreateSubCategory, SubCategorySelectorRoot } from "../shared/selectors/subCategorySelector";
 import { CreateStore, StoreSelectorRoot } from "../shared/selectors/XXstoresSelector";
 import { Transformation } from "../shared/transformation/Transformation";
+import CreateProductCreator from "../shared/creator/productCreator";
 
 /* eslint-disable react-refresh/only-export-components */
 export const MENU_ITEMS: {
@@ -126,6 +127,13 @@ export const MENU_ITEMS: {
           children: <IvaSelectorRoot value={null} onChange={() => { }}>
             <CreateIva isShortCut={true} />
           </IvaSelectorRoot>
+          ,
+        },
+        {
+          title: "Producto",
+          type: "button",
+          children: 
+            <CreateProductCreator isShortCut={true} onChange={() => { }} />
           ,
         },
         
