@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -108,11 +108,10 @@ export default function StockAssignationContainer({
                 min_notification: null,
                 max_notification: null,
                 stock_type: locationType,
-                reserved_for_transfering_quantity: null,
                 reserved_for_selling_quantity: null,
+                reserved_for_transferring_quantity: null,
                 transformed_from_product_id: null,
-                transformed_to_product_id: null,
-                last_updated: null,
+                updated_at: null,
             };
             updatedStock = [...(stock || []), newStockEntry];
         }
@@ -120,17 +119,32 @@ export default function StockAssignationContainer({
     };
 
     const remainingQuantityToAssign = (initial_stock_quantity ?? 0) - (stock?.reduce((acc, s) => acc + (s.current_quantity || 0), 0) || 0);
+    const remainingLotContainersToAssign = (initial_stock_quantity ?? 0) - (lotContainersLocations?.reduce((acc, lcl) => acc + (lcl.quantity || 0), 0) || 0);
+
+
 
     return (
         <Card className="border-none p-2 shadow-none bg-transparent">
-            <CardHeader className="w-full flex flex-row justify-between p-0">
-                <CardTitle>Asignación de nuevo Stock</CardTitle>
-                <div className="flex gap-2 items-center">
-                    <Label className="font-medium">Cantidad disponible para asignar:</Label>
-                    <Badge variant="secondary">{remainingQuantityToAssign || '0'}</Badge>
-                </div>
-            </CardHeader>
+
             <CardContent className="grid grid-cols-1 gap-4 p-0 ">
+                <div className="w-full grid grid-cols-2">
+                    <div className="flex gap-1 items-center justify-center">
+                        <CardTitle className="">Stock:</CardTitle>
+                        <div className="flex gap-2 items-center">
+                            <Label className="font-medium">Cantidad de stock para asignar:</Label>
+                            <Badge variant="secondary">{remainingQuantityToAssign || '0'}</Badge>
+                        </div>
+
+                    </div>
+                    <div className="flex gap-1 items-center justify-center">
+                        <CardTitle className="">Vacíos:</CardTitle>
+                        <div className="flex gap-2 items-center">
+                            <Label className="font-medium">Cantidad de vacios para asignar:</Label>
+                            <Badge variant="secondary">{remainingLotContainersToAssign || '0'}</Badge>
+                        </div>
+
+                    </div>
+                </div>
                 <div className="flex flex-col gap-4">
                     {stockRooms.length === 0 ? (
                         <Badge variant="outline">No hay salas de stock disponibles.</Badge>
@@ -145,7 +159,7 @@ export default function StockAssignationContainer({
                                     disabled={disabled}
                                     onChange={(e) => handleUpdateStock(room.stock_room_id, Number(e.target.value), 'STOCKROOM')}
                                     value={stock?.find(s => s.stock_room_id === room.stock_room_id)?.current_quantity || ''}
-                                    className="w-[350px]"
+                                    className="w-[150px]"
                                 />
 
                                 <StockLotContainerSelector
@@ -154,6 +168,7 @@ export default function StockAssignationContainer({
                                         onChangeLotContainersLocations(newLotContainerLocations);
                                     }}
                                     stock_room_id={room.stock_room_id}
+                                    remainingLotContainersToAssign={remainingLotContainersToAssign}
                                 />
 
                                 {/* Aquí puedes agregar más detalles o componentes relacionados con la asignación de stock */}
@@ -176,7 +191,7 @@ export default function StockAssignationContainer({
                                     disabled={disabled}
                                     onChange={(e) => handleUpdateStock(store.store_id, Number(e.target.value), 'STORE')}
                                     value={stock?.find(s => s.store_id === store.store_id)?.current_quantity || ''}
-                                    className="w-[350px]"
+                                    className="w-[150px]"
                                 />
 
                                 <StockLotContainerAssignation
@@ -185,6 +200,7 @@ export default function StockAssignationContainer({
                                         onChangeLotContainersLocations(newLotContainerLocations);
                                     }}
                                     store_id={store.store_id}
+                                    remainingLotContainersToAssign={remainingLotContainersToAssign}
                                 />
 
                             </div>

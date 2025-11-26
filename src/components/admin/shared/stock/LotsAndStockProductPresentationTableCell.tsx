@@ -4,6 +4,7 @@ import type { Lot } from '@/types/lots';
 import type { Stock } from '@/types/stocks';
 import { useState } from 'react';
 import StockCardContainer from './StockCardContainer';
+import { formatDate } from '@/utils';
 
 const StockCardComponent = ({ stock }: {
     stock?: Stock[];
@@ -29,12 +30,12 @@ const LotsAndStockProductPresentationTableCell = ({ lots }: { lots: Lot[] }) => 
     if (!showDetails) {
         return (
             <div>
-                <div className='flex gap-2 items-center'>
+                <div className='flex gap-3 items-center mb-2'>
                     <Label>Detalles por lote</Label>
                     <Switch checked={showDetails} onCheckedChange={setShowDetails} />
                 </div>
-                <div className="mb-4">
-                    <div className="font-semibold mb-2">Todos los stock: {reducedStock}</div>
+                <div className="mb-2">
+                    <div className="font-semibold mb-2">Stock: {reducedStock}</div>
 
                 </div>
 
@@ -44,13 +45,13 @@ const LotsAndStockProductPresentationTableCell = ({ lots }: { lots: Lot[] }) => 
 
     return (
         <div>
-            <div className='flex gap-2'>
+            <div className='flex gap-2 mb-2'>
                 <Label>Detalles por lote</Label>
                 <Switch checked={showDetails} onCheckedChange={setShowDetails} />
             </div>
             {lots.map((lot) => (
-                <div key={lot.lot_id} className="mb-4">
-                    <div className="font-semibold mb-2">Lote Número: {lot.lot_id}</div>
+                <div key={lot.lot_id} className="mb-2">
+                    <div className="font-semibold mb-2">Lote: {formatDate(lot.created_at)}</div>
                     <StockCardComponent stock={lot.stock} />
                 </div>
             ))}

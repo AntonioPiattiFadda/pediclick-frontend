@@ -43,6 +43,9 @@ const generateNewTransformationDetail = (isOrigin: boolean, newTransformationId:
         quantity: null,
         product: null,
         product_presentation: null,
+        final_cost_per_unit: null,
+        final_cost_per_bulk: null,
+        final_total_cost: null,
     }
 }
 
@@ -77,8 +80,8 @@ export function Transformation() {
     const showFromTrash = fromTransformationDetails.length > 1;
     const showToTrash = toTransformationDetails.length > 1;
 
-    const fromTotalCost = 251
-    const fromTotalQty = 100
+    const fromTotalCost = fromTransformationDetails.reduce((acc, detail) => acc + (detail?.final_cost_per_unit * detail?.quantity || 0), 0);
+    const fromTotalQty = fromTransformationDetails.reduce((acc, detail) => acc + (detail.quantity || 0), 0);
 
     console.log(showToTrash, setToTransformationDetails);
 
@@ -102,7 +105,7 @@ export function Transformation() {
                                 <span className="col-span-6">Desde:</span>
                                 <div className="flex gap-2">
                                     <span>Costo Total: ${fromTotalCost}</span>
-                                    <span>Cantitad Total: ${fromTotalQty}</span>
+                                    <span>Cantitad Total: {fromTotalQty}</span>
                                 </div>
                             </div>
                             {fromTransformationDetails.map((td, index) => (
@@ -159,12 +162,24 @@ export function Transformation() {
                                         <Select
                                             value={td.lot_id ? String(td.lot_id) : undefined}
                                             onValueChange={(value) => {
+                                                console.log("🟢 value del lote seleccionado:", value);
+                                                const availableLots = td.product_presentation?.lots || [];
+                                                const selectedLot = availableLots.find((lot) => String(lot.lot_id) === value);
+                                                console.log("🟢 selectedLot:", selectedLot);
+                                                //                                              final_cost_per_unit: 200,
+                                                //                                              final_cost_per_bulk: 200,
+                                                // final_cost_per_unit: 0.5,
+
                                                 const fromTransformationDetailIndex = fromTransformationDetails.findIndex((item) => item.transformation_detail_id === td.transformation_detail_id);
 
                                                 const updatedFromTransformationDetails = [...fromTransformationDetails];
                                                 updatedFromTransformationDetails[fromTransformationDetailIndex] = {
                                                     ...updatedFromTransformationDetails[fromTransformationDetailIndex],
                                                     lot_id: Number(value),
+                                                    final_total_cost: selectedLot ? selectedLot.final_cost_total || 0 : 0,
+                                                    final_cost_per_bulk: selectedLot ? selectedLot.final_cost_per_bulk || 0 : 0,
+                                                    final_cost_per_unit: selectedLot ? selectedLot.final_cost_per_unit || 0 : 0,
+
                                                 };
                                                 setFromTransformationDetails(updatedFromTransformationDetails);
                                             }

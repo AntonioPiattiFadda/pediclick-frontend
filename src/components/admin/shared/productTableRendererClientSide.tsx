@@ -147,7 +147,7 @@ const lotColumnHelper = createColumnHelper<ProductPresentation>();
 
 const lotColumns = [
     lotColumnHelper.accessor("product_presentation_name", {
-        header: "Presentación",
+        header: () => <div className="text-left w-[250px]">Presentación</div>,
         cell: info => info.getValue() ?? "--",
     }),
 
@@ -163,7 +163,10 @@ const lotColumns = [
         header: "Stock Disponible",
         cell: info => {
             const lots: Lot[] = info.getValue() as Lot[];
-            return <LotsAndStockProductPresentationTableCell lots={lots} />;
+            return <div className='min-w-[270px] '>
+
+                <LotsAndStockProductPresentationTableCell lots={lots} />
+            </div>
 
         }
     }),
@@ -172,7 +175,10 @@ const lotColumns = [
         header: "Vacíos",
         cell: info => {
             const lots: Lot[] = info.getValue() as Lot[];
-            return <LotContainersProductPresentationTableCell lots={lots} />;
+            return <div className='min-w-[270px] '>
+
+                <LotContainersProductPresentationTableCell lots={lots} />
+            </div>
         }
     }),
 

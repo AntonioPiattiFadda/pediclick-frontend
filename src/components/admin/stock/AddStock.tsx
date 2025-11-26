@@ -29,12 +29,12 @@ const AddStock = () => {
                 lot_id: data.lot.lot_id!,
                 min_notification: null,
                 max_notification: null,
-                stock_type: "NOT ASSIGNED",
-                reserved_for_transfering_quantity: null,
+                stock_type: "NOT_ASSIGNED",
+                reserved_for_transferring_quantity: null,
                 reserved_for_selling_quantity: null,
                 transformed_from_product_id: null,
-                transformed_to_product_id: null,
-                last_updated: null,
+                // transformed_to_product_id: null,
+                updated_at: null,
             }
             if (unassignedQuantity > 0) {
                 data.stock.push(unassignedStock);

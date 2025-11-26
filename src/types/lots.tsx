@@ -14,29 +14,22 @@ export type BaseLot = {
   lot_id?: number;
   load_order_id: number | null;
   product_name?: string;
-
-  //Cree una tabla intermedia al pedo porque el lote tiene que estar asociado a un producto
   product_id: number;
   product_presentation_id: number | null;
-
   lot_number: number | null;
   expiration_date: string | null;
   expiration_date_notification: boolean;
   is_expired: boolean;
-  //Vendra del remito porque el remito es quien crea los lotes.
   provider_id: number | null;
-
   has_lot_container: boolean;
-
   lot_containers: {
     lot_container_id: number | null;
     quantity: number | null;
   }[];
-
   is_parent_lot: boolean;
   parent_lot_id: number | null;
-
   lot_control: boolean;
+
   //Caracteristicas inmutables
 
   // // Tiene el mismo nombre que en producto para saber si tiene control de lotes

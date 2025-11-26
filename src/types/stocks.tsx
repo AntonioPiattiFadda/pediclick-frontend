@@ -1,3 +1,15 @@
+import type { LotContainersLocation } from "./lotContainersLocation";
+
+type StockType =
+  | "STORE"
+  | "WASTE"
+  | "NOT_ASSIGNED"
+  | "SOLD"
+  | "TRANSFORMED"
+  | "STOCKROOM"
+// | "RESERVED_TO_TRANSFER"
+// | "RESERVED_TO_SELL";
+
 export type Stock = {
   stock_id?: number | null;
   product_id?: number;
@@ -8,21 +20,20 @@ export type Stock = {
   min_notification: number | null;
   max_notification: number | null;
   isNew?: boolean;
-  stock_type:
-  | "STORE"
-  | "WASTE"
-  | "NOT ASSIGNED"
-  | "SOLD"
-  | "TRANSFORMED"
-  | "STOCKROOM";
+  stock_type: StockType;
 
+  lot_containers_location?: LotContainersLocation[];
 
-  reserved_for_transfering_quantity: number | null;
+  reserved_for_transferring_quantity: number | null;
   reserved_for_selling_quantity: number | null;
 
 
   transformed_from_product_id: number | null;
-  transformed_to_product_id: number | null;
 
-  last_updated: string | null;
+  updated_at: string | null;
+
+
+  // transformed_to_product_id: number | null;
+  // reserved_to_transferring_quantity: number | null;
+  // stock_movement_status: MovementStatus | null;
 };

@@ -88,7 +88,8 @@ const TeamMemberSelectorRoot = ({
         },
         enabled: true,
     });
-    const [shortCode, setShortCode] = useState<number | null>(null);
+
+    const [shortCode, setShortCode] = useState<number | null>(value?.short_code ?? null);
 
     if (isError) {
         return <div>Error loading team members.</div>;
@@ -154,6 +155,7 @@ const SelectTeamMember = ({ children }: { children?: ReactNode }) => {
                     className={`  border-none    h-9 w-14 `}
                     value={shortCode ?? ""}
                     placeholder="Código"
+                    disabled={disabled}
                     onChange={(e) => {
                         const val = e.target.value;
                         onChangeShortCode(Number(val));
@@ -178,7 +180,7 @@ const SelectTeamMember = ({ children }: { children?: ReactNode }) => {
                             <SelectLabel>Miembros del equipo</SelectLabel>
                             {teamMembers.map((m) => (
                                 <SelectItem key={m.id} value={m.id}>
-                                    {`${m.full_name}`}
+                                    {`${m.short_code} - ${m.full_name}`}
                                 </SelectItem>
                             ))}
                         </SelectGroup>

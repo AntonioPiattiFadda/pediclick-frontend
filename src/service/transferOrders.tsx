@@ -1,5 +1,5 @@
 import type { TransferOrderItem } from "@/types/transferOrderItems";
-import type { TransferOrderStatus, TransferOrderType } from "@/types/transferOrders";
+import type { TransferOrderType } from "@/types/transferOrders";
 import { supabase } from ".";
 import { getBusinessOwnerId } from "./profiles";
 
@@ -23,9 +23,6 @@ export const getAllTransferOrders = async () => {
 };
 
 
-/**
- * Fetch a single transfer order with its items
- */
 export const getTransferOrder = async (
     transferOrderId: string | number
 ): Promise<{ dbTransferOrder: TransferOrderType | null; error: string | null }> => {
@@ -34,9 +31,37 @@ export const getTransferOrder = async (
 
     const { data: dbTransferOrder, error } = await supabase
         .from("transfer_orders")
-        .select(`*,    
-            transfer_order_items(*,      
-            product:product_id(*)
+        .select(`*,  
+            assigned_user:assigned_user_id(
+                id,
+                short_code,
+                full_name
+            ),
+            transfer_order_items(*,  
+            lot_containers_location:lot_containers_location_id(*),
+            lot_containers_movement:lot_containers_movement_id(*),
+             product_presentation:product_presentation_id(
+                product_presentation_id,
+                product_presentation_name,
+                short_code,
+                lots(lot_id,
+                created_at,
+                stock(stock_id,
+                current_quantity,
+                stock_type,
+                stock_room_id,
+                store_id,
+                lot_containers_location(*)
+                )
+                )
+            ), 
+                lot:lot_id(
+                lot_id,
+                created_at),    
+            product:product_id(
+                product_id,
+                product_name,
+                short_code)
     )
   `)
         .eq("business_owner_id", businessOwnerId)
@@ -46,31 +71,34 @@ export const getTransferOrder = async (
 
 
     if (error) {
+        console.error("❌ Error fetching transfer order:", error);
         throw new Error(error.message);
     }
 
+
     const adaptedTransferOrder = {
         ...dbTransferOrder,
+        assigned_user: dbTransferOrder?.assigned_user ?? null,
         transfer_order_items: dbTransferOrder.transfer_order_items.map((item: TransferOrderItem) => {
             const adaptedOI = {
                 ...item,
-                isNew: false,
+                is_new: false,
                 product: item.product ?? null,
-                product_presentation: item.product?.product_presentation ?? null,
+                product_presentation: item?.product_presentation ?? null,
                 lot: item.lot ?? null,
-                lot_container_location: item.lot_container_location ?? null,
-                lot_container_movements: item.lot_container_movements ?? null,
+                // lot_container_location: item.lot_container_location ?? null,
+                // lot_container_movements: item.lot_container_movements ?? null,
             }
+            console.log("🟢 adaptedOI:", adaptedOI.product_presentation);
             return adaptedOI;
         }) || []
     };
 
+    console.log("✅ Fetched transfer order:", adaptedTransferOrder);
+
     return { dbTransferOrder: (adaptedTransferOrder as TransferOrderType) ?? null, error: null };
 };
 
-/**
- * Create a new transfer order (empty draft by default)
- */
 export const createTransferOrder = async (location: {
     from_store_id?: number | null;
     from_stock_room_id?: number | null;
@@ -80,7 +108,7 @@ export const createTransferOrder = async (location: {
         .from("transfer_orders")
         .insert({
             business_owner_id: businessOwnerId,
-            transfer_order_status: "PENDING",
+            status: "PENDING",
             ...location
         })
         .select()
@@ -100,15 +128,35 @@ export async function updateTransferOrderWithItems(
     order: TransferOrderType,
     items: TransferOrderItem[]
 ) {
-    // ✅ Convertir los datos a JSON limpio (sin referencias circulares ni campos opcionales que rompan el JSONB)
-    const orderJson = JSON.parse(JSON.stringify(order));
-    const itemsJson = items.map((i) => JSON.parse(JSON.stringify(i)));
+    console.log("🔄 Updating transfer order with items:", order, items);
 
 
     const { data, error } = await supabase.rpc("update_transfer_order_with_items", {
-        p_transfer_order: orderJson,
-        p_transfer_order_items: itemsJson,
+        p_transfer_order: order,
+        p_transfer_order_items: items,
     });
+
+
+    if (error) {
+        console.error("❌ Error updating transfer order:", error);
+        throw error;
+    }
+
+    return data;
+}
+
+export async function transferOrderWithItems(
+    order: TransferOrderType,
+    items: TransferOrderItem[]
+) {
+    console.log("🔄 Updating transfer order with items:", order, items);
+
+
+    const { data, error } = await supabase.rpc("transfer_order_with_items", {
+        p_transfer_order: order,
+        p_transfer_order_items: items,
+    });
+
 
     if (error) {
         console.error("❌ Error updating transfer order:", error);
@@ -122,6 +170,7 @@ export async function updateTransferOrderWithItems(
  * Upsert items (create/update). Sends minimal set of allowed fields.
  * Uses onConflict on primary key (transfer_order_item_id).
  */
+
 export const upsertTransferOrderItems = async (
     items: Array<Partial<TransferOrderItem>>
 ) => {
@@ -168,23 +217,23 @@ export const deleteTransferOrderItem = async (transfer_order_item_id: number) =>
  * Simple workflow status transition.
  * If your backend defines RPCs for transitions, wire them here mirroring LoadOrders.
  */
-export const setTransferOrderStatus = async (
-    transferOrderId: number,
-    nextStatus: TransferOrderStatus
-) => {
-    const { data, error } = await supabase
-        .from("transfer_orders")
-        .update({ transfer_order_status: nextStatus })
-        .eq("transfer_order_id", transferOrderId)
-        .select()
-        .single();
+// export const setTransferOrderStatus = async (
+//     transferOrderId: number,
+//     nextStatus: MovementStatus
+// ) => {
+//     const { data, error } = await supabase
+//         .from("transfer_orders")
+//         .update({ transfer_order_status: nextStatus })
+//         .eq("transfer_order_id", transferOrderId)
+//         .select()
+//         .single();
 
-    if (error) {
-        throw new Error(error.message);
-    }
+//     if (error) {
+//         throw new Error(error.message);
+//     }
 
-    return data as TransferOrderType;
-};
+//     return data as TransferOrderType;
+// };
 /**
  * Delete a transfer order by id
  */

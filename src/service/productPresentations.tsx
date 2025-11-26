@@ -28,14 +28,18 @@ export const getProductPresentations = async (
   const lotsSelect = isFetchWithLots
     ? isFetchedWithLotContainersLocation
       ? `
-        *,
-        lots(
-          *,
-          stock(*),
-          lot_containers_location(
-            *
+        product_presentation_id,
+        product_presentation_name,
+        short_code,
+        bulk_quantity_equivalence,
+        lots(lot_id,
+          created_at,
+          is_sold_out,
+          stock(*,
+            lot_containers_location(*)
           )
         )
+        
       `
       : `
         *,
@@ -46,14 +50,22 @@ export const getProductPresentations = async (
       `
     : "*";
 
-  const query = supabase
+
+
+  let query = supabase
     .from("product_presentations")
     .select(lotsSelect)
     .is("deleted_at", null)
     .eq("business_owner_id", businessOwnerId)
     .eq("product_id", productId);
 
+  // if (isFetchWithLots) {
+  //   query = query.eq("lots.stock.current_quantity", 0);
+  // }
+
   const { data: presentations, error } = await query;
+
+  console.log("Presentations fetched:", presentations, error);
 
   if (error) throw new Error(error.message);
 

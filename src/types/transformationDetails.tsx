@@ -10,6 +10,10 @@ export type TransformationDetail = {
     product_presentation_id: number | null;
     quantity: number | null;
 
+    final_cost_per_unit: number | null;
+    final_cost_per_bulk: number | null;
+    final_total_cost: number | null;
+
     // lot_container_id: number | null;
     // lot_container_quantity: number | null;
 
