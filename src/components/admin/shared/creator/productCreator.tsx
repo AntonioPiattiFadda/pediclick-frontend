@@ -23,9 +23,8 @@ import { createProduct } from "@/service/products";
 import type { Product } from "@/types/products";
 import { BrandSelectorRoot, CancelBrandSelection, SelectBrand, UpdateBrandSelection } from "../selectors/brandSelector";
 import { CancelCategorySelection, CategorySelectorRoot, SelectCategory } from "../selectors/categorySelector";
-import { CancelIvaSelection, IvaSelectorRoot, SelectIva } from "../selectors/ivaSelector";
+import { CancelIvaSelection, CreateIva, IvaSelectorRoot, SelectIva } from "../selectors/ivaSelector";
 import { CancelSubCategorySelection, SelectSubCategory, SubCategorySelectorRoot } from "../selectors/subCategorySelector";
-import { ProviderSelectorRoot, SelectProvider } from "../selectors/providersSelector";
 import type { Iva } from "@/types/iva";
 
 // ---------- Context ----------
@@ -101,13 +100,7 @@ const CreateProductCreator = ({
     const [newProductData, setNewProductData] = useState<Product>({} as Product);
     const [ivaSelected, setIvaSelected] = useState<Iva | null>(null);
 
-    console.log(newProductData);
-    console.log(ivaSelected);
-
-
     // const [showPassword, setShowPassword] = useState(false);
-
-
 
     const [open, setOpen] = useState(false);
 
@@ -203,6 +196,7 @@ const CreateProductCreator = ({
                         }}                    >
                         <SelectIva />
                         {(ivaSelected?.iva_id !== null) && <CancelIvaSelection />}
+                        <CreateIva />
 
                     </IvaSelectorRoot>
                 </div>

@@ -247,7 +247,7 @@ const CreateIva = ({
     });
 
     const handleCreate = async () => {
-        if (!newIvaData.iva_number ) return;
+        if (!newIvaData.iva_number) return;
         await mutation.mutateAsync();
     };
 
@@ -355,7 +355,7 @@ const CreateIva = ({
                     <Button
                         disabled={
                             mutation.isLoading ||
-                            !newIvaData.iva_number 
+                            !newIvaData.iva_number
                         }
                         onClick={handleCreate}
                     >
