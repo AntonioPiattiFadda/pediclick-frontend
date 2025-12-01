@@ -10,11 +10,12 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { createBrand, getBrands } from "@/service/brands";
+import { createBrand, getBrands, updateBrand } from "@/service/brands";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     createContext,
     useContext,
+    useEffect,
     useState,
     type ReactNode,
 } from "react";
@@ -90,26 +91,33 @@ const SelectBrand = () => {
                 onChange={(e) => onChange(e.target.value)}
                 disabled={disabled}
             >
-                <option disabled value="">Sin Marca</option>
+                <option value="">Sin Marca</option>
                 {(brands ?? []).map((brand) => (
                     <option key={brand.brand_id} value={brand.brand_id}>
                         {brand.brand_name}
                     </option>
                 ))}
             </select>
-
-            {value && (
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onChange("")}
-                    disabled={disabled}
-                    className="text-red-500 hover:text-red-700"
-                >
-                    <X className="w-5 h-5" />
-                </Button>
-            )}
         </>
+    );
+};
+
+const CancelBrandSelection = () => {
+    const { value, onChange } = useBrandSelectorContext();
+
+    return (
+        value && (
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                    onChange("");
+                }}
+                className="text-red-500 hover:text-red-700 h-9"
+            >
+                <X className="w-5 h-5" />
+            </Button>
+        )
     );
 };
 
@@ -200,9 +208,129 @@ const CreateBrand = ({ isShortCut = false }: {
     );
 };
 
+// ---------- Update ----------
+
+
+const UpdateBrandSelection = () => {
+  const {
+    value: selectedBrandId,
+    onChange,
+    disabled,
+    brands,
+  } = useBrandSelectorContext();
+
+  const queryClient = useQueryClient();
+
+  const [open, setOpen] = useState(false);
+  const [brandName, setBrandName] = useState("");
+
+  //  Traigo la brand actual del selector
+ 
+  const currentBrand = brands?.find(
+    (b) => b.brand_id === Number(selectedBrandId)
+  );
+  
+  console.log("Brands List:", brands);
+  console.log("Selected Brand ID:", selectedBrandId);
+  console.log("Current Brand:", currentBrand);
+
+
+  //  Cada vez que cambia la brand seleccionada → precargo nombre
+
+  useEffect(() => {
+    if (currentBrand) setBrandName(currentBrand.brand_name);
+  }, [currentBrand]);
+
+  
+  //  Mutación para update
+ 
+  const updateBrandMutation = useMutation({
+    mutationFn: (data: { id: number; brand_name: string }) =>
+      updateBrand(data.id, { brand_name: data.brand_name }),
+
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["brands"] });
+
+      onChange(data.brand_id); // actualizar selector
+
+      toast.success("Marca actualizada correctamente");
+
+      setOpen(false);
+    },
+
+    onError: (error: any) => {
+      toast.error("Error al actualizar marca", {
+        description: error.message,
+      });
+    },
+  });
+
+  const handleUpdate = async () => {
+    if (!brandName || !selectedBrandId) return;
+
+    await updateBrandMutation.mutateAsync({
+      id: Number(selectedBrandId),
+      brand_name: brandName,
+    });
+  };
+
+  // Si no hay brand seleccionada → no mostrar botón
+  if (!selectedBrandId) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          className="border border-gray-200"
+          disabled={disabled}
+          variant="outline"
+        >
+          Editar
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Editar marca</DialogTitle>
+          <DialogDescription>
+            Modificá la marca seleccionada.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Input
+          value={brandName}
+          disabled={updateBrandMutation.isLoading}
+          onChange={(e) => setBrandName(e.target.value)}
+          placeholder="Nombre de la marca"
+        />
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            disabled={updateBrandMutation.isLoading}
+            onClick={() => setOpen(false)}
+          >
+            Cancelar
+          </Button>
+
+          <Button
+            disabled={updateBrandMutation.isLoading}
+            onClick={handleUpdate}
+          >
+            {updateBrandMutation.isLoading ? "Editando..." : "Guardar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+
 // ---------- Compound export ----------
 export {
     BrandSelectorRoot,
     SelectBrand,
     CreateBrand,
+    CancelBrandSelection,
+    UpdateBrandSelection
 };

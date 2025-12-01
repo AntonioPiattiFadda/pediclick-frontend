@@ -87,31 +87,38 @@ const SelectCategory = () => {
       <select
         className={`w-full border border-gray-200 rounded px-2 py-2 ${disabled && "opacity-50 cursor-not-allowed"} text-gray-500`}
         disabled={disabled}
-        value={value === null ? "" : value}
+        value={value ?? ""}
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
       >
-        <option disabled value="">Sin Rubro</option>
+        <option value="">Sin Rubro</option> 
         {(categories ?? []).map((cat) => (
           <option key={cat.category_id} value={cat.category_id}>
             {cat.category_name}
           </option>
         ))}
       </select>
-
-      {value && (
-        <Button
-          variant="ghost"
-          disabled={disabled}
-          size="icon"
-          onClick={() => onChange(null)}
-          className="text-red-500 hover:text-red-700"
-        >
-          <X className="w-5 h-5" />
-        </Button>
-      )}
     </>
+  );
+};
+
+const CancelCategorySelection = () => {
+  const { value, onChange } = useCategorySelectorContext();
+
+  return (
+    value && (
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => {
+          onChange(null);
+        }}
+        className="text-red-500 hover:text-red-700 h-9"
+      >
+        <X className="w-5 h-5" />
+      </Button>
+    )
   );
 };
 
@@ -206,4 +213,5 @@ export {
   CategorySelectorRoot,
   SelectCategory,
   CreateCategory,
+  CancelCategorySelection
 };
