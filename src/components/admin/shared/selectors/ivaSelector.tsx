@@ -173,7 +173,7 @@ const SelectIva = ({ children }: { children?: ReactNode }) => {
                     }}
                 >
                     <SelectTrigger className="h-11 w-full border-none">
-                        <SelectValue placeholder="Seleccionar iva" />
+                        <SelectValue placeholder="Sin Iva" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>

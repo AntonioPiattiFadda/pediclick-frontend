@@ -21,10 +21,10 @@ import toast from "react-hot-toast";
 import { Label } from "@/components/ui/label";
 import { createProduct } from "@/service/products";
 import type { Product } from "@/types/products";
-import { BrandSelectorRoot, SelectBrand } from "../selectors/brandSelector";
-import { CategorySelectorRoot, SelectCategory } from "../selectors/categorySelector";
-import { IvaSelectorRoot, SelectIva } from "../selectors/ivaSelector";
-import { SelectSubCategory, SubCategorySelectorRoot } from "../selectors/subCategorySelector";
+import { BrandSelectorRoot, CancelBrandSelection, SelectBrand, UpdateBrandSelection } from "../selectors/brandSelector";
+import { CancelCategorySelection, CategorySelectorRoot, SelectCategory } from "../selectors/categorySelector";
+import { CancelIvaSelection, IvaSelectorRoot, SelectIva } from "../selectors/ivaSelector";
+import { CancelSubCategorySelection, SelectSubCategory, SubCategorySelectorRoot } from "../selectors/subCategorySelector";
 import { ProviderSelectorRoot, SelectProvider } from "../selectors/providersSelector";
 import type { Iva } from "@/types/iva";
 
@@ -99,9 +99,11 @@ const CreateProductCreator = ({
     const queryClient = useQueryClient();
 
     const [newProductData, setNewProductData] = useState<Product>({} as Product);
-    const [ivaSelected, setIvaSelected] = useState<Iva | null>({} as Iva);
+    const [ivaSelected, setIvaSelected] = useState<Iva | null>(null);
 
     console.log(newProductData);
+    console.log(ivaSelected);
+
 
     // const [showPassword, setShowPassword] = useState(false);
 
@@ -171,12 +173,15 @@ const CreateProductCreator = ({
                     <BrandSelectorRoot value={newProductData.brand_id?.toString() ?? ""}
                         onChange={(brandId) => setNewProductData({ ...newProductData, brand_id: Number(brandId) })}>
                         <SelectBrand />
+                        {(newProductData.brand_id !== 0) && <CancelBrandSelection />}
+                        {(newProductData.brand_id !== 0) && <UpdateBrandSelection />}
                     </BrandSelectorRoot>
                 </div>
                 <div className="flex flex-col gap-2">
-                    <Label>Categoria</Label>
+                    <Label>Rubro</Label>
                     <CategorySelectorRoot value={newProductData.category_id} onChange={(categoryId) => setNewProductData({ ...newProductData, category_id: Number(categoryId) })}>
                         <SelectCategory />
+                        {(newProductData.category_id !== 0) && <CancelCategorySelection />}
                     </CategorySelectorRoot>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -193,24 +198,22 @@ const CreateProductCreator = ({
                             setIvaSelected(iva);
                             setNewProductData((prev) => ({
                                 ...prev,
-                                iva_id: iva?.iva_id ?? null, // si puede ser null
+                                iva_id: iva?.iva_id ?? null,
                             }));
                         }}                    >
                         <SelectIva />
+                        {(ivaSelected?.iva_id !== null) && <CancelIvaSelection />}
+
                     </IvaSelectorRoot>
                 </div>
                 <div className="flex flex-col gap-2">
-                    <Label>Sub Categoria</Label>
+                    <Label>Categoria</Label>
                     <SubCategorySelectorRoot value={newProductData.sub_category_id} onChange={(subCategoryId) => setNewProductData({ ...newProductData, sub_category_id: Number(subCategoryId) })}>
                         <SelectSubCategory />
+                        {(newProductData.sub_category_id !== 0) && <CancelSubCategorySelection />}
                     </SubCategorySelectorRoot>
                 </div>
-                <div className="flex flex-col gap-2">
-                    <Label>Proveedor</Label>
-                    <ProviderSelectorRoot value={newProductData.provider_id} onChange={(providerId) => setNewProductData({ ...newProductData, provider_id: Number(providerId) })}>
-                        <SelectProvider />
-                    </ProviderSelectorRoot>
-                </div>
+
                 {/* 
                 <div className="flex flex-col gap-2">
                     <Label>Código</Label>

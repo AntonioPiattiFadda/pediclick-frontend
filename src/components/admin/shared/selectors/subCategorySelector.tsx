@@ -87,12 +87,12 @@ const SelectSubCategory = () => {
       <select
         className={`${disabled && "opacity-50 cursor-not-allowed"} w-full border border-gray-200 rounded px-2 py-2 text-gray-500`}
         disabled={disabled}
-        value={value === null ? "" : value}
+        value={value ?? ""}
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
       >
-        <option disabled value="">Sin Categoría</option>
+        <option value="">Sin Categoría</option>
         {(subCategories ?? []).map((cat) => (
           <option key={cat.sub_category_id} value={cat.sub_category_id}>
             {cat.sub_category_name}
@@ -100,20 +100,30 @@ const SelectSubCategory = () => {
         ))}
       </select>
 
-      {value && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onChange(null)}
-          disabled={disabled}
-          className="text-red-500 hover:text-red-700"
-        >
-          <X className="w-5 h-5" />
-        </Button>
-      )}
+    
     </>
   );
 };
+
+const CancelSubCategorySelection = () => {
+    const { value, onChange } = useSubCategorySelectorContext();
+
+    return (
+        value && (
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                    onChange(null);
+                }}
+                className="text-red-500 hover:text-red-700 h-9"
+            >
+                <X className="w-5 h-5" />
+            </Button>
+        )
+    );
+};
+
 
 // ---------- Create ----------
 const CreateSubCategory = ({ isShortCut = false }: {
@@ -206,4 +216,5 @@ export {
   SubCategorySelectorRoot,
   SelectSubCategory,
   CreateSubCategory,
+  CancelSubCategorySelection
 };

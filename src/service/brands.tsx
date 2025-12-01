@@ -26,6 +26,27 @@ export const createBrand = async (name: string) => {
   if (error) {
     throw new Error(error.message);
   }
+  return data;
+};
+
+
+export const updateBrand = async (brandId: number, updates: Partial<{ brand_name: string }>) => {
+  const businessOwnerId = await getBusinessOwnerId();
+
+  const { data, error } = await supabase
+    .from("brands")
+    .update({
+      ...updates,
+      business_owner_id: businessOwnerId, 
+    })
+    .eq("brand_id", brandId)
+    .eq("business_owner_id", businessOwnerId) 
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
 
   return data;
 };
