@@ -3,8 +3,8 @@ export type PriceType = "MINOR" | "MAYOR";
 
 export type Price = {
   price_id?: number;
-  isNew?: boolean; // Para identificar precios nuevos que aún no están en la base de datos
-  store_id: number | null;
+  is_new?: boolean; // Para identificar precios nuevos que aún no están en la base de datos
+  location_id: number | null;
   price_number: number;
   product_presentation_id: number;
 

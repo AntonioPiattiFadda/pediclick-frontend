@@ -1,13 +1,13 @@
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import type { LotContainersLocation } from '@/types/lotContainersLocation';
+import type { LotContainersStock } from '@/types/lotContainersStock';
 import type { Lot } from '@/types/lots';
 import { useState } from 'react';
 import LocationCardContainer from './LocationCardContainer';
 import { formatDate } from '@/utils';
 
 const LotContainersLocationCardComponent = ({ lotContainerLocation }: {
-    lotContainerLocation?: LotContainersLocation[];
+    lotContainerLocation?: LotContainersStock[];
 }) => {
     return (lotContainerLocation?.map((location) => {
         return (<LocationCardContainer location={location} />

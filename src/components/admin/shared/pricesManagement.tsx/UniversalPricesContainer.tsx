@@ -13,10 +13,12 @@ const UniversalPricesContainer = ({ productPresentationId, finalCost }: {
     };
 }) => {
 
+    const locationId = null;
+
     const { data: productPrices = [], isLoading, isError } = useQuery({
-        queryKey: ["prices", productPresentationId],
+        queryKey: ["prices", productPresentationId, locationId],
         queryFn: async () => {
-            const response = await getProductPrices(productPresentationId, null);
+            const response = await getProductPrices(productPresentationId, locationId);
             return response.productPrices;
         },
         staleTime: Infinity,

@@ -3,8 +3,6 @@ import { supabase } from ".";
 
 export const createStockMovement = async (formData: StockMovement) => {
     //TODO Agregar el business_owner_id al llamado y el stock id a la lot_containers_location nueva
-
-
     const { data: stockMovementData, error: stockMovementError } = await supabase
         .rpc("transfer_stock", {
             p_lot_id: formData?.lot_id,
@@ -52,7 +50,6 @@ export const createStockMovement = async (formData: StockMovement) => {
 //     return stockMovementData;
 // };
 
-
 export const getStockSalesHistory = async (lotId: number) => {
     const { data, error } = await supabase
         .rpc("get_stock_sales_history", {
@@ -64,7 +61,6 @@ export const getStockSalesHistory = async (lotId: number) => {
 
     return data;
 }
-
 
 export const getSalesHistoryByProductOrLot = async (lotId: number) => {
     const { data, error } = await supabase

@@ -3,25 +3,6 @@ import type { Product } from "@/types/products";
 import { supabase } from ".";
 import { getBusinessOwnerId } from "./profiles";
 
-// export const getAllProducts = async () => {
-//   const businessOwnerId = await getBusinessOwnerId();
-//   const { data: dbProducts, error } = await supabase
-//     .rpc("get_products_with_available_lots", {
-//       p_business_owner_id: businessOwnerId,
-//     });
-
-
-//   if (error) {
-//     throw new Error(error.message);
-//   }
-
-
-//   const products = adaptProductsForClient(dbProducts);
-
-
-//   return { products, error };
-// };
-
 export const getAllProducts = async () => {
   const businessOwnerId = await getBusinessOwnerId();
   const { data: dbProducts, error } = await supabase
@@ -30,6 +11,8 @@ export const getAllProducts = async () => {
   product_id,
   product_name,
   short_code,
+  category_id,
+  sub_category_id,
   public_images(public_image_src),
   categories(category_name),
   sub_categories(sub_category_name),
@@ -45,7 +28,8 @@ export const getAllProducts = async () => {
       expiration_date,
       stock(
         *,
-        lot_containers_location(*)
+        locations(name),
+        lot_containers_stock(*)
       )
     )
   )

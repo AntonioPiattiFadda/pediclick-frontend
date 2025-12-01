@@ -1,11 +1,10 @@
 import type { Price } from "@/types/prices";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const pricesAdapter = (prices: any[], storeId: number | null): Price[] => {
+export const pricesAdapter = (prices: any[], locationId: number | null): Price[] => {
     return prices.map((p) => ({
-        price_id: p.isNew ? undefined : p.price_id,
-
-        store_id: storeId,
+        price_id: p.is_new ? undefined : p.price_id,
+        location_id: locationId,
         price_number: p.price_number,
         price: p.price,
         qty_per_price: p.qty_per_price,

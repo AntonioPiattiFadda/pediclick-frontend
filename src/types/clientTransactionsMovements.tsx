@@ -9,7 +9,7 @@ import type { PaymentStatus } from "./orders";
 export type TransactionType = "PAYMENT" | "REFUND"
 
 
-export interface ClientTransaction {
+export interface ClientTransactionMovements {
   transaction_id: string;
   client_id: string;
   order_id?: string;

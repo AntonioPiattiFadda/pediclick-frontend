@@ -44,7 +44,7 @@ export const getLotContainersLocation = async () => {
     throw new Error(error.message);
   }
 
-  return { lotContainersLocation: adaptedLotContainersLocation, error };
+  return { lotContainersStock: adaptedLotContainersLocation, error };
 };
 
 export const getLotContainersMovements = async (lotContainerId: number) => {

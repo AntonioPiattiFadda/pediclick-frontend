@@ -5,7 +5,6 @@ import type { Client } from "@/types/clients";
 import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useState } from "react";
-import TableSkl from "../sellPoints/ui/tableSkl";
 import { ClientsTable } from "./ClientsTable";
 import { ClientSelectorRoot, CreateClient } from "../shared/selectors/clientSelector";
 import { getProviders } from "@/service/providers";
@@ -13,6 +12,7 @@ import { CreateProvider, ProviderSelectorRoot } from "../shared/selectors/provid
 import { ProvidersTable } from "../providers/ProvidersTable";
 import type { Provider } from "@/types/providers";
 import { formatCurrency } from "@/utils/prices";
+import TableSkl from "@/components/ui/skeleton/tableSkl";
 
 export const ClientsContainer = () => {
     const [searchTerm, setSearchTerm] = useState<string>("");

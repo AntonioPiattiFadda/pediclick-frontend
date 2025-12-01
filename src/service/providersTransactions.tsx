@@ -1,7 +1,7 @@
 // import { supabase } from ".";
-// import type { ClientTransaction } from "@/types/clientTransactions";
+// import type { ClientTransactionMovements } from "@/types/ClientTransactionMovementss";
 
-// export async function getClientTransactions(clientId: string | number): Promise<ClientTransaction[]> {
+// export async function getClientTransactionMovements(clientId: string | number): Promise<ClientTransactionMovements[]> {
 
 //     if (clientId === undefined || clientId === null || clientId === 0 || clientId === "0") {
 //         return [];
@@ -16,5 +16,5 @@
 //     }
 
 //     // Ensure number types are correct if backend sends strings
-//     return data as ClientTransaction[];
+//     return data as ClientTransactionMovements[];
 // }

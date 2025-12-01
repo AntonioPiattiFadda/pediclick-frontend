@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { LotContainersLocation } from "@/types/lotContainersLocation";
+import type { LotContainersStock } from "@/types/lotContainersStock";
 import type { Lot } from "@/types/lots";
 import type { Price } from "@/types/prices";
 import type { ProductPresentation } from "@/types/productPresentation";
@@ -34,13 +34,17 @@ import { CreateProductPresentation, ProductPresentationSelectorRoot, SelectProdu
 import ProductSelector from "../../selectors/productSelector";
 import { ProductEditSheet } from "../productEditSheet";
 import PricesAccordion from "./pricesAccordion";
-import StockAssignationContainer from "./XXstockAssignationContainer";
+import StockAssignationContainer from "./StockAssignationContainer";
+
+
+
+
 
 export function AddLotBtn({
   onAddElement,
   loading = false,
 }: {
-  onAddElement: (lot: Lot, stock: Stock[], lotContainersLocation: LotContainersLocation[]) => void;
+  onAddElement: (lot: Lot, stock: Stock[], lotContainersStock: LotContainersStock[]) => void;
   loading?: boolean;
 }) {
   // const [creationMode, setCreationMode] = useState<CreationMode>("SHORT");
@@ -48,7 +52,7 @@ export function AddLotBtn({
 
   const [formData, setFormData] = useState<Lot>(emptyLot);
   const [stock, setStock] = useState<Stock[]>([]);
-  const [lotContainersLocation, setLotContainersLocation] = useState<LotContainersLocation[]>([]);
+  const [lotContainersStock, setLotContainersStock] = useState<LotContainersStock[]>([]);
 
   const [selectedProduct, setSelectedProduct] = useState<Product>({} as Product);
   const [selectedProductPresentation, setSelectedProductPresentation] = useState<ProductPresentation | null>(null);
@@ -79,7 +83,7 @@ export function AddLotBtn({
       lot_id: formData.lot_id!,
     }));
 
-    const adaptedLotContainersLocation = lotContainersLocation.map(loc => ({
+    const adaptedLotContainersLocation = lotContainersStock.map(loc => ({
       ...loc,
       lot_id: formData.lot_id!,
     }));
@@ -89,7 +93,7 @@ export function AddLotBtn({
       product_id: selectedProduct.product_id,
       product_presentation_id: selectedProductPresentation?.product_presentation_id || null,
       prices: lotPrices,
-    } as Lot, adaptedStock as Stock[], adaptedLotContainersLocation as LotContainersLocation[]);
+    } as Lot, adaptedStock as Stock[], adaptedLotContainersLocation as LotContainersStock[]);
 
     if (!loading) {
       handleClose();
@@ -104,7 +108,7 @@ export function AddLotBtn({
     setFormData(emptyLot);
     setSelectedProductPresentation(null);
     setStock([]);
-    setLotContainersLocation([]);
+    setLotContainersStock([]);
 
   };
 
@@ -399,7 +403,12 @@ export function AddLotBtn({
                 <ProductPresentationSelectorRoot
                   productId={selectedProduct.product_id!}
                   value={selectedProductPresentation}
-                  onChange={setSelectedProductPresentation}
+                  onChange={(value) => {
+                    console.log("value", value);
+                    // setLotContainersStock(emptyLotContainerStock)
+                    setSelectedProductPresentation(value)
+                  }
+                  }
                 >
                   <SelectProductPresentation />
                   <CreateProductPresentation />
@@ -918,9 +927,9 @@ export function AddLotBtn({
                   onChangeStock={(nextStock) => {
                     setStock(nextStock)
                   }}
-                  lotContainersLocations={lotContainersLocation}
-                  onChangeLotContainersLocations={(newLotContainers: LotContainersLocation[]) => {
-                    setLotContainersLocation(newLotContainers);
+                  lotContainersLocations={lotContainersStock}
+                  onChangeLotContainersLocations={(newLotContainers: LotContainersStock[]) => {
+                    setLotContainersStock(newLotContainers);
                   }}
                 />
 

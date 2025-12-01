@@ -17,7 +17,7 @@ import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
 // import { LotContainerSelector } from "./lotContainerSelectorUNUSED";
 import { AddLotBtn } from "../shared/stock/addStockBtn/addLotBtn";
 import type { Stock } from "@/types/stocks";
-import type { LotContainersLocation } from "@/types/lotContainersLocation";
+import type { LotContainersStock } from "@/types/lotContainersStock";
 
 type EditableCellProps = {
   value: string | number | null | undefined;
@@ -169,7 +169,7 @@ export const AddLoadOrderTable = ({
   onDeleteLot,
 }: {
   loadOrderLots: Lot[];
-  onAddElementToLoadOrder: (lot: Lot, stock: Stock[], lotContainersLocation: LotContainersLocation[]) => void;
+  onAddElementToLoadOrder: (lot: Lot, stock: Stock[], lotContainersStock: LotContainersStock[]) => void;
   onUpdateLot?: (index: number, patch: Partial<Lot>) => void;
   onDeleteLot?: (index: number) => void;
 }) => {

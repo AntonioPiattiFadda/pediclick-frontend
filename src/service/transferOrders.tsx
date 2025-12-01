@@ -37,8 +37,10 @@ export const getTransferOrder = async (
                 short_code,
                 full_name
             ),
+            from_location:from_location_id(name),
+            to_location_id,
+            to_location:to_location_id(name, type),
             transfer_order_items(*,  
-            lot_containers_location:lot_containers_location_id(*),
             lot_containers_movement:lot_containers_movement_id(*),
              product_presentation:product_presentation_id(
                 product_presentation_id,
@@ -47,11 +49,10 @@ export const getTransferOrder = async (
                 lots(lot_id,
                 created_at,
                 stock(stock_id,
-                current_quantity,
+                quantity,
                 stock_type,
-                stock_room_id,
-                store_id,
-                lot_containers_location(*)
+                location_id,
+                lot_containers_stock(*)
                 )
                 )
             ), 
@@ -100,8 +101,7 @@ export const getTransferOrder = async (
 };
 
 export const createTransferOrder = async (location: {
-    from_store_id?: number | null;
-    from_stock_room_id?: number | null;
+    from_location_id?: number | null;
 }) => {
     const businessOwnerId = await getBusinessOwnerId();
     const { data, error } = await supabase

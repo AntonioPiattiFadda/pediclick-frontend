@@ -12,7 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { SubCategoriesTable } from "./addEditProduct/SubCategoriesTableUNUSED";
 import { CategoriesTable } from "./CategoriesTable";
-import TableSkl from "./ui/tableSkl";
+import TableSkl from "../../ui/skeleton/tableSkl";
 
 export const CategoriesContainer = () => {
   // const [searchTerm, setSearchTerm] = useState("");

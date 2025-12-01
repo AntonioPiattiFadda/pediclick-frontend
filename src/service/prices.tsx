@@ -1,20 +1,25 @@
 import type { Price, PriceLogicType, PriceType } from "@/types/prices";
 import { supabase } from ".";
 
-export const getProductPrices = async (productId: number, selectedStoreId: number | null) => {
+export const getProductPrices = async (productId: number, locationId: number | null) => {
+  console.log("Fetching prices for productId:", productId, "and locationId:", locationId);
   let query = supabase
     .from("prices")
     .select(`*`)
-    .eq("product_id", productId);
+    .eq("product_presentation_id", productId);
 
-  if (selectedStoreId !== null) {
-    query = query.eq("store_id", selectedStoreId);
+  if (locationId !== null) {
+    query = query.eq("location_id", locationId);
   } else {
-    query = query.is("store_id", null);
+    query = query.is("location_id", null);
   }
 
 
+
+
   const { data: productPrices, error } = await query;
+
+  console.log("productPrices", productPrices);
 
   if (error) throw new Error(error.message);
 
@@ -105,6 +110,7 @@ export const getPreviousPrice = async (
 };
 
 export const createPrices = async (priceData: Price[], pricesToDelete: number[]) => {
+  console.log("Creating prices with data:", priceData, "and deleting prices with IDs:", pricesToDelete);
   const { data, error } = await supabase.rpc(
     "update_prices",
     { p_prices: priceData, p_delete_ids: pricesToDelete }

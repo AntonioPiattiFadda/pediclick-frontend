@@ -17,7 +17,7 @@ import { nanoid } from "nanoid";
 import { supabase } from "@/service";
 
 // Tipo de transacción
-type ClientTransaction = {
+type ClientTransactionMovements = {
     transaction_id: string;
     client_id: number;
     order_id?: string;
@@ -28,7 +28,7 @@ type ClientTransaction = {
 };
 
 // Función para insertar la transacción en Supabase
-async function createClientTransaction(data: ClientTransaction) {
+async function createClientTransactionMovements(data: ClientTransactionMovements) {
     const { error } = await supabase.from("client_transactions").insert(data);
     if (error) throw error;
     return data;
@@ -50,7 +50,7 @@ const RegisterClientPayment = ({
     const queryClient = useQueryClient();
 
     const mutation = useMutation({
-        mutationFn: createClientTransaction,
+        mutationFn: createClientTransactionMovements,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["client_transactions"] });
             toast("Pago registrado", {
@@ -71,7 +71,7 @@ const RegisterClientPayment = ({
         e.preventDefault();
         if (!amount) return;
 
-        const newTransaction: ClientTransaction = {
+        const newTransaction: ClientTransactionMovements = {
             transaction_id: nanoid(),
             client_id: clientId,
             transaction_type: "payment",

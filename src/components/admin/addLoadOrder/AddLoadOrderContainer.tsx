@@ -6,14 +6,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-// import TableSkl from "../sellPoints/ui/tableSkl";
 import { adaptLoadOrderForSubmission } from "@/adapters/loadOrders";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import GetFollowingLoadOrderNumberBtn from "@/components/unassigned/getFollowingLoadOrderNumberBtn";
 import type { LoadOrder } from "@/types/loadOrders";
-import type { LotContainersLocation } from "@/types/lotContainersLocation";
+import type { LotContainersStock } from "@/types/lotContainersStock";
 import type { Stock } from "@/types/stocks";
 import { updateLotWithCalculations } from "@/utils/lots";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -31,14 +30,14 @@ export const AddLoadOrderContainer = () => {
   const [formData, setFormData] = useState<LoadOrder>(emptyLoadOrder);
 
   const [stock, setStock] = useState<Stock[]>([]);
-  const [lotContainersLocation, setLotContainersLocation] = useState<LotContainersLocation[]>([]);
+  const [lotContainersStock, setLotContainersStock] = useState<LotContainersStock[]>([]);
 
   const createLoadOrderMutation = useMutation({
     mutationFn: async () => {
       //FIXME - FILTRAT LOS LOT_CONTAINERS QUE TENGAN LOT_CONTAINER_ID NULL
       const { loadOrder, lots } = adaptLoadOrderForSubmission(formData);
-      console.log('CARGA DE LOAD ORDER', loadOrder, lots, stock, lotContainersLocation);
-      // return await createLoadOrder(loadOrder, lots, stock, lotContainersLocation);
+      console.log('CARGA DE LOAD ORDER', loadOrder, lots, stock, lotContainersStock);
+      // return await createLoadOrder(loadOrder, lots, stock, lotContainersStock);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["load-orders"] });
@@ -294,7 +293,7 @@ export const AddLoadOrderContainer = () => {
               });
 
               setStock((prevStock) => [...prevStock, ...newStock]);
-              setLotContainersLocation((prevLocations) => [...prevLocations, ...newLotContainersLocation]);
+              setLotContainersStock((prevLocations) => [...prevLocations, ...newLotContainersLocation]);
             }}
             onUpdateLot={(index, patch) => {
               setFormData((prev) => {

@@ -20,17 +20,14 @@ export const emptyLoadOrder: LoadOrder = {
 };
 
 export const emptyStock: Stock = {
-
-  store_id: null,
-  stock_room_id: null,
-  current_quantity: 0,
+  quantity: 0,
+  location_id: null,
   lot_id: 0,
   min_notification: 0,
   max_notification: 0,
-  stock_type: "NOT ASSIGNED",
+  stock_type: "NOT_ASSIGNED",
   transformed_from_product_id: null,
-  transformed_to_product_id: null,
-  last_updated: null,
-  reserved_for_transfering_quantity: 0,
+  updated_at: null,
+  reserved_for_transferring_quantity: 0,
   reserved_for_selling_quantity: 0,
 };

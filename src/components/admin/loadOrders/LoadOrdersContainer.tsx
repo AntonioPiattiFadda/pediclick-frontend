@@ -9,8 +9,8 @@ import {
 import { getAllLoadOrders } from "@/service/loadOrders";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import TableSkl from "../sellPoints/ui/tableSkl";
 import { LoadOrdersTable } from "./LoadOrdersTable";
+import TableSkl from "../../ui/skeleton/tableSkl";
 
 export const LoadOrdersContainer = () => {
   // const [searchTerm, setSearchTerm] = useState("");

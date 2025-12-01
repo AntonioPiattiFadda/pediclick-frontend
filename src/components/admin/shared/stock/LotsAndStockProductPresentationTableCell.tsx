@@ -21,7 +21,7 @@ const LotsAndStockProductPresentationTableCell = ({ lots }: { lots: Lot[] }) => 
 
     const reducedStock = lots.reduce((acc, lot) => {
         const lotStock = lot.stock?.reduce((sAcc: number, stockItem: Stock) => {
-            return sAcc + (stockItem.current_quantity || 0);
+            return sAcc + (stockItem.quantity || 0);
         }, 0) || 0;
         return acc + lotStock;
     }, 0) || 0;
@@ -35,7 +35,7 @@ const LotsAndStockProductPresentationTableCell = ({ lots }: { lots: Lot[] }) => 
                     <Switch checked={showDetails} onCheckedChange={setShowDetails} />
                 </div>
                 <div className="mb-2">
-                    <div className="font-semibold mb-2">Stock: {reducedStock}</div>
+                    <div className="font-semibold mb-2">Cantidad: {reducedStock}</div>
 
                 </div>
 

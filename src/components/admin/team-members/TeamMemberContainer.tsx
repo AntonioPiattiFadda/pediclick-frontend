@@ -6,10 +6,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import TableSkl from "../sellPoints/ui/tableSkl";
 import { TeamMemberTable } from "./TeamMemberTable";
 import { AddTeamMemberBtn } from "./AddTeamMemberBtn";
 import { getUserTeamMembers } from "@/service/profiles";
+import TableSkl from "@/components/ui/skeleton/tableSkl";
 
 export const TeamMemberContainer = () => {
   // const [searchTerm, setSearchTerm] = useState("");

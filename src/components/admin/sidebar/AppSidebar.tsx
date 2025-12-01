@@ -28,9 +28,7 @@ import { CreateIva, IvaSelectorRoot } from "../shared/selectors/ivaSelector";
 import { CreateProductPresentation, ProductPresentationSelectorRoot } from "../shared/selectors/productPresentationSelector";
 import { CreateProvider, ProviderSelectorRoot } from "../shared/selectors/providersSelector";
 import { CreatePurchasingAgent, PurchasingAgentSelectorRoot } from "../shared/selectors/purchasingAgentSelector";
-import { CreateStockRoom, StockroomSelectorRoot } from "../shared/selectors/stockRoomSelector";
 import { CreateSubCategory, SubCategorySelectorRoot } from "../shared/selectors/subCategorySelector";
-import { CreateStore, StoreSelectorRoot } from "../shared/selectors/XXstoresSelector";
 import { Transformation } from "../shared/transformation/Transformation";
 import CreateProductCreator from "../shared/creator/productCreator";
 
@@ -76,14 +74,14 @@ export const MENU_ITEMS: {
           </PurchasingAgentSelectorRoot>
           ,
         },
-        {
-          title: "Depósito",
-          type: "button",
-          children: <StockroomSelectorRoot value={null} onChange={() => { }}>
-            <CreateStockRoom isShortCut={true} />
-          </StockroomSelectorRoot>
-          ,
-        },
+        // {
+        //   title: "Depósito",
+        //   type: "button",
+        //   children: <StockroomSelectorRoot value={null} onChange={() => { }}>
+        //     <CreateStockRoom isShortCut={true} />
+        //   </StockroomSelectorRoot>
+        //   ,
+        // },
         {
           title: "Marca",
           type: "button",
@@ -108,14 +106,6 @@ export const MENU_ITEMS: {
           ,
         },
         {
-          title: "Tienda",
-          type: "button",
-          children: <StoreSelectorRoot value={null} onChange={() => { }}>
-            <CreateStore isShortCut={true} />
-          </StoreSelectorRoot>
-          ,
-        },
-        {
           title: "Transformación",
           type: "button",
           children: <Transformation />
@@ -132,11 +122,11 @@ export const MENU_ITEMS: {
         {
           title: "Producto",
           type: "button",
-          children: 
+          children:
             <CreateProductCreator isShortCut={true} onChange={() => { }} />
           ,
         },
-        
+
         // {
         //   title: "Artículo",
         //   type: "button",
@@ -169,9 +159,9 @@ export const MENU_ITEMS: {
       roles: ["OWNER", "MANAGER"],
     },
     {
-      title: "Puntos de venta",
+      title: "Ubicaciones",
       type: "link",
-      url: "/stores",
+      url: "/locations",
       icon: Package,
       roles: ["OWNER"],
     },

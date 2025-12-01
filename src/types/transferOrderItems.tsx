@@ -1,5 +1,5 @@
 import type { LotContainerMovement, MovementStatus } from "./lotContainerMovements";
-import type { LotContainersLocation } from "./lotContainersLocation";
+import type { LotContainersStock } from "./lotContainersStock";
 import type { Lot } from "./lots";
 import type { ProductPresentation } from "./productPresentation";
 import type { Product } from "./products";
@@ -15,6 +15,7 @@ export interface TransferOrderItem {
     //SECTION ELEMENTOS QUE QUEDAN EN PENDING
     quantity: number;
     lot_containers_location_id: number | null;
+
     lot_containers_movement_id: number | null;
     lot_id: number | null;
 
@@ -29,7 +30,7 @@ export interface TransferOrderItem {
     product?: Pick<Product, "product_id" | "product_name"> | null;
     product_presentation?: Pick<ProductPresentation, "product_presentation_id" | "product_presentation_name"> | null;
     lot?: Lot | null;
-    lot_containers_location?: LotContainersLocation | null;
+    lot_containers_location?: LotContainersStock | null;
     lot_containers_movement?: LotContainerMovement | null;
 
 

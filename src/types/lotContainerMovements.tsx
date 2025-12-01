@@ -1,4 +1,5 @@
-export type MovementStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED' | 'IN_TRANSIT';
+import type { MovementStatus } from ".";
+
 export interface LotContainerMovement {
     lot_container_movement_id: number;
     created_at: string;
@@ -17,8 +18,6 @@ export interface LotContainerMovement {
     to_client_id: number | null;
 
     lot_container_id: number;
-
-
 
     from_store_name: string | null;
     to_store_name: string | null;

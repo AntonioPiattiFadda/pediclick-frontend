@@ -8,8 +8,8 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
-import { getClientTransactions } from "@/service/clientTransactions";
-import type { ClientTransaction } from "@/types/clientTransactions";
+import { getClientTransactionMovements } from "@/service/clientTransactions";
+import type { ClientTransactionMovements } from "@/types/clientTransactionsMovements";
 import { formatDate } from "@/utils";
 import { formatCurrency } from "@/utils/prices";
 import { useQuery } from "@tanstack/react-query";
@@ -24,15 +24,15 @@ const ClientHistoricalMvts = ({
 
 
 
-    const { data, isLoading, isError, error } = useQuery<ClientTransaction[]>({
-        queryKey: ["client_transactions", selectedClientId],
-        queryFn: () => getClientTransactions(selectedClientId!),
+    const { data, isLoading, isError, error } = useQuery<ClientTransactionMovements[]>({
+        queryKey: ["client-transaction-movements", selectedClientId],
+        queryFn: () => getClientTransactionMovements(selectedClientId!),
         enabled: !!selectedClientId,
     });
 
     console.log("Fetched transactions:", selectedClientId, data);
 
-    const movements: ClientTransaction[] = useMemo(() => data ?? [], [data]);
+    const movements: ClientTransactionMovements[] = useMemo(() => data ?? [], [data]);
 
     return (
         <Sheet>

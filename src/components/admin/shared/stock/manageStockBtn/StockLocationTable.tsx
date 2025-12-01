@@ -10,8 +10,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { getStockRooms } from "@/service/stockRooms";
-import { getUserStores } from "@/service/stores";
+import { getLocations } from "@/service/locations";
 import type { Lot } from "@/types/lots";
 import type { Stock } from "@/types/stocks";
 import { useQuery } from "@tanstack/react-query";
@@ -26,28 +25,17 @@ export const StockLocationTable = ({ lots }: Props) => {
     const [perLotView, setPerLotView] = useState(false);
 
     const {
-        data: stores = [],
-        isLoading: isLoadingStores,
-        isError: isErrorStores,
+        data: locations = [],
+        isLoading,
+        isError,
     } = useQuery({
         queryKey: ["stores"],
         queryFn: async () => {
-            const response = await getUserStores();
-            return response.stores;
+            const response = await getLocations();
+            return response.locations
         },
     });
 
-    const {
-        data: stockRooms = [],
-        isLoading: isLoadingStockRooms,
-        isError: isErrorStockRooms,
-    } = useQuery({
-        queryKey: ["stock-rooms"],
-        queryFn: async () => {
-            const response = await getStockRooms();
-            return response.stockRooms;
-        },
-    });
 
     // Detecta si hay algún stock no asignado
     const hasUnassigned = useMemo(() => {
@@ -62,31 +50,23 @@ export const StockLocationTable = ({ lots }: Props) => {
             unassigned: 0,
         };
 
-        stores.forEach((store) => (summary[`store_${store.store_id}`] = 0));
-        stockRooms.forEach(
+        locations.forEach(
             (room) => (summary[`stockroom_${room.stock_room_id}`] = 0)
         );
 
         for (const s of stocks) {
-            summary.total += s.current_quantity;
+            summary.total += s.quantity;
 
             switch (s.stock_type) {
                 case "NOT ASSIGNED":
-                    summary.unassigned += s.current_quantity;
+                    summary.unassigned += s.quantity;
                     break;
-                case "STORE":
-                    if (s.store_id)
-                        summary[`store_${s.store_id}`] += s.current_quantity;
-                    break;
-                case "STOCKROOM":
-                    if (s.stock_room_id)
-                        summary[`stockroom_${s.stock_room_id}`] += s.current_quantity;
-                    break;
+
             }
         }
 
         return summary;
-    }, [stores, stockRooms]);
+    }, []);
 
     const combinedSummary = useMemo(() => {
         const allStocks = lots.flatMap((lot) => lot.stock ?? []);
@@ -96,20 +76,18 @@ export const StockLocationTable = ({ lots }: Props) => {
     const headers = useMemo(() => {
         const base = ["Total"];
         if (hasUnassigned) base.push("No asignado");
-        stores.forEach((store) => base.push(store.store_name || `Punto de venta ${store.store_id}`));
-        stockRooms.forEach((room) =>
-            base.push(room.stock_room_name || `Depósito ${room.stock_room_id}`)
+        locations.forEach((location) =>
+            base.push(location.location_name || `Depósito ${location.location_id}`)
         );
         base.push("Acciones");
         return base;
-    }, [stores, stockRooms, hasUnassigned]);
+    }, [locations, hasUnassigned]);
 
-
-    if (isLoadingStores || isLoadingStockRooms) {
+    if (isLoading) {
         return <div>Cargando ubicaciones...</div>;
     }
 
-    if (isErrorStores || isErrorStockRooms) {
+    if (isError) {
         return <div>Error al cargar las ubicaciones.</div>;
     }
 
@@ -162,21 +140,14 @@ export const StockLocationTable = ({ lots }: Props) => {
                                             </TableCell>
                                         )}
 
-                                        {stores.map((store) => (
-                                            <TableCell
-                                                key={store.store_id}
-                                                className="text-right"
-                                            >
-                                                {summary[`store_${store.store_id}`] || "--"}
-                                            </TableCell>
-                                        ))}
 
-                                        {stockRooms.map((room) => (
+
+                                        {locations.map((location) => (
                                             <TableCell
-                                                key={room.stock_room_id}
+                                                key={location.location_id}
                                                 className="text-right"
                                             >
-                                                {summary[`stockroom_${room.stock_room_id}`] || "--"}
+                                                {summary[`stockroom_${location.location_id}`] || "--"}
                                             </TableCell>
                                         ))}
 
@@ -202,21 +173,14 @@ export const StockLocationTable = ({ lots }: Props) => {
                                     </TableCell>
                                 )}
 
-                                {stores.map((store) => (
-                                    <TableCell
-                                        key={store.store_id}
-                                        className="text-right"
-                                    >
-                                        {combinedSummary[`store_${store.store_id}`] || "--"}
-                                    </TableCell>
-                                ))}
 
-                                {stockRooms.map((room) => (
+
+                                {locations.map((location) => (
                                     <TableCell
-                                        key={room.stock_room_id}
+                                        key={location.location_id}
                                         className="text-right"
                                     >
-                                        {combinedSummary[`stockroom_${room.stock_room_id}`] || "--"}
+                                        {combinedSummary[`stockroom_${location.location_id}`] || "--"}
                                     </TableCell>
                                 ))}
 

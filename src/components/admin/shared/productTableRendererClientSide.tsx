@@ -160,11 +160,10 @@ const lotColumns = [
     }),
 
     lotColumnHelper.accessor("lots", {
-        header: "Stock Disponible",
+        header: "Stock",
         cell: info => {
             const lots: Lot[] = info.getValue() as Lot[];
             return <div className='min-w-[270px] '>
-
                 <LotsAndStockProductPresentationTableCell lots={lots} />
             </div>
 
@@ -176,7 +175,6 @@ const lotColumns = [
         cell: info => {
             const lots: Lot[] = info.getValue() as Lot[];
             return <div className='min-w-[270px] '>
-
                 <LotContainersProductPresentationTableCell lots={lots} />
             </div>
         }
@@ -280,12 +278,10 @@ export function ProductTableRendererClientSide({
     defaultData: Product[]
 }) {
 
-
     const [pagination, setPagination] = React.useState({
         pageIndex: 0, //initial page index
         pageSize: 10, //default page size
     });
-
 
     const table = useReactTable({
         data: defaultData,

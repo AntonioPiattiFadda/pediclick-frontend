@@ -16,15 +16,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getLotStocks } from "@/service/stock";
 import { createStockMovement } from "@/service/stockMovement";
-import type { LotContainersLocation } from "@/types/lotContainersLocation";
+import type { LotContainersStock } from "@/types/lotContainersStock";
 import type { StockMovement as StockMovementType } from "@/types/stockMovements";
 import type { Stock } from "@/types/stocks";
 import { formatStockLocation } from "@/utils/stock";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
-import { CreateStockRoom, SelectStockRoom, StockroomSelectorRoot } from "../shared/selectors/stockRoomSelector";
-import { CreateStore, SelectStore, StoreSelectorRoot } from "../shared/selectors/XXstoresSelector";
+import { CreateLocation, LocationSelectorRoot, SelectLocation } from "../shared/selectors/locationSelector";
 
 type StockWithRelations = Stock & {
     stores?: { store_name?: string } | null;
@@ -32,8 +31,6 @@ type StockWithRelations = Stock & {
 };
 
 type DestinationType = "" | "STORE" | "STOCKROOM" | "NOT ASSIGNED";
-
-
 
 type MovementDTO = NonNullable<StockMovementType>;
 
@@ -47,18 +44,17 @@ function buildPayload(params: {
     lotContainersToMove?: { quantity: number; auto: boolean, lot_containers_location_id?: number | null } | null;
 
 }): MovementDTO {
+
     const { lotId, from, destType, toStoreId, toStockRoomId, quantity, lotContainersToMove } = params;
+
     return {
         lot_id: lotId,
         movement_type: "TRANSFER",
         quantity: quantity ?? null,
-        from_stock_room_id: from?.stock_type === "STOCKROOM" ? from?.stock_room_id ?? null : null,
-        to_stock_room_id: destType === "STOCKROOM" ? toStockRoomId ?? null : null,
-        from_store_id: from?.stock_type === "STORE" ? from?.store_id ?? null : null,
-        to_store_id: destType === "STORE" ? toStoreId ?? null : null,
+        from_location_id: from?.location_id ?? null,
+        to_location_id: toStockRoomId ?? null,
         should_notify_owner: false,
         lot_containers_to_move: lotContainersToMove ?? null, // 👈 agregado
-
     };
 }
 
@@ -113,12 +109,11 @@ export function StockMovement({
     const [open, setOpen] = useState(false);
 
     const [selectedFromId, setSelectedFromId] = useState<number | null>(null);
-    const [selectedLotContainersLocation, setSelectedLotContainersLocation] = useState<LotContainersLocation | null>(null);
+    const [selectedLotContainersLocation, setSelectedLotContainersLocation] = useState<LotContainersStock | null>(null);
     const [lotContainersToMove, setLotContainersToMove] = useState<{ quantity: number; auto: boolean }>({
         quantity: 0,
         auto: true
     });
-
 
     console.log("selectedLotContainersLocation", selectedLotContainersLocation);
 
@@ -333,19 +328,24 @@ export function StockMovement({
                                 </SelectContent>
                             </Select>
 
-                            {destType === "STORE" && (
+                            <LocationSelectorRoot value={toStoreId} onChange={setToStoreId} disabled={false}>
+                                <SelectLocation />
+                                <CreateLocation />
+                            </LocationSelectorRoot>
+
+                            {/* {destType === "STORE" && (
                                 <StoreSelectorRoot value={toStoreId} onChange={setToStoreId} disabled={false}>
                                     <SelectStore />
                                     <CreateStore />
                                 </StoreSelectorRoot>
 
-                            )}
-                            {destType === "STOCKROOM" && (
+                            )} */}
+                            {/* {destType === "STOCKROOM" && (
                                 <StockroomSelectorRoot value={toStockRoomId} onChange={setToStockRoomId} disabled={false}>
                                     <SelectStockRoom />
                                     <CreateStockRoom />
                                 </StockroomSelectorRoot>
-                            )}
+                            )} */}
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 ">

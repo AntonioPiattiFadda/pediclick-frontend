@@ -25,14 +25,14 @@ import { SidebarMenuButton } from "@/components/ui/sidebar"
 import { Textarea } from "@/components/ui/textarea"
 import type { Product } from "@/types/products"
 import type { Transformation } from "@/types/transformation"
-import type { TransformationDetail } from "@/types/transformationDetails"
+import type { TransformationItems } from "@/types/transformationItems"
 import { formatDateToDDMMYY } from "@/utils"
 import { PlusCircle, Trash } from "lucide-react"
 import { useState } from "react"
 import { ProductPresentationSelectorRoot, SelectProductPresentation } from "../selectors/productPresentationSelector"
 import ProductSelector from "../selectors/productSelector"
 
-const generateNewTransformationDetail = (isOrigin: boolean, newTransformationId: number) => {
+const generateNewTransformationItems = (isOrigin: boolean, newTransformationId: number) => {
     return {
         transformation_detail_id: Math.random(),
         transformation_id: newTransformationId,
@@ -45,45 +45,43 @@ const generateNewTransformationDetail = (isOrigin: boolean, newTransformationId:
         product_presentation: null,
         final_cost_per_unit: null,
         final_cost_per_bulk: null,
-        final_total_cost: null,
+        final_cost_total: null,
     }
 }
-
-
 
 export function Transformation() {
     const newTransformationId = Math.floor(Math.random() * 1000000);
 
-    const initialFromTranformationDetails: TransformationDetail = generateNewTransformationDetail(true, newTransformationId);
+    const initialFromTranformationDetails: TransformationItems = generateNewTransformationItems(true, newTransformationId);
 
-    const initialToTranformationDetails: TransformationDetail = generateNewTransformationDetail(false, newTransformationId);
+    const initialToTranformationDetails: TransformationItems = generateNewTransformationItems(false, newTransformationId);
 
-    const [fromTransformationDetails, setFromTransformationDetails] = useState<TransformationDetail[]>([
+    const [fromTransformationItemss, setFromTransformationItemss] = useState<TransformationItems[]>([
         { ...initialFromTranformationDetails }
     ])
 
-    console.log(fromTransformationDetails);
+    console.log(fromTransformationItemss);
 
-    const [transformation, setTransformation] = useState<Transformation>({
+    const [transformation, setTransformation] = useState<Omit<Transformation, 'created_at'>>({
         transformation_id: newTransformationId,
         transformation_date: new Date().toISOString().split('T')[0],
         transformation_cost: 0,
         notes: "",
     } as Transformation)
 
-    const [toTransformationDetails, setToTransformationDetails] = useState<TransformationDetail[]>([
+    const [toTransformationItemss, setToTransformationItemss] = useState<TransformationItems[]>([
         {
             ...initialToTranformationDetails
         }
     ])
 
-    const showFromTrash = fromTransformationDetails.length > 1;
-    const showToTrash = toTransformationDetails.length > 1;
+    const showFromTrash = fromTransformationItemss.length > 1;
+    const showToTrash = toTransformationItemss.length > 1;
 
-    const fromTotalCost = fromTransformationDetails.reduce((acc, detail) => acc + (detail?.final_cost_per_unit * detail?.quantity || 0), 0);
-    const fromTotalQty = fromTransformationDetails.reduce((acc, detail) => acc + (detail.quantity || 0), 0);
+    const fromTotalCost = fromTransformationItemss.reduce((acc, detail) => acc + (detail?.final_cost_per_unit * detail?.quantity || 0), 0);
+    const fromTotalQty = fromTransformationItemss.reduce((acc, detail) => acc + (detail.quantity || 0), 0);
 
-    console.log(showToTrash, setToTransformationDetails);
+    console.log(showToTrash, setToTransformationItemss);
 
     return (
         <Dialog >
@@ -108,7 +106,7 @@ export function Transformation() {
                                     <span>Cantitad Total: {fromTotalQty}</span>
                                 </div>
                             </div>
-                            {fromTransformationDetails.map((td, index) => (
+                            {fromTransformationItemss.map((td, index) => (
                                 <div
                                     key={td.transformation_detail_id}
                                     className="grid grid-cols-6
@@ -120,14 +118,14 @@ export function Transformation() {
                                             value={td.product ?? {} as Product}
                                             onChange={
                                                 (product: Product) => {
-                                                    const productIndex = fromTransformationDetails.findIndex((item) => item.transformation_detail_id === td.transformation_detail_id);
-                                                    const updatedDetails = [...fromTransformationDetails];
+                                                    const productIndex = fromTransformationItemss.findIndex((item) => item.transformation_detail_id === td.transformation_detail_id);
+                                                    const updatedDetails = [...fromTransformationItemss];
                                                     updatedDetails[productIndex] = {
                                                         ...updatedDetails[productIndex],
                                                         product_id: product?.product_id || null,
                                                         product: product,
                                                     };
-                                                    setFromTransformationDetails(updatedDetails);
+                                                    setFromTransformationItemss(updatedDetails);
 
                                                 }}
                                         />
@@ -138,16 +136,16 @@ export function Transformation() {
                                             productId={td.product_id}
                                             value={td.product_presentation}
                                             onChange={(presentation) => {
-                                                const fromTransformationDetailIndex = fromTransformationDetails.findIndex((item) => item.transformation_detail_id === td.transformation_detail_id);
+                                                const fromTransformationItemsIndex = fromTransformationItemss.findIndex((item) => item.transformation_detail_id === td.transformation_detail_id);
 
-                                                const updatedFromTransformationDetails = [...fromTransformationDetails];
-                                                updatedFromTransformationDetails[fromTransformationDetailIndex] = {
-                                                    ...updatedFromTransformationDetails[fromTransformationDetailIndex],
+                                                const updatedFromTransformationItemss = [...fromTransformationItemss];
+                                                updatedFromTransformationItemss[fromTransformationItemsIndex] = {
+                                                    ...updatedFromTransformationItemss[fromTransformationItemsIndex],
                                                     product_presentation_id: presentation?.product_presentation_id ?? null,
                                                     product_presentation: presentation,
                                                 };
 
-                                                setFromTransformationDetails(updatedFromTransformationDetails);
+                                                setFromTransformationItemss(updatedFromTransformationItemss);
 
                                             }}
                                             isFetchWithLots={true}
@@ -170,18 +168,18 @@ export function Transformation() {
                                                 //                                              final_cost_per_bulk: 200,
                                                 // final_cost_per_unit: 0.5,
 
-                                                const fromTransformationDetailIndex = fromTransformationDetails.findIndex((item) => item.transformation_detail_id === td.transformation_detail_id);
+                                                const fromTransformationItemsIndex = fromTransformationItemss.findIndex((item) => item.transformation_detail_id === td.transformation_detail_id);
 
-                                                const updatedFromTransformationDetails = [...fromTransformationDetails];
-                                                updatedFromTransformationDetails[fromTransformationDetailIndex] = {
-                                                    ...updatedFromTransformationDetails[fromTransformationDetailIndex],
+                                                const updatedFromTransformationItemss = [...fromTransformationItemss];
+                                                updatedFromTransformationItemss[fromTransformationItemsIndex] = {
+                                                    ...updatedFromTransformationItemss[fromTransformationItemsIndex],
                                                     lot_id: Number(value),
-                                                    final_total_cost: selectedLot ? selectedLot.final_cost_total || 0 : 0,
+                                                    final_cost_total: selectedLot ? selectedLot.final_cost_total || 0 : 0,
                                                     final_cost_per_bulk: selectedLot ? selectedLot.final_cost_per_bulk || 0 : 0,
                                                     final_cost_per_unit: selectedLot ? selectedLot.final_cost_per_unit || 0 : 0,
 
                                                 };
-                                                setFromTransformationDetails(updatedFromTransformationDetails);
+                                                setFromTransformationItemss(updatedFromTransformationItemss);
                                             }
                                             } >
                                             <SelectTrigger className="w-full">
@@ -205,7 +203,7 @@ export function Transformation() {
                                             type="number"
                                             value={td.quantity ?? ''}
                                             onChange={(e) => {
-                                                setFromTransformationDetails((prev) => prev.map((item) => item.transformation_detail_id === td.transformation_detail_id ? { ...item, quantity: Number((e.target as HTMLInputElement).value) } : item));
+                                                setFromTransformationItemss((prev) => prev.map((item) => item.transformation_detail_id === td.transformation_detail_id ? { ...item, quantity: Number((e.target as HTMLInputElement).value) } : item));
                                             }} />
                                     </div>
 
@@ -214,7 +212,7 @@ export function Transformation() {
                                             variant="outline"
                                             size={'icon'}
                                             onClick={() => {
-                                                setFromTransformationDetails((prev) =>
+                                                setFromTransformationItemss((prev) =>
                                                     prev.filter((item) => item.transformation_detail_id !== td.transformation_detail_id)
                                                 );
                                             }}>
@@ -225,7 +223,7 @@ export function Transformation() {
                             ))}
 
                             <Button variant="outline" size={'icon'} onClick={() => {
-                                setFromTransformationDetails((prev) => [...prev, generateNewTransformationDetail(true, newTransformationId)]);
+                                setFromTransformationItemss((prev) => [...prev, generateNewTransformationItems(true, newTransformationId)]);
                             }}>
                                 <PlusCircle size={16} />
                             </Button>

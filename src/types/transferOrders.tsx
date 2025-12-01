@@ -7,16 +7,20 @@ export interface TransferOrderType {
     created_at: string;
     assigned_user_id: string | null;
 
-    assigned_user?: UserProfile | null;
 
-    from_store_id: number | null;
-    to_store_id: number | null;
-    from_stock_room_id: number | null;
-    to_stock_room_id: number | null;
+    from_location_id: number | null;
+    to_location_id: number | null;
     notes: string | null;
 
+    from_location: Partial<Location> | null;
+    to_location: Partial<Location> | null;
+
     status: MovementStatus;
+
     transfer_order_items?: TransferOrderItem[];
+
+
+    assigned_user?: UserProfile | null;
 
 
 

@@ -3,13 +3,13 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getStockRooms } from "@/service/stockRooms";
-import { getUserStores } from "@/service/stores";
-import type { LotContainersLocation } from "@/types/lotContainersLocation";
+import { getLocations } from "@/service/locations";
+import type { Location } from "@/types/locations";
+import type { LotContainersStock } from "@/types/lotContainersStock";
 import type { Stock } from "@/types/stocks";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { default as StockLotContainerAssignation, default as StockLotContainerSelector } from "./StockLotContainerAssignation";
+import StockLotContainerAssignation from "./StockLotContainerAssignation";
 
 export default function StockAssignationContainer({
     disabled = false,
@@ -23,9 +23,10 @@ export default function StockAssignationContainer({
     initial_stock_quantity?: number;
     stock?: Stock[];
     onChangeStock?: (nextStock: Stock[]) => void;
-    lotContainersLocations: LotContainersLocation[];
-    onChangeLotContainersLocations: (nextLotContainersLocations: LotContainersLocation[]) => void;
+    lotContainersLocations: LotContainersStock[];
+    onChangeLotContainersLocations: (nextLotContainersLocations: LotContainersStock[]) => void;
 }) {
+
 
     // const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
     // const prevSelectedStoreId = useRef<number | null>(null);
@@ -39,38 +40,35 @@ export default function StockAssignationContainer({
 
     // }
 
-    const { data: stockRooms = [], isLoading: isLoadingStockRooms } = useQuery({
-        queryKey: ["stock-rooms"],
+    const { data: locations = [], isLoading, isError } = useQuery({
+        queryKey: ["locations"],
         queryFn: async () => {
-            const response = await getStockRooms();
-            return response.stockRooms;
+            const response = await getLocations();
+            return response.locations;
         },
     });
 
+    console.log('Locations fetched:', locations);
 
-    const { data: stores = [], isLoading: isStoreLoading } = useQuery({
-        queryKey: ["stores"],
-        queryFn: async () => {
-            const response = await getUserStores();
-            return response.stores;
-        },
-    });
-
-
-    if (isLoadingStockRooms || isStoreLoading) {
+    if (isLoading) {
         return <Skeleton className="h-10 w-full" />;
     }
 
-    const handleUpdateStock = (locationId: number, quantity: number, locationType: 'STORE' | 'STOCKROOM') => {
-        if (!onChangeStock || !initial_stock_quantity) return;
+    if (isError) {
+        return <div>Error al cargar las ubicaciones</div>;
+    }
+
+    const handleUpdateStock = (locationId: number | null, quantity: number) => {
+        if (!onChangeStock || !initial_stock_quantity || !locationId) return;
+
+        const selectedLocation = locations.find((location) => location.id === locationId);
+        const locationType = selectedLocation?.type;
+
 
         const totalOtherStocks =
             stock?.reduce((acc, s) => {
-                const matches =
-                    locationType === "STORE"
-                        ? s.store_id === locationId
-                        : s.stock_room_id === locationId;
-                return matches ? acc : acc + (s.current_quantity || 0);
+                const matches = s.location_id === locationId;
+                return matches ? acc : acc + (s.quantity || 0);
             }, 0) ?? 0;
 
         // Calcular total con la cantidad nueva incluida
@@ -79,7 +77,7 @@ export default function StockAssignationContainer({
         // 🔴 Validar si supera el stock inicial
         if (totalWithNew > initial_stock_quantity) {
             toast.error(
-                `La cantidad total (${totalWithNew}) supera el stock inicial (${initial_stock_quantity}).`
+                `La cantidad supera el stock inicial (${initial_stock_quantity}).`
             );
             return; // detenemos la ejecución
         }
@@ -87,24 +85,24 @@ export default function StockAssignationContainer({
 
 
         const existingStockIndex = stock?.findIndex(s =>
-            locationType === 'STORE' ? s.store_id === locationId : s.stock_room_id === locationId
+            s.location_id === locationId
         ) ?? -1;
+
         let updatedStock: Stock[] = [];
 
         if (existingStockIndex >= 0) {
             updatedStock = [...(stock || [])];
             updatedStock[existingStockIndex] = {
                 ...updatedStock[existingStockIndex],
-                current_quantity: quantity,
+                quantity: quantity,
             };
         } else {
             const newStockEntry: Stock = {
                 stock_id: Math.floor(Math.random() * 1000000),
                 lot_id: Math.floor(Math.random() * 1000000),
-                isNew: true,
-                store_id: locationType === 'STORE' ? locationId : null,
-                stock_room_id: locationType === 'STOCKROOM' ? locationId : null,
-                current_quantity: quantity,
+                is_new: true,
+                quantity: quantity,
+                location_id: locationId,
                 min_notification: null,
                 max_notification: null,
                 stock_type: locationType,
@@ -115,10 +113,13 @@ export default function StockAssignationContainer({
             };
             updatedStock = [...(stock || []), newStockEntry];
         }
+
+        console.log('Updated stock:', updatedStock);
         onChangeStock(updatedStock);
     };
 
-    const remainingQuantityToAssign = (initial_stock_quantity ?? 0) - (stock?.reduce((acc, s) => acc + (s.current_quantity || 0), 0) || 0);
+    const remainingQuantityToAssign = (initial_stock_quantity ?? 0) - (stock?.reduce((acc, s) => acc + (s.quantity || 0), 0) || 0);
+
     const remainingLotContainersToAssign = (initial_stock_quantity ?? 0) - (lotContainersLocations?.reduce((acc, lcl) => acc + (lcl.quantity || 0), 0) || 0);
 
 
@@ -146,51 +147,21 @@ export default function StockAssignationContainer({
                     </div>
                 </div>
                 <div className="flex flex-col gap-4">
-                    {stockRooms.length === 0 ? (
-                        <Badge variant="outline">No hay salas de stock disponibles.</Badge>
+                    {locations.length === 0 ? (
+                        <Badge variant="outline">No hay ubicaciones disponibles.</Badge>
                     ) : (
-                        stockRooms.map((room) => (
-                            <div key={room.stock_room_id} className="flex gap-3 items-center">
-                                <Label className="mb-2 font-medium w-36">{room.stock_room_name}</Label>
+                        locations.map((location: Location) => (
+                            <div key={location.location_id} className="flex gap-3 items-center">
+                                <Label className="mb-2 font-medium w-36">{location.name}</Label>
                                 <Input
                                     type="number"
                                     placeholder="Cantidad a asignar"
                                     min={0}
                                     disabled={disabled}
-                                    onChange={(e) => handleUpdateStock(room.stock_room_id, Number(e.target.value), 'STOCKROOM')}
-                                    value={stock?.find(s => s.stock_room_id === room.stock_room_id)?.current_quantity || ''}
-                                    className="w-[150px]"
-                                />
-
-                                <StockLotContainerSelector
-                                    lotContainersLocations={lotContainersLocations}
-                                    onChangeLotContainersLocation={(newLotContainerLocations) => {
-                                        onChangeLotContainersLocations(newLotContainerLocations);
+                                    onChange={(e) => {
+                                        handleUpdateStock(location.location_id || null, Number(e.target.value))
                                     }}
-                                    stock_room_id={room.stock_room_id}
-                                    remainingLotContainersToAssign={remainingLotContainersToAssign}
-                                />
-
-                                {/* Aquí puedes agregar más detalles o componentes relacionados con la asignación de stock */}
-                            </div>
-                        ))
-                    )}
-                </div>
-                <div className="flex flex-col gap-4">
-                    {stores.length === 0 ? (
-                        <Badge variant="outline">No hay tiendas disponibles.</Badge>
-                    ) : (
-                        stores.map((store) => (
-                            <div key={store.store_id} className="flex gap-3 items-center">
-                                <Label className="mb-2 font-medium w-36">{store.store_name}</Label>
-                                <Input
-
-                                    type="number"
-                                    placeholder="Cantidad a asignar"
-                                    min={0}
-                                    disabled={disabled}
-                                    onChange={(e) => handleUpdateStock(store.store_id, Number(e.target.value), 'STORE')}
-                                    value={stock?.find(s => s.store_id === store.store_id)?.current_quantity || ''}
+                                    value={stock?.find(s => s.location_id === location.location_id)?.quantity || ''}
                                     className="w-[150px]"
                                 />
 
@@ -199,7 +170,7 @@ export default function StockAssignationContainer({
                                     onChangeLotContainersLocation={(newLotContainerLocations) => {
                                         onChangeLotContainersLocations(newLotContainerLocations);
                                     }}
-                                    store_id={store.store_id}
+                                    location_id={location.location_id}
                                     remainingLotContainersToAssign={remainingLotContainersToAssign}
                                 />
 
@@ -207,6 +178,7 @@ export default function StockAssignationContainer({
                         ))
                     )}
                 </div>
+
             </CardContent>
 
             <CardContent>

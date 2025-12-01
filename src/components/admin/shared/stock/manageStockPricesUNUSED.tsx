@@ -240,7 +240,7 @@
 //                                 disabled={disabled}
 //                                 onClick={() => {
 //                                     onChange(value.filter((p) => p.price_id !== price.price_id))
-//                                     if (price.price_id && !price.isNew) {
+//                                     if (price.price_id && !price.is_new) {
 //                                         setPricesToDelete((prev) => [...prev, price.price_id!]);
 //                                     }
 //                                 }}
@@ -296,7 +296,7 @@
 //                     onClick={() => {
 //                         const newPrice: Price = {
 //                             price_id: Math.random(), // Temporal, se reemplaza al guardar
-//                             isNew: true,
+//                             is_new: true,
 //                             product_id: productId,
 //                             store_id: storeId,
 //                             price_number: value.length + 1,
@@ -377,7 +377,7 @@
 //                                                     return
 //                                                 };
 //                                                 const otherPrices = value.filter(p => p.price_type !== "MINOR" || p.logic_type !== "QUANTITY_DISCOUNT");
-//                                                 const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+//                                                 const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, is_new: true }));
 //                                                 onChange([...otherPrices, ...previousPricesWithNewFlag]);
 //                                             }}
 //                                             priceType="MINOR"
@@ -398,7 +398,7 @@
 //                                                     return
 //                                                 };
 //                                                 const otherPrices = value.filter(p => p.price_type !== "MINOR" || p.logic_type !== "SPECIAL");
-//                                                 const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+//                                                 const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, is_new: true }));
 //                                                 onChange([...otherPrices, ...previousPricesWithNewFlag]);
 //                                             }}
 //                                             priceType="MINOR"
@@ -419,7 +419,7 @@
 //                                                     return
 //                                                 };
 //                                                 const otherPrices = value.filter(p => p.price_type !== "MINOR" || p.logic_type !== "LIMITED_OFFER");
-//                                                 const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+//                                                 const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, is_new: true }));
 //                                                 onChange([...otherPrices, ...previousPricesWithNewFlag]);
 //                                             }}
 //                                             priceType="MINOR"
@@ -446,7 +446,7 @@
 //                                                     return
 //                                                 };
 //                                                 const otherPrices = value.filter(p => p.price_type !== "MAYOR" || p.logic_type !== "QUANTITY_DISCOUNT");
-//                                                 const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+//                                                 const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, is_new: true }));
 //                                                 onChange([...otherPrices, ...previousPricesWithNewFlag]);
 //                                             }}
 //                                             priceType="MAYOR"
@@ -467,7 +467,7 @@
 //                                                     return
 //                                                 };
 //                                                 const otherPrices = value.filter(p => p.price_type !== "MAYOR" || p.logic_type !== "SPECIAL");
-//                                                 const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+//                                                 const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, is_new: true }));
 //                                                 onChange([...otherPrices, ...previousPricesWithNewFlag]);
 //                                             }}
 //                                             priceType="MAYOR"
@@ -488,7 +488,7 @@
 //                                                     return
 //                                                 };
 //                                                 const otherPrices = value.filter(p => p.price_type !== "MAYOR" || p.logic_type !== "LIMITED_OFFER");
-//                                                 const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+//                                                 const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, is_new: true }));
 //                                                 onChange([...otherPrices, ...previousPricesWithNewFlag]);
 //                                             }}
 //                                             priceType="MAYOR"

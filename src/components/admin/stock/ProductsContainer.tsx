@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,13 +12,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useState } from "react";
 import { ProductTableRendererClientSide } from "../shared/productTableRendererClientSide";
-import TableSkl from "./ui/tableSkl";
-import { Button } from "@/components/ui/button";
 import { CategorySelectorRoot, SelectCategory } from "../shared/selectors/categorySelector";
 import { SelectSubCategory, SubCategorySelectorRoot } from "../shared/selectors/subCategorySelector";
-import { SelectStockRoom, StockroomSelectorRoot } from "../shared/selectors/stockRoomSelector";
 import AddStock from "./AddStock";
-import { SelectStore, StoreSelectorRoot } from "../shared/selectors/XXstoresSelector";
+import TableSkl from "../../ui/skeleton/tableSkl";
+import { CancelLocationSelection, LocationSelectorRoot, SelectLocation } from "../shared/selectors/locationSelector";
+import type { Location } from "@/types/locations";
 
 
 
@@ -25,10 +25,9 @@ import { SelectStore, StoreSelectorRoot } from "../shared/selectors/XXstoresSele
 
 export const ProductsContainer = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStore, setSelectedStore] = useState<number | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null);
-  const [selectedStockRoom, setSelectedStockRoom] = useState<number | null>(null);
 
   const {
     data: products = [],
@@ -44,6 +43,8 @@ export const ProductsContainer = () => {
 
   const filteredProducts = products.filter((product) => {
 
+    console.log('Filtering product:', product);
+
     const matchesSearchTerm = product.product_name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
@@ -54,15 +55,6 @@ export const ProductsContainer = () => {
 
     const matchesBarcode = product.barcode?.toString().includes(searchTerm);
 
-
-    const matchesStockRoom = selectedStockRoom
-      ? product?.product_presentations?.some((presentation) =>
-        presentation.lots?.some((lot) =>
-          lot.stock?.some((stock) => stock.stock_room_id === selectedStockRoom)
-        )
-      )
-      : true;
-
     const matchesCategory = selectedCategory
       ? product.category_id === selectedCategory
       : true;
@@ -71,10 +63,19 @@ export const ProductsContainer = () => {
       ? product.sub_category_id === Number(selectedSubCategory)
       : true;
 
+    const matchesLocation = selectedLocation
+      ? product.product_presentations?.some((pres) =>
+        pres.lots?.some((lot) =>
+          lot.stock?.some(
+            (stock) => stock.location_id === selectedLocation.location_id
+          )
+        )
+      )
+      : true;
+
 
     return (
-      // matchesStore &&
-      matchesStockRoom &&
+      matchesLocation &&
       matchesCategory &&
       matchesSubCategory &&
       (matchesSearchTerm || matchesShortCode || matchesBarcode)
@@ -123,11 +124,13 @@ export const ProductsContainer = () => {
               />
             </div>
 
+            <div className="col-span-2">
+              <LocationSelectorRoot value={selectedLocation} onChange={setSelectedLocation}>
+                <SelectLocation />
+                <CancelLocationSelection />
+              </LocationSelectorRoot>
+            </div>
 
-
-            <StoreSelectorRoot value={selectedStore} onChange={setSelectedStore} disabled={false}>
-              <SelectStore />
-            </StoreSelectorRoot>
 
             <CategorySelectorRoot value={selectedCategory} onChange={setSelectedCategory} disabled={false}>
               <SelectCategory />
@@ -139,16 +142,11 @@ export const ProductsContainer = () => {
               <SelectSubCategory />
             </SubCategorySelectorRoot>
 
-            <StockroomSelectorRoot value={selectedStockRoom} onChange={setSelectedStockRoom} disabled={false}>
-              <SelectStockRoom />
-            </StockroomSelectorRoot>
 
             <Button className="w-[120px] ml-auto" onClick={() => {
               setSearchTerm("");
-              setSelectedStore(null);
               setSelectedCategory(null);
               setSelectedSubCategory(null);
-              setSelectedStockRoom(null);
             }}>Resetear filtros</Button>
 
             {/* <Select

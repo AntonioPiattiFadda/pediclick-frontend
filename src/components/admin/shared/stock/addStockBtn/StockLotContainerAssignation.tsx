@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { LotContainersLocation } from "@/types/lotContainersLocation";
+import type { LotContainersStock } from "@/types/lotContainersStock";
 import { PlusIcon, TrashIcon } from "lucide-react";
 import { LotContainerSelectorRoot, SelectLotContainer } from "../../selectors/LocationContainerSelector";
 import toast from "react-hot-toast";
@@ -9,14 +9,12 @@ import toast from "react-hot-toast";
 const StockLotContainerAssignation = ({
     lotContainersLocations,
     onChangeLotContainersLocation,
-    store_id,
-    stock_room_id,
+    location_id,
     remainingLotContainersToAssign
 }: {
-    lotContainersLocations: LotContainersLocation[],
-    onChangeLotContainersLocation: (nextLotContainersLocation: LotContainersLocation[]) => void,
-    store_id?: number,
-    stock_room_id?: number,
+    lotContainersLocations: LotContainersStock[],
+    onChangeLotContainersLocation: (nextLotContainersLocation: LotContainersStock[]) => void,
+    location_id?: number,
     remainingLotContainersToAssign?: number,
 }) => {
 
@@ -28,7 +26,7 @@ const StockLotContainerAssignation = ({
         const existingLCLIndex = lotContainersLocations?.findIndex(s =>
             s.lot_container_location_id === lotContainerLocationId
         ) ?? -1;
-        let updatedLotContainersLocations: LotContainersLocation[] = [];
+        let updatedLotContainersLocations: LotContainersStock[] = [];
 
         if (existingLCLIndex >= 0) {
             updatedLotContainersLocations = [...(lotContainersLocations || [])];
@@ -37,13 +35,12 @@ const StockLotContainerAssignation = ({
                 quantity: quantity,
             };
         } else {
-            const newLotContainersLocation: LotContainersLocation = {
+            const newLotContainersLocation: LotContainersStock = {
                 lot_container_location_id: Date.now(),
                 lot_container_id: null,
                 quantity: quantity,
                 created_at: null,
-                store_id: store_id || null,
-                stock_room_id: stock_room_id || null,
+                location_id: location_id || null,
                 client_id: null,
                 provider_id: null,
                 lot_container_status: 'COMPLETED',
@@ -54,13 +51,12 @@ const StockLotContainerAssignation = ({
     };
 
     const handleAddNewElement = () => {
-        const newLotContainersLocation: LotContainersLocation = {
+        const newLotContainersLocation: LotContainersStock = {
             lot_container_location_id: Date.now(),
             lot_container_id: null,
             quantity: 0,
             created_at: null,
-            store_id: store_id || null,
-            stock_room_id: stock_room_id || null,
+            location_id: location_id || null,
             client_id: null,
             provider_id: null,
             lot_container_status: 'COMPLETED',
@@ -79,7 +75,7 @@ const StockLotContainerAssignation = ({
         const existingLCLIndex = lotContainersLocations?.findIndex(s =>
             s.lot_container_location_id === lotContainerLocationId
         ) ?? -1;
-        let updatedLotContainersLocations: LotContainersLocation[] = [];
+        let updatedLotContainersLocations: LotContainersStock[] = [];
 
         if (existingLCLIndex >= 0) {
             updatedLotContainersLocations = [...(lotContainersLocations || [])];
@@ -89,7 +85,7 @@ const StockLotContainerAssignation = ({
                 lot_container_name: lotContainerName,
             };
         } else {
-            const newLotContainersLocation: LotContainersLocation = {
+            const newLotContainersLocation: LotContainersStock = {
                 lot_container_location_id: Date.now(),
                 lot_container_id: lotContainerId,
                 quantity: 0,
@@ -110,11 +106,9 @@ const StockLotContainerAssignation = ({
 
     console.log("lotContainersLocations", lotContainersLocations);
 
-    const locationLotContainersLocations = store_id
-        ? lotContainersLocations.filter(l => l.store_id === store_id)
-        : stock_room_id
-            ? lotContainersLocations.filter(l => l.stock_room_id === stock_room_id)
-            : null;
+    const locationLotContainersLocations = location_id
+        ? lotContainersLocations.filter(l => l.location_id === location_id)
+        : null;
 
     console.log("locationLotContainersLocations", locationLotContainersLocations);
 
@@ -171,10 +165,10 @@ const StockLotContainerAssignation = ({
                 size={'icon'}
                 className="mt-auto mb-1"
             ><PlusIcon /> </Button>
-            {/* {lotContainersLocation && (
+            {/* {lotContainersStock && (
                 <div className="flex flex-col gap-1 ml-auto">
                     <p>
-                        {lotContainersLocation.lot_container_name}: {lotContainersLocation.quantity}
+                        {lotContainersStock.lot_container_name}: {lotContainersStock.quantity}
                     </p>
 
                 </div>
@@ -193,8 +187,8 @@ const StockLotContainerAssignation = ({
                 <div className="grid gap-3">
                     <LotContainerSelectorRoot
                         value={{
-                            lot_container_id: lotContainersLocation?.lot_container_id || 0,
-                            lot_container_name: lotContainersLocation?.lot_container_name || '',
+                            lot_container_id: lotContainersStock?.lot_container_id || 0,
+                            lot_container_name: lotContainersStock?.lot_container_name || '',
                             lot_container_price: 0,
                         }}
                         onChange={(value) => {

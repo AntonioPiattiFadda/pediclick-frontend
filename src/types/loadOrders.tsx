@@ -1,7 +1,5 @@
 import type { Lot } from "./lots";
 
-
-
 export type LoadOrder = {
   load_order_id?: number;
   business_owner_id?: number; // Viene por defecto del usuario logueado
@@ -37,7 +35,6 @@ export type LoadOrder = {
   deleted_at?: string | null; // Fecha de eliminacion automatico
 
   lots?: Lot[]; // Esto no va a ir en el formulario. Se crea automaticamente al crear el remito
-
 
   //NOTE LO AGREGO? SI porque le tengo que dar un cierre al remito?
   status?: "PENDING" | "COMPLETED" | "CANCELED"; // Por defecto pending

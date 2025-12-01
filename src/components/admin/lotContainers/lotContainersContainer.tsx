@@ -6,10 +6,10 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import TableSkl from "../stock/ui/tableSkl";
+import TableSkl from "../../ui/skeleton/tableSkl";
 import { getLotContainers, getLotContainersLocation } from "@/service/lotContainer";
 import LotContainerTable from "./lotContainerTable";
-import LotContainersLocationTable from "./lotContainersLocationTable";
+import LotContainersStockTable from "./lotContainersStockTable";
 
 export const LotContainersContainer = () => {
     // const [searchTerm, setSearchTerm] = useState("");
@@ -29,14 +29,14 @@ export const LotContainersContainer = () => {
     });
 
     const {
-        data: lotContainersLocation = [],
+        data: lotContainersStock = [],
         isLoading: isLoadingLotContainersLocation,
         isError: isErrorLotContainersLocation,
     } = useQuery({
         queryKey: ["lot-containers-location"],
         queryFn: async () => {
             const response = await getLotContainersLocation();
-            return response.lotContainersLocation;
+            return response.lotContainersStock;
         },
     });
 
@@ -73,7 +73,7 @@ export const LotContainersContainer = () => {
                     <LotContainerTable lotContainers={lotContainers} />
 
                     {/* Tabla de localizaciones */}
-                    <LotContainersLocationTable locations={lotContainersLocation} />
+                    <LotContainersStockTable locations={lotContainersStock} />
                 </CardContent>
             </Card>
         </div>

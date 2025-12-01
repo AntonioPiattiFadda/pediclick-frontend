@@ -1,4 +1,4 @@
-import TableSkl from "@/components/admin/stock/ui/tableSkl";
+import TableSkl from "@/components/ui/skeleton/tableSkl";
 import { getTransferOrder } from "@/service/transferOrders";
 import { useQuery } from "@tanstack/react-query";
 import TransferOrder from "./TransferOrder";

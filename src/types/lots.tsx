@@ -1,4 +1,4 @@
-import type { LotContainersLocation } from "./lotContainersLocation";
+import type { LotContainersStock } from "./lotContainersStock";
 import type { Price } from "./prices";
 import type { Stock } from "./stocks";
 
@@ -99,7 +99,7 @@ export type BaseLot = {
   quantity_transformed: number | null;
 
 
-  lot_containers_location?: LotContainersLocation[];
+  lot_containers_location?: LotContainersStock[];
 };
 
 export type LotWithControl = BaseLot & {

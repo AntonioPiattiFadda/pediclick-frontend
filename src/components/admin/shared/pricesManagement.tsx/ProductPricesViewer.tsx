@@ -11,13 +11,13 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import type { Price } from "@/types/prices";
-import type { Store } from "@/types/stores";
 import ManageProductPrices from "./ManageProductPricesTabs";
 import CostBadges from "./CostBadges";
+import type { Location } from "@/types/locations";
 
 type Props = {
     productPrices: Price[];
-    stores: Store[];
+    stores: Location[];
     finalCost: {
         final_cost_total: number | null;
         final_cost_per_unit: number | null;
@@ -28,10 +28,10 @@ type Props = {
 
 export default function ProductPricesViewer({ productPrices, finalCost, stores, productPresentationId }: Props) {
 
-    const getStoreName = (storeId: number | null) => {
-        if (!storeId) return "Universal (todas)";
-        const store = stores.find((s) => s.store_id === storeId);
-        return store ? store.store_name : "Desconocida";
+    const getStoreName = (locationId: number | null) => {
+        if (!locationId) return "Universal (todas)";
+        const store = stores.find((s) => s.location_id === locationId);
+        return store ? store.name : "Desconocida";
     };
 
     if (productPrices.length === 0) {
@@ -56,8 +56,8 @@ export default function ProductPricesViewer({ productPrices, finalCost, stores, 
     }
 
     const sortedPrices = [...productPrices].sort((a, b) => {
-        const storeA = a.store_id || 0;
-        const storeB = b.store_id || 0;
+        const storeA = a.location_id || 0;
+        const storeB = b.location_id || 0;
         return storeA - storeB;
     });
 
@@ -113,7 +113,7 @@ export default function ProductPricesViewer({ productPrices, finalCost, stores, 
                             ) : (
                                 sortedPrices.map((price) => (
                                     <TableRow key={price.price_id}>
-                                        <TableCell>{getStoreName(price.store_id)}</TableCell>
+                                        <TableCell>{getStoreName(price.location_id)}</TableCell>
                                         <TableCell>
                                             <Badge
                                                 variant={price.price_type === "MINOR" ? "default" : "outline"}

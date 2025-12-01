@@ -7,12 +7,13 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getUserStores } from "@/service/stores";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import CostBadges from "./CostBadges";
 import StorePricesTabContainer from "./StorePricesTabContainer";
 import UniversalPricesContainer from "./UniversalPricesContainer";
+import { getLocations } from "@/service/locations";
+import type { Location } from "@/types/locations";
 
 interface PricesDialogProps {
     productPresentationId: number;
@@ -34,10 +35,13 @@ export default function ManageProductPrices({
     const { data: stores = [], isLoading: isStoreLoading } = useQuery({
         queryKey: ["stores"],
         queryFn: async () => {
-            const response = await getUserStores();
-            return response.stores;
+            const response = await getLocations();
+            console.log("Locations response:", response);
+            return response.locations?.filter(loc => loc.type === "STORE") || [];
         },
     });
+
+    console.log("Stores loaded for prices management:", stores);
 
 
 
@@ -84,9 +88,9 @@ export default function ManageProductPrices({
                             Universal
                         </TabsTrigger>
 
-                        {stores.map((store) => (
-                            <TabsTrigger key={store.store_id} value={store.store_id.toString()}>
-                                {store.store_name}
+                        {stores.map((store: Location) => (
+                            <TabsTrigger key={store.location_id} value={store.location_id.toString()}>
+                                {store.name}
                             </TabsTrigger>
                         ))}
 
@@ -94,8 +98,8 @@ export default function ManageProductPrices({
 
                     <UniversalPricesContainer productPresentationId={productPresentationId} finalCost={finalCost} />
 
-                    {stores.map((store) => (
-                        <StorePricesTabContainer key={store.store_id} productPresentationId={productPresentationId} store={store} finalCost={finalCost} disabled={disabled} />
+                    {stores.map((store: Location) => (
+                        <StorePricesTabContainer key={store.location_id} productPresentationId={productPresentationId} store={store} finalCost={finalCost} disabled={disabled} />
                     ))}
 
 

@@ -31,10 +31,8 @@ import {
 } from "react";
 import toast from "react-hot-toast";
 import { debounce } from "lodash";
-
 import type { UserProfile } from "@/types/users";
 import { createTeamMember, getUserTeamMembers } from "@/service/profiles";
-import LocationsSelector from "../../transferOrder/LocationSelector";
 import { Label } from "@/components/ui/label";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 
@@ -227,8 +225,6 @@ const CreateTeamMember = ({
 
     const [showPassword, setShowPassword] = useState(false);
 
-
-
     const [open, setOpen] = useState(false);
 
     const mutation = useMutation({
@@ -252,7 +248,6 @@ const CreateTeamMember = ({
         await mutation.mutateAsync();
     };
 
-    const formattedLocationId = newTeamMemberData.store_id ? `store-${newTeamMemberData.store_id}` : newTeamMemberData.stock_room_id ? `stock-${newTeamMemberData.stock_room_id}` : null;
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -328,7 +323,7 @@ const CreateTeamMember = ({
                     />
                 </div>
 
-                <div className="flex flex-col gap-2">
+                {/* <div className="flex flex-col gap-2">
                     <Label>Asignación</Label>
                     <LocationsSelector
                         selectedLocationId={formattedLocationId}
@@ -343,7 +338,7 @@ const CreateTeamMember = ({
                         label=''
                         placeholder=''
                     />
-                </div>
+                </div>*/}
 
                 <DialogFooter>
                     <Button
@@ -377,5 +372,6 @@ export {
     CancelTeamMemberSelection,
     CreateTeamMember,
 };
+
 
 

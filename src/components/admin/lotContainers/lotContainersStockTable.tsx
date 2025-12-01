@@ -1,10 +1,10 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import type { LotContainersLocation } from "@/types/lotContainersLocation";
+import type { LotContainersStock } from "@/types/lotContainersStock";
 import { formatDate } from "@/utils";
 
 
-function getLocation(loc: LotContainersLocation) {
+function getLocation(loc: LotContainersStock) {
     console.log("loc", loc);
     // if (loc.store_name) return { type: "Tienda", name: loc.store_name };
 
@@ -15,7 +15,7 @@ function getLocation(loc: LotContainersLocation) {
     return { type: "-", name: "-" };
 }
 
-const LotContainersLocationTable = ({ locations = [] }: { locations?: LotContainersLocation[] }) => {
+const LotContainersStockTable = ({ locations = [] }: { locations?: LotContainersStock[] }) => {
     return (
         <div className="rounded-md">
             <div className="flex items-center justify-between mb-2">
@@ -65,4 +65,4 @@ const LotContainersLocationTable = ({ locations = [] }: { locations?: LotContain
     );
 };
 
-export default LotContainersLocationTable;
+export default LotContainersStockTable;

@@ -6,21 +6,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import TableSkl from "../sellPoints/ui/tableSkl";
-import { TransferOrdersTable } from "./TransferOrdersTable";
 import { createTransferOrder, getAllTransferOrders } from "@/service/transferOrders";
-import { useState } from "react";
 import type { TransferOrderType } from "@/types/transferOrders";
-import LocationsSelector from "../transferOrder/LocationSelector";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { TransferOrdersTable } from "./TransferOrdersTable";
+import { LocationSelectorRoot, SelectLocation } from "../shared/selectors/locationSelector";
+import type { Location } from "@/types/locations";
+import { toast } from "sonner";
+import TableSkl from "@/components/ui/skeleton/tableSkl";
 
 export const TransferOrdersContainer = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
-  const [selectedLocationType, setSelectedLocationType] = useState<string | null>(null);
+  const [fromLocationId, setFromLocationId] = useState<Location | null>(null);
 
   const {
     data: dbTransferOrders,
@@ -37,9 +38,7 @@ export const TransferOrdersContainer = () => {
   const createMutation = useMutation<TransferOrderType, unknown, void>({
     mutationFn: async () => {
       const location = {
-        from_store_id: selectedLocationType === "STORE" ? selectedLocationId : null,
-        from_stock_room_id:
-          selectedLocationType === "STOCK_ROOM" ? selectedLocationId : null,
+        from_location_id: fromLocationId?.location_id || null
       };
       return await createTransferOrder(location);
     },
@@ -48,17 +47,16 @@ export const TransferOrdersContainer = () => {
       const id = created?.transfer_order_id;
       if (id) navigate(`/transfer-orders/${id}`);
     },
+    onError: (error) => {
+      console.error("Error creating transfer order:", error);
+      toast.error("Error al crear la orden de transferencia. Inténtalo de nuevo.");
+    },
   });
 
   if (isLoading) return <TableSkl />;
   if (isError) return <TableSkl />;
 
-  const formattedFromId =
-    selectedLocationType === "STORE"
-      ? `store-${selectedLocationId}`
-      : `stock-${selectedLocationId}`
 
-  const fromId = selectedLocationId ? formattedFromId : '';
 
   return (
     <div className="space-y-6">
@@ -70,18 +68,14 @@ export const TransferOrdersContainer = () => {
               <CardDescription>Gestiona tus órdenes de transferencia</CardDescription>
             </div>
             <div className="grid grid-cols-[2fr_1fr] gap-4 w-[500px]">
-              <LocationsSelector
-                onChangeSelectedLocation={(newLocationId, locationType) => {
-                  setSelectedLocationId(newLocationId);
-                  setSelectedLocationType(locationType);
-                }}
-                selectedLocationId={fromId}
-                label="Desde"
-                placeholder="Seleccionar ubicación"
-              />
+
+              <LocationSelectorRoot value={fromLocationId} onChange={setFromLocationId}>
+                <SelectLocation />
+                {/* <CreateLocation /> */}
+              </LocationSelectorRoot>
               <Button
                 onClick={() => createMutation.mutate()}
-                disabled={createMutation.isLoading || !selectedLocationId}
+                disabled={createMutation.isLoading || !fromLocationId}
               >
                 {createMutation.isLoading ? "Creando..." : "Nueva transferencia"}
               </Button>

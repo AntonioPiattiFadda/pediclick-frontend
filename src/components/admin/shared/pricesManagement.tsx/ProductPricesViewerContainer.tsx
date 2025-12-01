@@ -1,7 +1,7 @@
 import { getAllProductPresentationPrices } from "@/service/prices";
-import { getUserStores } from "@/service/stores";
 import { useQuery } from "@tanstack/react-query";
 import ProductPricesViewer from "./ProductPricesViewer";
+import { getLocations } from "@/service/locations";
 
 const ProductPricesViewerContainer = ({ productPresentationId, finalCost }: {
     productPresentationId: number;
@@ -17,10 +17,10 @@ const ProductPricesViewerContainer = ({ productPresentationId, finalCost }: {
         isLoading,
         isError,
     } = useQuery({
-        queryKey: ["stores"],
+        queryKey: ["locations"],
         queryFn: async () => {
-            const response = await getUserStores();
-            return response.stores;
+            const response = await getLocations();
+            return response.locations?.filter(loc => loc.type === "STORE") || [];
         },
     });
 

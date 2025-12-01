@@ -1,13 +1,13 @@
 import { TabsContent } from '@/components/ui/tabs';
 import { getProductPrices } from '@/service/prices';
-import type { Store } from '@/types/stores';
 import { useQuery } from '@tanstack/react-query';
 import StorePricesTab from './StorePricesTab';
+import type { Location } from '@/types/locations';
 
 const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost, disabled }: {
     productPresentationId: number;
-    store: Store;
-    key: string;
+    store: Location;
+    key: number;
     finalCost: {
         final_cost_total: number | null;
         final_cost_per_unit: number | null;
@@ -17,9 +17,9 @@ const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost,
 }) => {
 
     const { data: productPrices = [], isLoading, isError } = useQuery({
-        queryKey: ["prices", productPresentationId, store.store_id],
+        queryKey: ["prices", productPresentationId, store.location_id],
         queryFn: async () => {
-            const response = await getProductPrices(productPresentationId, store.store_id);
+            const response = await getProductPrices(productPresentationId, store.location_id);
             return response.productPrices;
         },
         staleTime: Infinity,
@@ -29,16 +29,16 @@ const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost,
 
     if (isLoading) {
         return (
-            <TabsContent key={key} value={store.store_id.toString()}>
-                <div>Cargando precios para {store.store_name}...</div>
+            <TabsContent key={key} value={store.location_id.toString()}>
+                <div>Cargando precios para {store.name}...</div>
             </TabsContent>
         );
     }
 
     if (isError) {
         return (
-            <TabsContent key={key} value={store.store_id.toString()}>
-                <div>Error al cargar precios para {store.store_name}.</div>
+            <TabsContent key={key} value={store.location_id.toString()}>
+                <div>Error al cargar precios para {store.name}.</div>
             </TabsContent>
         );
     }

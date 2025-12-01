@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { createPrices } from '@/service/prices';
+import type { Location } from '@/types/locations';
 import type { Price, PriceLogicType, PriceType } from '@/types/prices';
-import type { Store } from '@/types/stores';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DollarSign, Percent, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
@@ -14,8 +14,8 @@ import { toast } from 'sonner';
 
 const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled, productPrices }: {
     productPresentationId: number;
-    store: Store;
-    key: string;
+    store: Location;
+    key: number;
     finalCost: {
         final_cost_total: number | null;
         final_cost_per_unit: number | null;
@@ -25,7 +25,7 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
     productPrices: Price[];
 }) => {
 
-    const storeId = store.store_id;
+    const locationId = store.location_id;
     const queryClient = useQueryClient();
 
 
@@ -36,6 +36,7 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
 
     const createPricesMutation = useMutation({
         mutationFn: async (adaptedPrices: Price[]) => {
+            console.log("adaptedPrices", adaptedPrices);
             return await createPrices(adaptedPrices, pricesToDelete);
         },
         onSuccess: () => {
@@ -213,7 +214,7 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
                                 disabled={disabled}
                                 onClick={() => {
                                     onChange(value.filter((p) => p.price_id !== price.price_id))
-                                    if (price.price_id && !price.isNew) {
+                                    if (price.price_id && !price.is_new) {
                                         setPricesToDelete((prev) => [...prev, price.price_id!]);
                                     }
                                 }}
@@ -282,9 +283,9 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
                     onClick={() => {
                         const newPrice: Price = {
                             price_id: Math.random(), // Temporal, se reemplaza al guardar
-                            isNew: true,
+                            is_new: true,
                             product_presentation_id: productPresentationId,
-                            store_id: storeId,
+                            location_id: locationId,
                             price_number: value.length + 1,
                             price: 0,
                             qty_per_price: 1,
@@ -308,7 +309,7 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
 
     const handleCreatePrices = async () => {
         // TODO Validar los precios aca
-        const adaptedPrices = pricesAdapter(value, storeId);
+        const adaptedPrices = pricesAdapter(value, locationId);
         createPricesMutation.mutate(adaptedPrices);
     }
 
@@ -320,7 +321,7 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
 
 
     return (
-        <TabsContent key={key} value={store.store_id.toString()}>
+        <TabsContent key={key} value={store.location_id.toString()}>
 
 
 
@@ -348,7 +349,7 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
                                                 return
                                             };
                                             const otherPrices = value.filter(p => p.price_type !== "MINOR" || p.logic_type !== "QUANTITY_DISCOUNT");
-                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, is_new: true }));
                                             onChange([...otherPrices, ...previousPricesWithNewFlag]);
                                         }}
                                         priceType="MINOR"
@@ -369,7 +370,7 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
                                                 return
                                             };
                                             const otherPrices = value.filter(p => p.price_type !== "MINOR" || p.logic_type !== "SPECIAL");
-                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, is_new: true }));
                                             onChange([...otherPrices, ...previousPricesWithNewFlag]);
                                         }}
                                         priceType="MINOR"
@@ -390,7 +391,7 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
                                                 return
                                             };
                                             const otherPrices = value.filter(p => p.price_type !== "MINOR" || p.logic_type !== "LIMITED_OFFER");
-                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, is_new: true }));
                                             onChange([...otherPrices, ...previousPricesWithNewFlag]);
                                         }}
                                         priceType="MINOR"
@@ -417,7 +418,7 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
                                                 return
                                             };
                                             const otherPrices = value.filter(p => p.price_type !== "MAYOR" || p.logic_type !== "QUANTITY_DISCOUNT");
-                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, is_new: true }));
                                             onChange([...otherPrices, ...previousPricesWithNewFlag]);
                                         }}
                                         priceType="MAYOR"
@@ -438,7 +439,7 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
                                                 return
                                             };
                                             const otherPrices = value.filter(p => p.price_type !== "MAYOR" || p.logic_type !== "SPECIAL");
-                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, is_new: true }));
                                             onChange([...otherPrices, ...previousPricesWithNewFlag]);
                                         }}
                                         priceType="MAYOR"
@@ -459,7 +460,7 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
                                                 return
                                             };
                                             const otherPrices = value.filter(p => p.price_type !== "MAYOR" || p.logic_type !== "LIMITED_OFFER");
-                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, isNew: true }));
+                                            const previousPricesWithNewFlag = previousPrice.map(p => ({ ...p, is_new: true }));
                                             onChange([...otherPrices, ...previousPricesWithNewFlag]);
                                         }}
                                         priceType="MAYOR"

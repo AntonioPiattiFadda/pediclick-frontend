@@ -25,35 +25,6 @@ import type { Stock } from "@/types/stocks";
 import type { MovementStatus } from "@/types/lotContainerMovements";
 
 
-// const getMaxQtyInFromLocation = (lots: Lot[], fromStoreId: number | null | undefined, fromStockRoomId: number | null | undefined): number => {
-//     let total = 0;
-
-
-//     if (fromStoreId) {
-//         lots.forEach((lot) => {
-//             lot.stock?.forEach((stock) => {
-//                 if (stock.store_id === fromStoreId && stock.stock_type !== "NOT ASSIGNED") {
-//                     total += stock.current_quantity;
-//                 }
-//             });
-//         });
-//     }
-
-//     if (fromStockRoomId) {
-//         lots.forEach((lot) => {
-//             lot.stock?.forEach((stock) => {
-//                 if (stock.stock_room_id === fromStockRoomId && stock.stock_type !== "NOT ASSIGNED") {
-//                     total += stock.current_quantity;
-//                 }
-//             });
-//         });
-//     }
-
-//     return total;
-// }
-
-
-
 export default function TransferOrderItemsTable({
     transferOrder,
     onChangeOrder,
@@ -63,41 +34,6 @@ export default function TransferOrderItemsTable({
     onChangeOrder?: (updatedOrder: TransferOrderType) => void;
     isTransferring: boolean;
 }) {
-
-    // Mutations
-    // const upsertMutation = useMutation({
-    //     mutationFn: async () => {
-    //         const payload = rows.map((r) => ({
-    //             transfer_order_item_id: r.transfer_order_item_id,
-    //             transfer_order_id: r.transfer_order_id,
-    //             product_id: r.product_id,
-    //             lot_id: r.lot_id,
-    //             quantity: Number(r.quantity || 0),
-    //             is_transferred: r.is_transferred ?? false,
-    //         })) as Array<Partial<TransferOrderItem>>;
-
-    //         return await upsertTransferOrderItems(payload);
-    //     },
-    //     onMutate: async () => {
-    //         toast("Guardando ítems...", { description: "Aplicando cambios" });
-    //     },
-    //     onSuccess: () => {
-    //         setDirty(false);
-    //         queryClient.invalidateQueries({
-    //             queryKey: ["transfer-order", transferOrder.transfer_order_id],
-    //         });
-    //         toast("Ítems guardados", {
-    //             description: "Los cambios se guardaron correctamente",
-    //         });
-    //     },
-    //     onError: (e: unknown) => {
-    //         const msg = e instanceof Error ? e.message : "No se pudieron guardar los cambios";
-    //         toast("Error al guardar", {
-    //             description: msg,
-    //         });
-    //     },
-    // });
-
     const handleAddElement = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const newItem: any = {
@@ -110,6 +46,13 @@ export default function TransferOrderItemsTable({
             is_transferred: false,
             status: 'PENDING' as MovementStatus,
             stock_id: null,
+
+            lot_containers_movement: [
+                {
+                    quantity: 0,
+                    lot_container_status: "PENDING",
+                },
+            ],
             product: emptyProduct,
             lot_containers_location: {
                 lot_container_location_id: null,
@@ -152,9 +95,25 @@ export default function TransferOrderItemsTable({
         const updatedItems = rows.map((item) =>
             item.transfer_order_item_id === row.transfer_order_item_id
                 ? {
-                    ...item, product_id: product.product_id ?? null, product,
+                    ...item,
+                    product_id: product.product_id ?? null,
+                    product,
                     product_presentation: null,
                     lot_id: null,
+                    quantity: null,
+                    stock_id: null,
+                    lot_containers_location: {
+                        lot_container_location_id: null,
+                        lot_container_id: null,
+                        quantity: null,
+                    },
+                    lot_containers_movement: [
+                        {
+                            quantity: 0,
+                            lot_container_status: "PENDING",
+                        },
+                    ],
+
                 }
                 : item
         );
@@ -171,7 +130,6 @@ export default function TransferOrderItemsTable({
     // TODO Asignacion de la cantidad 
     // TODO Validaciones de los campos
 
-    const locationType = transferOrder.from_store_id ? 'STORE' : transferOrder.from_stock_room_id ? 'STOCK_ROOM' : null;
 
     return (
         <div className="rounded-md">
@@ -202,25 +160,24 @@ export default function TransferOrderItemsTable({
                     )}
                     {rows.map((row) => {
                         const rowLots = row.product_presentation?.lots || [];
-                        const selectedLocationLot = rowLots.find((lot) => lot.lot_id === row.lot_id);
+                        const selectedLocationLot = rowLots.find((lot: Lot) => lot.lot_id === row.lot_id);
 
-                        const filteredStocks = selectedLocationLot?.stock?.filter((stock) => {
-                            if (locationType === 'STORE' && transferOrder.from_store_id) {
-                                return stock.store_id === transferOrder.from_store_id;
-                            } else if (locationType === 'STOCK_ROOM' && transferOrder.from_stock_room_id) {
-                                return stock.stock_room_id === transferOrder.from_stock_room_id;
-                            }
-                            return false;
+                        const filteredStocks = selectedLocationLot?.stock?.filter((stock: Stock) => {
+                            return stock.location_id === transferOrder.from_location_id;
                         }) || [];
 
                         // Mutations
-                        const selectedLotLotContainerLocation = filteredStocks[0]?.lot_containers_location[0]
+                        // const selectedLotLotContainerLocation = filteredStocks[0]?.lot_containers_location
+                        const selectedLotLotContainerLocation = {
+                            lot_containers_location_id: filteredStocks[0]?.lot_containers_location?.lot_containers_location_id || null,
+                            lot_container_id: filteredStocks[0]?.lot_containers_location?.lot_container_id || null,
+                            quantity: filteredStocks[0]?.lot_containers_location?.quantity || null,
+                        }
+
                         console.log("🟢 selectedLotLotContainerLocation:", selectedLotLotContainerLocation);
 
                         const maxLotContainerLocationQty = selectedLotLotContainerLocation?.quantity || 0;
                         console.log("🟢 maxLotContainerLocationQty:", maxLotContainerLocationQty);
-
-
 
 
                         console.log("🟢 filteredStocks:", filteredStocks);
@@ -229,7 +186,7 @@ export default function TransferOrderItemsTable({
                         const maxQtyInFromLocation = filteredStocks.reduce((acc: number, stock: Stock) => {
                             // Here you would check if the stock's location matches the transfer order's from location
                             // For simplicity, we sum all stock quantities
-                            return acc + (stock.current_quantity || 0);
+                            return acc + (stock.quantity || 0);
                         }, 0) || 0;
 
                         return (<TableRow key={row.transfer_order_item_id}>
@@ -253,12 +210,8 @@ export default function TransferOrderItemsTable({
                                             const firstLot = ppLot.length > 0 ? ppLot[0] : null;
 
                                             const filteredStocks = firstLot?.stock?.filter((stock) => {
-                                                if (locationType === 'STORE' && transferOrder.from_store_id) {
-                                                    return stock.store_id === transferOrder.from_store_id;
-                                                } else if (locationType === 'STOCK_ROOM' && transferOrder.from_stock_room_id) {
-                                                    return stock.stock_room_id === transferOrder.from_stock_room_id;
-                                                }
-                                                return false;
+                                                return stock.location_id === transferOrder.from_location_id;
+
                                             }) || [];
 
                                             console.log("🟢 filteredStocks on PP change:", filteredStocks);

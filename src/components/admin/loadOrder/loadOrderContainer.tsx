@@ -1,5 +1,5 @@
 import { LoadOrderTable } from "@/components/admin/loadOrder/LoadOrderTable";
-import TableSkl from "@/components/admin/stock/ui/tableSkl";
+import TableSkl from "@/components/ui/skeleton/tableSkl";
 import { getLoadOrder } from "@/service/loadOrders";
 import { formatDate } from "@/utils";
 import { type StockWithRelations } from "@/utils/stock";

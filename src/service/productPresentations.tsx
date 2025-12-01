@@ -36,7 +36,7 @@ export const getProductPresentations = async (
           created_at,
           is_sold_out,
           stock(*,
-            lot_containers_location(*)
+            lot_containers_stock(*)
           )
         )
         
@@ -45,12 +45,34 @@ export const getProductPresentations = async (
         *,
         lots(
           *,
-          stock(*)
+          stock(lot_id,
+            quantity,
+            stock_id,
+            location_id,
+            stock_type,
+            reserved_for_transferring_quantity,
+            reserved_for_selling_quantity,
+            lot_containers_stock(*)
+            )
         )
       `
     : "*";
 
-
+  // lot_id: 189,
+  //   quantity: 2,
+  //     stock_id: 178,
+  //       created_at: '2025-11-27T01:48:48.444488+00:00',
+  //         product_id: 117,
+  //           stock_type: null,
+  //             updated_at: '2025-11-27T01:48:48.444488+00:00',
+  //               location_id: 3,
+  //                 max_notification: null,
+  //                   min_notification: null,
+  //                     lot_containers_stock: [],
+  //                       transformed_to_product_id: null,
+  //                         transformed_from_product_id: null,
+  //                           reserved_for_selling_quantity: null,
+  //                             reserved_for_transferring_quantity: null
 
   let query = supabase
     .from("product_presentations")
