@@ -5,6 +5,7 @@ import type { Stock } from '@/types/stocks';
 import { useState } from 'react';
 import StockCardContainer from './StockCardContainer';
 import { formatDate } from '@/utils';
+import SalesHistory from '../../stock/salesHistory';
 
 const StockCardComponent = ({ stock }: {
     stock?: Stock[];
@@ -53,6 +54,7 @@ const LotsAndStockProductPresentationTableCell = ({ lots }: { lots: Lot[] }) => 
                 <div key={lot.lot_id} className="mb-2">
                     <div className="font-semibold mb-2">Lote: {formatDate(lot.created_at)}</div>
                     <StockCardComponent stock={lot.stock} />
+                    <SalesHistory lotId={lot.lot_id} />
                 </div>
             ))}
         </div>

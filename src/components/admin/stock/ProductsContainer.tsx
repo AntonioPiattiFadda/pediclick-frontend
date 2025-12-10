@@ -8,20 +8,16 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getAllProducts } from "@/service/products";
+import type { Location } from "@/types/locations";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { RefreshCw, Search } from "lucide-react";
 import { useState } from "react";
+import TableSkl from "../../ui/skeleton/tableSkl";
 import { ProductTableRendererClientSide } from "../shared/productTableRendererClientSide";
 import { CategorySelectorRoot, SelectCategory } from "../shared/selectors/categorySelector";
+import { CancelLocationSelection, LocationSelectorRoot, SelectLocation } from "../shared/selectors/locationSelector";
 import { SelectSubCategory, SubCategorySelectorRoot } from "../shared/selectors/subCategorySelector";
 import AddStock from "./AddStock";
-import TableSkl from "../../ui/skeleton/tableSkl";
-import { CancelLocationSelection, LocationSelectorRoot, SelectLocation } from "../shared/selectors/locationSelector";
-import type { Location } from "@/types/locations";
-
-
-
-
 
 export const ProductsContainer = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,6 +29,8 @@ export const ProductsContainer = () => {
     data: products = [],
     isLoading,
     isError,
+    refetch,
+    isRefetching
   } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
@@ -104,6 +102,17 @@ export const ProductsContainer = () => {
               </CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                variant="outline"
+                size={'icon'}
+
+                disabled={isRefetching}
+                onClick={() => {
+                  refetch()
+                }}
+              >
+                <RefreshCw className={`w-4 h-4 scale-x-[-1] ${isRefetching ? 'animate-spin' : ''}`} />
+              </Button>
               {/* <Button variant="outline" className="gap-2">
                 <Upload className="w-4 h-4" />
                 Importar Excel
@@ -143,11 +152,13 @@ export const ProductsContainer = () => {
             </SubCategorySelectorRoot>
 
 
-            <Button className="w-[120px] ml-auto" onClick={() => {
-              setSearchTerm("");
-              setSelectedCategory(null);
-              setSelectedSubCategory(null);
-            }}>Resetear filtros</Button>
+            <Button className="w-[120px] ml-auto"
+              onClick={() => {
+                setSearchTerm("");
+                setSelectedCategory(null);
+                setSelectedSubCategory(null);
+              }}>
+              Resetear filtros</Button>
 
             {/* <Select
               value={selectedCategory}

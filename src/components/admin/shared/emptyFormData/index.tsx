@@ -123,7 +123,7 @@ export const emptyStockMovement: StockMovement = {
 };
 
 export const emptyLotContainerStock: LotContainersStock = {
-  lot_container_location_id: 0,
+  lot_container_stock_id: 0,
   lot_container_id: null,
   quantity: null,
   created_at: null,

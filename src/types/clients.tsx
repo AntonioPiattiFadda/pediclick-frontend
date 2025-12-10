@@ -39,6 +39,8 @@ export interface Client {
   billing_enabled: boolean;
   available_credit: number;
 
+  short_code: number;
+
 }
 
 

@@ -15,6 +15,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     createContext,
     useContext,
+    useEffect,
     useState,
     type ReactNode,
 } from "react";
@@ -22,6 +23,7 @@ import { toast } from "sonner";
 import { X } from "lucide-react";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import type { LotContainer } from "@/types/lotContainers";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // ---------- Context ----------
 interface LotContainerSelectorContextType {
@@ -49,13 +51,27 @@ interface RootProps {
 }
 
 const LotContainerSelectorRoot = ({ value, onChange, disabled = false, children }: RootProps) => {
-    const { data: lotContainers, isLoading } = useQuery({
+    const { data: lotContainers, isLoading, isError } = useQuery({
         queryKey: ["lotContainers"],
         queryFn: async () => {
             const response = await getLotContainers();
             return response.lotContainers;
         },
     });
+
+    // 👉 Auto-selección
+    useEffect(() => {
+        if (!isLoading && lotContainers && lotContainers.length > 0) {
+            if (!value) {
+                onChange(lotContainers[0]); // selecciona el primero
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isLoading, lotContainers]);
+
+    if (isError) {
+        return <div>Error al cargar los contenedores de lote</div>;
+    }
 
     return (
         <LotContainerSelectorContext.Provider
@@ -83,33 +99,49 @@ const SelectLotContainer = () => {
 
     return (
         <>
-            <select
-                className={`${disabled && "opacity-50 cursor-not-allowed"} w-full border border-gray-200 rounded px-2 py-2 text-gray-500`}
-                value={value === null ? "" : String(value.lot_container_id)}
-                onChange={(e) => onChange(
-                    e.target.value ? lotContainers.find(container => container.lot_container_id === Number(e.target.value)) || null : null
-                )}
-                disabled={disabled}
-            >
-                <option disabled value="">Sin contenedor</option>
-                {(lotContainers ?? []).map((container) => (
-                    <option key={container.lot_container_id} value={container.lot_container_id}>
-                        {container.lot_container_name}
-                    </option>
-                ))}
-            </select>
-
-            {/* {value && (
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onChange(null)}
+            <div className="flex w-full border border-gray-200 rounded-md ">
+                {/* <Input
+                    className={`  border-none    h-9 w-14 `}
+                    value={shortCode ?? ""}
+                    placeholder="Código"
                     disabled={disabled}
-                    className="text-red-500 hover:text-red-700"
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        onChangeShortCode(Number(val));
+                        handleCodeMatch(Number(val));
+                    }}
+                /> */}
+
+                <Select
+                    disabled={disabled}
+                    value={value?.lot_container_id ?? ""}
+                    onValueChange={(val) => {
+                        const m = lotContainers.find((m) => m.lot_container_id === val) || null;
+                        onChange(m);
+                        // onChangeShortCode(m?.short_code ?? null);
+                    }}
                 >
-                    <X className="w-5 h-5" />
-                </Button>
-            )} */}
+                    <SelectTrigger className="h-11 w-full border-none">
+                        <SelectValue placeholder="Seleccionar cliente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectLabel>Clientes</SelectLabel>
+                            {lotContainers.map((lcs) => {
+                                // const label = m.short_code ? `${m.short_code} - ${m.full_name}` : m.full_name;
+                                return (
+                                    <SelectItem
+                                        key={lcs.lot_container_id}
+                                        value={lcs.lot_container_id}>
+                                        {lcs.lot_container_name}
+                                    </SelectItem>
+                                )
+                            })}
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </div>
+
         </>
     );
 };

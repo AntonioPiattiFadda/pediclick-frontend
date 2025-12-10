@@ -39,7 +39,7 @@ import { createLocation, getLocations } from "@/service/locations";
 // ─────────────────────────────
 
 interface LocationSelectorContextType {
-    value: Location | null;
+    value: Partial<Location> | null;
     onChange: (loc: Location | null) => void;
     disabled: boolean;
     locations: Location[];
@@ -64,8 +64,8 @@ function useLocationSelectorContext() {
 // ─────────────────────────────
 
 interface RootProps {
-    value: Location | null;
-    onChange: (location: Location | null) => void;
+    value: Partial<Location> | null;
+    onChange: (location: Partial<Location> | null) => void;
     disabled?: boolean;
     children: ReactNode;
     omitId?: number | null;

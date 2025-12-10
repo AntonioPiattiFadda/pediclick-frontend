@@ -17,7 +17,6 @@ import TableSkl from "@/components/ui/skeleton/tableSkl";
 export const ClientsContainer = () => {
     const [searchTerm, setSearchTerm] = useState<string>("");
 
-
     const { data: clients = [], isLoading: isLoadingClients, isError: isErrorClients } = useQuery({
         queryKey: ["clients"],
         queryFn: async () => {
@@ -25,7 +24,6 @@ export const ClientsContainer = () => {
             return (response.clients ?? []) as Client[];
         },
     });
-
 
     const { data: providers = [], isLoading: isLoadingProviders, isError: isErrorProviders } = useQuery({
         queryKey: ["providers"],
@@ -42,7 +40,6 @@ export const ClientsContainer = () => {
     if (isErrorClients || isErrorProviders) {
         return <div>Error loading data.</div>;
     }
-
 
     const totalClientsDebts = clients.reduce((total, client) => total + (client.current_balance || 0), 0);
     const totalClientsCreditLimit = clients.reduce((total, client) => total + (client.credit_limit || 0), 0);

@@ -55,7 +55,7 @@ export default function TransferOrderItemsTable({
             ],
             product: emptyProduct,
             lot_containers_location: {
-                lot_container_location_id: null,
+                lot_container_stock_id: null,
                 lot_container_id: null,
                 quantity: null,
             },
@@ -103,7 +103,7 @@ export default function TransferOrderItemsTable({
                     quantity: null,
                     stock_id: null,
                     lot_containers_location: {
-                        lot_container_location_id: null,
+                        lot_container_stock_id: null,
                         lot_container_id: null,
                         quantity: null,
                     },

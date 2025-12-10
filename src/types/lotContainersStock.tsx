@@ -1,7 +1,7 @@
-import type { MovementStatus } from "./lotContainerMovements";
+import type { MovementStatus } from ".";
 
 export type LotContainersStock = {
-  lot_container_location_id: number;
+  lot_container_stock_id: number;
   // lot_id: number | null;
   lot_container_id: number | null;
   quantity: number | null;

@@ -21,4 +21,6 @@ export interface OrderPayment {
     final_payment_method?: FinalPaymentMethod; // solo si es el pago final
     amount: number;
     created_at?: string;
+
+    selected: boolean; // para UI
 }

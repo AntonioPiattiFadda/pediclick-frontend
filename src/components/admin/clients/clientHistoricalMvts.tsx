@@ -1,5 +1,6 @@
 
-import { Button } from "@/components/ui/button";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
     Sheet,
     SheetContent,
@@ -8,13 +9,15 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
-import { getClientTransactionMovements } from "@/service/clientTransactions";
+import { Button } from "@/components/ui/button";
+import { getClientTransactions } from "@/service/clientTransactions";
+import { History, Loader2 } from "lucide-react";
 import type { ClientTransactionMovements } from "@/types/clientTransactionsMovements";
 import { formatDate } from "@/utils";
 import { formatCurrency } from "@/utils/prices";
-import { useQuery } from "@tanstack/react-query";
-import { FileClock, Loader2 } from "lucide-react";
-import { useMemo } from "react";
+import { paymentMethodOpt } from "@/constants";
+
+
 
 const ClientHistoricalMvts = ({
     selectedClientId,
@@ -22,23 +25,19 @@ const ClientHistoricalMvts = ({
     selectedClientId?: string | number;
 }) => {
 
-
-
     const { data, isLoading, isError, error } = useQuery<ClientTransactionMovements[]>({
         queryKey: ["client-transaction-movements", selectedClientId],
-        queryFn: () => getClientTransactionMovements(selectedClientId!),
+        queryFn: () => getClientTransactions(selectedClientId!),
         enabled: !!selectedClientId,
     });
 
-    console.log("Fetched transactions:", selectedClientId, data);
-
-    const movements: ClientTransactionMovements[] = useMemo(() => data ?? [], [data]);
+    const movements: ClientTransactionMovements[] = useMemo(() => data?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) ?? [], [data]);
 
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="outline" disabled={!selectedClientId}>
-                    <FileClock />
+                <Button variant="outline" size={'icon'} disabled={!selectedClientId}>
+                    <History className="h-4 w-4" />
                 </Button>
             </SheetTrigger>
 
@@ -75,42 +74,46 @@ const ClientHistoricalMvts = ({
 
                         {!isLoading && !isError && movements.length > 0 && (
                             <div className="px-6 py-4">
-                                <div className="sticky top-0 z-10 grid grid-cols-12 gap-2 border-b bg-background px-2 py-2 text-xs font-medium text-muted-foreground">
-                                    <div className="col-span-3">Fecha</div>
-                                    <div className="col-span-5">Detalle</div>
-                                    <div className="col-span-2 text-right">Monto</div>
-                                    <div className="col-span-2 text-right">Saldo después</div>
+                                <div className="sticky top-0 z-10 grid grid-cols-5 gap-2 border-b bg-background px-2 py-2 text-xs font-medium text-muted-foreground">
+                                    <div className="">Fecha</div>
+                                    <div className="">Detalle</div>
+                                    <div className="">Tipo</div>
+                                    <div className="">Monto</div>
+                                    <div className="text-right">Saldo</div>
                                 </div>
 
                                 <div className="divide-y">
                                     {movements.map((m) => {
-                                        const detail =
-                                            m.description ??
-                                            (m.order_id ? `Orden #${m.order_id}` : "-");
+
                                         const after = m.balance_after_transaction ?? 0;
+
                                         const isDebt = after < 0; // rojo si < 0 (debe), verde si >= 0
+
+                                        const showBalanceAfter = m.payment_method === 'ON_CREDIT'
 
                                         return (
                                             <div
                                                 key={m.transaction_id}
-                                                className="grid grid-cols-12 gap-2 px-2 py-3 text-sm"
+                                                className="grid grid-cols-5 gap-2 px-2 py-3 text-sm"
                                             >
-                                                <div className="col-span-3">{formatDate(m.created_at)}</div>
-                                                <div className="col-span-5 truncate">{detail}</div>
+                                                <div className="col-span-1">{formatDate(m.created_at)}</div>
+                                                <div className="col-span-1 truncate">{`Order: ${m.order_id ?? "-"}`}</div>
+
+                                                <div className="col-span-1 truncate">{paymentMethodOpt.find(opt => opt.value === m.payment_method)?.label || "-"}</div>
 
                                                 {/* Monto de la transacción (informativo, sin énfasis) */}
-                                                <div className="col-span-2 text-right text-muted-foreground">
+                                                <div className="col-span-1 text-right text-muted-foreground">
                                                     {formatCurrency(m.amount)}
                                                 </div>
 
                                                 {/* Saldo después de la transacción: foco principal */}
                                                 <div
                                                     className={
-                                                        "col-span-2 text-right font-semibold " +
+                                                        "col-span-1 text-right font-semibold " +
                                                         (isDebt ? "text-red-600" : "text-emerald-600")
                                                     }
                                                 >
-                                                    {formatCurrency(after)}
+                                                    {showBalanceAfter && formatCurrency(after)}
                                                 </div>
                                             </div>
                                         );
