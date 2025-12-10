@@ -316,7 +316,7 @@ const UpdateCategorySelection = () => {
           })}
           placeholder="Nombre del rubro"
         />
-        <Label>Descripción</Label>
+        <Label>Descripción</Label> 
         <Input
           value={editedCategory?.description || ""}
           disabled={updateCategoryMutation.isLoading}
