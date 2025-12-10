@@ -31,3 +31,26 @@ export const createIva = async (iva: Iva) => {
 
   return data;
 };
+
+
+
+export const updateIva = async (ivaId: number, updates: Partial<{ iva_number: number; iva_percentege: number }>) => {
+  const businessOwnerId = await getBusinessOwnerId();
+
+  const { data, error } = await supabase
+    .from("iva")
+    .update({
+      ...updates,
+      business_owner_id: businessOwnerId, 
+    })
+    .eq("iva_id", ivaId)
+    .eq("business_owner_id", businessOwnerId) 
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};

@@ -10,17 +10,20 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { createCategory, getCategories } from "@/service/categories";
+import { createCategory, getCategories, updateCategory } from "@/service/categories";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
-import { X } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
+import type { Category } from "@/types/categories";
+import { Label } from "@/components/ui/label";
 
 // ---------- Context ----------
 interface CategorySelectorContextType {
@@ -92,7 +95,7 @@ const SelectCategory = () => {
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
       >
-        <option value="">Sin Rubro</option> 
+        <option value="">Sin Rubro</option>
         {(categories ?? []).map((cat) => (
           <option key={cat.category_id} value={cat.category_id}>
             {cat.category_name}
@@ -170,7 +173,7 @@ const CreateCategory = ({ isShortCut = false }: {
             disabled={disabled}
             variant="outline"
           >
-            + Nuevo
+            <PlusCircle className="w-5 h-5" />
           </Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -208,10 +211,160 @@ const CreateCategory = ({ isShortCut = false }: {
   );
 };
 
+
+// ---------- Update ----------
+
+
+const UpdateCategorySelection = () => {
+  const {
+    value: selectedCategoryId,
+    onChange,
+    disabled,
+    categories,
+  } = useCategorySelectorContext();
+
+  const queryClient = useQueryClient();
+
+  const [open, setOpen] = useState(false);
+  const [editedCategory, setEditedCategory] = useState<Category>({} as Category);
+
+  //  Traigo la brand actual del selector
+
+  const currentCategory = categories?.find(
+    (c) => c.category_id === selectedCategoryId
+  );
+
+  console.log("Category List:", categories);
+  console.log("Selected Category ID:", selectedCategoryId);
+  console.log("Current Category:", currentCategory);
+
+
+  //  Cada vez que cambia la brand seleccionada → precargo nombre
+
+  useEffect(() => {
+    if (currentCategory) setEditedCategory({
+      ...(editedCategory ?? {}),
+      category_name: currentCategory.category_name,
+    });
+  }, [currentCategory]);
+
+
+  //  Mutación para update
+
+  const updateCategoryMutation = useMutation({
+    mutationFn: (data: { id: number; category_name: string; description: string; image_url: string; }) =>
+      updateCategory(data.id, { category_name: data.category_name, description: data.description, image_url: data.image_url }),
+
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+
+      onChange(data.category_id); // actualizar selector
+
+      toast.success("Rubro actualizado correctamente");
+
+      setOpen(false);
+    },
+
+    onError: (error: any) => {
+      toast.error("Error al actualizar rubro", {
+        description: error.message,
+      });
+    },
+  });
+
+  const handleUpdate = async () => {
+    if (!editedCategory || !selectedCategoryId) return;
+
+    await updateCategoryMutation.mutateAsync({
+      id: Number(selectedCategoryId),
+      category_name: editedCategory.category_name,
+      description: editedCategory.description ?? "",
+      image_url: editedCategory.image_url ?? "",
+    });
+  };
+
+  // Si no hay brand seleccionada → no mostrar botón
+  if (!selectedCategoryId) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          className="border border-gray-200"
+          disabled={disabled}
+          variant="outline"
+        >
+          Editar
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Editar rubro</DialogTitle>
+          <DialogDescription>
+            Modificá el rubro seleccionado.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Label>Nombre del rubro</Label>
+        <Input
+          value={editedCategory?.category_name || ""}
+          disabled={updateCategoryMutation.isLoading}
+          onChange={(e) => setEditedCategory({
+            ...(editedCategory ?? {}),
+            category_name: (e.target.value),
+          })}
+          placeholder="Nombre del rubro"
+        />
+        <Label>Descripción</Label>
+        <Input
+          value={editedCategory?.description || ""}
+          disabled={updateCategoryMutation.isLoading}
+          onChange={(e) => setEditedCategory({
+            ...(editedCategory ?? {}),
+            description: (e.target.value),
+          })}
+          placeholder="Descripción del rubro"
+        />
+
+        <Label>Imagen</Label>
+        <Input
+          value={editedCategory?.image_url || ""}
+          disabled={updateCategoryMutation.isLoading}
+          onChange={(e) => setEditedCategory({
+            ...(editedCategory ?? {}),
+            image_url: (e.target.value),
+          })}
+          placeholder="URL de la imagen del rubro"
+        />
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            disabled={updateCategoryMutation.isLoading}
+            onClick={() => setOpen(false)}
+          >
+            Cancelar
+          </Button>
+
+          <Button
+            disabled={updateCategoryMutation.isLoading}
+            onClick={handleUpdate}
+          >
+            {updateCategoryMutation.isLoading ? "Editando..." : "Guardar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+
 // ---------- Compound export ----------
 export {
   CategorySelectorRoot,
   SelectCategory,
   CreateCategory,
+  UpdateCategorySelection,
   CancelCategorySelection
 };

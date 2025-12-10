@@ -10,13 +10,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
-import { createSubCategory, getSubCategories } from "@/service/subCategories";
+import { createSubCategory, getSubCategories, updateSubCategory } from "@/service/subCategories";
+import type { SubCategory } from "@/types/subCategories";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { X } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
@@ -100,28 +103,28 @@ const SelectSubCategory = () => {
         ))}
       </select>
 
-    
+
     </>
   );
 };
 
 const CancelSubCategorySelection = () => {
-    const { value, onChange } = useSubCategorySelectorContext();
+  const { value, onChange } = useSubCategorySelectorContext();
 
-    return (
-        value && (
-            <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                    onChange(null);
-                }}
-                className="text-red-500 hover:text-red-700 h-9"
-            >
-                <X className="w-5 h-5" />
-            </Button>
-        )
-    );
+  return (
+    value && (
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => {
+          onChange(null);
+        }}
+        className="text-red-500 hover:text-red-700 h-9"
+      >
+        <X className="w-5 h-5" />
+      </Button>
+    )
+  );
 };
 
 
@@ -173,7 +176,7 @@ const CreateSubCategory = ({ isShortCut = false }: {
             disabled={disabled}
             variant="outline"
           >
-            + Nuevo
+            <PlusCircle className="w-5 h-5" />
           </Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -211,10 +214,157 @@ const CreateSubCategory = ({ isShortCut = false }: {
   );
 };
 
+
+const UpdateSubCategorySelection = () => {
+  const {
+    value: selectedSubCategoryId,
+    onChange,
+    disabled,
+    subCategories,
+  } = useSubCategorySelectorContext();
+
+  const queryClient = useQueryClient();
+
+  const [open, setOpen] = useState(false);
+  const [editedSubCategory, setEditedSubCategory] = useState<SubCategory>({} as SubCategory);
+
+  //  Traigo la brand actual del selector
+
+  const currentSubCategory = subCategories?.find(
+    (c) => c.sub_category_id === selectedSubCategoryId
+  );
+
+  console.log("subCategories List:", subCategories);
+  console.log("Selected subCategory ID:", selectedSubCategoryId);
+  console.log("Current subCategory:", currentSubCategory);
+
+
+  //  Cada vez que cambia la brand seleccionada → precargo nombre
+
+  useEffect(() => {
+    if (currentSubCategory) setEditedSubCategory({
+      ...(editedSubCategory ?? {}),
+      sub_category_name: currentSubCategory.sub_category_name,
+    });;
+  }, [currentSubCategory]);
+
+
+  //  Mutación para update
+
+  const updateSubCategoryMutation = useMutation({
+    mutationFn: (data: { id: number; sub_category_name: string; description: string; image_url: string; }) =>
+      updateSubCategory(data.id, { sub_category_name: data.sub_category_name, description: data.description, image_url: data.image_url }),
+
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["sub_categories"] });
+
+      onChange(data.sub_category_id); // actualizar selector
+
+      toast.success("Categoria actualizado correctamente");
+
+      setOpen(false);
+    },
+
+    onError: (error: any) => {
+      toast.error("Error al actualizar categoria", {
+        description: error.message,
+      });
+    },
+  });
+
+  const handleUpdate = async () => {
+    if (!editedSubCategory || !selectedSubCategoryId) return;
+
+    await updateSubCategoryMutation.mutateAsync({
+      id: Number(selectedSubCategoryId),
+      sub_category_name: editedSubCategory.sub_category_name,
+      description: editedSubCategory.description || "",
+      image_url: editedSubCategory.image_url || "",
+    });
+  };
+
+  // Si no hay brand seleccionada → no mostrar botón
+  if (!selectedSubCategoryId) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          className="border border-gray-200"
+          disabled={disabled}
+          variant="outline"
+        >
+          Editar
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Editar categoria</DialogTitle>
+          <DialogDescription>
+            Modificá la categoria seleccionada.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Label>Nombre de la categoria</Label>
+        <Input
+          value={editedSubCategory?.sub_category_name || ""}
+          disabled={updateSubCategoryMutation.isLoading}
+          onChange={(e) => setEditedSubCategory({
+            ...(editedSubCategory ?? {}),
+            sub_category_name: (e.target.value),
+          })}
+          placeholder="Nombre de la categoria"
+        />
+
+        <Label>Descripcion de la categoria</Label>
+        <Input
+          value={editedSubCategory?.description || ""}
+          disabled={updateSubCategoryMutation.isLoading}
+          onChange={(e) => setEditedSubCategory({
+            ...(editedSubCategory ?? {}),
+            description: (e.target.value),
+          })}
+          placeholder="Descripcion de la categoria"
+        />
+
+        <Label>Imagen de la categoria</Label>
+        <Input
+          value={editedSubCategory?.image_url || ""}
+          disabled={updateSubCategoryMutation.isLoading}
+          onChange={(e) => setEditedSubCategory({
+            ...(editedSubCategory ?? {}),
+            image_url: (e.target.value),
+          })}
+          placeholder="URL de la imagen de la categoria"
+        />
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            disabled={updateSubCategoryMutation.isLoading}
+            onClick={() => setOpen(false)}
+          >
+            Cancelar
+          </Button>
+
+          <Button
+            disabled={updateSubCategoryMutation.isLoading}
+            onClick={handleUpdate}
+          >
+            {updateSubCategoryMutation.isLoading ? "Editando..." : "Guardar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // ---------- Compound export ----------
 export {
   SubCategorySelectorRoot,
   SelectSubCategory,
   CreateSubCategory,
+  UpdateSubCategorySelection,
   CancelSubCategorySelection
 };

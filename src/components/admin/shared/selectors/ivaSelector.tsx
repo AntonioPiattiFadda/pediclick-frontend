@@ -25,13 +25,14 @@ import { PlusCircle, X } from "lucide-react";
 import {
     createContext,
     useContext,
+    useEffect,
     useState,
     type ReactNode
 } from "react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 import { Label } from "@/components/ui/label";
-import { createIva, getIva } from "@/service/iva";
+import { createIva, getIva, updateIva } from "@/service/iva";
 import type { Iva } from "@/types/iva";
 
 // ---------- Context ----------
@@ -367,10 +368,149 @@ const CreateIva = ({
     );
 };
 
+
+// ---------- Update ----------
+
+
+const UpdateIvaSelection = () => {
+    const {
+        value: selectedIvaId,
+        onChange,
+        disabled,
+        iva,
+    } = useIvaSelectorContext();
+
+    const queryClient = useQueryClient();
+
+    const [open, setOpen] = useState(false);
+    const [editedIva, setEditedIva] = useState<Iva>({} as Iva);
+
+    //  Traigo la brand actual del selector
+
+    const currentIva = iva?.find(
+        (c) => c.iva_id === selectedIvaId?.iva_id
+    );
+
+    console.log("Ivas List:", iva);
+    console.log("Selected iva ID:", selectedIvaId);
+    console.log("Current iva:", currentIva);
+
+
+    //  Cada vez que cambia el iva seleccionado → precargo nombre
+
+    useEffect(() => {
+        if (currentIva) setEditedIva({
+            ...(editedIva ?? {}),
+            iva_number: currentIva.iva_number
+        });
+    }, [currentIva]);
+
+
+    //  Mutación para update
+
+    const updateIvaMutation = useMutation({
+        mutationFn: (data: { id: number; iva_number: number; iva_percentege: number }) =>
+            updateIva(data.id, { iva_number: data.iva_number, iva_percentege: data.iva_percentege }),
+
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ["iva"] });
+
+            onChange(data.iva_id); // actualizar selector
+
+            toast.success("Iva actualizado correctamente");
+
+            setOpen(false);
+        },
+
+        onError: (error: any) => {
+            toast.error("Error al actualizar iva", {
+                description: error.message,
+            });
+        },
+    });
+
+    const handleUpdate = async () => {
+        if (!editedIva || !selectedIvaId) return;
+
+        await updateIvaMutation.mutateAsync({
+            id: Number(selectedIvaId.iva_id),
+            iva_number: editedIva.iva_number,
+            iva_percentege: editedIva.iva_percentege,
+        });
+    };
+
+    // Si no hay brand seleccionada → no mostrar botón
+    if (!selectedIvaId) return null;
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button
+                    className="border border-gray-200"
+                    disabled={disabled}
+                    variant="outline"
+                >
+                    Editar
+                </Button>
+            </DialogTrigger>
+
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Editar iva</DialogTitle>
+                    <DialogDescription>
+                        Modificá el iva seleccionado.
+                    </DialogDescription>
+                </DialogHeader>
+                <Label>Número de Iva</Label>
+                <Input
+                    value={editedIva.iva_number}
+                    disabled={updateIvaMutation.isLoading}
+                    onChange={(e) => setEditedIva({
+                        ...(editedIva ?? {}),
+                        iva_number: Number(e.target.value),
+                    })}
+                    placeholder="Número del iva"
+                />
+
+                <Label>Porcentaje de Iva</Label>
+                <Input
+                    value={editedIva.iva_percentege}
+                    disabled={updateIvaMutation.isLoading}
+                    onChange={(e) => setEditedIva({
+                        ...(editedIva ?? {}),
+                        iva_percentege: Number(e.target.value),
+                    })}
+                    placeholder="Porcentaje del iva"
+                />
+
+                <DialogFooter>
+                    <Button
+                        variant="outline"
+                        disabled={updateIvaMutation.isLoading}
+                        onClick={() => setOpen(false)}
+                    >
+                        Cancelar
+                    </Button>
+
+                    <Button
+                        disabled={updateIvaMutation.isLoading}
+                        onClick={handleUpdate}
+                    >
+                        {updateIvaMutation.isLoading ? "Editando..." : "Guardar"}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+
 // ---------- Exports ----------
 export {
     CancelIvaSelection,
-    CreateIva, IvaSelectorRoot,
+    CreateIva,
+    IvaSelectorRoot,
+    UpdateIvaSelection,
     SelectIva
 };
 

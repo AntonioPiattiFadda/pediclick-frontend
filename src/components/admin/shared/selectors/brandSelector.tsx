@@ -20,7 +20,7 @@ import {
     type ReactNode,
 } from "react";
 import { toast } from "sonner";
-import { X } from "lucide-react";
+import { Plus, PlusCircle, X } from "lucide-react";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 
 // ---------- Context ----------
@@ -111,11 +111,11 @@ const CancelBrandSelection = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => {
-                    onChange(null);
+                    onChange("");
                 }}
                 className="text-red-500 hover:text-red-700 h-9"
             >
-                <X className="w-5 h-5" />asd
+                <X className="w-5 h-5" />
             </Button>
         )
     );
@@ -169,7 +169,7 @@ const CreateBrand = ({ isShortCut = false }: {
                         disabled={disabled}
                         variant="outline"
                     >
-                        + Nuevo
+                        <PlusCircle className="w-5 h-5" />
                     </Button>}
 
             </DialogTrigger>

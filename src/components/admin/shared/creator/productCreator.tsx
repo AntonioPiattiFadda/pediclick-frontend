@@ -21,10 +21,10 @@ import toast from "react-hot-toast";
 import { Label } from "@/components/ui/label";
 import { createProduct } from "@/service/products";
 import type { Product } from "@/types/products";
-import { BrandSelectorRoot, CancelBrandSelection, SelectBrand, UpdateBrandSelection } from "../selectors/brandSelector";
-import { CancelCategorySelection, CategorySelectorRoot, SelectCategory } from "../selectors/categorySelector";
-import { CancelIvaSelection, CreateIva, IvaSelectorRoot, SelectIva } from "../selectors/ivaSelector";
-import { CancelSubCategorySelection, SelectSubCategory, SubCategorySelectorRoot } from "../selectors/subCategorySelector";
+import { BrandSelectorRoot, CancelBrandSelection, CreateBrand, SelectBrand, UpdateBrandSelection } from "../selectors/brandSelector";
+import { CancelCategorySelection, CategorySelectorRoot, CreateCategory, SelectCategory, UpdateCategorySelection } from "../selectors/categorySelector";
+import { CancelIvaSelection, CreateIva, IvaSelectorRoot, SelectIva, UpdateIvaSelection } from "../selectors/ivaSelector";
+import { CancelSubCategorySelection, CreateSubCategory, SelectSubCategory, SubCategorySelectorRoot, UpdateSubCategorySelection } from "../selectors/subCategorySelector";
 import type { Iva } from "@/types/iva";
 
 // ---------- Context ----------
@@ -166,6 +166,7 @@ const CreateProductCreator = ({
                     <BrandSelectorRoot value={newProductData.brand_id?.toString() ?? ""}
                         onChange={(brandId) => setNewProductData({ ...newProductData, brand_id: Number(brandId) })}>
                         <SelectBrand />
+                        <CreateBrand />
                         {(newProductData.brand_id !== 0) && <CancelBrandSelection />}
                         {(newProductData.brand_id !== 0) && <UpdateBrandSelection />}
                     </BrandSelectorRoot>
@@ -174,7 +175,9 @@ const CreateProductCreator = ({
                     <Label>Rubro</Label>
                     <CategorySelectorRoot value={newProductData.category_id} onChange={(categoryId) => setNewProductData({ ...newProductData, category_id: Number(categoryId) })}>
                         <SelectCategory />
+                        <CreateCategory />
                         {(newProductData.category_id !== 0) && <CancelCategorySelection />}
+                        <UpdateCategorySelection />
                     </CategorySelectorRoot>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -195,16 +198,18 @@ const CreateProductCreator = ({
                             }));
                         }}                    >
                         <SelectIva />
-                        {(ivaSelected?.iva_id !== null) && <CancelIvaSelection />}
                         <CreateIva />
-
+                        {(ivaSelected?.iva_id !== null) && <CancelIvaSelection />}
+                        <UpdateIvaSelection />
                     </IvaSelectorRoot>
                 </div>
                 <div className="flex flex-col gap-2">
                     <Label>Categoria</Label>
                     <SubCategorySelectorRoot value={newProductData.sub_category_id} onChange={(subCategoryId) => setNewProductData({ ...newProductData, sub_category_id: Number(subCategoryId) })}>
                         <SelectSubCategory />
+                        <CreateSubCategory />
                         {(newProductData.sub_category_id !== 0) && <CancelSubCategorySelection />}
+                        <UpdateSubCategorySelection />
                     </SubCategorySelectorRoot>
                 </div>
 
