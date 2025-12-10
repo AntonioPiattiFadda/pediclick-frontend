@@ -174,12 +174,12 @@ export const getProductsByName = async (name: string, withLots: boolean) => {
     short_code,
     updated_at,
     public_images(public_image_src)
-    ${withLots ? ", lots(*, stock(*))" : ""}
+    ${withLots ? ", lots(lot_id,created_at, stock(stock_id, quantity))" : ""}
   `)
     .is("deleted_at", null)
     .eq("business_owner_id", businessOwnerId)
     .order("product_name", { ascending: true })
-    .limit(3);
+    .limit(2);
 
 
   if (withLots) {
@@ -232,4 +232,64 @@ export const checkIfShortCodeIsAvailable = async (
   return {
     isAvailable, products: filteredProducts
   };
+};
+
+export const getProductCountByCategory = async () => {
+  const businessOwnerId = await getBusinessOwnerId();
+
+  const { data: products, error } = await supabase
+    .from("products")
+    .select("category_id")
+    .eq("business_owner_id", businessOwnerId)
+    .is("deleted_at", null);
+
+  console.log(products?.length);
+
+  if (error) throw new Error(error.message);
+
+  const aggregated: Record<string, number> = {};
+
+  products.forEach((product) => {
+    const categoryId = product.category_id ?? "uncategorized"; // <--- important
+    aggregated[categoryId] = (aggregated[categoryId] || 0) + 1;
+  });
+
+  // 2) Traer categorías
+  const { data: categories, error: categoriesError } = await supabase
+    .from("categories")
+    .select("category_id, category_name")
+    .eq("business_owner_id", businessOwnerId)
+    .is("deleted_at", null);
+
+  if (categoriesError) throw new Error(categoriesError.message);
+
+  const colors = [
+    "hsl(214, 95%, 68%)",
+    "hsl(354, 70%, 54%)",
+    "hsl(134, 61%, 51%)",
+    "hsl(24, 95%, 54%)",
+    "hsl(271, 76%, 53%)",
+    "hsl(22, 94%, 50%)",
+    "hsl(47, 95%, 54%)",
+  ];
+
+  const result = [
+    ...categories.map((cat, index) => ({
+      category_id: cat.category_id,
+      name: cat.category_name,
+      count: aggregated[cat.category_id] || 0,
+      color: colors[index + 1],
+    })),
+
+    {
+      category_id: null,
+      name: "Sin categoría",
+      count: aggregated["uncategorized"] || 0,
+      color: colors[0],
+    },
+  ];
+
+  console.log(result);
+
+  return result;
 };

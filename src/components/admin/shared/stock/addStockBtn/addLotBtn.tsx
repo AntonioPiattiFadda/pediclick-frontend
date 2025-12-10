@@ -33,10 +33,120 @@ import { emptyLot } from "../../emptyFormData";
 import { CreateProductPresentation, ProductPresentationSelectorRoot, SelectProductPresentation } from "../../selectors/productPresentationSelector";
 import ProductSelector from "../../selectors/productSelector";
 import { ProductEditSheet } from "../productEditSheet";
+import LotContainerStock from "./LotContainerStock";
 import PricesAccordion from "./pricesAccordion";
 import StockAssignationContainer from "./StockAssignationContainer";
+import { redistributeUnassigned } from "@/utils/stock";
 
+// const formDev = {
+//   lot_number: null,
+//   expiration_date: null,
+//   expiration_date_notification: false,
+//   provider_id: null,
+//   load_order_id: null,
+//   product_id: 0,
+//   has_lot_container: false,
+//   is_parent_lot: false,
+//   is_sold_out: false,
+//   lot_containers: [],
+//   initial_stock_quantity: 10,
+//   purchase_cost_per_bulk: 500,
+//   purchase_cost_total: 5000,
+//   purchase_cost_per_unit: 1.39,
+//   final_cost_total: 5000,
+//   final_cost_per_bulk: 500,
+//   final_cost_per_unit: 1.39,
+//   download_total_cost: 0,
+//   download_cost_per_bulk: 0,
+//   download_cost_per_unit: 0,
+//   delivery_cost_total: 0,
+//   delivery_cost_per_unit: 0,
+//   delivery_cost_per_bulk: 0,
+//   productor_commission_type: 'NONE',
+//   productor_commission_percentage: null,
+//   productor_commission_unit_value: null,
+//   purchasing_agent_id: null,
+//   purchasing_agent_commision_type: 'NONE',
+//   purchasing_agent_commision_percentage: null,
+//   purchasing_agent_commision_unit_value: null,
+//   parent_lot_id: null,
+//   is_expired: false,
+//   lot_control: false,
+//   product_presentation_id: null,
+//   is_derived: false,
+//   is_transformed: false,
+//   quantity_transformed: null,
+//   extra_cost_total: 0
+// }
 
+// const stockDev = [
+//   {
+//     stock_id: 494140,
+//     lot_id: 963173,
+//     is_new: true,
+//     quantity: 10,
+//     location_id: 3,
+//     min_notification: null,
+//     max_notification: null,
+//     stock_type: undefined,
+//     reserved_for_selling_quantity: null,
+//     reserved_for_transferring_quantity: null,
+//     transformed_from_product_id: null,
+//     updated_at: null
+//   }
+// ]
+
+// const locationStockDev = [
+//   {
+//     lot_container_stock_id: 1765159966776,
+//     lot_container_id: null,
+//     quantity: 10,
+//     created_at: null,
+//     location_id: null,
+//     client_id: null,
+//     provider_id: null,
+//     lot_container_status: 'COMPLETED'
+//   }
+// ]
+
+// const productDev = {
+//   product_name: 'HUEVOS',
+//   product_description: undefined,
+//   allow_stock_control: undefined,
+//   category_id: undefined,
+//   sub_category_id: undefined,
+//   short_code: 40,
+//   barcode: undefined,
+//   brand_id: undefined,
+//   lot_control: undefined,
+//   public_image_id: undefined,
+//   observations: null,
+//   sell_measurement_mode: null,
+//   updated_at: null,
+//   equivalence_minor_mayor_selling: { minor: null, mayor: null },
+//   product_presentations: undefined,
+//   product_id: 117,
+//   public_image_src: null,
+//   public_images: null,
+//   categories: undefined,
+//   sub_categories: undefined,
+//   brands: undefined,
+//   has_stock: false,
+//   created_at: undefined,
+//   nameAndCode: { name: 'HUEVOS', short_code: 40 }
+// }
+
+// const prodPresDev = {
+//   product_presentation_id: 41,
+//   created_at: '2025-11-10T22:46:57.859768+00:00',
+//   product_presentation_name: 'CAJON',
+//   short_code: 5,
+//   product_id: 117,
+//   business_owner_id: '3a145754-a901-46e1-8ad2-480f8968d8be',
+//   deleted_at: null,
+//   bulk_quantity_equivalence: 360,
+//   updated_at: null
+// }
 
 
 
@@ -51,16 +161,25 @@ export function AddLotBtn({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [formData, setFormData] = useState<Lot>(emptyLot);
-  const [stock, setStock] = useState<Stock[]>([]);
-  const [lotContainersStock, setLotContainersStock] = useState<LotContainersStock[]>([]);
+  console.log('lotContainersStock in AddLotBtn:', formData);
 
+  const [stock, setStock] = useState<Stock[]>([]);
+  console.log('lotContainersStock in AddLotBtn:', stock);
+
+  const [lotContainersStock, setLotContainersStock] = useState<LotContainersStock[]>([]);
+  console.log('lotContainersStock in AddLotBtn:', lotContainersStock);
   const [selectedProduct, setSelectedProduct] = useState<Product>({} as Product);
+  console.log('lotContainersStock in AddLotBtn:', selectedProduct);
+
   const [selectedProductPresentation, setSelectedProductPresentation] = useState<ProductPresentation | null>(null);
+  console.log('lotContainersStock in AddLotBtn:', selectedProductPresentation);
 
   const [lotPrices, setLotPrices] = useState<Price[]>([]);
   const [tab, setTab] = useState("lot");
 
-  const isProductSelected = Boolean(selectedProduct.product_id);
+  // const isProductSelected = Boolean(selectedProduct.product_id);
+  const isProductSelected = true;
+
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -76,24 +195,39 @@ export function AddLotBtn({
       return
     };
     //TODO ACTUALIZAR PRODUCTO SI ESTA EN MODO EDICION
+
     //TODO AGREGAR AL REMITO
+
     const adaptedStock = stock.map(s => ({
       ...s,
       product_id: selectedProduct.product_id!,
       lot_id: formData.lot_id!,
     }));
 
-    const adaptedLotContainersLocation = lotContainersStock.map(loc => ({
+    const redistributedLcs = redistributeUnassigned(lotContainersStock);
+
+    const adaptedLotContainersStock = redistributedLcs.map(loc => ({
       ...loc,
       lot_id: formData.lot_id!,
     }));
+
+    if (!selectedProduct.product_id) {
+      toast('Debes seleccionar un producto para agregar');
+      return
+    }
+
+    if (!selectedProductPresentation?.product_presentation_id) {
+      toast('Debes seleccionar una presentacion para agregar');
+      return
+    }
+
     onAddElement({
       ...formData,
       product_name: selectedProduct.product_name,
       product_id: selectedProduct.product_id,
       product_presentation_id: selectedProductPresentation?.product_presentation_id || null,
       prices: lotPrices,
-    } as Lot, adaptedStock as Stock[], adaptedLotContainersLocation as LotContainersStock[]);
+    } as Lot, adaptedStock as Stock[], adaptedLotContainersStock as LotContainersStock[]);
 
     if (!loading) {
       handleClose();
@@ -116,6 +250,7 @@ export function AddLotBtn({
     // determinamos si el campo debe tratarse como numérico
     const isNumericField = [
       "initial_stock_quantity",
+      "extra_cost_total",
       "purchase_cost_per_unit",
       "purchase_cost_total",
       "download_total_cost",
@@ -149,9 +284,12 @@ export function AddLotBtn({
     const currentDeliveryCostPerBulk = formData.delivery_cost_per_bulk ?? 0;
     const currentDeliveryCostPerUnit = formData.delivery_cost_per_unit ?? 0;
 
+    const currentExtraCostTotal = formData.extra_cost_total ?? 0;
+    let newExtraCostTotal = currentExtraCostTotal;
 
 
     let newInitialStock = currentInitialStock;
+
 
     let newTotalCost = currentTotalCost;
     let newCostPerUnit = currentCostPerUnit;
@@ -173,6 +311,15 @@ export function AddLotBtn({
     switch (field) {
       case "initial_stock_quantity":
         newInitialStock = value as number;
+        setLotContainersStock((prev) => {
+          const lotCOntainerStockWithQuantityZero = prev.map((lcs) => {
+            return {
+              ...lcs,
+              quantity: 0,
+            }
+          })
+          return lotCOntainerStockWithQuantityZero;
+        });
 
         // if (newInitialStock <= 0) {
         //   // si borra el stock → todo a 0
@@ -257,6 +404,11 @@ export function AddLotBtn({
 
         break;
       }
+      case "extra_cost_total": {
+        newExtraCostTotal = value as number;
+        break;
+      }
+
       case "productor_commission_type":
         // este campo es string, no numérico
         setFormData(prev => ({
@@ -307,9 +459,9 @@ export function AddLotBtn({
 
     }
 
-    let final_cost_total: number | null = newTotalCost + newDownloadTotalCost + newDeliveryCostTotal;
-    let final_cost_per_unit: number | null = newCostPerUnit + newDownloadCostPerUnit + newDeliveryCostPerUnit;
-    let final_cost_per_bulk: number | null = newCostPerBulk + newDownloadCostPerBulk + newDeliveryCostPerBulk;
+    let final_cost_total: number | null = newTotalCost + newDownloadTotalCost + newDeliveryCostTotal + newExtraCostTotal;
+    let final_cost_per_unit: number | null = newCostPerUnit + newDownloadCostPerUnit + newDeliveryCostPerUnit + newExtraCostTotal / (newInitialStock || 1);
+    let final_cost_per_bulk: number | null = newCostPerBulk + newDownloadCostPerBulk + newDeliveryCostPerBulk + newExtraCostTotal / (newInitialStock || 1) * bulkQuantityEquivalence;
 
     if (!bulkQuantityEquivalence) {
       final_cost_per_bulk = null;
@@ -339,6 +491,8 @@ export function AddLotBtn({
       final_cost_total: formatSmartNumber(final_cost_total || 0),
       final_cost_per_unit: formatSmartNumber(final_cost_per_unit || 0),
       final_cost_per_bulk: formatSmartNumber(final_cost_per_bulk || 0),
+
+      extra_cost_total: formatSmartNumber(newExtraCostTotal),
     }));
   };
 
@@ -442,7 +596,15 @@ export function AddLotBtn({
                 />
 
               </div>
+
+              <LotContainerStock
+                lotContainersStock={lotContainersStock}
+                onChangeLotContainersStock={setLotContainersStock}
+                initialStock={formData.initial_stock_quantity}
+              />
+
             </div>
+
 
 
 
@@ -642,6 +804,23 @@ export function AddLotBtn({
                     </div>
 
                   </div>
+
+
+                  <div className="grid grid-cols-3 gap-4 w-full">
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="extra_cost_total">Costos extra</Label>
+                      <Input
+                        placeholder="Costos extra"
+                        // disabled={!isEditing}
+                        type="number"
+                        value={formData.extra_cost_total || undefined}
+                        onChange={(e) => handleUpdateLotField("extra_cost_total", Number(e.target.value))}
+                      />
+                    </div>
+
+
+                  </div>
+
 
                   {/* <Accordion
                   type="single"
@@ -927,8 +1106,8 @@ export function AddLotBtn({
                   onChangeStock={(nextStock) => {
                     setStock(nextStock)
                   }}
-                  lotContainersLocations={lotContainersStock}
-                  onChangeLotContainersLocations={(newLotContainers: LotContainersStock[]) => {
+                  lotContainersStock={lotContainersStock}
+                  onChangeLotContainersStock={(newLotContainers: LotContainersStock[]) => {
                     setLotContainersStock(newLotContainers);
                   }}
                 />

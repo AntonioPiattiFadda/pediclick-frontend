@@ -180,7 +180,7 @@ const TransferOrder = ({
 
 
             console.log("🟢 adaptedTransferOrderItems:", adaptedTransferOrderItems);
-            // lot_container_location_id: number | null;
+            // lot_container_stock_id: number | null;
             // lot_container_movement_id: number | null;
 
             // const adaptedLotContainerLocations = formData.transfer_order_items.flatMap((item) =>

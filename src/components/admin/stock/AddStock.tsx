@@ -32,6 +32,8 @@ const AddStock = () => {
                 data.stock.push(unassignedStock);
             }
 
+
+
             console.log("Stock a crear:", data.stock);
             console.log("Stock a crear:", data.lot);
             console.log("Stock a crear:", data.lotContainersStock);

@@ -8,8 +8,10 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
-import { getSalesHistoryByProductOrLot } from "@/service/stockMovement";
-import type { SalesHistoryRow } from "@/types/SALES";
+import { getLotSales } from "@/service/orderItems";
+import type { OrderItem } from "@/types/orderItems";
+import { formatDate } from "@/utils";
+import { formatCurrency } from "@/utils/prices";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
@@ -18,24 +20,18 @@ const SalesHistory = ({
 }: {
     lotId: number;
 }) => {
-    const { data: sales, isLoading, isError, error } = useQuery<SalesHistoryRow[]>({
-        queryKey: ["sales-history", lotId],
-        queryFn: () => getSalesHistoryByProductOrLot(lotId!),
+    const { data: sales, isLoading, isError, error } = useQuery({
+        queryKey: ["lot-sales-history", lotId],
+        queryFn: () => getLotSales(lotId!),
         enabled: !!lotId,
     });
 
-    // const salesWithTotals = useMemo(() => {
-    //     let runningTotal = 0;
-    //     return sales?.sort((a, b) => a?.order_date.localeCompare(b.order_date)).map((m) => {
-    //         const subtotal = m.unit_price * m.quantity;
-    //         runningTotal += subtotal;
-    //         return {
-    //             ...m,
-    //             subtotal,
-    //             runningTotal,
-    //         };
-    //     });
-    // }, [sales]);
+
+    const salesTotal = sales?.reduce((acc, sale) => acc + (sale?.total || 0), 0) || 0;
+
+    const salePricePromedio = sales && sales.length > 0 ? sales.reduce((acc, sale) => {
+        return acc + (sale?.price || 0);
+    }, 0) / sales.length : 0;
 
 
     return (
@@ -77,39 +73,62 @@ const SalesHistory = ({
                             </div>
                         )}
 
-                        {/* {!isLoading && !isError && (salesWithTotals?.length ?? 0) > 0 && (
+                        {!isLoading && !isError && (sales?.length ?? 0) > 0 && (
                             <div className="px-6 py-4">
 
                                 <div className="sticky top-0 z-10 grid grid-cols-12 gap-2 border-b bg-background px-2 py-2 text-xs font-medium text-muted-foreground">
                                     <div className="col-span-3">Fecha</div>
                                     <div className="col-span-3">Cantidad Vendida</div>
                                     <div className="col-span-2 text-right">Precio</div>
-                                    <div className="col-span-2 text-right">Subtotal</div>
-                                    <div className="col-span-2 text-right">Total Acumulado</div>
+                                    <div className="col-span-4 text-right">Total</div>
                                 </div>
 
                                 <div className="divide-y">
-                                    {salesWithTotals?.map((m) => {
+                                    {sales && sales.filter((s): s is OrderItem => s !== undefined).map((s: OrderItem) => {
                                         return (
                                             <div
-                                                key={m.order_id}
+                                                key={s.order_id}
                                                 className="grid grid-cols-12 gap-2 px-2 py-3 text-sm"
                                             >
-                                                <div className="col-span-3">{formatDate(m.order_date)}</div>
-                                                <div className="col-span-3 truncate">{m.quantity}</div>
+                                                <div className="col-span-3">{formatDate(s.created_at)}</div>
+                                                <div className="col-span-3 truncate">{s.quantity}</div>
+                                                <div className="col-span-2 text-right">{formatCurrency(s.price)}</div>
+                                                <div className="col-span-4 text-right">{formatCurrency(s.total)}</div>
 
-                                                <div className="col-span-2 text-right">{m.unit_price}</div>
-                                                <div className="col-span-2 text-right">{(m?.subtotal)}</div>
-
-                                                <div className="col-span-2 text-right">{(m?.runningTotal)}</div>
 
                                             </div>
                                         );
                                     })}
                                 </div>
+
+                                <div className="divide-y">
+
+                                    <div
+                                        className="grid grid-cols-12 gap-2 px-2 py-3 text-sm font-semibold border-t mt-4"
+                                    >
+                                        <div className="col-span-3"></div>
+                                        <div className="col-span-3"></div>
+                                        <div className="col-span-2 text-right">Promedio de precio de venta</div>
+                                        <div className="col-span-4 text-right">{formatCurrency(salePricePromedio)}</div>
+                                    </div>
+
+
+                                    <div
+                                        className="grid grid-cols-12 gap-2 px-2 py-3 text-sm font-semibold "
+                                    >
+                                        <div className="col-span-3"></div>
+                                        <div className="col-span-3"></div>
+                                        <div className="col-span-2 text-right">Total</div>
+                                        <div className="col-span-4 text-right">{formatCurrency(salesTotal)}</div>
+                                    </div>
+
+                                    <div className="col-span-3"></div>
+
+                                </div>
                             </div>
-                        )} */}
+                        )}
                     </div>
+
                 </div>
             </SheetContent>
         </Sheet>

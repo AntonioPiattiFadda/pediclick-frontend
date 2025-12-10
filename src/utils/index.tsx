@@ -75,3 +75,11 @@ export function formatSmartNumber(num: number): number {
 export function createClientKey(prefix: string) {
   return `${prefix}_${crypto.randomUUID()}`;
 }
+
+
+
+export function sliceLongNames(maxLength: number = 30, name?: string) {
+  if (!name) return "";
+  if (name.length <= maxLength) return name;
+  return name.slice(0, maxLength - 3) + '...';
+}

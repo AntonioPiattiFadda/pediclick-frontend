@@ -6,7 +6,7 @@ const LocationCardContainer = ({ location }: {
 
 
     return (
-        <div key={location.lot_container_location_id} className="mb-1">
+        <div key={location.lot_container_stock_id} className="mb-1">
             {location.location_name || 'No asignado'}
         </div>
     )

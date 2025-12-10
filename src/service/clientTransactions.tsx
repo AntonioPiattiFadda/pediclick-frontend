@@ -1,7 +1,7 @@
+import type { ClientTransactionMovements } from "@/types/clientTransactionsMovements";
 import { supabase } from ".";
-import type { ClientTransactionMovements } from "@/types/ClientTransactionMovementssMovements";
 
-export async function getClientTransactionMovements(clientId: string | number): Promise<ClientTransactionMovements[]> {
+export async function getClientTransactions(clientId: string | number): Promise<ClientTransactionMovements[]> {
 
     if (clientId === undefined || clientId === null || clientId === 0 || clientId === "0") {
         return [];

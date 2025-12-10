@@ -108,7 +108,7 @@ export const MENU_ITEMS: {
         {
           title: "Transformación",
           type: "button",
-          children: <Transformation />
+          children: <Transformation isShortCut={true} />
           ,
         },
         {

@@ -20,6 +20,7 @@ import { DeleteTableElementPopUp } from './deleteTableElementPopUp'
 import { ManageStockBtnContainer } from './stock/manageStockBtn/manageStockBtnContainer'
 import LotsAndStockProductPresentationTableCell from './stock/LotsAndStockProductPresentationTableCell'
 import LotContainersProductPresentationTableCell from './stock/LotContainersProductPresentationTableCell'
+import { sliceLongNames } from '@/utils'
 
 const HeaderCell = ({ children }: { children: React.ReactNode }) => (
     <div className="">
@@ -38,7 +39,7 @@ const columns = [
 
             const { name, short_code } = info.getValue() as { name: string; short_code: number | null };
             return (<div>
-                <div className="font-medium">{name}</div>
+                <div className="font-medium">{sliceLongNames(40, name)}</div>
                 <div className="text-sm text-muted-foreground">Código: {short_code ?? "--"}</div>
             </div>)
         },
@@ -148,7 +149,9 @@ const lotColumnHelper = createColumnHelper<ProductPresentation>();
 const lotColumns = [
     lotColumnHelper.accessor("product_presentation_name", {
         header: () => <div className="text-left w-[250px]">Presentación</div>,
-        cell: info => info.getValue() ?? "--",
+        cell: (info) => {
+            return sliceLongNames(35, info.getValue() ?? "--");
+        },
     }),
 
     lotColumnHelper.accessor("bulk_quantity_equivalence", {

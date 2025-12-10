@@ -7,7 +7,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import ClientHistoricalMvts from "@/components/unassigned/clientHistoricalMvts";
+import ClientHistoricalMvts from "@/components/admin/clients/clientHistoricalMvts";
 import RegisterClientPayment from "@/components/unassigned/registerClientPayment";
 import { deleteClient } from "@/service/clients";
 import type { Client } from "@/types/clients";

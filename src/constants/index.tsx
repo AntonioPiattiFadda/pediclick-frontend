@@ -23,3 +23,13 @@ export const transferOrderStatuses = {
     COMPLETED: "Completado",
     CANCELLED: "Cancelado",
 } as const;
+
+export const paymentMethodOpt = [
+    { value: "CASH", label: "Efectivo" },
+    { value: "CREDIT_CARD", label: "Tarjeta de Crédito" },
+    { value: "DEBIT_CARD", label: "Tarjeta de Débito" },
+    { value: "BANK_TRANSFER", label: "Transferencia Bancaria" },
+    { value: "ON_CREDIT", label: "Cuenta Corriente" },
+    { value: "MERCADO_PAGO", label: "Mercado Pago" },
+    { value: "OTHER", label: "Otro" },
+];

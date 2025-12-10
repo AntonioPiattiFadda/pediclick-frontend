@@ -42,8 +42,8 @@ const LotContainersStockTable = ({ locations = [] }: { locations?: LotContainers
                             .map((loc) => {
                                 const { type, name } = getLocation(loc);
                                 return (
-                                    <TableRow key={loc.lot_container_location_id}>
-                                        <TableCell>{loc.lot_container_location_id}</TableCell>
+                                    <TableRow key={loc.lot_container_stock_id}>
+                                        <TableCell>{loc.lot_container_stock_id}</TableCell>
                                         <TableCell>{loc.lot_container_id ?? "-"}</TableCell>
                                         <TableCell>{name}</TableCell>
                                         <TableCell>{type}</TableCell>

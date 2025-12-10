@@ -5,15 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getLocations } from "@/service/locations";
+import type { Location } from "@/types/locations";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import CostBadges from "./CostBadges";
 import StorePricesTabContainer from "./StorePricesTabContainer";
 import UniversalPricesContainer from "./UniversalPricesContainer";
-import { getLocations } from "@/service/locations";
-import type { Location } from "@/types/locations";
 
 interface PricesDialogProps {
     productPresentationId: number;
@@ -41,19 +40,15 @@ export default function ManageProductPrices({
         },
     });
 
-    console.log("Stores loaded for prices management:", stores);
-
-
 
     if (isStoreLoading) {
         return (
-            <Card className="p-0 border-none shadow-none">
-                <CardHeader className="p-0 flex flex-row justify-between mb-2" >
-                    <CardTitle>Costos:</CardTitle>
-                    <CostBadges finalCost={finalCost} />
-                </CardHeader >
-                <Spinner />
-            </Card>
+            <Sheet open={false} >
+                <SheetTrigger asChild>
+                    <Button className="w-[150px]" disabled>Modificar precios</Button>
+                </SheetTrigger>
+
+            </Sheet>
         );
     }
 

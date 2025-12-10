@@ -13,24 +13,27 @@ import {
   useState,
   type SetStateAction,
 } from "react";
-import { toast } from "sonner";
 import { emptyProduct } from "../emptyFormData";
+import { Input } from "@/components/ui/input";
+import toast from "react-hot-toast";
+
+const PRODUCT_CHARACTER_LIMIT = 60;
 
 const ProductSelector = ({
+  disabled,
   value,
   onChange,
-  withLots = false,
-  disabled = false,
+  withLots = false
 }: {
   value: Product;
+  disabled?: boolean;
   onChange: (value: Product) => void;
   withLots?: boolean;
-  disabled?: boolean;
 }) => {
-
 
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState(value.product_name || "");
+  const [shortCode, setShortCode] = useState<number | null>(value.short_code || null);
   const [options, setOptions] = useState<Product[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
@@ -63,18 +66,66 @@ const ProductSelector = ({
     [withLots]
   );
 
-  const debouncedFetchMicroOrganisms = useMemo(
+  const fetchProductsByCode = useCallback(
+    async (shortCode: number) => {
+      if (!shortCode) {
+        setOptions([]);
+        return;
+      }
+      setIsSearching(true);
+      setError(null);
+      try {
+        const data = await getProductsByName(shortCode.toString(), withLots);
+
+        if (data.products.length === 1) {
+          onChange(data.products[0]);
+          setIsOpen(false);
+          setInputValue("");
+          setIsSearching(false);
+          return;
+        } else {
+          setIsSearching(false);
+          toast("No se encontró ningún producto con el código: " + shortCode, { icon: "⚠️" });
+        }
+
+        setOptions(data.products);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        // setError(err.message || "Failed to fetch products.");
+        setOptions([]);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [withLots]
+  );
+
+  const debouncedFetchProducts = useMemo(
     () => debounce(fetchProducts, 300),
     [fetchProducts]
   );
 
+  const debouncedFetchProductsByCode = useMemo(
+    () => debounce(fetchProductsByCode, 300),
+    [fetchProductsByCode]
+  );
+
+
   useEffect(() => {
-    if (inputValue) {
-      debouncedFetchMicroOrganisms(inputValue);
+    if (shortCode) {
+      debouncedFetchProductsByCode(shortCode);
     } else {
       setOptions([]);
     }
-  }, [inputValue, debouncedFetchMicroOrganisms]);
+  }, [shortCode, debouncedFetchProducts]);
+
+  useEffect(() => {
+    if (inputValue) {
+      debouncedFetchProducts(inputValue);
+    } else {
+      setOptions([]);
+    }
+  }, [inputValue, debouncedFetchProducts]);
 
   useEffect(() => {
     const handleClickOutside = (event: { target: any }) => {
@@ -92,6 +143,10 @@ const ProductSelector = ({
   const handleInputChange = (e: {
     target: { value: SetStateAction<string> };
   }) => {
+    if (e.target.value.length > PRODUCT_CHARACTER_LIMIT) {
+      toast(`El nombre del producto no puede superar los ${PRODUCT_CHARACTER_LIMIT} caracteres.`);
+      return
+    }
     setInputValue(e.target.value);
     setIsOpen(true);
   };
@@ -116,17 +171,19 @@ const ProductSelector = ({
 
   const createProductMutation = useMutation({
     mutationFn: async (data: { completedInformation: any }) => {
+      console.log("Creating product with data:", data);
       return await createProduct(data.completedInformation);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      console.log(data);
       handleSelectProduct(data);
       // setIsModalOpen(false);
       // toast("Producto creado exitosamente", {
       //   description: "El producto ha sido creado correctamente.",
       //   action: {
       //     label: "Undo",
-      //     onClick: ,
+      //     onClick: () => console.log("Undo"),
       //   },
       // });
       // setFormData(emptyProduct);
@@ -136,7 +193,7 @@ const ProductSelector = ({
         description: "Intentá nuevamente más tarde.",
         action: {
           label: "Undo",
-          onClick: () => { },
+          onClick: () => console.log("Undo"),
         },
       });
     },
@@ -164,16 +221,29 @@ const ProductSelector = ({
   const productValue = value.short_code ? `${value.short_code} - ${value.product_name}` : value.product_name;
 
   return (
-    <div className="relative w-full  inline-flex" ref={comboboxRef}>
+    <div className="relative w-full  inline-flex  border border-gray-200 rounded-md h-9 " ref={comboboxRef}>
+
+      <Input
+        className={`  border-none    h-9 w-14  truncate`}
+        value={shortCode ?? ""}
+        placeholder="Código"
+        disabled={disabled}
+        onChange={(e) => {
+          const val = e.target.value;
+          setShortCode(Number(val));
+          // handleCodeMatch(Number(val));
+        }}
+      />
       <button
         onClick={handleComboboxToggle}
         disabled={createProductMutation.isLoading || disabled}
-        className={`flex items-center justify-between border-none w-full h-10 px-3 py-2 text-sm text-left border-2 border-newDsBorder  text-newDsForeground rounded-md shadow-sm hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-input transition-colors duration-200   `}
+        className={`flex items-center justify-between border-none w-full  px-3 text-sm text-left border-2 border-newDsBorder  text-newDsForeground rounded-md shadow-sm hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-input transition-colors duration-200  ${disabled ? 'cursor-not-allowed' : ''} `}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
         <span className="block truncate text-black">
-          {productValue || "Codigo corto o nombre..."}
+          {isSearching ? "Buscando..." : productValue || "Seleccionar producto"}
+
         </span>
         <ChevronDown className="w-5 h-5 text-muted-foreground" />
       </button>

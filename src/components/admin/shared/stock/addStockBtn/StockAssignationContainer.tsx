@@ -9,37 +9,24 @@ import type { LotContainersStock } from "@/types/lotContainersStock";
 import type { Stock } from "@/types/stocks";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import StockLotContainerAssignation from "./StockLotContainerAssignation";
+import LotContainerStockAssignation from "./LotContainerStockAssignation";
+import { useEffect } from "react";
 
 export default function StockAssignationContainer({
     disabled = false,
     initial_stock_quantity,
     stock,
     onChangeStock,
-    lotContainersLocations,
-    onChangeLotContainersLocations,
+    lotContainersStock,
+    onChangeLotContainersStock,
 }: {
     disabled?: boolean;
     initial_stock_quantity?: number;
     stock?: Stock[];
     onChangeStock?: (nextStock: Stock[]) => void;
-    lotContainersLocations: LotContainersStock[];
-    onChangeLotContainersLocations: (nextLotContainersLocations: LotContainersStock[]) => void;
+    lotContainersStock: LotContainersStock[];
+    onChangeLotContainersStock: (nextLotContainersStock: LotContainersStock[]) => void;
 }) {
-
-
-    // const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
-    // const prevSelectedStoreId = useRef<number | null>(null);
-    // // TODO: Obtener la tienda seleccionada desde el contexto o estado global si es necesario
-    // const queryClient = useQueryClient();
-
-    // const handleSelectStore = (storeId: number | null) => {
-    //     queryClient.invalidateQueries({ queryKey: ["prices", productId, prevSelectedStoreId.current] });
-    //     setSelectedStoreId(storeId);
-    //     prevSelectedStoreId.current = storeId;
-
-    // }
-
     const { data: locations = [], isLoading, isError } = useQuery({
         queryKey: ["locations"],
         queryFn: async () => {
@@ -48,7 +35,60 @@ export default function StockAssignationContainer({
         },
     });
 
-    console.log('Locations fetched:', locations);
+    useEffect(() => {
+        if (!locations || locations.length === 0) return;
+
+        let next = [...lotContainersStock];
+        let updated = false;
+
+        // registros base (los que tienen location null)
+        const bases = lotContainersStock.filter(lc => !lc.location_id);
+        const baseIds = new Set(bases.map(b => b.lot_container_id));
+
+        // 1) ELIMINAR registros que NO deberían existir
+        const filtered = next.filter(lc => {
+            // si tiene location_id null → siempre queda
+            if (!lc.location_id) return true;
+
+            // si tiene location y su base existe → queda
+            if (baseIds.has(lc.lot_container_id)) return true;
+
+            // si tiene location y su base NO existe → eliminar
+            updated = true;
+            return false;
+        });
+
+        next = filtered;
+
+        // 2) AGREGAR registros faltantes por cada location
+        bases.forEach(origin => {
+            locations.forEach(loc => {
+                const exists = next.some(lc =>
+                    lc.lot_container_id === origin.lot_container_id &&
+                    lc.location_id === loc.location_id
+                );
+
+                if (!exists) {
+                    next.push({
+                        lot_container_id: origin.lot_container_id,
+                        location_id: loc.location_id,
+                        quantity: 0,
+                        lot_container_stock_id: Math.floor(Math.random() * 1000000),
+                        created_at: null,
+                        client_id: null,
+                        provider_id: null,
+                        lot_container_status: "COMPLETED"
+                    });
+                    updated = true;
+                }
+            });
+        });
+
+        if (updated) {
+            onChangeLotContainersStock(next);
+        }
+
+    }, [locations, lotContainersStock]);
 
     if (isLoading) {
         return <Skeleton className="h-10 w-full" />;
@@ -120,13 +160,17 @@ export default function StockAssignationContainer({
 
     const remainingQuantityToAssign = (initial_stock_quantity ?? 0) - (stock?.reduce((acc, s) => acc + (s.quantity || 0), 0) || 0);
 
-    const remainingLotContainersToAssign = (initial_stock_quantity ?? 0) - (lotContainersLocations?.reduce((acc, lcl) => acc + (lcl.quantity || 0), 0) || 0);
+    const totalLotContainersStockAssigned = lotContainersStock?.filter(lc => lc.location_id)
+        .reduce((acc, lcl) => acc + (lcl?.quantity || 0), 0) || 0;
 
+    const totalLotContainersStockUnassigned = lotContainersStock?.filter(lc => !lc.location_id)
+        .reduce((acc, lcl) => acc + (lcl?.quantity || 0), 0) || 0;
+
+    const remainingLotContainersToAssign = totalLotContainersStockUnassigned - totalLotContainersStockAssigned;
 
 
     return (
         <Card className="border-none p-2 shadow-none bg-transparent">
-
             <CardContent className="grid grid-cols-1 gap-4 p-0 ">
                 <div className="w-full grid grid-cols-2">
                     <div className="flex gap-1 items-center justify-center">
@@ -165,13 +209,14 @@ export default function StockAssignationContainer({
                                     className="w-[150px]"
                                 />
 
-                                <StockLotContainerAssignation
-                                    lotContainersLocations={lotContainersLocations}
-                                    onChangeLotContainersLocation={(newLotContainerLocations) => {
-                                        onChangeLotContainersLocations(newLotContainerLocations);
+                                <LotContainerStockAssignation
+                                    lotContainersStock={lotContainersStock}
+                                    onChangeLotContainersStock={(newLotContainersStock) => {
+                                        onChangeLotContainersStock(newLotContainersStock);
                                     }}
-                                    location_id={location.location_id}
-                                    remainingLotContainersToAssign={remainingLotContainersToAssign}
+                                    locationId={location.location_id}
+                                    assignedStockQuantity={stock?.find(s => s.location_id === location.location_id)?.quantity || 0}
+
                                 />
 
                             </div>

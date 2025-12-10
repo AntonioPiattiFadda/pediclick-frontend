@@ -22,10 +22,11 @@ import {
 import { createClient, getClients } from "@/service/clients";
 import type { Client } from "@/types/clients";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 import {
     createContext,
     useContext,
+    useMemo,
     useState,
     type ReactNode,
 } from "react";
@@ -38,6 +39,8 @@ interface ClientSelectorContextType {
     disabled: boolean;
     clients: Client[];
     isLoading: boolean;
+    shortCode: number | null;
+    onChangeShortCode: (shortCode: number | null) => void;
 }
 
 const ClientSelectorContext =
@@ -56,16 +59,24 @@ interface RootProps {
     onChange: (client: Client | null) => void;
     disabled?: boolean;
     children: ReactNode;
+    shortCode?: number | null;
+
 }
 
 const ClientSelectorRoot = ({ value, onChange, disabled = false, children }: RootProps) => {
-    const { data: clients, isLoading } = useQuery({
+    const { data: clients, isLoading, isError } = useQuery({
         queryKey: ["clients"],
         queryFn: async () => {
             const response = await getClients();
             return response.clients;
         },
     });
+
+    const [shortCode, setShortCode] = useState<number | null>(value?.short_code ?? null);
+
+    if (isError) {
+        return <div>Error loading team members.</div>;
+    }
 
     return (
         <ClientSelectorContext.Provider
@@ -75,6 +86,8 @@ const ClientSelectorRoot = ({ value, onChange, disabled = false, children }: Roo
                 disabled,
                 clients: clients ?? [],
                 isLoading,
+                shortCode,
+                onChangeShortCode: setShortCode,
             }}
         >
             <div className="flex items-center gap-2 w-full h-10">{children}</div>
@@ -84,8 +97,31 @@ const ClientSelectorRoot = ({ value, onChange, disabled = false, children }: Roo
 
 // ---------- Select ----------
 const SelectClient = () => {
-    const { value, onChange, disabled, clients, isLoading } =
+    const { value, onChange, disabled, clients, isLoading,
+        shortCode, onChangeShortCode
+    } =
         useClientSelectorContext();
+
+
+    const handleCodeMatch = (code: number) => {
+        if (!code) return;
+        const matched = clients.find((m) => m.short_code === code);
+        if (matched) {
+            onChange(matched);
+            debouncedToast.cancel();
+        } else {
+            onChange(null);
+            debouncedToast(`No se encontró ningún cliente con el código: ${code}`);
+        }
+    };
+
+    const debouncedToast = useMemo(
+        () =>
+            debounce((msg: string) => {
+                toast(msg, { icon: "⚠️" });
+            }, 500),
+        []
+    );
 
     if (isLoading) {
         return <Input className="h-10" placeholder="Buscando tus clientes..." disabled />;
@@ -93,39 +129,49 @@ const SelectClient = () => {
 
     return (
         <>
-            <select
-                className="w-full border rounded px-2 py-2 h-10"
-                disabled={disabled}
-                value={value === null ? "" : value.client_id}
-                onChange={(e) => {
-                    const selectedId = Number(e.target.value);
-                    const selectedClient = clients.find(
-                        (client) => client?.client_id === selectedId
-                    ) || null;
-                    onChange(selectedClient);
-                }
-
-                }
-            >
-                <option disabled value="">Sin Cliente</option>
-                {(clients ?? []).map((client) => (
-                    <option key={client.client_id} value={client.client_id}>
-                        {client.full_name}
-                    </option>
-                ))}
-            </select>
-
-            {value && (
-                <Button
-                    variant="ghost"
+            <div className="flex w-full border border-gray-200 rounded-md ">
+                <Input
+                    className={`  border-none    h-9 w-14 `}
+                    value={shortCode ?? ""}
+                    placeholder="Código"
                     disabled={disabled}
-                    size="icon"
-                    onClick={() => onChange(null)}
-                    className="text-red-500 hover:text-red-700 h-10"
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        onChangeShortCode(Number(val));
+                        handleCodeMatch(Number(val));
+                    }}
+                />
+
+                <Select
+                    disabled={disabled}
+                    value={value?.client_id ?? ""}
+                    onValueChange={(val) => {
+                        const m = clients.find((m) => m.client_id === val) || null;
+                        onChange(m);
+                        onChangeShortCode(m?.short_code ?? null);
+                    }}
                 >
-                    <Trash2 className="w-5 h-10" />
-                </Button>
-            )}
+                    <SelectTrigger className="h-11 w-full border-none">
+                        <SelectValue placeholder="Seleccionar cliente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectLabel>Clientes</SelectLabel>
+                            {clients.map((m) => {
+                                const label = m.short_code ? `${m.short_code} - ${m.full_name}` : m.full_name;
+                                return (
+                                    <SelectItem
+                                        key={m.client_id}
+                                        value={m.client_id}>
+                                        {label}
+                                    </SelectItem>
+                                )
+                            })}
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </div>
+
         </>
     );
 };
@@ -134,6 +180,7 @@ import { Label } from "@/components/ui/label";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { Switch } from "@/components/ui/switch";
 import { taxConditionsOpt } from "@/constants";
+import { debounce } from "lodash";
 
 
 const CreateClient = ({ isShortCut = false }: {
@@ -160,7 +207,7 @@ const CreateClient = ({ isShortCut = false }: {
     // 🔁 Mutación para crear cliente
     const createClientMutation = useMutation({
         mutationFn: async (data: Partial<Client>) => {
-            toast.loading("Creando cliente...");
+            // toast.loading("Creando cliente...");
 
             const adaptedClient = {
                 ...data,
@@ -231,7 +278,7 @@ const CreateClient = ({ isShortCut = false }: {
                         disabled={disabled}
                         variant="outline"
                     >
-                        + Nuevo
+                        <PlusCircle className="w-5 h-5" />
                     </Button>}
             </DialogTrigger>
 
@@ -373,8 +420,32 @@ const CreateClient = ({ isShortCut = false }: {
     );
 };
 
+// -------- Cancel ----------
+const CancelClientSelection = () => {
+    const { value, onChange, onChangeShortCode } = useClientSelectorContext();
+
+    return (
+        value && (
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                    onChange(null);
+                    onChangeShortCode(null);
+                }}
+                className="text-red-500 hover:text-red-700 h-9"
+            >
+                <X className="w-5 h-5" />
+            </Button>
+        )
+    );
+};
+
 
 // ---------- Compound export ----------
 export {
-    ClientSelectorRoot, CreateClient, SelectClient
+    ClientSelectorRoot,
+    CreateClient,
+    SelectClient,
+    CancelClientSelection
 };

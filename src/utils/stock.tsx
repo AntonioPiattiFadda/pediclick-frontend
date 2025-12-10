@@ -1,3 +1,4 @@
+import type { LotContainersStock } from "@/types/lotContainersStock";
 import type { Stock } from "@/types/stocks";
 
 export type StockWithRelations = Stock & {
@@ -30,3 +31,44 @@ export const formatStockLocation = (stockItem: StockWithRelations) => {
     }
     return { typeLabel: type || "Otro", nameLabel: "", isStore: false };
 };
+
+export function redistributeUnassigned(lotContainersStock: LotContainersStock[]): LotContainersStock[] {
+    // Agrupar por lot_container_id
+    const groups = lotContainersStock.reduce((acc, item) => {
+        if (!acc[item.lot_container_id]) acc[item.lot_container_id] = [];
+        acc[item.lot_container_id].push(item);
+        return acc;
+    }, {});
+
+    const result = [];
+
+    Object.values(groups).forEach((group) => {
+        let totalAssigned = 0;
+        let unassignedRow = null;
+
+        // Buscar asignados y no asignado
+        group.forEach((item) => {
+            if (item.location_id) {
+                totalAssigned += item.quantity ?? 0;
+            } else {
+                unassignedRow = item;
+            }
+        });
+
+        // Actualizar el unassigned restando el totalAssigned
+        if (unassignedRow) {
+            unassignedRow = {
+                ...unassignedRow,
+                quantity: Math.max((unassignedRow.quantity ?? 0) - totalAssigned, 0),
+            };
+        }
+
+        // Agregar al resultado: primero el unassigned, luego los assigned
+        if (unassignedRow) result.push(unassignedRow);
+        group.forEach((item) => {
+            if (item.location_id) result.push(item);
+        });
+    });
+
+    return result;
+}

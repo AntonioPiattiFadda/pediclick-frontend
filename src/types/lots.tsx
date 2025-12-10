@@ -67,6 +67,7 @@ export type BaseLot = {
   purchase_cost_per_unit: number | null;
   purchase_cost_per_bulk: number | null;
 
+  extra_cost_total: number | null;
 
   final_cost_total: number | null;        // purchase_cost_total + extra_cost_total
   final_cost_per_unit: number | null;

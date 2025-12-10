@@ -1,21 +1,8 @@
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { getDailySalesLast30Days } from '@/service/orders';
+import { useQuery } from '@tanstack/react-query';
 import { Line, LineChart, XAxis, YAxis } from 'recharts';
 
-const generateSalesData = () => {
-  const data = [];
-  const today = new Date();
-  
-  for (let i = 29; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    data.push({
-      date: date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }),
-      sales: Math.floor(Math.random() * 2000) + 500,
-    });
-  }
-  
-  return data;
-};
 
 const chartConfig = {
   sales: {
@@ -24,19 +11,37 @@ const chartConfig = {
   },
 };
 
+
+
 export const SalesChart = () => {
-  const data = generateSalesData();
+
+  const { data: sales,
+    isLoading,
+    isError } = useQuery({
+      queryKey: ["last-30-days-sales"],
+      queryFn: () => getDailySalesLast30Days(),
+    });
+
+
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error loading sales data.</div>;
+  }
 
   return (
     <ChartContainer config={chartConfig} className="h-[300px]">
-      <LineChart data={data}>
-        <XAxis 
-          dataKey="date" 
+      <LineChart data={sales}>
+        <XAxis
+          dataKey="date"
           tickLine={false}
           axisLine={false}
           className="text-muted-foreground"
         />
-        <YAxis 
+        <YAxis
           tickLine={false}
           axisLine={false}
           className="text-muted-foreground"
