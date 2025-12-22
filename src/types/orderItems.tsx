@@ -1,5 +1,5 @@
-import { MovementStatus } from ".";
-import { PriceLogicType, PriceType } from "./prices";
+import type { MovementStatus } from ".";
+import type { PriceLogicType, PriceType } from "./prices";
 
 export interface OrderItem {
   order_item_id?: number;

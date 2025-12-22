@@ -3,8 +3,6 @@ import { supabase } from ".";
 import { getBusinessOwnerId } from "./profiles";
 import type { SubapaseConstrains } from "@/types/shared";
 
-
-
 export const productPresentationConstraints: SubapaseConstrains[] = [{
   value: "unique_shortcode_per_owner",
   errorMsg: "El código corto ya está en uso para otra presentación de producto.",
@@ -13,16 +11,28 @@ export const productPresentationConstraints: SubapaseConstrains[] = [{
   value: "unique_presentation_per_owner_and_product",
   errorMsg: "Ya existe una presentación con ese nombre para este producto.",
 }
-
 ];
 
 
-
+// Difieren en la app escritorio y esta.
 export const getProductPresentations = async (
   productId: number | null,
   isFetchWithLots: boolean = false,
-  isFetchedWithLotContainersLocation: boolean = false
+  isFetchedWithLotContainersLocation: boolean = false,
+  locationId: number | null = null
 ) => {
+  console.log("Fetching presentations for productId:", productId);
+
+  console.log("Fetching presentations for productId:", isFetchWithLots);
+
+  console.log("Fetching presentations for productId:", isFetchedWithLotContainersLocation);
+
+  console.log("Fetching presentations for productId:", locationId);
+
+  if (!productId) {
+    return { presentations: [], error: null };
+  }
+
   const businessOwnerId = await getBusinessOwnerId();
 
   const lotsSelect = isFetchWithLots
@@ -35,17 +45,34 @@ export const getProductPresentations = async (
         lots(lot_id,
           created_at,
           is_sold_out,
-          stock(*,
+          final_cost_per_unit,
+          final_cost_per_bulk,
+          final_cost_total,
+          stock!inner(lot_id,
+            quantity,
+            stock_id,
+            location_id,
+            stock_type,
+            reserved_for_transferring_quantity,
+            reserved_for_selling_quantity,
             lot_containers_stock(*)
-          )
+            )
         )
         
       `
       : `
-        *,
-        lots(
-          *,
-          stock(lot_id,
+        product_presentation_id,
+        product_presentation_name,
+        short_code,
+        bulk_quantity_equivalence,
+        prices(*),
+        lots(lot_id,
+          created_at,
+          is_sold_out,
+          final_cost_per_unit,
+          final_cost_per_bulk,
+          final_cost_total,
+          stock!inner(lot_id,
             quantity,
             stock_id,
             location_id,
@@ -56,38 +83,41 @@ export const getProductPresentations = async (
             )
         )
       `
-    : "*";
+    : `
+        *,
+        prices(*)
+      `;
 
-  // lot_id: 189,
-  //   quantity: 2,
-  //     stock_id: 178,
-  //       created_at: '2025-11-27T01:48:48.444488+00:00',
-  //         product_id: 117,
-  //           stock_type: null,
-  //             updated_at: '2025-11-27T01:48:48.444488+00:00',
-  //               location_id: 3,
-  //                 max_notification: null,
-  //                   min_notification: null,
-  //                     lot_containers_stock: [],
-  //                       transformed_to_product_id: null,
-  //                         transformed_from_product_id: null,
-  //                           reserved_for_selling_quantity: null,
-  //                             reserved_for_transferring_quantity: null
-
-  let query = supabase
+  const query = supabase
     .from("product_presentations")
     .select(lotsSelect)
     .is("deleted_at", null)
     .eq("business_owner_id", businessOwnerId)
     .eq("product_id", productId);
 
-  // if (isFetchWithLots) {
-  //   query = query.eq("lots.stock.current_quantity", 0);
-  // }
 
+  if (isFetchWithLots) {
+    console.log("isFetchWithLots", isFetchWithLots);
+    query.gt("lots.stock.quantity", 0);
+  }
+  if (locationId) {
+    console.log("locationId", locationId);
+    query.eq("lots.stock.location_id", Number(locationId));
+  }
   const { data: presentations, error } = await query;
 
-  console.log("Presentations fetched:", presentations, error);
+  // if (locationId) {
+  //   presentations?.forEach((presentation) => {
+  //     presentation?.lots = presentation.lots?.map((lot) => {
+  //       const filteredStock = lot.stock?.filter((stock) => Number(stock.location_id) === locationId);
+  //       return {
+  //         ...lot,
+  //         stock: filteredStock,
+  //       };
+  //     }) || [];
+  //   });
+  // }
+  console.log("Fetched presentations:", presentations, error);
 
   if (error) throw new Error(error.message);
 

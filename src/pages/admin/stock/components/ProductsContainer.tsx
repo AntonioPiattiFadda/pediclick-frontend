@@ -7,23 +7,33 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getAllProducts } from "@/service/products";
+import { getAllProducts, getAllSoldProducts } from "@/service/products";
 import type { Location } from "@/types/locations";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw, Search } from "lucide-react";
 import { useState } from "react";
-import TableSkl from "../../ui/skeleton/tableSkl";
-import { ProductTableRendererClientSide } from "../shared/productTableRendererClientSide";
-import { CategorySelectorRoot, SelectCategory } from "../shared/selectors/categorySelector";
-import { CancelLocationSelection, LocationSelectorRoot, SelectLocation } from "../shared/selectors/locationSelector";
-import { SelectSubCategory, SubCategorySelectorRoot } from "../shared/selectors/subCategorySelector";
+import TableSkl from "../../../../components/ui/skeleton/tableSkl";
+import { ProductTableRenderer } from "./productTableRenderer";
+import { CategorySelectorRoot, SelectCategory } from "../../../../components/admin/shared/selectors/categorySelector";
+import { CancelLocationSelection, LocationSelectorRoot, SelectLocation } from "../../../../components/admin/shared/selectors/locationSelector";
+import { SelectSubCategory, SubCategorySelectorRoot } from "../../../../components/admin/shared/selectors/subCategorySelector";
 import AddStock from "./AddStock";
+import { Label } from "@/components/ui/label"
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from "@/components/ui/radio-group"
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const ProductsContainer = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null);
+
+  const [stockTypeToShow, setStockTypeToShow] = useState<'STOCK' | 'SOLD'>('STOCK');
+
+  const [viewUnassignedOnly, setViewUnassignedOnly] = useState<boolean>(false);
 
   const {
     data: products = [],
@@ -39,9 +49,70 @@ export const ProductsContainer = () => {
     },
   });
 
-  const filteredProducts = products.filter((product) => {
+  const {
+    data: soldStockProducts = [],
+    isLoading: isLoadingSoldStock,
+    isError: isErrorSoldStock,
+    // refetch: refetchSoldStock,
+    // isRefetching: isRefetchingSoldStock
+  } = useQuery({
+    queryKey: ["sold-stock-products"],
+    queryFn: async () => {
+      const response = await getAllSoldProducts();
+      return response.products
+    },
+  });
 
-    console.log('Filtering product:', product);
+  const productsToUse = stockTypeToShow === 'STOCK' ? products : soldStockProducts;
+
+  const filteredByLocation = productsToUse
+    .map((product) => {
+      if (!selectedLocation && !viewUnassignedOnly) return product;
+
+      const locationId = selectedLocation?.location_id || null;
+
+      const filteredPresentations =
+        product.product_presentations
+          ?.map((presentation) => {
+            const filteredLots =
+              presentation.lots
+                ?.map((lot) => {
+                  const filteredStock =
+                    lot.stock?.filter(
+                      (stock) =>
+                        stock.location_id === locationId &&
+                        stock.quantity > 0
+                    ) ?? [];
+
+                  if (filteredStock.length === 0) return null;
+
+                  return {
+                    ...lot,
+                    stock: filteredStock,
+                  };
+                })
+                .filter(Boolean) ?? [];
+
+            if (filteredLots.length === 0) return null;
+
+            return {
+              ...presentation,
+              lots: filteredLots,
+            };
+          })
+          .filter(Boolean) ?? [];
+
+      if (filteredPresentations.length === 0) return null;
+
+      return {
+        ...product,
+        product_presentations: filteredPresentations,
+      };
+    })
+    .filter(Boolean);
+
+  const filteredProducts = filteredByLocation.filter((product) => {
+    if (!product) return false;
 
     const matchesSearchTerm = product.product_name
       .toLowerCase()
@@ -61,19 +132,7 @@ export const ProductsContainer = () => {
       ? product.sub_category_id === Number(selectedSubCategory)
       : true;
 
-    const matchesLocation = selectedLocation
-      ? product.product_presentations?.some((pres) =>
-        pres.lots?.some((lot) =>
-          lot.stock?.some(
-            (stock) => stock.location_id === selectedLocation.location_id
-          )
-        )
-      )
-      : true;
-
-
     return (
-      matchesLocation &&
       matchesCategory &&
       matchesSubCategory &&
       (matchesSearchTerm || matchesShortCode || matchesBarcode)
@@ -82,13 +141,24 @@ export const ProductsContainer = () => {
 
   // TODO Esto queda colgado pero tenemos que asislarlo para que la crecion de un nuevo producto l
 
-  if (isLoading) {
+  if (isLoading && stockTypeToShow === 'STOCK') {
     return <TableSkl />;
   }
 
-  if (isError) {
+  if (isLoadingSoldStock && stockTypeToShow === 'SOLD') {
+    return <TableSkl />;
+  }
+
+  if (isError || isErrorSoldStock) {
     return <div>Error loading products.</div>;
   }
+
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setSelectedCategory(null);
+    setSelectedSubCategory(null);
+    setSelectedLocation(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -123,6 +193,8 @@ export const ProductsContainer = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="w-full grid grid-cols-6 gap-4">
+
+
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
@@ -133,11 +205,31 @@ export const ProductsContainer = () => {
               />
             </div>
 
-            <div className="col-span-2">
-              <LocationSelectorRoot value={selectedLocation} onChange={setSelectedLocation}>
+            <div className="col-span-2 grid grid-cols-[2fr_1fr] gap-4 w-full">
+
+              <LocationSelectorRoot
+                value={selectedLocation}
+                onChange={(value) => {
+                  setSelectedLocation(value);
+                  setViewUnassignedOnly(false);
+                }}>
                 <SelectLocation />
                 <CancelLocationSelection />
               </LocationSelectorRoot>
+
+
+              <div className="flex flex-row gap-2 items-center">
+                <Checkbox
+                  checked={viewUnassignedOnly}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedLocation(null);
+                    }
+                    setViewUnassignedOnly(!!checked);
+                  }}
+                />
+                <Label>No assignados</Label>
+              </div>
             </div>
 
 
@@ -154,11 +246,29 @@ export const ProductsContainer = () => {
 
             <Button className="w-[120px] ml-auto"
               onClick={() => {
-                setSearchTerm("");
-                setSelectedCategory(null);
-                setSelectedSubCategory(null);
+                handleResetFilters();
               }}>
               Resetear filtros</Button>
+
+
+            <div className="relative flex-1">
+              <Label>Visualizar</Label>
+
+
+              <RadioGroup value={stockTypeToShow} onValueChange={(value) => {
+                setStockTypeToShow(value as 'STOCK' | 'SOLD')
+              }} defaultValue="STOCK" className="flex flex-row gap-4 mt-2" >
+                <div className="flex items-center gap-3">
+                  <RadioGroupItem value="STOCK" id="r1" />
+                  <Label htmlFor="r1">En stock</Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <RadioGroupItem value="SOLD" id="r3" />
+                  <Label htmlFor="r3">Vendido</Label>
+                </div>
+              </RadioGroup>
+
+            </div>
 
             {/* <Select
               value={selectedCategory}
@@ -187,7 +297,7 @@ export const ProductsContainer = () => {
             </Select> */}
           </div>
 
-          <ProductTableRendererClientSide defaultData={filteredProducts} />
+          <ProductTableRenderer defaultData={filteredProducts} />
 
           {/* <ProductsTable
             products={filteredProducts ?? []}

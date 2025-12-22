@@ -10,14 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import GetFollowingLotNumberBtn from "@/components/unassigned/getFollowingLotNumberBtn";
 import type { Lot } from "@/types/lots";
 import { useEffect, useRef, useState } from "react";
 import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
 // import { LotContainerSelector } from "./lotContainerSelectorUNUSED";
-import { AddLotBtn } from "../shared/stock/addStockBtn/addLotBtn";
-import type { Stock } from "@/types/stocks";
 import type { LotContainersStock } from "@/types/lotContainersStock";
+import type { Stock } from "@/types/stocks";
+import { AddLotBtn } from "../stock/addStockBtn/addLotBtn";
 
 type EditableCellProps = {
   value: string | number | null | undefined;
@@ -26,6 +25,7 @@ type EditableCellProps = {
   placeholder?: string;
   align?: "left" | "right" | "center";
   onSave: (value: string) => void;
+  unit?: string;
 };
 function EditableCell({
   value,
@@ -34,6 +34,7 @@ function EditableCell({
   placeholder = "-",
   align = "left",
   onSave,
+  unit,
 }: EditableCellProps) {
   const [open, setOpen] = useState(false);
   const [local, setLocal] = useState(
@@ -59,7 +60,7 @@ function EditableCell({
   const display =
     value === null || value === undefined || value === ""
       ? placeholder
-      : String(value);
+      : `${unit ? ` ${unit} ` : ""}${String(value)}`;
 
   const handleSave = () => {
     onSave(local);
@@ -107,60 +108,60 @@ function EditableCell({
 
 
 
-type LotContainerCellProps = {
-  assignments: Lot["lot_containers"] | undefined;
-  initialStock: number;
-  disabled?: boolean;
-  onSave: (assignments: Lot["lot_containers"]) => void;
-};
+// type LotContainerCellProps = {
+//   assignments: Lot["lot_containers"] | undefined;
+//   initialStock: number;
+//   disabled?: boolean;
+//   onSave: (assignments: Lot["lot_containers"]) => void;
+// };
 
-function LotContainerCell({
-  assignments,
-  initialStock,
-  disabled = false,
-  onSave,
-}: LotContainerCellProps) {
-  console.log("onSave:", onSave);
-  const [open, setOpen] = useState(false);
-  const totalAssigned = (assignments ?? []).reduce(
-    (sum, a) => sum + (Number(a?.quantity) || 0),
-    0
-  );
-  const display =
-    totalAssigned > 0
-      ? `${totalAssigned}/${initialStock}`
-      : "Sin vacíos";
+// function LotContainerCell({
+//   assignments,
+//   initialStock,
+//   disabled = false,
+//   onSave,
+// }: LotContainerCellProps) {
+//   console.log("onSave:", onSave);
+//   const [open, setOpen] = useState(false);
+//   const totalAssigned = (assignments ?? []).reduce(
+//     (sum, a) => sum + (Number(a?.quantity) || 0),
+//     0
+//   );
+//   const display =
+//     totalAssigned > 0
+//       ? `${totalAssigned}/${initialStock}`
+//       : "Sin vacíos";
 
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          disabled={disabled}
-          className="w-full text-left hover:underline underline-offset-4 disabled:opacity-50"
-          onClick={() => setOpen(true)}
-        >
-          {display}
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[600px]">
-        <div className="flex flex-col gap-3">
-          {/* <LotContainerSelector
-            assignments={assignments ?? []}
-            initialQuantity={Number(initialStock) || 0}
-            disabled={disabled}
-            onChange={(next) => onSave(next)}
-          /> */}
-          <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Cerrar
-            </Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
+//   return (
+//     <Popover open={open} onOpenChange={setOpen}>
+//       <PopoverTrigger asChild>
+//         <button
+//           type="button"
+//           disabled={disabled}
+//           className="w-full text-left hover:underline underline-offset-4 disabled:opacity-50"
+//           onClick={() => setOpen(true)}
+//         >
+//           {display}
+//         </button>
+//       </PopoverTrigger>
+//       <PopoverContent className="w-[600px]">
+//         <div className="flex flex-col gap-3">
+//           {/* <LotContainerSelector
+//             assignments={assignments ?? []}
+//             initialQuantity={Number(initialStock) || 0}
+//             disabled={disabled}
+//             onChange={(next) => onSave(next)}
+//           /> */}
+//           <div className="flex gap-2 justify-end">
+//             <Button variant="outline" onClick={() => setOpen(false)}>
+//               Cerrar
+//             </Button>
+//           </div>
+//         </div>
+//       </PopoverContent>
+//     </Popover>
+//   );
+// }
 
 export const AddLoadOrderTable = ({
   loadOrderLots,
@@ -173,6 +174,7 @@ export const AddLoadOrderTable = ({
   onUpdateLot?: (index: number, patch: Partial<Lot>) => void;
   onDeleteLot?: (index: number) => void;
 }) => {
+
   return (
     <div className="rounded-md overflow-x-auto">
       <Table>
@@ -183,22 +185,23 @@ export const AddLoadOrderTable = ({
           <TableRow>
             <TableHead className="w-10"></TableHead>
             <TableHead>Producto</TableHead>
-            <TableHead>Nro Lote</TableHead>
+            {/* <TableHead>Nro Lote</TableHead> */}
             <TableHead className="text-right">Stock inicial</TableHead>
             <TableHead>Vencimiento</TableHead>
             <TableHead className="text-right">Compra total</TableHead>
             <TableHead className="text-right">Compra / unidad</TableHead>
             <TableHead className="text-right">Descarga total</TableHead>
             <TableHead className="text-right">Descarga / unidad</TableHead>
-            <TableHead>Vacío</TableHead>
-            <TableHead>Precios</TableHead>
+            <TableHead className="text-right">Costo extra total</TableHead>
+            {/* <TableHead>Vacío</TableHead>
+            <TableHead>Precios</TableHead> */}
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {loadOrderLots.length > 0 ? (
             loadOrderLots.map((lot, index) => (
-              <TableRow key={lot.lot_id ?? `${lot.product_id}-${lot.lot_number ?? "new"}-${index}`}>
+              <TableRow key={lot.lot_id ?? `${lot.product_id}-${index}`}>
                 {/* Acciones: eliminar */}
                 <TableCell>
                   <DeleteTableElementPopUp
@@ -222,7 +225,7 @@ export const AddLoadOrderTable = ({
                 <TableCell>{lot.product_name || "-"}</TableCell>
 
                 {/* Nro de Lote */}
-                <TableCell>
+                {/* <TableCell>
                   <div className="grid grid-cols-[1fr_50px] gap-2">
                     <EditableCell
                       value={lot.lot_number}
@@ -237,7 +240,7 @@ export const AddLoadOrderTable = ({
                       onUpdateLot?.(index, { lot_number: nextLotNumber });
                     }} productId={lot.product_id} />
                   </div>
-                </TableCell>
+                </TableCell> */}
 
                 {/* Stock inicial */}
                 <TableCell className="text-right">
@@ -277,6 +280,7 @@ export const AddLoadOrderTable = ({
                         purchase_cost_total: Number(val) || 0,
                       })
                     }
+                    unit="$"
                   />
                 </TableCell>
 
@@ -291,6 +295,7 @@ export const AddLoadOrderTable = ({
                         purchase_cost_per_unit: Number(val) || 0,
                       })
                     }
+                    unit="$"
                   />
                 </TableCell>
 
@@ -305,6 +310,7 @@ export const AddLoadOrderTable = ({
                         download_total_cost: Number(val) || 0,
                       })
                     }
+                    unit="$"
                   />
                 </TableCell>
 
@@ -318,12 +324,25 @@ export const AddLoadOrderTable = ({
                       onUpdateLot?.(index, {
                         download_cost_per_unit: Number(val) || 0,
                       })
-                    }
+                    } unit="$"
+                  />
+                </TableCell>
+
+                <TableCell className="text-right">
+                  <EditableCell
+                    value={lot.extra_cost_total}
+                    type="number"
+                    align="right"
+                    onSave={(val) =>
+                      onUpdateLot?.(index, {
+                        extra_cost_total: Number(val) || 0,
+                      })
+                    } unit="$"
                   />
                 </TableCell>
 
                 {/* Vacíos (múltiples asignaciones) */}
-                <TableCell>
+                {/* <TableCell>
                   <LotContainerCell
                     assignments={lot.lot_containers}
                     initialStock={lot.initial_stock_quantity}
@@ -337,10 +356,10 @@ export const AddLoadOrderTable = ({
                       })
                     }
                   />
-                </TableCell>
+                </TableCell> */}
 
                 {/* Precios (solo vista rápida) */}
-                <TableCell>{lot.prices?.map((p) => p.price).join(", ") || "-"}</TableCell>
+                {/* <TableCell>{lot.prices?.map((p) => p.price).join(", ") || "-"}</TableCell> */}
               </TableRow>
             ))
           ) : (

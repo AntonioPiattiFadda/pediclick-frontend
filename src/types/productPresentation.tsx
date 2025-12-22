@@ -1,4 +1,5 @@
 import type { Lot } from "./lots";
+import type { Price } from "./prices";
 
 export type ProductPresentation = {
     product_presentation_id: number;
@@ -10,7 +11,10 @@ export type ProductPresentation = {
 
     bulk_quantity_equivalence: number | null;
 
+    // allow_price_edition: boolean;
+    // minimum_price: number | null;
 
+    prices: Price[];
     lots?: Lot[];
 
     products?: {

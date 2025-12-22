@@ -131,15 +131,15 @@ const SelectIva = ({ children }: { children?: ReactNode }) => {
     //     []
     // );
 
-    // if (isLoading) {
-    //     return (
-    //         <Input
-    //             className="h-10"
-    //             placeholder="Buscando miembros..."
-    //             disabled
-    //         />
-    //     );
-    // }
+    if (isLoading) {
+        return (
+            <Input
+                className="h-10"
+                placeholder="Buscando iva..."
+                disabled
+            />
+        );
+    }
 
     return (
         <>

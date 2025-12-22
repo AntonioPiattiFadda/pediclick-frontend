@@ -91,10 +91,21 @@ export default function ManageProductPrices({
 
                     </TabsList>
 
-                    <UniversalPricesContainer productPresentationId={productPresentationId} finalCost={finalCost} />
+                    <UniversalPricesContainer
+                        onClose={() => setOpen(false)}
+                        productPresentationId={productPresentationId}
+                        finalCost={finalCost}
+                    />
 
                     {stores.map((store: Location) => (
-                        <StorePricesTabContainer key={store.location_id} productPresentationId={productPresentationId} store={store} finalCost={finalCost} disabled={disabled} />
+                        <StorePricesTabContainer
+                            key={store.location_id}
+                            productPresentationId={productPresentationId}
+                            store={store}
+                            finalCost={finalCost}
+                            disabled={disabled}
+                            onClose={() => setOpen(false)}
+                        />
                     ))}
 
 

@@ -1,6 +1,5 @@
-import type { Lot } from "@/types/lots";
-import type { Stock } from "@/types/stocks";
 import type { LoadOrder } from "@/types/loadOrders";
+import type { Stock } from "@/types/stocks";
 const now = new Date();
 
 export const emptyLoadOrder: LoadOrder = {
@@ -14,9 +13,10 @@ export const emptyLoadOrder: LoadOrder = {
     name: "",
     licence_plate: "",
   },
+  total_download_cost: 0,
   invoice_number: null,
   observations: "",
-  lots: [] as Lot[],
+
 };
 
 export const emptyStock: Stock = {

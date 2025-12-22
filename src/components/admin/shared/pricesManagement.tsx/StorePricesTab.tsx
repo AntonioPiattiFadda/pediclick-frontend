@@ -10,9 +10,12 @@ import type { Price, PriceLogicType, PriceType } from '@/types/prices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DollarSign, Percent, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 
-const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled, productPrices }: {
+const StorePricesTab = ({ key,
+    productPresentationId, store, finalCost,
+    disabled, productPrices, onClose
+}: {
     productPresentationId: number;
     store: Location;
     key: number;
@@ -23,6 +26,7 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
     };
     disabled?: boolean;
     productPrices: Price[];
+    onClose: () => void;
 }) => {
 
     const locationId = store.location_id;
@@ -42,6 +46,7 @@ const StorePricesTab = ({ key, productPresentationId, store, finalCost, disabled
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId], });
             toast.success("Precios actualizados correctamente");
+            onClose();
         },
         onError: (error: {
             message: string;

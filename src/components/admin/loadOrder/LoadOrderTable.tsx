@@ -13,7 +13,6 @@ import type { Stock } from "@/types/stocks";
 import { formatStockLocation, type StockWithRelations } from "@/utils/stock";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Fragment } from "react/jsx-runtime";
-import { StockMovement } from "../stock/stockMovement";
 
 interface LoadOrderTableProps {
   loadOrderData: {
@@ -27,6 +26,8 @@ interface LoadOrderTableProps {
 }
 
 export const LoadOrderTable = ({ loadOrderData, expandedLots, toggleExpanded, loadOrderId }: LoadOrderTableProps) => {
+
+  console.log("loadOrderId", loadOrderId);
 
   return (
     <div className="rounded-md">
@@ -69,14 +70,13 @@ export const LoadOrderTable = ({ loadOrderData, expandedLots, toggleExpanded, lo
                         <span className="font-medium">{lot?.product_name || "N/A"}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{lot.lot_number ?? "--"}</TableCell>
                     <TableCell>{lot.expiration_date ?? "--"}</TableCell>
                     <TableCell>{totalQty}</TableCell>
                     <TableCell className="text-right">
-                      <StockMovement
+                      {/* <StockMovement
                         aditionalQueryKey={["load-order", Number(loadOrderId)]}
                         lotId={lot.lot_id ?? 0}
-                      />
+                      /> */}
                     </TableCell>
                   </TableRow>
 
@@ -113,7 +113,7 @@ export const LoadOrderTable = ({ loadOrderData, expandedLots, toggleExpanded, lo
                                             </div>
                                           </TableCell>
                                           <TableCell>{typeLabel}</TableCell>
-                                          <TableCell>{stockItem.current_quantity}</TableCell>
+                                          <TableCell>{stockItem.quantity}</TableCell>
                                           {/* <TableCell>{isStore ?
                                             <ManageStockPrices
                                               hasCost={hasCost}

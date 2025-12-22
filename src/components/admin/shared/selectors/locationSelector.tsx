@@ -39,8 +39,8 @@ import { createLocation, getLocations } from "@/service/locations";
 // ─────────────────────────────
 
 interface LocationSelectorContextType {
-    value: Partial<Location> | null;
-    onChange: (loc: Location | null) => void;
+    value: Pick<Location, 'location_id' | 'name' | 'type'> | null;
+    onChange: (loc: Pick<Location, 'location_id' | 'name' | 'type'> | null) => void;
     disabled: boolean;
     locations: Location[];
     isLoading: boolean;
@@ -64,8 +64,8 @@ function useLocationSelectorContext() {
 // ─────────────────────────────
 
 interface RootProps {
-    value: Partial<Location> | null;
-    onChange: (location: Partial<Location> | null) => void;
+    value: Pick<Location, 'location_id' | 'name' | 'type'> | null;
+    onChange: (location: Pick<Location, 'location_id' | 'name' | 'type'> | null) => void;
     disabled?: boolean;
     children: ReactNode;
     omitId?: number | null;
@@ -80,6 +80,7 @@ const LocationSelectorRoot = ({
     omitId,
     filter = undefined,
 }: RootProps) => {
+
     const { data: locations, isLoading, isError } = useQuery({
         queryKey: ["locations"],
         queryFn: async () => {

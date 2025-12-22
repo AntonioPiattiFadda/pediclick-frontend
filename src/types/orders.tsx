@@ -1,4 +1,4 @@
-import { Client } from "./clients";
+import type { Client } from "./clients";
 
 export type ClientType = "FINAL" | "REGISTERED"
 export type OrderType = "DIRECT_SALE" | "CREDIT_ORDER" | "RESERVATION" | "ONLINE_PICKUP"

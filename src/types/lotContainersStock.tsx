@@ -2,7 +2,6 @@ import type { MovementStatus } from ".";
 
 export type LotContainersStock = {
   lot_container_stock_id: number;
-  // lot_id: number | null;
   lot_container_id: number | null;
   quantity: number | null;
   created_at: string | null;
@@ -19,4 +18,6 @@ export type LotContainersStock = {
   transfer_order_item_id?: number | null;
   lot_container_status: MovementStatus | null;
 
+
+  lot_id?: number | null;
 };

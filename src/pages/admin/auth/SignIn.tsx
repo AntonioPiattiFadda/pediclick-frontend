@@ -29,8 +29,14 @@ export function SignIn() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
       setError(null);
+
       //Buscar al usuario en base de datos para ponerlo en la app
-      dispatch(setUser({ email, full_name: "", role: "user", id: "1", avatar_url: null, phone: null, address: null, is_verified: false, parent_user_id: "", store_id: 0, job_position: null, created_at: "", updated_at: "", deleted_at: null }));
+
+      dispatch(setUser({
+        email, full_name: "", role: "user", id: "1", phone: null, address: null, is_verified: false, created_at: "", updated_at: "", deleted_at: null, password: "",
+        short_code: 0
+      }));
+
       window.location.href = "/dashboard";
     },
     onError: (err: any) => {

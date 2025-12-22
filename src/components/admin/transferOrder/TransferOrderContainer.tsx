@@ -9,6 +9,7 @@ const TransferOrderContainer = () => {
     const location = useLocation();
     const transferOrderId = Number(location.pathname.split("/").pop() || "0");
 
+
     const {
         data: transferOrder,
         isLoading,

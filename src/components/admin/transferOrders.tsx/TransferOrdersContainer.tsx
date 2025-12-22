@@ -21,7 +21,7 @@ export const TransferOrdersContainer = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [fromLocationId, setFromLocationId] = useState<Location | null>(null);
+  const [fromLocationId, setFromLocationId] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | null>(null);
 
   const {
     data: dbTransferOrders,
@@ -69,7 +69,9 @@ export const TransferOrdersContainer = () => {
             </div>
             <div className="grid grid-cols-[2fr_1fr] gap-4 w-[500px]">
 
-              <LocationSelectorRoot value={fromLocationId} onChange={setFromLocationId}>
+              <LocationSelectorRoot
+                value={fromLocationId}
+                onChange={setFromLocationId}>
                 <SelectLocation />
                 {/* <CreateLocation /> */}
               </LocationSelectorRoot>

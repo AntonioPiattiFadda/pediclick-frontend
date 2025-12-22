@@ -8,43 +8,37 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
-import { getStockSalesHistory } from "@/service/stockMovement";
-import type { StockSalesHistoryRow } from "@/types/SALES";
+import { getLotSales } from "@/service/orderItems";
+import type { OrderItem } from "@/types/orderItems";
 import { formatDate } from "@/utils";
+import { formatCurrency } from "@/utils/prices";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useMemo } from "react";
+import { Loader2, TrendingUp } from "lucide-react";
 
-const SalesStockHistory = ({
+const SalesHistory = ({
     lotId,
 }: {
-    lotId: number;
+    lotId: number | null;
 }) => {
-    const { data: stockSales, isLoading, isError, error } = useQuery<StockSalesHistoryRow[]>({
-        queryKey: ["stock-sales-history", lotId],
-        queryFn: () => getStockSalesHistory(lotId!),
+    const { data: sales, isLoading, isError, error } = useQuery({
+        queryKey: ["lot-sales-history", lotId],
+        queryFn: () => getLotSales(lotId!),
         enabled: !!lotId,
     });
 
 
-    const salesWithTotals = useMemo(() => {
-        let runningTotal = 0;
-        return stockSales?.sort((a, b) => a.movement_date.localeCompare(b.movement_date)).map((m) => {
-            const subtotal = m.price * m.quantity;
-            runningTotal += subtotal;
-            return {
-                ...m,
-                subtotal,
-                runningTotal,
-            };
-        });
-    }, [stockSales]);
+    const salesTotal = sales?.reduce((acc, sale) => acc + (sale?.total || 0), 0) || 0;
+
+    const salePricePromedio = sales && sales.length > 0 ? sales.reduce((acc, sale) => {
+        return acc + (sale?.price || 0);
+    }, 0) / sales.length : 0;
+
 
     return (
         <Sheet>
             <SheetTrigger asChild>
                 <Button variant="outline" disabled={!lotId}>
-                    Ver historial de ventas STOCK
+                    <TrendingUp />
                 </Button>
             </SheetTrigger>
 
@@ -73,49 +67,72 @@ const SalesStockHistory = ({
                             </div>
                         )}
 
-                        {!isLoading && !isError && stockSales.length === 0 && (
+                        {!isLoading && !isError && sales?.length === 0 && (
                             <div className="p-6 text-sm text-muted-foreground">
                                 No hay movimientos de ventas para este lote.
                             </div>
                         )}
 
-                        {!isLoading && !isError && stockSales.length > 0 && (
+                        {!isLoading && !isError && (sales?.length ?? 0) > 0 && (
                             <div className="px-6 py-4">
 
                                 <div className="sticky top-0 z-10 grid grid-cols-12 gap-2 border-b bg-background px-2 py-2 text-xs font-medium text-muted-foreground">
                                     <div className="col-span-3">Fecha</div>
                                     <div className="col-span-3">Cantidad Vendida</div>
                                     <div className="col-span-2 text-right">Precio</div>
-                                    <div className="col-span-2 text-right">Subtotal</div>
-                                    <div className="col-span-2 text-right">Total Acumulado</div>
+                                    <div className="col-span-4 text-right">Total</div>
                                 </div>
 
                                 <div className="divide-y">
-                                    {salesWithTotals?.map((m) => {
+                                    {sales && sales.filter((s): s is OrderItem => s !== undefined).map((s: OrderItem) => {
                                         return (
                                             <div
-                                                key={m.movement_id}
+                                                key={s.order_id}
                                                 className="grid grid-cols-12 gap-2 px-2 py-3 text-sm"
                                             >
-                                                <div className="col-span-3">{formatDate(m.movement_date)}</div>
-                                                <div className="col-span-3 truncate">{m.quantity}</div>
+                                                <div className="col-span-3">{formatDate(s.created_at)}</div>
+                                                <div className="col-span-3 truncate">{s.quantity}</div>
+                                                <div className="col-span-2 text-right">{formatCurrency(s.price)}</div>
+                                                <div className="col-span-4 text-right">{formatCurrency(s.total)}</div>
 
-                                                <div className="col-span-2 text-right">{m.price}</div>
-                                                <div className="col-span-2 text-right">{(m?.subtotal)}</div>
-
-                                                <div className="col-span-2 text-right">{(m?.runningTotal)}</div>
 
                                             </div>
                                         );
                                     })}
                                 </div>
+
+                                <div className="divide-y">
+
+                                    <div
+                                        className="grid grid-cols-12 gap-2 px-2 py-3 text-sm font-semibold border-t mt-4"
+                                    >
+                                        <div className="col-span-3"></div>
+                                        <div className="col-span-3"></div>
+                                        <div className="col-span-2 text-right">Promedio de precio de venta</div>
+                                        <div className="col-span-4 text-right">{formatCurrency(salePricePromedio)}</div>
+                                    </div>
+
+
+                                    <div
+                                        className="grid grid-cols-12 gap-2 px-2 py-3 text-sm font-semibold "
+                                    >
+                                        <div className="col-span-3"></div>
+                                        <div className="col-span-3"></div>
+                                        <div className="col-span-2 text-right">Total</div>
+                                        <div className="col-span-4 text-right">{formatCurrency(salesTotal)}</div>
+                                    </div>
+
+                                    <div className="col-span-3"></div>
+
+                                </div>
                             </div>
                         )}
                     </div>
+
                 </div>
             </SheetContent>
         </Sheet>
     );
 };
 
-export default SalesStockHistory;
+export default SalesHistory;

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -6,51 +7,50 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { adaptLoadOrderForSubmission } from "@/adapters/loadOrders";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import GetFollowingLoadOrderNumberBtn from "@/components/unassigned/getFollowingLoadOrderNumberBtn";
+import { createLoadOrder } from "@/service/loadOrders";
 import type { LoadOrder } from "@/types/loadOrders";
 import type { LotContainersStock } from "@/types/lotContainersStock";
+import type { Lot } from "@/types/lots";
 import type { Stock } from "@/types/stocks";
 import { updateLotWithCalculations } from "@/utils/lots";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { CreateProvider, ProviderSelectorRoot, SelectProvider } from "../shared/selectors/providersSelector";
 import { AddLoadOrderTable } from "./AddLoadOrderTable";
 import { emptyLoadOrder } from "./emptyFormData";
 
 export const AddLoadOrderContainer = () => {
   const queryClient = useQueryClient();
-  const navigator = useNavigate();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState<LoadOrder>(emptyLoadOrder);
 
-  const [stock, setStock] = useState<Stock[]>([]);
-  const [lotContainersStock, setLotContainersStock] = useState<LotContainersStock[]>([]);
+  const [lots, setLots] = useState<Lot[]>([]);
+  const [stock] = useState<Stock[]>([]);
+
+  const [lotContainersStock] = useState<LotContainersStock[]>([]);
 
   const createLoadOrderMutation = useMutation({
     mutationFn: async () => {
-      //FIXME - FILTRAT LOS LOT_CONTAINERS QUE TENGAN LOT_CONTAINER_ID NULL
-      const { loadOrder, lots } = adaptLoadOrderForSubmission(formData);
-      console.log('CARGA DE LOAD ORDER', loadOrder, lots, stock, lotContainersStock);
-      // return await createLoadOrder(loadOrder, lots, stock, lotContainersStock);
+
+      return await createLoadOrder(formData, lots, stock, lotContainersStock);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["load-orders"] });
-      navigator("/load-orders");
+      setFormData(emptyLoadOrder);
+      navigate("/load-orders");
     },
     onError: (error) => {
       const errorMessage =
         typeof error === "object" && error !== null && "message" in error
           ? String((error as { message?: unknown }).message)
           : "Error desconocido";
-      toast("Error al crear el remito", {
-        description: errorMessage,
-      });
+      toast.error("Error al crear el remito: " + errorMessage);
     },
   });
 
@@ -65,15 +65,11 @@ export const AddLoadOrderContainer = () => {
   };
 
   const handleCreateLoadOrder = async () => {
-    //TODO Validar
-    //TODO separar los elementos para apuntar a las funciones lo que seria adaptar
-    //TODO Crear el remito en el backend
-    console.log("Submitting form data:", formData);
+
     if (!formData) return;
 
     try {
       await createLoadOrderMutation.mutateAsync();
-      setFormData(emptyLoadOrder);
     } catch (error) {
       console.error("Error creating load order:", error);
     }
@@ -106,7 +102,7 @@ export const AddLoadOrderContainer = () => {
 
           </div>
         </CardHeader>
-        <CardContent className="space-y-4 grid grid-cols-4 gap-4">
+        <CardContent className="space-y-4 grid grid-cols-8 gap-4">
           <div className="flex flex-col gap-2 ">
             <Label htmlFor="expiration_date">Número de remito</Label>
             <div className="grid grid-cols-[1fr_50px] gap-2">
@@ -133,7 +129,7 @@ export const AddLoadOrderContainer = () => {
           </div>
 
 
-          <div className="flex flex-col gap-2 -mt-2">
+          <div className="flex flex-col gap-2 -mt-2 col-span-2">
             <Label className="mt-2">Proveedor</Label>
             <ProviderSelectorRoot
               value={formData.provider_id}
@@ -163,7 +159,7 @@ export const AddLoadOrderContainer = () => {
 
 
 
-          <div className="flex flex-col gap-2 ">
+          <div className="flex flex-col gap-2 col-span-2">
             <Label htmlFor="max">Número de factura AFIP</Label>
             <Input
               id="max"
@@ -178,7 +174,7 @@ export const AddLoadOrderContainer = () => {
             />
           </div>
 
-          <div className="flex flex-col gap-2 relative col-span-2">
+          <div className="flex flex-col gap-2 relative col-span-4">
             <Label className="mt-2 absolute -top-4">Transporte</Label>
             <div className="grid grid-cols-4 gap-4 mt-3">
               <div>
@@ -282,37 +278,41 @@ export const AddLoadOrderContainer = () => {
         </CardContent>
         <CardContent>
           <AddLoadOrderTable
-            loadOrderLots={formData.lots ?? []}
+            loadOrderLots={lots}
             onAddElementToLoadOrder={(newLot, newStock, newLotContainersLocation) => {
-              const newLots = [...(formData.lots ?? []), newLot];
-              // const totalDownload = computeTotalDownloadCost(newLots);
-              setFormData({
-                ...formData,
-                lots: newLots,
-                // total_download_cost: totalDownload,
-              });
+              const lotId = Math.random();
+              console.log('Generated lotId', lotId);
+              console.log('newLot', newLot);
+              console.log('newStock', newStock);
+              console.log('newLotContainersLocation', newLotContainersLocation);
 
-              setStock((prevStock) => [...prevStock, ...newStock]);
-              setLotContainersStock((prevLocations) => [...prevLocations, ...newLotContainersLocation]);
+              //Hay que calcular el unassigned aca porque lo hace el otro componente al agregar stock.
+              const newLots = [...lots, { ...newLot, lot_id: lotId }];
+              setLots(newLots);
+              // setStock((prevStock) => [...prevStock, ...newStock]);
+              // setLotContainersStock((prevLocations) => [...prevLocations, ...newLotContainersLocation]);
             }}
             onUpdateLot={(index, patch) => {
-              setFormData((prev) => {
-                const prevLots = prev.lots ?? [];
-                const current = prevLots[index];
-                if (!current) return prev;
-                const updated = updateLotWithCalculations(current, patch);
-                const lots = [...prevLots];
-                lots[index] = updated;
-                const totalDownload = computeTotalDownloadCost(lots);
-                return { ...prev, lots, total_download_cost: totalDownload };
+              const prevLots = lots ?? [];
+              const current = prevLots[index];
+              if (!current) return;
+              const updated = updateLotWithCalculations(current, patch);
+              prevLots[index] = updated;
+              const totalDownload = computeTotalDownloadCost(prevLots);
+              setLots(prevLots);
+              setFormData({
+                ...formData,
+                total_download_cost: totalDownload,
               });
+
             }}
             onDeleteLot={(index) => {
-              setFormData((prev) => {
-                const prevLots = prev.lots ?? [];
-                const lots = prevLots.filter((_, i) => i !== index);
-                const totalDownload = computeTotalDownloadCost(lots);
-                return { ...prev, lots, total_download_cost: totalDownload };
+              const newLots = lots.filter((_, i) => i !== index);
+              const totalDownload = computeTotalDownloadCost(newLots);
+              setLots(newLots);
+              setFormData({
+                ...formData,
+                total_download_cost: totalDownload,
               });
             }}
           />
@@ -321,8 +321,8 @@ export const AddLoadOrderContainer = () => {
         <CardFooter>
           <Button
             disabled={
-              !formData.lots ||
-              formData.lots.length === 0 ||
+              !lots ||
+              lots.length === 0 ||
               createLoadOrderMutation.isLoading
             }
             onClick={handleCreateLoadOrder}

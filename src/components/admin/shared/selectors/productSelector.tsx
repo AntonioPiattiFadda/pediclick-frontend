@@ -25,7 +25,7 @@ const ProductSelector = ({
   onChange,
   withLots = false
 }: {
-  value: Product;
+  value: Pick<Product, "product_id" | "product_name" | "short_code" | 'sell_measurement_mode' | 'updated_at'>;
   disabled?: boolean;
   onChange: (value: Product) => void;
   withLots?: boolean;
@@ -189,13 +189,7 @@ const ProductSelector = ({
       // setFormData(emptyProduct);
     },
     onError: () => {
-      toast("Error al crear el producto", {
-        description: "Intentá nuevamente más tarde.",
-        action: {
-          label: "Undo",
-          onClick: () => console.log("Undo"),
-        },
-      });
+      toast("Error al crear el producto");
     },
   });
 

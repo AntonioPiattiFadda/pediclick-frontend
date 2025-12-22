@@ -26,7 +26,7 @@ export type Stock = {
 
   stock_type: StockType;
 
-  lot_containers_location?: LotContainersStock[];
+  lot_containers_stock?: LotContainersStock[];
 
   reserved_for_transferring_quantity: number | null;
   reserved_for_selling_quantity: number | null;

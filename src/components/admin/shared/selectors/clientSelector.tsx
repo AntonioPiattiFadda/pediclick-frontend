@@ -144,9 +144,9 @@ const SelectClient = () => {
 
                 <Select
                     disabled={disabled}
-                    value={value?.client_id ?? ""}
+                    value={value?.client_id?.toString() || ""}
                     onValueChange={(val) => {
-                        const m = clients.find((m) => m.client_id === val) || null;
+                        const m = clients.find((m) => m.client_id === Number(val)) || null;
                         onChange(m);
                         onChangeShortCode(m?.short_code ?? null);
                     }}
@@ -162,7 +162,7 @@ const SelectClient = () => {
                                 return (
                                     <SelectItem
                                         key={m.client_id}
-                                        value={m.client_id}>
+                                        value={m.client_id?.toString() || ""}>
                                         {label}
                                     </SelectItem>
                                 )

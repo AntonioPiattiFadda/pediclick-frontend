@@ -1,31 +1,27 @@
-import type { LoadOrder } from "@/types/loadOrders";
-import { v4 as uuid } from "uuid";
+import type { LoadOrderUnit } from "@/types/loadOrders";
+import type { LotContainersStock } from "@/types/lotContainersStock";
+import type { Lot } from "@/types/lots";
+import type { Stock } from "@/types/stocks";
+import { getUnassignedStock } from "@/utils/stock";
 
-export const adaptLoadOrderForSubmission = (formData: LoadOrder) => {
-  const { lots, ...loadOrder } = formData;
+export const adaptLoadOrderForSubmission = (lots: Lot[], stock: Stock[], lotContainersStock: LotContainersStock[]): LoadOrderUnit[] => {
 
+  const units: LoadOrderUnit[] = lots.map((lot) => {
+    const lotStock = stock.filter((s) => s.lot_id === lot.lot_id);
+    const lotContainersStockFiltered = lotContainersStock.filter((lcs) => lcs.lot_id === lot.lot_id);
+    const unassignedStock = getUnassignedStock(lot, lotStock);
+    console.log("unassignedStock", unassignedStock);
+    if (unassignedStock) {
+      lotStock.push(unassignedStock);
+    }
 
-  const adaptedLots = (lots ?? []).map((lot) => {
-    const client_key = uuid(); // 👈 genera clave única por lote
     return {
-      ...lot,
-      initial_stock_quantity: Number(lot.initial_stock_quantity) || 0,
-      client_key,
+      lot,
+      stocks: lotStock,
+      lot_containers_stock: lotContainersStockFiltered,
     };
   });
-  const adaptedPrices = (lots ?? []).flatMap((lot, index) =>
-    (lot.prices || []).map((price) => ({
-      ...price,
-      lot_client_key: adaptedLots[index].client_key, // 👈 relación con el lote
-    }))
-  );
 
-  //Obtener los lot containers con el lote y para ver como manejamos la informacion de su ubicacion y sus movimientos
+  return units;
 
-
-  return {
-    loadOrder,
-    lots: adaptedLots,
-    prices: adaptedPrices,
-  };
 };

@@ -1,5 +1,4 @@
 import type { LotContainersStock } from "./lotContainersStock";
-import type { Price } from "./prices";
 import type { Stock } from "./stocks";
 
 export type CommissionType = "TOTAL_PERCENTAGE" | "BY_UNIT" | "NONE";
@@ -16,7 +15,6 @@ export type BaseLot = {
   product_name?: string;
   product_id: number;
   product_presentation_id: number | null;
-  lot_number: number | null;
   expiration_date: string | null;
   expiration_date_notification: boolean;
   is_expired: boolean;
@@ -52,7 +50,7 @@ export type BaseLot = {
   };
 
   stock?: Stock[];
-  prices?: Price[];
+  // prices?: Price[];
 
   // El stock es por bulto entonces al hacer el calculo hay que restar la equivalencia?
   initial_stock_quantity: number;

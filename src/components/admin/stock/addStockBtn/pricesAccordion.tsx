@@ -1,5 +1,5 @@
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import ProductPricesViewerContainer from '../../pricesManagement.tsx/ProductPricesViewerContainer';
+import ProductPricesViewerContainer from '../../shared/pricesManagement.tsx/ProductPricesViewerContainer';
 
 const PricesAccordion = ({ productPresentationId, finalCost }: {
     productPresentationId: number | null;

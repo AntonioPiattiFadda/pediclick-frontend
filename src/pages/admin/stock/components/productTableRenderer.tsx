@@ -8,6 +8,7 @@ import { deleteProduct } from '@/service/products'
 import type { Lot } from '@/types/lots'
 import type { ProductPresentation } from '@/types/productPresentation'
 import type { Product } from '@/types/products'
+import { sliceLongNames } from '@/utils'
 import {
     createColumnHelper,
     flexRender,
@@ -16,11 +17,8 @@ import {
     useReactTable,
 } from '@tanstack/react-table'
 import { ChevronDown, ChevronRight } from 'lucide-react'
-import { DeleteTableElementPopUp } from './deleteTableElementPopUp'
-import { ManageStockBtnContainer } from './stock/manageStockBtn/manageStockBtnContainer'
-import LotsAndStockProductPresentationTableCell from './stock/LotsAndStockProductPresentationTableCell'
-import LotContainersProductPresentationTableCell from './stock/LotContainersProductPresentationTableCell'
-import { sliceLongNames } from '@/utils'
+import { DeleteTableElementPopUp } from '../../../../components/admin/shared/deleteTableElementPopUp'
+import LotsAndStockProductPresentationTableCell from './LotsAndStockProductPresentationTableCell'
 
 const HeaderCell = ({ children }: { children: React.ReactNode }) => (
     <div className="">
@@ -96,6 +94,26 @@ const columns = [
     //     cell: (info) => (info.getValue() ? "Sí" : "No"),
     //     footer: (info) => info.column.id,
     // }),
+
+    // Stock
+    columnHelper.accessor("product_presentations", {
+        header: () => <HeaderCell>Stock</HeaderCell>,
+        cell: (info) => {
+            const productPresentations = info.getValue()
+            const hasStock = productPresentations?.some((presentation: any) =>
+                presentation.lots?.some((lot: any) =>
+                    lot.stock && lot.stock.length > 0
+                )
+            );
+            return hasStock ? <div className='text-green-400'>
+                Sí
+            </div> : <div className='text-red-400'>
+                No
+            </div>
+        },
+        footer: (info) => info.column.id,
+    }),
+
 
     // Fecha creación
     columnHelper.accessor("created_at", {
@@ -173,15 +191,15 @@ const lotColumns = [
         }
     }),
 
-    lotColumnHelper.accessor("lots", {
-        header: "Vacíos",
-        cell: info => {
-            const lots: Lot[] = info.getValue() as Lot[];
-            return <div className='min-w-[270px] '>
-                <LotContainersProductPresentationTableCell lots={lots} />
-            </div>
-        }
-    }),
+    // lotColumnHelper.accessor("lots", {
+    //     header: "Vacíos",
+    //     cell: info => {
+    //         const lots: Lot[] = info.getValue() as Lot[];
+    //         return <div className='min-w-[270px] '>
+    //             <LotContainersProductPresentationTableCell lots={lots} />
+    //         </div>
+    //     }
+    // }),
 
     // lotColumnHelper.accessor("stockData", {
     //     header: "Mover Stock",
@@ -259,7 +277,6 @@ const lotColumns = [
                 errorMsgTitle="Error al eliminar"
                 errorMsgDescription="No se pudo eliminar la presentación."
             />
-            <ManageStockBtnContainer productPresentationId={Number(info.getValue()!)} />
 
         </div>
         ,
@@ -275,7 +292,7 @@ const lotColumns = [
 //                   />
 
 
-export function ProductTableRendererClientSide({
+export function ProductTableRenderer({
     defaultData,
 }: {
     defaultData: Product[]

@@ -1,7 +1,8 @@
 import type { OrderItem } from "@/types/orderItems";
 import { supabase } from ".";
+import { getBusinessOwnerId } from "./profiles";
 
-export const getLotSales = async (lotId: number): Promise<Partial<OrderItem[]>> => {
+export const getLotSales = async (lotId: number): Promise<Partial<OrderItem>[]> => {
   console.log("lotId", lotId);
 
   const { data, error } = await supabase
@@ -30,3 +31,21 @@ export const getLotSales = async (lotId: number): Promise<Partial<OrderItem[]>> 
 
   return data;
 };
+
+export const getMostSoldProducts = async () => {
+  const businessOwnerId = await getBusinessOwnerId();
+
+  const { data, error } = await supabase.rpc(
+    "get_top_products_last_month",
+    {
+      p_business_owner_id: businessOwnerId,
+    }
+  );
+
+  console.log(data, error);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}

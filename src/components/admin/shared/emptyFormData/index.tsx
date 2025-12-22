@@ -36,30 +36,29 @@ export const emptyLotWithLotControl = {
   prices: [{ price: "", quantity: "", type: "PRIMARY" }],
 };
 
-export const emptyProduct: Product = {
+export const emptyProduct: Pick<Product, "product_id" | "product_name" | "short_code" | 'sell_measurement_mode' | 'updated_at'> = {
   short_code: null,
   product_name: "",
-  product_description: "",
-  category_id: null,
-  sub_category_id: null,
-  brand_id: null,
-  barcode: null,
-  iva_id: null,
-  public_image_id: null,
-  observations: "",
+  // product_description: "",
+  // category_id: null,
+  // sub_category_id: null,
+  // brand_id: null,
+  // barcode: null,
+  // iva_id: null,
+  // public_image_id: null,
+  // observations: "",
   sell_measurement_mode: "QUANTITY",
-  allow_stock_control: false,
-  lot_control: false,
-  equivalence_minor_mayor_selling: {
-    minor: null,
-    mayor: null,
-  },
-  created_at: "",
+  // allow_stock_control: false,
+  // lot_control: false,
+  // equivalence_minor_mayor_selling: {
+  //   minor: null,
+  //   mayor: null,
+  // },
+  // created_at: "",
   updated_at: "",
 };
 
 export const emptyLot: Lot = {
-  lot_number: null,
   expiration_date: null,
   expiration_date_notification: false,
   provider_id: null,
@@ -105,7 +104,8 @@ export const emptyLot: Lot = {
   product_presentation_id: null,
   is_derived: false,
   is_transformed: false,
-  quantity_transformed: null
+  quantity_transformed: null,
+  extra_cost_total: null,
 };
 
 export const emptyPrices: Price[] = [];

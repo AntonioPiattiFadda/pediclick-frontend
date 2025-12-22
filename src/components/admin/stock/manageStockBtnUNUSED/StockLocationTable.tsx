@@ -1,5 +1,4 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -15,7 +14,6 @@ import type { Lot } from "@/types/lots";
 import type { Stock } from "@/types/stocks";
 import { formatDate } from "@/utils";
 import { useQuery } from "@tanstack/react-query";
-import { MoreHorizontal } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 type Props = {

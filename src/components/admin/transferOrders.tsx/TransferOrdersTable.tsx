@@ -15,7 +15,7 @@ import { transferOrderStatuses } from "@/constants";
 import { deleteTransferOrder } from "@/service/transferOrders";
 import type { TransferOrderType } from "@/types/transferOrders";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Edit, Tractor } from "lucide-react";
+import { Edit, Eye, Tractor } from "lucide-react";
 import { toast } from "sonner";
 
 interface TransferOrdersTableProps {
@@ -60,36 +60,41 @@ export const TransferOrdersTable = ({ transferOrders }: TransferOrdersTableProps
         <TableBody>
           {transferOrders.length > 0 ? (
             transferOrders.map((to) => {
-              const fromLocationType = to.from_store_id ? "STORE" : "STOCK_ROOM";
-              const fromLocationId =
-                fromLocationType === "STORE" ? to.from_store_id : to.from_stock_room_id;
+              const isCompleted = to.status === "COMPLETED";
 
-              const toLocationType = to.to_store_id ? "STORE" : "STOCK_ROOM";
-              const toLocationId =
-                toLocationType === "STORE" ? to.to_store_id : to.to_stock_room_id;
               return (<TableRow key={to.transfer_order_id}>
 
-                <TableCell>{fromLocationId ?? "--"}</TableCell>
-                <TableCell>{toLocationId ?? "--"}</TableCell>
+                <TableCell>{to.from_location?.name ?? "--"}</TableCell>
+                <TableCell>{to.to_location?.name ?? "--"}</TableCell>
                 <TableCell>{transferOrderStatuses[to.status] ?? "--"}</TableCell>
-                <TableCell>{to.assigned_user_id ?? "--"}</TableCell>
+                <TableCell>{to.assigned_user?.full_name ?? "--"}</TableCell>
                 <TableCell>{formatDate(to?.created_at ?? "--") || "--"}</TableCell>
                 <TableCell>
 
                 </TableCell>
                 <TableCell className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/transfer-orders/${to.transfer_order_id}?updating=true`)}
-                  >
-                    <Edit />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/transfer-orders/${to.transfer_order_id}?transferring=true`)}
-                  >
-                    <Tractor />
-                  </Button>
+                  {isCompleted ?
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate(`/transfer-orders/${to.transfer_order_id}?readOnly=true`)}
+                    >
+                      <Eye />
+                    </Button> : (
+                      <>
+                        <Button
+                          variant="outline"
+                          onClick={() => navigate(`/transfer-orders/${to.transfer_order_id}?editing=true`)}
+                        >
+                          <Edit />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => navigate(`/transfer-orders/${to.transfer_order_id}?transferring=true`)}
+                        >
+                          <Tractor />
+                        </Button>
+                      </>
+                    )}
                   <DeleteTableElementPopUp
                     elementId={to.transfer_order_id}
                     elementName={to.transfer_order_id?.toString()}

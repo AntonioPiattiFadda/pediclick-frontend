@@ -1,4 +1,6 @@
+import type { LotContainersStock } from "./lotContainersStock";
 import type { Lot } from "./lots";
+import type { Stock } from "./stocks";
 
 export type LoadOrder = {
   load_order_id?: number;
@@ -34,7 +36,8 @@ export type LoadOrder = {
   updated_at?: string; // Fecha de actualizacion automatico
   deleted_at?: string | null; // Fecha de eliminacion automatico
 
-  lots?: Lot[]; // Esto no va a ir en el formulario. Se crea automaticamente al crear el remito
+  total_download_cost: number; // Suma de los costos de descarga de todos los lotes
+
 
   //NOTE LO AGREGO? SI porque le tengo que dar un cierre al remito?
   status?: "PENDING" | "COMPLETED" | "CANCELED"; // Por defecto pending
@@ -45,3 +48,9 @@ export type LoadOrder = {
 
 
 };
+
+export type LoadOrderUnit = {
+  lot: Lot
+  stocks: Stock[]
+  lot_containers_stock: LotContainersStock[]
+}

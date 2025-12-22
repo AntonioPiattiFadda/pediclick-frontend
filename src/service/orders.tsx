@@ -10,10 +10,6 @@ export const getDailySalesLast30Days = async () => {
     .eq("business_owner_id", businessOwnerId)
     .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
 
-
-
-  console.log(data, error);
-
   if (error) throw new Error(error.message);
 
   const aggregated: Record<string, number> = {};

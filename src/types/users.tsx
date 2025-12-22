@@ -9,9 +9,7 @@ export interface UserProfile {
   phone: string | null;
   address: Address | null;
   is_verified: boolean;
-  business_owner_id: string;
-  store_id: number | null;
-  stock_room_id: number | null;
+  business_owner_id?: string;
 
   short_code: number | null;
 

@@ -114,7 +114,7 @@ const SelectLotContainer = () => {
 
                 <Select
                     disabled={disabled}
-                    value={value?.lot_container_id ?? ""}
+                    value={value?.lot_container_id.toString() ?? ""}
                     onValueChange={(val) => {
                         const m = lotContainers.find((m) => m.lot_container_id === val) || null;
                         onChange(m);

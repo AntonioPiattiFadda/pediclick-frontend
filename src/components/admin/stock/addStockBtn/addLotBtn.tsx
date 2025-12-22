@@ -1,7 +1,7 @@
 import { adaptProductForDb } from "@/adapters/products";
 import { Accordion } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -20,23 +20,23 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { LotContainersStock } from "@/types/lotContainersStock";
 import type { Lot } from "@/types/lots";
-import type { Price } from "@/types/prices";
 import type { ProductPresentation } from "@/types/productPresentation";
 import type { Product } from "@/types/products";
 import type { Stock } from "@/types/stocks";
 import { formatSmartNumber } from "@/utils";
+import { redistributeUnassigned } from "@/utils/stock";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { Plus } from "lucide-react";
+import { Info, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from 'react-hot-toast';
-import { emptyLot } from "../../emptyFormData";
-import { CreateProductPresentation, ProductPresentationSelectorRoot, SelectProductPresentation } from "../../selectors/productPresentationSelector";
-import ProductSelector from "../../selectors/productSelector";
-import { ProductEditSheet } from "../productEditSheet";
+import { emptyLot } from "../../shared/emptyFormData";
+import { CreateProductPresentation, ProductPresentationSelectorRoot, SelectProductPresentation } from "../../shared/selectors/productPresentationSelector";
+import ProductSelector from "../../shared/selectors/productSelector";
+import { ProductEditSheet } from "../../shared/stock/productEditSheet";
 import LotContainerStock from "./LotContainerStock";
 import PricesAccordion from "./pricesAccordion";
 import StockAssignationContainer from "./StockAssignationContainer";
-import { redistributeUnassigned } from "@/utils/stock";
+import { MoneyInput } from "../../shared/ui/MoneyInput";
 
 // const formDev = {
 //   lot_number: null,
@@ -148,8 +148,6 @@ import { redistributeUnassigned } from "@/utils/stock";
 //   updated_at: null
 // }
 
-
-
 export function AddLotBtn({
   onAddElement,
   loading = false,
@@ -161,20 +159,15 @@ export function AddLotBtn({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [formData, setFormData] = useState<Lot>(emptyLot);
-  console.log('lotContainersStock in AddLotBtn:', formData);
 
   const [stock, setStock] = useState<Stock[]>([]);
-  console.log('lotContainersStock in AddLotBtn:', stock);
 
   const [lotContainersStock, setLotContainersStock] = useState<LotContainersStock[]>([]);
-  console.log('lotContainersStock in AddLotBtn:', lotContainersStock);
+
   const [selectedProduct, setSelectedProduct] = useState<Product>({} as Product);
-  console.log('lotContainersStock in AddLotBtn:', selectedProduct);
 
   const [selectedProductPresentation, setSelectedProductPresentation] = useState<ProductPresentation | null>(null);
-  console.log('lotContainersStock in AddLotBtn:', selectedProductPresentation);
 
-  const [lotPrices, setLotPrices] = useState<Price[]>([]);
   const [tab, setTab] = useState("lot");
 
   // const isProductSelected = Boolean(selectedProduct.product_id);
@@ -226,7 +219,6 @@ export function AddLotBtn({
       product_name: selectedProduct.product_name,
       product_id: selectedProduct.product_id,
       product_presentation_id: selectedProductPresentation?.product_presentation_id || null,
-      prices: lotPrices,
     } as Lot, adaptedStock as Stock[], adaptedLotContainersStock as LotContainersStock[]);
 
     if (!loading) {
@@ -238,7 +230,6 @@ export function AddLotBtn({
     setIsModalOpen(false);
     setIsEditing(false);
     setSelectedProduct(adaptProductForDb({} as Product));
-    setLotPrices([]);
     setFormData(emptyLot);
     setSelectedProductPresentation(null);
     setStock([]);
@@ -555,6 +546,7 @@ export function AddLotBtn({
 
               <div className="mt-2">
                 <ProductPresentationSelectorRoot
+                  locationId={null}
                   productId={selectedProduct.product_id!}
                   value={selectedProductPresentation}
                   onChange={(value) => {
@@ -597,11 +589,13 @@ export function AddLotBtn({
 
               </div>
 
-              <LotContainerStock
-                lotContainersStock={lotContainersStock}
-                onChangeLotContainersStock={setLotContainersStock}
-                initialStock={formData.initial_stock_quantity}
-              />
+              {/* <div className="flex flex-col gap-2">
+                <LotContainerStock
+                  lotContainersStock={lotContainersStock}
+                  onChangeLotContainersStock={setLotContainersStock}
+                  initialStock={formData.initial_stock_quantity}
+                />
+              </div> */}
 
             </div>
 
@@ -619,6 +613,16 @@ export function AddLotBtn({
 
 
               <TabsContent value="lot" className="flex flex-col gap-2 mt-2">
+
+
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground text-center">
+                  <Info className="h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    Para recalcular los costos <strong>automáticamente</strong> se requiere <strong>producto</strong>,{" "}
+                    <strong>presentación</strong> y <strong>stock inicial</strong>.
+                  </span>
+                </div>
+
                 <Card className="border-none p-2 shadow-none bg-transparent">
 
                   {/* <div className="grid grid-cols-2 gap-4 w-full">
@@ -681,142 +685,101 @@ export function AddLotBtn({
 
 
                   <div className="grid grid-cols-3 gap-4 w-full">
+                    <MoneyInput
+                      label="Costo neto total"
+                      value={formData.purchase_cost_total || undefined}
+                      placeholder="Costo neto total"
+                      onChange={(v) => handleUpdateLotField("purchase_cost_total", Number(v))}
+                    />
 
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="purchase_cost_total">Costo neto total</Label>
-                      <InputGroup >
-                        <InputGroupInput
-                          type="number"
-                          value={formData.purchase_cost_total || undefined}
-                          placeholder="Costo neto total"
-                          onChange={(e) => handleUpdateLotField("purchase_cost_total", Number(e.target.value))}
+                    <MoneyInput
+                      label="Costo neto por bulto"
+                      placeholder="Costo neto por bulto"
+                      // disabled={!isEditing}
+                      value={formData.purchase_cost_per_bulk || undefined}
+                      onChange={(v) => handleUpdateLotField("purchase_cost_per_bulk", Number(v))}
+                    />
 
-                        />
-                        <InputGroupAddon align="inline-start">
-                          $
-                        </InputGroupAddon>
-                      </InputGroup>
-                      {/* <Input
-                        type="number"
-                        placeholder="Costo neto total"
-                        // disabled={!isEditing}
-                        value={formData.purchase_cost_total || undefined}
-                      /> */}
-
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="cost_per_unit">Costo neto por bulto</Label>
-                      <Input
-                        type="number"
-                        placeholder="Costo neto por bulto"
-                        // disabled={!isEditing}
-                        value={formData.purchase_cost_per_bulk || undefined}
-                        onChange={(e) => handleUpdateLotField("purchase_cost_per_bulk", Number(e.target.value))}
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="cost_per_unit">Costo neto por unidad/Kg</Label>
-                      <Input
-                        type="number"
-                        placeholder="Costo neto por unidad/Kg"
-                        // disabled={!isEditing}
-                        value={formData.purchase_cost_per_unit || undefined}
-                        onChange={(e) => handleUpdateLotField("purchase_cost_per_unit", Number(e.target.value))}
-                      />
-
-
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4 w-full">
-
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="delivery_cost_total">Costo de envio total</Label>
-                      <Input
-                        type="number"
-                        placeholder="Costo de envio total"
-                        // disabled={!isEditing}
-                        value={formData.delivery_cost_total || undefined}
-                        onChange={(e) => handleUpdateLotField("delivery_cost_total", Number(e.target.value))}
-                      />
-
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="cost_per_unit">Costo de envio por bulto</Label>
-                      <Input
-                        type="number"
-                        placeholder="Costo de envio por bulto"
-                        // disabled={!isEditing}
-                        value={formData.delivery_cost_per_bulk || undefined}
-                        onChange={(e) => handleUpdateLotField("delivery_cost_per_bulk", Number(e.target.value))}
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="cost_per_unit">Costo de envio por unidad/Kg</Label>
-                      <Input
-                        type="number"
-                        placeholder="Costo de envio por unidad/Kg"
-                        // disabled={!isEditing}
-                        value={formData.delivery_cost_per_unit || undefined}
-                        onChange={(e) => handleUpdateLotField("delivery_cost_per_unit", Number(e.target.value))}
-                      />
-
-
-                    </div>
+                    <MoneyInput
+                      label="Costo neto por unidad/Kg"
+                      placeholder="Costo neto por unidad/Kg"
+                      // disabled={!isEditing}
+                      value={formData.purchase_cost_per_unit || undefined}
+                      onChange={(v) => handleUpdateLotField("purchase_cost_per_unit", Number(v))}
+                    />
 
                   </div>
 
                   <div className="grid grid-cols-3 gap-4 w-full">
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="download_total_cost">Costo total de descarga</Label>
-                      <Input
-                        placeholder="Costo total de descarga"
-                        // disabled={!isEditing}
-                        type="number"
-                        value={formData.download_total_cost || undefined}
-                        onChange={(e) => handleUpdateLotField("download_total_cost", Number(e.target.value))}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="download_cost_per_bulk">Costo de descarga por bulto</Label>
-                      <Input
-                        placeholder="Costo de descarga por bulto"
-                        // disabled={!isEditing}
-                        type="number"
-                        value={formData.download_cost_per_bulk || undefined}
-                        onChange={(e) => handleUpdateLotField("download_cost_per_bulk", Number(e.target.value))}
-                      />
-                    </div>
 
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="download_cost_per_unit">Costo de descarga por unidad/Kg</Label>
-                      <Input
-                        placeholder="Costo de descarga por unidad/Kg"
-                        // disabled={!isEditing}
-                        type="number"
-                        value={formData.download_cost_per_unit || undefined}
-                        onChange={(e) => handleUpdateLotField("download_cost_per_unit", Number(e.target.value))}
-                      />
-                    </div>
+
+                    <MoneyInput
+                      label="Costo de envío total"
+                      value={formData.delivery_cost_total || undefined}
+                      onChange={(v) =>
+                        handleUpdateLotField("delivery_cost_total", v)
+                      }
+                    />
+
+
+                    <MoneyInput
+                      label="Costo de envío por bulto"
+                      value={formData.delivery_cost_per_bulk || undefined}
+                      onChange={(v) =>
+                        handleUpdateLotField("delivery_cost_per_bulk", v)
+                      }
+                    />
+
+                    <MoneyInput
+                      label="Costo de envío por unidad / Kg"
+                      value={formData.delivery_cost_per_unit || undefined}
+                      onChange={(v) =>
+                        handleUpdateLotField("delivery_cost_per_unit", v)
+                      }
+                    />
+
+
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 w-full">
+
+                    <MoneyInput
+                      label="Costo total de descarga"
+                      value={formData.download_total_cost || undefined}
+                      onChange={(v) =>
+                        handleUpdateLotField("download_total_cost", v)
+                      }
+                    />
+
+
+                    <MoneyInput
+                      label="Costo total de descarga por bulto"
+                      value={formData.download_cost_per_bulk || undefined}
+                      onChange={(v) =>
+                        handleUpdateLotField("download_cost_per_bulk", v)
+                      }
+                    />
+
+                    <MoneyInput
+                      label="Costo de descarga por unidad/Kg"
+                      value={formData.download_cost_per_unit || undefined}
+                      onChange={(v) =>
+                        handleUpdateLotField("download_cost_per_unit", v)
+                      }
+                    />
+
 
                   </div>
 
 
                   <div className="grid grid-cols-3 gap-4 w-full">
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="extra_cost_total">Costos extra</Label>
-                      <Input
-                        placeholder="Costos extra"
-                        // disabled={!isEditing}
-                        type="number"
-                        value={formData.extra_cost_total || undefined}
-                        onChange={(e) => handleUpdateLotField("extra_cost_total", Number(e.target.value))}
-                      />
-                    </div>
+                    <MoneyInput
+                      label="extra_cost_total"
+                      value={formData.extra_cost_total || undefined}
+                      onChange={(v) =>
+                        handleUpdateLotField("extra_cost_total", v)
+                      }
+                    />
 
 
                   </div>
@@ -1145,7 +1108,6 @@ export function AddLotBtn({
                 <Button disabled={loading} variant={"outline"} onClick={() => {
                   setSelectedProduct({} as Product);
                   setFormData(emptyLot);
-                  setLotPrices([]);
                   setIsEditing(false);
                 }}>
                   Cancelar

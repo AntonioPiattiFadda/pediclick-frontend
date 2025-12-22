@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
+import { getCategoriesCount } from '@/service/categories';
 import { getDailySalesLast30Days } from '@/service/orders';
+import { getProductCount } from '@/service/products';
 import { formatCurrency } from '@/utils/prices';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, Package, ShoppingCart } from 'lucide-react';
-
-
+import { ArrowUp, Package, ShoppingCart } from 'lucide-react';
 
 export const StatsCards = () => {
 
@@ -15,11 +16,40 @@ export const StatsCards = () => {
       queryFn: () => getDailySalesLast30Days(),
     });
 
-  if (isLoading) {
-    return <div>Loading...</div>;
+  const { data: productsCount,
+    isLoading: isLoadingProducts,
+    isError: isErrorProducts
+  } = useQuery({
+    queryKey: ["products-count"],
+    queryFn: () => getProductCount(),
+  });
+
+  const { data: categoriesCount,
+    isLoading: isLoadingCategories,
+    isError: isErrorCategories
+  } = useQuery({
+    queryKey: ["categories-count"],
+    queryFn: () => getCategoriesCount(),
+  });
+
+
+  if (isLoading || isLoadingProducts || isLoadingCategories) {
+    return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <Card className="animate-slide-in h-40 flex items-center justify-center">
+        <Spinner />
+      </Card>
+      <Card className="animate-slide-in h-40 flex items-center justify-center">
+        <Spinner />
+      </Card>
+      <Card className="animate-slide-in h-40 flex items-center justify-center">
+        <Spinner />
+      </Card>
+
+
+    </div >
   }
 
-  if (isError) {
+  if (isError || isErrorProducts || isErrorCategories) {
     return <div>Error loading sales data.</div>;
   }
 
@@ -37,23 +67,23 @@ export const StatsCards = () => {
     },
     {
       title: 'Productos Activos',
-      value: '2,350',
+      value: productsCount,
       change: '+180',
       trend: 'up',
       icon: Package,
       description: 'nuevos este mes',
     },
-    {
-      title: 'Stock Bajo',
-      value: '23',
-      change: '-5',
-      trend: 'down',
-      icon: ArrowDown,
-      description: 'productos críticos',
-    },
+    // {
+    //   title: 'Stock Bajo',
+    //   value: '23',
+    //   change: '-5',
+    //   trend: 'down',
+    //   icon: ArrowDown,
+    //   description: 'productos críticos',
+    // },
     {
       title: 'Categorías',
-      value: '12',
+      value: categoriesCount,
       change: '+2',
       trend: 'up',
       icon: ArrowUp,
@@ -64,7 +94,7 @@ export const StatsCards = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat, index) => (
-        <Card key={index} className="animate-slide-in">
+        <Card key={index} className="animate-slide-in h-40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               {stat.title}
@@ -78,14 +108,14 @@ export const StatsCards = () => {
                 className={`flex items-center gap-1 ${stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
                   }`}
               >
-                {stat.trend === 'up' ? (
+                {/* {stat.trend === 'up' ? (
                   <ArrowUp className="h-3 w-3" />
                 ) : (
                   <ArrowDown className="h-3 w-3" />
                 )}
-                {stat.change}
+                {stat.change} */}
               </span>
-              <span>{stat.description}</span>
+              {/* <span>{stat.description}</span> */}
             </div>
           </CardContent>
         </Card>

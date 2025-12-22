@@ -13,6 +13,7 @@ import { useLocation } from "react-router-dom";
 
 
 const LoadOrderContainer = () => {
+
     const location = useLocation();
     const loadOrderId = location.pathname.split("/").pop() || "";
 
@@ -40,7 +41,7 @@ const LoadOrderContainer = () => {
         const lots = loadOrder?.lots ?? [];
         return lots.map((lot) => {
             const stocks = (lot.stock as StockWithRelations[] | undefined) ?? [];
-            const totalQty = stocks.reduce((sum, s) => sum + (s?.current_quantity ?? 0), 0);
+            const totalQty = stocks.reduce((sum, s) => sum + (s?.quantity ?? 0), 0);
             return { lot, stocks, totalQty };
         });
     }, [loadOrder]);
@@ -48,6 +49,7 @@ const LoadOrderContainer = () => {
     if (isLoading) return <div className="space-y-6 p-6">
         <TableSkl />
     </div>;
+
     if (isError) return <div className="pt-14">Error al cargar el remito.</div>;
 
     return (

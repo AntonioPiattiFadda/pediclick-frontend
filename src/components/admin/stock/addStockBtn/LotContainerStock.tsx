@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { LotContainersStock } from "@/types/lotContainersStock";
 import { PlusIcon, TrashIcon } from "lucide-react";
-import { LotContainerSelectorRoot, SelectLotContainer } from "../../selectors/LocationContainerSelector";
+import { LotContainerSelectorRoot, SelectLotContainer } from "../../shared/selectors/LocationContainerSelector";
 import toast from "react-hot-toast";
 const LotContainerStock = ({
     lotContainersStock,
@@ -109,7 +109,7 @@ const LotContainerStock = ({
             <div className="flex flex-col gap-1 ml-auto mt-4">
                 {filteredLotContainers && filteredLotContainers.length > 0 && (
                     filteredLotContainers.map((lcl) => (
-                        <div key={lcl.lot_container_stock_id} className="flex gap-2">
+                        <div key={lcl.lot_container_stock_id} className="grid grid-cols-[1fr_1fr_40px] gap-2">
                             <div className="flex flex-col gap-1">
                                 <Label >Vacío</Label>
                                 <LotContainerSelectorRoot
@@ -156,8 +156,10 @@ const LotContainerStock = ({
                     handleAddNewElement();
                 }}
                 size={'icon'}
-                className="mt-auto mb-1"
-            ><PlusIcon /> </Button>
+                className="mt-auto mb-1 ml-auto"
+            >
+                <PlusIcon />
+            </Button>
 
             {/* {lotContainersStock && (
                 <div className="flex flex-col gap-1 ml-auto">

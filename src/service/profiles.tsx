@@ -209,13 +209,11 @@ export const createTeamMember = async (newUserData: Omit<UserProfile, "id" | "is
     address: newUserData.address,
     phone: newUserData.phone,
     is_verified: false,
-    store_id: newUserData.store_id,
     business_owner_id: businessOwnerId,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     deleted_at: null,
     short_code: newUserData.short_code,
-    stock_room_id: newUserData.stock_room_id,
   };
 
   const { data, error: newUserError } = await supabase

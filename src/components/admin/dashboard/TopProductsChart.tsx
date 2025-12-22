@@ -1,4 +1,7 @@
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Spinner } from '@/components/ui/spinner';
+import { getMostSoldProducts } from '@/service/orderItems';
+import { useQuery } from '@tanstack/react-query';
 import { Bar, BarChart, XAxis, YAxis } from 'recharts';
 
 const topProducts = [
@@ -20,11 +23,32 @@ const chartConfig = {
 };
 
 export const TopProductsChart = () => {
+
+  const { data: mostSoldProducts,
+    isLoading: isLoadingMostSoldProducts,
+    isError: isErrorMostSoldProducts
+  } = useQuery({
+    queryKey: ["most-sold-products"],
+    queryFn: () => getMostSoldProducts(),
+  });
+
+  console.log("mostSoldProducts", mostSoldProducts);
+
+  if (isLoadingMostSoldProducts) {
+    return <div className='w-full  h-60 flex items-center justify-center'>
+      <Spinner />
+    </div>;
+  }
+  if (isErrorMostSoldProducts) {
+    return <div>Error loading sales data.</div>;
+  }
+
+
   return (
     <ChartContainer config={chartConfig} className="h-[300px]">
       <BarChart data={topProducts}>
-        <XAxis 
-          dataKey="name" 
+        <XAxis
+          dataKey="name"
           tickLine={false}
           axisLine={false}
           className="text-muted-foreground"
@@ -32,7 +56,7 @@ export const TopProductsChart = () => {
           textAnchor="end"
           height={80}
         />
-        <YAxis 
+        <YAxis
           tickLine={false}
           axisLine={false}
           className="text-muted-foreground"

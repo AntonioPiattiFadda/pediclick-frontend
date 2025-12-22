@@ -29,7 +29,7 @@ import { CreateProductPresentation, ProductPresentationSelectorRoot } from "../s
 import { CreateProvider, ProviderSelectorRoot } from "../shared/selectors/providersSelector";
 import { CreatePurchasingAgent, PurchasingAgentSelectorRoot } from "../shared/selectors/purchasingAgentSelector";
 import { CreateSubCategory, SubCategorySelectorRoot } from "../shared/selectors/subCategorySelector";
-import { Transformation } from "../shared/transformation/Transformation";
+import { Transformation } from "../transformation/Transformation";
 import CreateProductCreator from "../shared/creator/productCreator";
 
 /* eslint-disable react-refresh/only-export-components */
@@ -83,9 +83,13 @@ export const MENU_ITEMS: {
         //   ,
         // },
         {
-          title: "Marca",
+          title: "Presentación de Producto",
           type: "button",
-          children: <ProductPresentationSelectorRoot productId={null} disabled={false} value={null} onChange={() => { }}>
+          children: <ProductPresentationSelectorRoot
+            locationId={null}
+            productId={null}
+            disabled={false}
+            value={null} onChange={() => { }}>
             <CreateProductPresentation isShortCut={true} />
           </ProductPresentationSelectorRoot>
         },
@@ -108,7 +112,7 @@ export const MENU_ITEMS: {
         {
           title: "Transformación",
           type: "button",
-          children: <Transformation isShortCut={true} />
+          children: <Transformation isShortCut={true} disabled={false} />
           ,
         },
         {
@@ -151,13 +155,13 @@ export const MENU_ITEMS: {
       icon: Package,
       roles: ["OWNER", "MANAGER"],
     },
-    {
-      title: "Vacios",
-      type: "link",
-      url: "/lot_containers",
-      icon: Package,
-      roles: ["OWNER", "MANAGER"],
-    },
+    // {
+    //   title: "Vacios",
+    //   type: "link",
+    //   url: "/lot_containers",
+    //   icon: Package,
+    //   roles: ["OWNER", "MANAGER"],
+    // },
     {
       title: "Ubicaciones",
       type: "link",

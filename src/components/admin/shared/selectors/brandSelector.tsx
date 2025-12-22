@@ -111,7 +111,7 @@ const CancelBrandSelection = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => {
-                    onChange(null);
+                    onChange('');
                 }}
                 className="text-red-500 hover:text-red-700 h-9"
             >

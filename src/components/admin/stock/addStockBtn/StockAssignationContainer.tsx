@@ -9,7 +9,6 @@ import type { LotContainersStock } from "@/types/lotContainersStock";
 import type { Stock } from "@/types/stocks";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import LotContainerStockAssignation from "./LotContainerStockAssignation";
 import { useEffect } from "react";
 
 export default function StockAssignationContainer({
@@ -167,7 +166,7 @@ export default function StockAssignationContainer({
         .reduce((acc, lcl) => acc + (lcl?.quantity || 0), 0) || 0;
 
     const remainingLotContainersToAssign = totalLotContainersStockUnassigned - totalLotContainersStockAssigned;
-
+    console.log('remainingLotContainersToAssign', remainingLotContainersToAssign);
 
     return (
         <Card className="border-none p-2 shadow-none bg-transparent">
@@ -181,14 +180,14 @@ export default function StockAssignationContainer({
                         </div>
 
                     </div>
-                    <div className="flex gap-1 items-center justify-center">
+                    {/* <div className="flex gap-1 items-center justify-center">
                         <CardTitle className="">Vacíos:</CardTitle>
                         <div className="flex gap-2 items-center">
                             <Label className="font-medium">Cantidad de vacios para asignar:</Label>
                             <Badge variant="secondary">{remainingLotContainersToAssign || '0'}</Badge>
                         </div>
 
-                    </div>
+                    </div> */}
                 </div>
                 <div className="flex flex-col gap-4">
                     {locations.length === 0 ? (
@@ -209,7 +208,7 @@ export default function StockAssignationContainer({
                                     className="w-[150px]"
                                 />
 
-                                <LotContainerStockAssignation
+                                {/* <LotContainerStockAssignation
                                     lotContainersStock={lotContainersStock}
                                     onChangeLotContainersStock={(newLotContainersStock) => {
                                         onChangeLotContainersStock(newLotContainersStock);
@@ -217,7 +216,7 @@ export default function StockAssignationContainer({
                                     locationId={location.location_id}
                                     assignedStockQuantity={stock?.find(s => s.location_id === location.location_id)?.quantity || 0}
 
-                                />
+                                /> */}
 
                             </div>
                         ))

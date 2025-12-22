@@ -48,7 +48,10 @@ export interface Product {
   nameAndCode?: {
     name: string;
     short_code: number | null;
+
   };
+
+  // has_stock?: boolean;
 
   //El formato en que viene de base de datos.
   public_images?: {

@@ -27,7 +27,7 @@ export async function createTransformation(transformation: Transformation, fromT
         lot: null,
     }));
 
-    const adaptedToTransformationItems: Omit<TransformationItems, 'product' | 'product_presentation'>[] = toTransformationItems.map((it) => ({
+    const adaptedToTransformationItems = toTransformationItems.map((it) => ({
         transformation_item_id: it.transformation_item_id,
         transformation_id: it.transformation_id,
         product_id: it.product_id,
@@ -53,6 +53,8 @@ export async function createTransformation(transformation: Transformation, fromT
             final_cost_total: it?.lot?.final_cost_total,
             expiration_date_notification: it?.lot?.expiration_date_notification,
             is_parent_lot: false,
+
+
 
         },
     }));

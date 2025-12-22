@@ -10,10 +10,19 @@ export const getAllTransferOrders = async () => {
     const businessOwnerId = await getBusinessOwnerId();
     const { data: dbTransferOrders, error } = await supabase
         .from("transfer_orders")
-        .select("*")
+        .select(`*,  
+            assigned_user:assigned_user_id(
+                id,
+                short_code,
+                full_name
+            ),
+            from_location:from_location_id(name, type),
+            to_location:to_location_id(name, type)
+        `)
         .eq("business_owner_id", businessOwnerId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
+
 
     if (error) {
         throw new Error(error.message);
@@ -24,7 +33,7 @@ export const getAllTransferOrders = async () => {
 
 
 export const getTransferOrder = async (
-    transferOrderId: string | number
+    transferOrderId: string | number,
 ): Promise<{ dbTransferOrder: TransferOrderType | null; error: string | null }> => {
 
     const businessOwnerId = await getBusinessOwnerId();
@@ -81,21 +90,27 @@ export const getTransferOrder = async (
         ...dbTransferOrder,
         assigned_user: dbTransferOrder?.assigned_user ?? null,
         transfer_order_items: dbTransferOrder.transfer_order_items.map((item: TransferOrderItem) => {
+            const filteredLocationLots = item.product_presentation?.lots?.filter(lot => {
+                const lotStock = lot.stock?.find(s => s.location_id === dbTransferOrder.from_location_id && s.quantity! > 0);
+                return lotStock !== undefined;
+            }) || [];
+            const adaptedPP = {
+                ...item.product_presentation,
+                lots: filteredLocationLots
+            }
             const adaptedOI = {
                 ...item,
                 is_new: false,
                 product: item.product ?? null,
-                product_presentation: item?.product_presentation ?? null,
+                product_presentation: adaptedPP,
                 lot: item.lot ?? null,
                 // lot_container_location: item.lot_container_location ?? null,
                 // lot_container_movements: item.lot_container_movements ?? null,
             }
-            console.log("🟢 adaptedOI:", adaptedOI.product_presentation);
             return adaptedOI;
         }) || []
     };
 
-    console.log("✅ Fetched transfer order:", adaptedTransferOrder);
 
     return { dbTransferOrder: (adaptedTransferOrder as TransferOrderType) ?? null, error: null };
 };
@@ -128,8 +143,6 @@ export async function updateTransferOrderWithItems(
     order: TransferOrderType,
     items: TransferOrderItem[]
 ) {
-    console.log("🔄 Updating transfer order with items:", order, items);
-
 
     const { data, error } = await supabase.rpc("update_transfer_order_with_items", {
         p_transfer_order: order,

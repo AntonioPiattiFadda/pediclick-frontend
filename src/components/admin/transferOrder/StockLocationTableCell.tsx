@@ -9,7 +9,7 @@ import {
     SheetTrigger
 } from "@/components/ui/sheet"
 import type { Lot } from "@/types/lots"
-import StockLocationTable from "../shared/stock/manageStockBtn/StockLocationTable"
+import StockLocationTable from "../stock/manageStockBtnUNUSED/StockLocationTable"
 
 export function StockLocationTableCell({ lots, productName, disabled = false }: { lots: Lot[], productName: string, disabled?: boolean }) {
 

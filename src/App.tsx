@@ -7,7 +7,6 @@ import RequireAuth from "./components/admin/auth/requireAuth";
 import { Layout } from "./components/Layout";
 import NotFound from "./pages/admin/NotFound";
 import Settings from "./pages/admin/Settings";
-import Stock from "./pages/admin/Stock";
 
 import { Provider } from "react-redux";
 import styles from "./App.module.css";
@@ -27,12 +26,14 @@ import Dashboard from "./pages/admin/Dashboard";
 import LoadOrder from "./pages/admin/LoadOrder";
 import LoadOrders from "./pages/admin/LoadOrders";
 import LotContainers from "./pages/admin/LotContainers";
-import NewLoadOrders from "./pages/admin/NewLoadOrder";
+import AddLoadOrder from "./pages/admin/addLoadOrder/AddLoadOrder";
 import TeamMembers from "./pages/admin/TeamMembers";
 import TransferOrder from "./pages/admin/TransferOrder";
 import TransferOrders from "./pages/admin/TransferOrders";
 import { store } from "./stores/store";
 import Locations from "./pages/admin/Locations";
+import Stock from "./pages/admin/stock/Stock";
+import { LocationsProvider } from "./contexts/LocationsContext";
 
 const queryClient = new QueryClient();
 
@@ -105,19 +106,20 @@ const App = () => {
             <BrowserRouter>
 
               <Layout>
-                <Routes>
-                  <Route element={<PublicRoutesAuthCheck />}>
-                    <Route path="/" element={<AdminHome />} />
-                    <Route path="/sign-in" element={<SignIn />} />
-                    <Route path="/sign-up" element={<SignUp />} />
-                    <Route
-                      path="/forgot-password"
-                      element={<ForgotPassword />}
-                    />
-                  </Route>
+                <LocationsProvider>
+                  <Routes>
+                    <Route element={<PublicRoutesAuthCheck />}>
+                      <Route path="/" element={<AdminHome />} />
+                      <Route path="/sign-in" element={<SignIn />} />
+                      <Route path="/sign-up" element={<SignUp />} />
+                      <Route
+                        path="/forgot-password"
+                        element={<ForgotPassword />}
+                      />
+                    </Route>
 
-                  <Route element={<RequireAuth />}>
-                    {/* <Route
+                    <Route element={<RequireAuth />}>
+                      {/* <Route
                         path="/reset-password"
                         element={<ResetPassword />}
                       />
@@ -125,34 +127,35 @@ const App = () => {
                         path="/auth/v1/verify"
                         element={<ResetPassword />}
                       /> */}
-                    <Route element={<RolesAuth />}>
-                      <Route path="/clients" element={<Clients />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/lot_containers" element={<LotContainers />} />
-                      <Route path="/locations" element={<Locations />} />
-                      <Route path="/load-orders" element={<LoadOrders />} />
-                      <Route path="/load-orders/:load-order-id" element={<LoadOrder />} />
+                      <Route element={<RolesAuth />}>
+                        <Route path="/clients" element={<Clients />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/lot_containers" element={<LotContainers />} />
+                        <Route path="/locations" element={<Locations />} />
+                        <Route path="/load-orders" element={<LoadOrders />} />
+                        <Route path="/load-orders/:load-order-id" element={<LoadOrder />} />
 
-                      <Route path="/team-members" element={<TeamMembers />} />
-                      <Route path="/transfer-orders" element={<TransferOrders />} />
-                      <Route path="/transfer-orders/:transfer-order-id" element={<TransferOrder />} />
-                      <Route path="/stock" element={<Stock />} />
-                      <Route path="/settings" element={<Settings />} />
-                      <Route path="*" element={<NotFound />} />
+                        <Route path="/team-members" element={<TeamMembers />} />
+                        <Route path="/transfer-orders" element={<TransferOrders />} />
+                        <Route path="/transfer-orders/:transfer-order-id" element={<TransferOrder />} />
+                        <Route path="/stock" element={<Stock />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Route>
+                      <Route
+                        path="/load-orders/add-load-order"
+                        element={<AddLoadOrder />}
+                      />
                     </Route>
-                    <Route
-                      path="/load-orders/add-load-order"
-                      element={<NewLoadOrders />}
-                    />
-                  </Route>
-                </Routes>
+                  </Routes>
+                </LocationsProvider>
               </Layout>
             </BrowserRouter>
 
           </Provider>
         )}
       </TooltipProvider>
-    </QueryClientProvider>
+    </QueryClientProvider >
   );
 };
 

@@ -5,17 +5,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { transferOrderStatuses } from "@/constants";
 import { transferOrderWithItems, updateTransferOrderWithItems } from "@/service/transferOrders";
 import type { Location } from "@/types/locations";
-import type { LotContainerMovement, MovementStatus } from "@/types/lotContainerMovements";
+import type { LotContainerMovement } from "@/types/lotContainerMovements";
 import type { TransferOrderType } from "@/types/transferOrders";
 import type { UserProfile } from "@/types/users";
 import { formatDate } from "@/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { LocationSelectorRoot, SelectLocation } from "../shared/selectors/locationSelector";
 import { CancelTeamMemberSelection, SelectTeamMember, TeamMemberSelectorRoot } from "../shared/selectors/TeamMemberSelector";
 import TransferOrderItemsTable from "./TransferOrderItemsTable";
+import type { MovementStatus } from "@/types";
 
 const TransferOrder = ({
     transferOrder,
@@ -24,20 +25,25 @@ const TransferOrder = ({
     transferOrder: TransferOrderType;
     transferOrderId: number;
 }) => {
-    const [toLocationId, setToLocationId] = useState<Partial<Location> | null>(transferOrder.to_location_id ? {
-        location_id: transferOrder.to_location_id,
-        name: transferOrder.to_location?.name,
-        type: transferOrder.to_location?.type,
-    } : null);
+
+    const [toLocationId, setToLocationId] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | null>(
+        transferOrder.to_location_id ? {
+            location_id: transferOrder.to_location_id,
+            name: transferOrder.to_location?.name,
+            type: transferOrder.to_location?.type,
+        } : null);
 
     const [formData, setFormData] = useState<TransferOrderType>(transferOrder)
 
-    const [selectedTeamMember, setSelectedTeamMember] = useState<UserProfile | null>(transferOrder.assigned_user ?? null);
+    const [selectedTeamMember, setSelectedTeamMember] = useState<Pick<UserProfile, 'id' | 'short_code' | 'full_name'> | null>(transferOrder.assigned_user ?? null);
 
     const [searchParams] = useSearchParams();
     const isTransferring = searchParams.get("transferring") === "true" ? true : false;
+    const isEditing = searchParams.get("editing") === "true" ? true : false;
+    const isReadOnly = searchParams.get("readOnly") === "true" ? true : false;
 
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
 
     const updateTransferOrderMutation = useMutation({
         mutationFn: async () => {
@@ -46,42 +52,42 @@ const TransferOrder = ({
 
             if (isTransferring) {
                 const adaptedForTransferringTransferOrderItems = formData.transfer_order_items
-                    .filter(item => !item.is_transferred)
                     .map((item) => {
-                        const adaptedLotContainerMovement: Pick<LotContainerMovement, 'quantity' | 'lot_container_movement_id' | 'status'>[] = [{
-                            quantity: item.lot_containers_location?.quantity || 0,
-                            lot_container_movement_id: item.lot_containers_movement?.lot_container_movement_id || null,
-                            status: 'COMPLETED',
-                            // from_store_id: formData.from_store_id,
-                            // from_stock_room_id: formData.from_stock_room_id,
-                            // to_store_id: selectedLocationType === "STORE" ? selectedLocationId : null,
-                            // to_stock_room_id: selectedLocationType === "STOCK_ROOM" ? selectedLocationId : null,
-                            // from_provider_id: null,
-                            // to_provider_id: null,
-                            // from_client_id: null,
-                            // to_client_id: null,
+                        // const adaptedLotContainerMovement: Pick<LotContainerMovement, 'quantity' | 'lot_container_movement_id' | 'status'>[] = [{
+                        //     quantity: item.lot_containers_location?.quantity || 0,
+                        //     lot_container_movement_id: item.lot_containers_movement?.lot_container_movement_id || null,
+                        //     status: 'COMPLETED',
+                        //     is_transferred: true,
+                        //     // from_store_id: formData.from_store_id,
+                        //     // from_stock_room_id: formData.from_stock_room_id,
+                        //     // to_store_id: selectedLocationType === "STORE" ? selectedLocationId : null,
+                        //     // to_stock_room_id: selectedLocationType === "STOCK_ROOM" ? selectedLocationId : null,
+                        //     // from_provider_id: null,
+                        //     // to_provider_id: null,
+                        //     // from_client_id: null,
+                        //     // to_client_id: null,
 
-                            // lot_container_id: item.lot_containers_movement?.lot_container_id || 0,
-                            // lot_containers_location_id: item.lot_containers_movement?.lot_containers_location_id || null,
+                        //     // lot_container_id: item.lot_containers_movement?.lot_container_id || 0,
+                        //     // lot_containers_location_id: item.lot_containers_movement?.lot_containers_location_id || null,
 
-                            // from_store_name: null,
-                            // to_store_name: null,
-                            // from_stock_room_name: null,
-                            // to_stock_room_name: null,
-                            // from_provider_name: null,
-                            // to_provider_name: null,
-                            // from_client_name: null,
-                            // to_client_name: null,
+                        //     // from_store_name: null,
+                        //     // to_store_name: null,
+                        //     // from_stock_room_name: null,
+                        //     // to_stock_room_name: null,
+                        //     // from_provider_name: null,
+                        //     // to_provider_name: null,
+                        //     // from_client_name: null,
+                        //     // to_client_name: null,
 
-                            // is_new: item.is_new || false
-                        }]
-                        console.log("🟢 adaptedLotContainerLocations:", adaptedLotContainerMovement);
+                        //     // is_new: item.is_new || false
+                        // }]
+                        // console.log("🟢 adaptedLotContainerLocations:", adaptedLotContainerMovement);
 
                         return ({
                             transfer_order_item_id: item.is_new ? null : item.transfer_order_item_id,
                             transfer_order_id: item.transfer_order_id,
                             status: 'COMPLETED' as MovementStatus,
-                            lot_containers_movements: adaptedLotContainerMovement,
+                            // lot_containers_movements: adaptedLotContainerMovement,
                             is_transferred: true,
                             stock_id: item?.stock_id || null,
                             quantity: item.quantity,
@@ -93,7 +99,7 @@ const TransferOrder = ({
                     }
                     );
 
-                const transferOrderStatus = formData.transfer_order_items.every(item => item.is_transferred || false) ? 'COMPLETED' as MovementStatus : 'PENDING' as MovementStatus;
+                const transferOrderStatus = 'COMPLETED' as MovementStatus
 
                 console.log("🟢 transferOrderStatus:", transferOrderStatus);
 
@@ -106,6 +112,7 @@ const TransferOrder = ({
                     notes: formData.notes,
                     status: transferOrderStatus
                 }
+
                 console.log("🟢 adaptedforTransferringTransferOrder:", adaptedforTransferringTransferOrder);
                 console.log("🟢 adaptedForTransferringTransferOrderItems:", adaptedForTransferringTransferOrderItems);
 
@@ -197,11 +204,19 @@ const TransferOrder = ({
             queryClient.invalidateQueries({
                 queryKey: ["transfer-order", transferOrderId],
             });
-            toast("Estado actualizado");
+            formData.transfer_order_items?.forEach((item) => {
+                queryClient.invalidateQueries({
+                    queryKey: ["product_presentations", item.product_id],
+                });
+            });
+            toast("Orden actualizada con éxito");
+            navigate("/transfer-orders");
         },
-        onError: (e: unknown) => {
-            const msg = e instanceof Error ? e.message : "No se pudo actualizar el estado";
-            toast("Error al actualizar estado", { description: msg });
+        onError: (e: {
+            message: string;
+        }) => {
+            console.log("❌ Error updating transfer order:", e);
+            toast("Error al actualizar la orden", { description: e?.message || "Error desconocido" });
         },
     });
 
@@ -220,7 +235,7 @@ const TransferOrder = ({
                     <div className="flex flex-col gap-2 mt-2">
                         <Label>Asignada a:</Label>
                         <TeamMemberSelectorRoot
-                            disabled={updateTransferOrderMutation.isLoading || isTransferring}
+                            disabled={updateTransferOrderMutation.isLoading || isTransferring || isReadOnly}
                             value={selectedTeamMember}
                             onChange={(member) => {
                                 setSelectedTeamMember(member);
@@ -238,7 +253,11 @@ const TransferOrder = ({
                 <div className="flex gap-2              h-fit items-center">
                     <div className="flex flex-col gap-1">
                         <Label>Ubicación Destino:</Label>
-                        <LocationSelectorRoot omitId={transferOrder.from_location_id} value={toLocationId} onChange={setToLocationId}>
+                        <LocationSelectorRoot
+                            disabled={updateTransferOrderMutation.isLoading || isTransferring || isReadOnly}
+                            omitId={transferOrder.from_location_id}
+                            value={toLocationId}
+                            onChange={setToLocationId}>
                             <SelectLocation />
                             {/* <CreateLocation /> */}
                         </LocationSelectorRoot>
@@ -247,9 +266,9 @@ const TransferOrder = ({
                         <Button
                             className="mt-auto mb-[2px]"
                             onClick={() => updateTransferOrderMutation.mutate()}
-                            disabled={updateTransferOrderMutation.isLoading || !toLocationId || (formData?.transfer_order_items && formData?.transfer_order_items.length === 0)}
+                            disabled={updateTransferOrderMutation.isLoading || !toLocationId || (formData?.transfer_order_items && formData?.transfer_order_items.length === 0) || isReadOnly}
                         >
-                            Actualizar Orden
+                            {isTransferring ? "Transferir" : "Actualizar Orden"}
                         </Button>
                     )}
                 </div>
@@ -261,10 +280,13 @@ const TransferOrder = ({
                     setFormData(updatedOrder);
                 }}
                 isTransferring={isTransferring}
+                isEditing={isEditing}
+                isReadOnly={isReadOnly}
             />
             <div>
                 <Label className="mb-2">Observaciones</Label>
                 <Textarea
+                    disabled={updateTransferOrderMutation.isLoading || isReadOnly}
                     value={formData?.notes ?? ""}
                     onChange={(e) => {
                         setFormData((prev) => ({ ...prev, notes: e.target.value }));

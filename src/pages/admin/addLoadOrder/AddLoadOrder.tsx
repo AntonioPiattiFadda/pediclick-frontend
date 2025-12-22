@@ -1,6 +1,6 @@
 import { AddLoadOrderContainer } from "@/components/admin/addLoadOrder/AddLoadOrderContainer";
 
-const NewLoadOrder = () => {
+const AddLoadOrder = () => {
   return (
     <div className="space-y-6 p-6">
       <div>
@@ -14,4 +14,4 @@ const NewLoadOrder = () => {
   );
 };
 
-export default NewLoadOrder;
+export default AddLoadOrder;

@@ -6,7 +6,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
 import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
 import { ROLES } from "./RoleInfoPopover";
 import { deleteTeamMember } from "@/service/profiles";
@@ -18,7 +17,6 @@ interface TeamMemberTableProps {
 }
 
 export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
-  const { userStores } = UseUserStoresContext();
 
   return (
     <div className="rounded-md">
@@ -82,13 +80,13 @@ export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
                 <TableCell>
                   {ROLES.find((role) => role.value === member.role)?.label}
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   {
                     userStores.find(
                       (store) => store.store_id === member.store_id
                     )?.store_name
                   }
-                </TableCell>
+                </TableCell> */}
               </TableRow>
             ))
           ) : (

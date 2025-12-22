@@ -1,10 +1,12 @@
 // import type { LoadOrder } from "@/types";
-import type { LoadOrder } from "@/types/loadOrders";
-import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import type { LoadOrder, LoadOrderUnit } from "@/types/loadOrders";
+import type { LotContainersStock } from "@/types/lotContainersStock";
 import type { Lot } from "@/types/lots";
 import type { Price } from "@/types/prices";
 import type { Stock } from "@/types/stocks";
+import { supabase } from ".";
+import { getBusinessOwnerId } from "./profiles";
+import { adaptLoadOrderForSubmission } from "@/adapters/loadOrders";
 
 // const mockLoadOrders: LoadOrder[] = [
 //   {
@@ -40,15 +42,29 @@ export const getAllLoadOrders = async () => {
   return { dbLoadOrders, error: null };
 };
 
+
+// create or replace function public.create_load_order(
+//   p_load_order jsonb,
+//   p_units jsonb,
+//   p_business_owner_id uuid
+// )
 export const createLoadOrder = async (
   loadOrder: LoadOrder,
   lots: Lot[],
-  prices: Price[]
+  stock: Stock[],
+  lotContainersStock: LotContainersStock[]
 ) => {
+
+  const units: LoadOrderUnit[] = adaptLoadOrderForSubmission(lots, stock, lotContainersStock);
+  console.log("units", units);
 
   const businessOwnerId = await getBusinessOwnerId();
 
-  const reqBody = {
+  const reqBody: {
+    p_load_order: LoadOrder,
+    p_units: LoadOrderUnit[],
+    p_business_owner_id: number,
+  } = {
     p_load_order: {
       business_owner_id: businessOwnerId, // viene del user logueado
       load_order_number: Number(loadOrder.load_order_number) || null,
@@ -58,14 +74,16 @@ export const createLoadOrder = async (
       receptor_id: Number(loadOrder.receptor_id) || null,
       transporter_data: loadOrder.transporter_data ?? null,
       invoice_number: Number(loadOrder.invoice_number) || null,
-      status: loadOrder.status ?? "pending",
+      status: loadOrder.status ?? "PENDING",
+      observations: loadOrder.observations ?? null,
+      total_download_cost: loadOrder.total_download_cost,
     },
-    p_lots: lots,
-    // p_prices: prices,
+    p_units: units,
+    p_business_owner_id: businessOwnerId,
   };
 
   const { data, error } = await supabase.rpc(
-    "create_load_order_with_lots_and_prices",
+    "create_load_order",
     reqBody
   );
 

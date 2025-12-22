@@ -36,6 +36,7 @@ import type { Product } from "@/types/products";
 import toast from "react-hot-toast";
 import { debounce } from "lodash";
 import type { ProductPresentation } from "@/types/productPresentation";
+import { sliceLongNames } from "@/utils";
 
 // ---------- Context ----------
 interface ProductPresentationSelectorContextType {
@@ -70,7 +71,7 @@ interface RootProps {
     children: ReactNode;
     isFetchWithLots?: boolean;
     isFetchedWithLotContainersLocation?: boolean;
-
+    locationId: number | null;
 }
 
 const ProductPresentationSelectorRoot = ({
@@ -81,12 +82,15 @@ const ProductPresentationSelectorRoot = ({
     children,
     isFetchWithLots = false,
     isFetchedWithLotContainersLocation = false,
+    locationId,
 }: RootProps) => {
+
+    console.log('locationId:', locationId);
 
     const { data: presentations, isLoading, isError } = useQuery({
         queryKey: ["product_presentations", productId],
         queryFn: async () => {
-            const response = await getProductPresentations(productId, isFetchWithLots, isFetchedWithLotContainersLocation);
+            const response = await getProductPresentations(productId, isFetchWithLots, isFetchedWithLotContainersLocation, locationId);
             return response.presentations;
         },
         enabled: !!productId,
@@ -166,17 +170,16 @@ const SelectProductPresentation = ({ children }: {
             <div className="flex w-full border border-gray-200 rounded-md ">
 
                 <Input
-                    className={`  border-none    h-9 w-14 `}
-                    disabled={disabled}
+                    className={`border border-gray-200 h-9 w-16 `}
                     value={shortCode === null ? "" : String(shortCode)}
                     placeholder="Cód.."
                     onChange={(e) => {
                         const value = e.target.value;
-                        handleShortCodeMatch(Number(value) || null);
                         onChangeCode(Number(value) || null);
+                        handleShortCodeMatch(Number(value) || null);
                     }}
+
                 />
-                <div className="h-full w-1 bg-gray-100"></div>
 
                 <Select
                     disabled={disabled}
@@ -186,23 +189,26 @@ const SelectProductPresentation = ({ children }: {
                         onChangeCode(presentations.find((p) => p.product_presentation_id === Number(val))?.short_code || null);
                     }}
                 >
-                    <SelectTrigger className="h-11 w-full border-none">
+                    <SelectTrigger className="h-11 w-full">
                         <SelectValue placeholder="Seleccionar presentación" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
                             <SelectLabel>Presentaciones</SelectLabel>
-                            {presentations?.map((p) => (
-                                <SelectItem
+                            {presentations?.map((p) => {
+                                const hasStock = p.lots?.some(lot => lot.stock && lot.stock.length > 0);
+                                return <SelectItem
                                     key={p.product_presentation_id}
                                     value={String(p.product_presentation_id)}
                                 >
-                                    {`${p.short_code ?? ''} ${p.short_code ? '-' : ''} ${p.product_presentation_name} `}   {`${p.bulk_quantity_equivalence && `X${p.bulk_quantity_equivalence}`}`}
+
+                                    {`${p.short_code ? `${p.short_code} - ` : ''}`} {sliceLongNames(15, p.product_presentation_name)}   {`${p.bulk_quantity_equivalence && `X${p.bulk_quantity_equivalence}`}`} {hasStock ? '' : '(S/S)'}
                                 </SelectItem>
-                            ))}
+                            })}
                         </SelectGroup>
                     </SelectContent>
                 </Select>
+
             </div>
 
             {/* <Input
@@ -266,7 +272,8 @@ const CreateProductPresentation = ({
             queryClient.invalidateQueries({
                 queryKey: ["product_presentations", productId ? productId : product?.product_id],
             });
-            onChange(data.product_presentation_id);
+            console.log("data", data);
+            onChange(data);
             setOpen(false);
             setNewPresentation("");
             setNewShortCode(null);

@@ -22,7 +22,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
-import { UseUserStoresContext } from "@/contexts/UserStoresContextUNUSED";
 import { editTeamMember, getTeamMemberDataById } from "@/service/profiles";
 import { editTeamMemberSchema } from "@/validator/teamMembers";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -33,28 +32,12 @@ import PasswordInfoPopover from "./PasswordInfoPopover";
 import RolesInfoPopover, { ROLES } from "./RoleInfoPopover";
 import { Edit } from "lucide-react";
 import type { UserProfile } from "@/types/users";
+import { emptyUser } from "@/constants/teamMembers";
 
-const emptyUser: UserProfile = {
-  id: "",
-  email: "",
-  password: "",
-  role: "",
-  full_name: "",
-  address: "",
-  phone: "",
-  store_id: 0,
-  created_at: "",
-  updated_at: "",
-  deleted_at: "",
-  avatar_url: null,
-  is_verified: false,
-  parent_user_id: "",
-  job_position: null,
-};
+
 
 export function EditTeamMemberBtn({ id }: { id: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { userStores } = UseUserStoresContext();
   const [zErrors, setZErrors] = useState<ZodIssue[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState<UserProfile>(emptyUser);
@@ -225,57 +208,7 @@ export function EditTeamMemberBtn({ id }: { id: string }) {
                 <ValidationErrorMessage zErrors={zErrors} fieldName="role" />
               </div>
 
-              {/* Store */}
-              <div className="grid gap-2 relative">
-                <Label htmlFor="store">Punto de venta *</Label>
-                <Select
-                  value={formData.store_id ? String(formData.store_id) : ""}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, store_id: Number(value) })
-                  }
-                >
-                  <SelectTrigger
-                    className={` w-full ${zErrors?.find((error: any) =>
-                      error.path.includes("store_id")
-                    )
-                      ? "border-red-500"
-                      : "border-gray-300"
-                      }`}
-                  >
-                    <SelectValue placeholder="Seleccionar punto de venta" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {userStores.map((store) => (
-                      <SelectItem
-                        key={store.store_id}
-                        value={String(store.store_id)}
-                      >
-                        {store.store_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <ValidationErrorMessage
-                  zErrors={zErrors}
-                  fieldName="store_id"
-                />
-              </div>
 
-              {/* Job Position */}
-              <div className="grid gap-2 relative">
-                <Label htmlFor="job_position">
-                  Puesto de trabajo (opcional)
-                </Label>
-                <Input
-                  id="job_position"
-                  placeholder="Descripción del puesto"
-                  className="border border-gray-300 rounded-md p-2"
-                  value={formData.job_position || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, job_position: e.target.value })
-                  }
-                />
-              </div>
 
               {/* Phone */}
               <div className="grid gap-2 relative">

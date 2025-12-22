@@ -9,9 +9,9 @@ import type { Price, PriceLogicType, PriceType } from '@/types/prices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DollarSign, Percent, Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 
-const UniversalPrices = ({ productPresentationId, finalCost, disabled, productPrices }: {
+const UniversalPrices = ({ productPresentationId, finalCost, disabled, productPrices, onClose }: {
     productPresentationId: number;
     finalCost: {
         final_cost_total: number | null;
@@ -20,6 +20,7 @@ const UniversalPrices = ({ productPresentationId, finalCost, disabled, productPr
     };
     disabled?: boolean;
     productPrices: Price[];
+    onClose: () => void;
 }) => {
 
     const queryClient = useQueryClient();
@@ -37,6 +38,7 @@ const UniversalPrices = ({ productPresentationId, finalCost, disabled, productPr
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId], });
             toast.success("Precios actualizados correctamente");
+            onClose();
         },
         onError: (error: {
             message: string;
@@ -280,7 +282,6 @@ const UniversalPrices = ({ productPresentationId, finalCost, disabled, productPr
                             price_id: Math.random(), // Temporal, se reemplaza al guardar
                             is_new: true,
                             product_presentation_id: productPresentationId,
-                            store_id: null,
                             price_number: value.length + 1,
                             price: 0,
                             qty_per_price: 1,
@@ -292,6 +293,7 @@ const UniversalPrices = ({ productPresentationId, finalCost, disabled, productPr
                             is_active: true,
                             valid_from: null,
                             valid_until: null,
+                            location_id: null,
                         };
                         onChange([...value, newPrice]);
                     }}

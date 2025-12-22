@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { LotContainersStock } from "@/types/lotContainersStock";
-import { LotContainerSelectorRoot, SelectLotContainer } from "../../selectors/LocationContainerSelector";
+import { LotContainerSelectorRoot, SelectLotContainer } from "../../shared/selectors/LocationContainerSelector";
 import toast from "react-hot-toast";
 
 const LotContainerStockAssignation = ({

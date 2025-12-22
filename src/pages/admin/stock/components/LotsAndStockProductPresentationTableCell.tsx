@@ -5,19 +5,23 @@ import type { Stock } from '@/types/stocks';
 import { useState } from 'react';
 import StockCardContainer from './StockCardContainer';
 import { formatDate } from '@/utils';
-import SalesHistory from '../../stock/salesHistory';
+import SalesHistory from './salesHistory';
 
 const StockCardComponent = ({ stock }: {
     stock?: Stock[];
 }) => {
-    return (stock?.map((stock) => {
-        return (<StockCardContainer stock={stock} />
 
+
+
+    return (stock?.map((stock) => {
+        return (
+            <StockCardContainer stock={stock} />
         )
     }))
 };
 
 const LotsAndStockProductPresentationTableCell = ({ lots }: { lots: Lot[] }) => {
+
     const [showDetails, setShowDetails] = useState(false);
 
     const reducedStock = lots.reduce((acc, lot) => {
@@ -51,10 +55,15 @@ const LotsAndStockProductPresentationTableCell = ({ lots }: { lots: Lot[] }) => 
                 <Switch checked={showDetails} onCheckedChange={setShowDetails} />
             </div>
             {lots.map((lot) => (
+
                 <div key={lot.lot_id} className="mb-2">
-                    <div className="font-semibold mb-2">Lote: {formatDate(lot.created_at)}</div>
+                    <div className="font-semibold mb-2 flex gap-2 items-center">Lote:
+                        <span>
+                            {formatDate(lot.created_at)}
+                        </span>
+                        <SalesHistory lotId={lot.lot_id || null} />
+                    </div>
                     <StockCardComponent stock={lot.stock} />
-                    <SalesHistory lotId={lot.lot_id} />
                 </div>
             ))}
         </div>

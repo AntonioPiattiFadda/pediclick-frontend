@@ -1,4 +1,5 @@
-import type { MovementStatus } from "./lotContainerMovements";
+import type { MovementStatus } from ".";
+import type { Location } from "./locations";
 import type { TransferOrderItem } from "./transferOrderItems";
 import type { UserProfile } from "./users";
 
@@ -12,16 +13,12 @@ export interface TransferOrderType {
     to_location_id: number | null;
     notes: string | null;
 
-    from_location: Partial<Location> | null;
-    to_location: Partial<Location> | null;
 
     status: MovementStatus;
 
     transfer_order_items?: TransferOrderItem[];
 
-
-    assigned_user?: UserProfile | null;
-
-
-
+    from_location: Pick<Location, 'location_id' | 'name' | 'type'> | null;
+    to_location: Pick<Location, 'location_id' | 'name' | 'type'> | null;
+    assigned_user?: Pick<UserProfile, 'id' | 'full_name' | 'short_code'> | null;
 }

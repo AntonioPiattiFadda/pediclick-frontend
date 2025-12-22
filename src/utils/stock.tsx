@@ -1,4 +1,6 @@
+
 import type { LotContainersStock } from "@/types/lotContainersStock";
+import type { Lot } from "@/types/lots";
 import type { Stock } from "@/types/stocks";
 
 export type StockWithRelations = Stock & {
@@ -71,4 +73,54 @@ export function redistributeUnassigned(lotContainersStock: LotContainersStock[])
     });
 
     return result;
+}
+
+export const getLotData = (lots: Lot[], lotId: number | null, locationId: number) => {
+
+    let lot;
+
+    if (lotId) {
+        lot = lots.find((l) => l.lot_id === lotId);
+
+    } else {
+        lot = lots[0];
+    }
+
+    const lotStock = lot?.stock?.find((s) => Number(s.location_id) === locationId);
+
+    const max_quantity = lotStock ? Number(lotStock.quantity) - (lotStock?.reserved_for_selling_quantity ?? 0) - (lotStock?.reserved_for_transferring_quantity ?? 0) : null;
+
+    return {
+        lot_id: lot?.lot_id || null,
+        final_cost_per_unit: lot?.final_cost_per_unit || null,
+        final_cost_per_bulk: lot?.final_cost_per_bulk || null,
+        final_cost_total: lot?.final_cost_total || null,
+        stock_id: lotStock?.stock_id || null,
+        max_quantity: max_quantity,
+        lot: lot,
+    }
+}
+
+export const getUnassignedStock = (lot: Lot, stock: Stock[]): Stock | null => {
+    const totalStockAssigned = stock.reduce((acc: number, stock: Stock) => acc + stock.quantity, 0);
+    const unassignedQuantity = (lot.initial_stock_quantity || 0) - totalStockAssigned;
+
+    const unassignedStock: Stock = {
+        product_id: lot.product_id,
+        quantity: unassignedQuantity,
+        lot_id: lot.lot_id!,
+        stock_type: "NOT_ASSIGNED",
+        location_id: null,
+        min_notification: lot.stock?.[0]?.min_notification || null,
+        max_notification: lot.stock?.[0]?.max_notification || null,
+        reserved_for_transferring_quantity: lot.stock?.[0]?.reserved_for_transferring_quantity || null,
+        reserved_for_selling_quantity: lot.stock?.[0]?.reserved_for_selling_quantity || null,
+        transformed_from_product_id: lot.stock?.[0]?.transformed_from_product_id || null,
+        updated_at: null,
+    }
+    if (unassignedQuantity > 0) {
+        return unassignedStock;
+    }
+
+    return null;
 }

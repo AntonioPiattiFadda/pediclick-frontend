@@ -1,4 +1,4 @@
-import { ProductsContainer } from "@/components/admin/stock/ProductsContainer";
+import { ProductsContainer } from "@/pages/admin/stock/components/ProductsContainer";
 
 const Stock = () => {
   return (

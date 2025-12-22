@@ -22,7 +22,7 @@ import {
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { createProvider, getProviders } from "@/service/providers";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { X } from "lucide-react";
+import { PlusCircle, X } from "lucide-react";
 import {
   createContext,
   useContext,
@@ -206,7 +206,7 @@ const CreateProvider = ({ isShortCut = false }: {
             disabled={disabled}
             variant="outline"
           >
-            + Nuevo
+            <PlusCircle />
           </Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

@@ -1,4 +1,5 @@
-import type { LotContainerMovement, MovementStatus } from "./lotContainerMovements";
+import type { MovementStatus } from ".";
+import type { LotContainerMovement } from "./lotContainerMovements";
 import type { LotContainersStock } from "./lotContainersStock";
 import type { Lot } from "./lots";
 import type { ProductPresentation } from "./productPresentation";
@@ -15,7 +16,6 @@ export interface TransferOrderItem {
     //SECTION ELEMENTOS QUE QUEDAN EN PENDING
     quantity: number;
     lot_containers_location_id: number | null;
-
     lot_containers_movement_id: number | null;
     lot_id: number | null;
 
@@ -23,15 +23,21 @@ export interface TransferOrderItem {
 
     is_new?: boolean;
     is_transferred: boolean;
+    is_deleted?: boolean;
     created_at?: string;
     status: MovementStatus
 
-
-    product?: Pick<Product, "product_id" | "product_name"> | null;
-    product_presentation?: Pick<ProductPresentation, "product_presentation_id" | "product_presentation_name"> | null;
+    //Primero los estados de db
+    product?: Pick<Product, "product_id" | "product_name" | "short_code" | 'sell_measurement_mode' | 'updated_at'> | null;
+    product_presentation?: Pick<ProductPresentation, "product_presentation_id" | "product_presentation_name" | 'lots'> | null;
     lot?: Lot | null;
-    lot_containers_location?: LotContainersStock | null;
+    lot_containers_stock?: LotContainersStock | null;
+
+    //Segundo estados de front que luego se van a persistir en db
     lot_containers_movement?: LotContainerMovement | null;
+
+
+
 
 
 }
