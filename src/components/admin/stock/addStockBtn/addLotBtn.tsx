@@ -774,7 +774,7 @@ export function AddLotBtn({
 
                   <div className="grid grid-cols-3 gap-4 w-full">
                     <MoneyInput
-                      label="extra_cost_total"
+                      label="Costo extra total"
                       value={formData.extra_cost_total || undefined}
                       onChange={(v) =>
                         handleUpdateLotField("extra_cost_total", v)

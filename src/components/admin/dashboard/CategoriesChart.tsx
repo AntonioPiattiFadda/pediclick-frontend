@@ -1,4 +1,5 @@
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Spinner } from '@/components/ui/spinner';
 import { getProductCountByCategory } from '@/service/products';
 import { useQuery } from '@tanstack/react-query';
 import { Cell, Pie, PieChart } from 'recharts';
@@ -13,8 +14,11 @@ export const CategoriesChart = () => {
     });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className='w-full  h-60 flex items-center justify-center'>
+      <Spinner />
+    </div>;
   }
+
 
   if (isError) {
     return <div>Error loading sales data.</div>;

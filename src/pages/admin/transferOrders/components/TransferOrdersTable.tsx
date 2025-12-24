@@ -9,13 +9,13 @@ import {
 } from "@/components/ui/table";
 import { formatDate } from "@/utils";
 import { useNavigate } from "react-router-dom";
-import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
+import { DeleteTableElementPopUp } from "../../../../components/admin/shared/deleteTableElementPopUp";
 // import { deleteTransferOrder } from "@/service/transferOrders";
 import { transferOrderStatuses } from "@/constants";
 import { deleteTransferOrder } from "@/service/transferOrders";
 import type { TransferOrderType } from "@/types/transferOrders";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Edit, Eye, Tractor } from "lucide-react";
+import { Edit, Eye, Truck } from "lucide-react";
 import { toast } from "sonner";
 
 interface TransferOrdersTableProps {
@@ -91,7 +91,7 @@ export const TransferOrdersTable = ({ transferOrders }: TransferOrdersTableProps
                           variant="outline"
                           onClick={() => navigate(`/transfer-orders/${to.transfer_order_id}?transferring=true`)}
                         >
-                          <Tractor />
+                          <Truck />
                         </Button>
                       </>
                     )}

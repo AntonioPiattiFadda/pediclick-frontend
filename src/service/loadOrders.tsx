@@ -105,12 +105,9 @@ export const getLoadOrder = async (loadOrderId: string,): Promise<{ dbLoadOrder:
       providers(provider_name),
       lots(
   *,
-  prices(*),
   products(*),
-  stock(
-    *,
-    stock_rooms(stock_room_name),
-    stores(store_name)
+  stock!inner(
+    *
   )
 )
 
@@ -118,6 +115,7 @@ export const getLoadOrder = async (loadOrderId: string,): Promise<{ dbLoadOrder:
     )
     .eq("business_owner_id", businessOwnerId)
     .eq("load_order_id", loadOrderId)
+    // .gt("lots.stock.quantity", 0)
     .single();
 
 
@@ -127,7 +125,6 @@ export const getLoadOrder = async (loadOrderId: string,): Promise<{ dbLoadOrder:
 
   type DbLot = Lot & {
     products?: { product_name?: string | null } | null;
-    prices?: Price[] | null;
     stock?: Stock[] | null;
   };
 
@@ -138,7 +135,6 @@ export const getLoadOrder = async (loadOrderId: string,): Promise<{ dbLoadOrder:
         ((dbLoadOrder as { lots?: DbLot[] }).lots ?? []).map((lot) => ({
           ...lot,
           product_name: lot.products?.product_name || "N/A",
-          prices: lot.prices ?? [],
           stock: lot.stock ?? [],
         })),
     }

@@ -53,8 +53,8 @@ export const ProductsContainer = () => {
     data: soldStockProducts = [],
     isLoading: isLoadingSoldStock,
     isError: isErrorSoldStock,
-    // refetch: refetchSoldStock,
-    // isRefetching: isRefetchingSoldStock
+    refetch: refetchSoldStock,
+    isRefetching: isRefetchingSoldStock
   } = useQuery({
     queryKey: ["sold-stock-products"],
     queryFn: async () => {
@@ -139,7 +139,6 @@ export const ProductsContainer = () => {
     );
   });
 
-  // TODO Esto queda colgado pero tenemos que asislarlo para que la crecion de un nuevo producto l
 
   if (isLoading && stockTypeToShow === 'STOCK') {
     return <TableSkl />;
@@ -176,9 +175,16 @@ export const ProductsContainer = () => {
                 variant="outline"
                 size={'icon'}
 
-                disabled={isRefetching}
+                disabled={(isRefetching && stockTypeToShow === 'STOCK') || (isRefetchingSoldStock && stockTypeToShow === 'SOLD')}
                 onClick={() => {
-                  refetch()
+                  if (stockTypeToShow === 'SOLD') {
+                    refetchSoldStock();
+                    return;
+                  }
+                  if (stockTypeToShow === 'STOCK') {
+                    refetch()
+                    return;
+                  }
                 }}
               >
                 <RefreshCw className={`w-4 h-4 scale-x-[-1] ${isRefetching ? 'animate-spin' : ''}`} />

@@ -1,4 +1,4 @@
-import { TransferOrdersContainer } from "@/components/admin/transferOrders.tsx/TransferOrdersContainer";
+import { TransferOrdersContainer } from "@/pages/admin/transferOrders/components/TransferOrdersContainer";
 const TransferOrders = () => {
     return (
         <div className="space-y-6 p-6">

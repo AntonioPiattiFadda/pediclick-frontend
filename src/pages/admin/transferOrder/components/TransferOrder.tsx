@@ -13,8 +13,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { LocationSelectorRoot, SelectLocation } from "../shared/selectors/locationSelector";
-import { CancelTeamMemberSelection, SelectTeamMember, TeamMemberSelectorRoot } from "../shared/selectors/TeamMemberSelector";
+import { LocationSelectorRoot, SelectLocation } from "../../../../components/admin/shared/selectors/locationSelector";
+import { CancelTeamMemberSelection, SelectTeamMember, TeamMemberSelectorRoot } from "../../../../components/admin/shared/selectors/TeamMemberSelector";
 import TransferOrderItemsTable from "./TransferOrderItemsTable";
 import type { MovementStatus } from "@/types";
 
@@ -31,7 +31,7 @@ const TransferOrder = ({
             location_id: transferOrder.to_location_id,
             name: transferOrder.to_location?.name,
             type: transferOrder.to_location?.type,
-        } : null);
+        } as Pick<Location, 'location_id' | 'name' | 'type'> : null);
 
     const [formData, setFormData] = useState<TransferOrderType>(transferOrder)
 

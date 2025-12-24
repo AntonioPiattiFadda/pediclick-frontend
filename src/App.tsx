@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster as ReactHotToast } from 'react-hot-toast';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import RequireAuth from "./components/admin/auth/requireAuth";
-import { Layout } from "./components/Layout";
+import { Layout } from "./layout/Layout";
 import NotFound from "./pages/admin/NotFound";
 import Settings from "./pages/admin/Settings";
 
@@ -28,8 +28,8 @@ import LoadOrders from "./pages/admin/LoadOrders";
 import LotContainers from "./pages/admin/LotContainers";
 import AddLoadOrder from "./pages/admin/addLoadOrder/AddLoadOrder";
 import TeamMembers from "./pages/admin/TeamMembers";
-import TransferOrder from "./pages/admin/TransferOrder";
-import TransferOrders from "./pages/admin/TransferOrders";
+import TransferOrder from "./pages/admin/transferOrder/components/TransferOrder";
+import TransferOrders from "./pages/admin/transferOrders/TransferOrders";
 import { store } from "./stores/store";
 import Locations from "./pages/admin/Locations";
 import Stock from "./pages/admin/stock/Stock";
@@ -130,22 +130,24 @@ const App = () => {
                       <Route element={<RolesAuth />}>
                         <Route path="/clients" element={<Clients />} />
                         <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/lot_containers" element={<LotContainers />} />
+                        <Route path="/lot-containers" element={<LotContainers />} />
                         <Route path="/locations" element={<Locations />} />
                         <Route path="/load-orders" element={<LoadOrders />} />
                         <Route path="/load-orders/:load-order-id" element={<LoadOrder />} />
+                        <Route
+                          path="/load-orders/add-load-order"
+                          element={<AddLoadOrder />}
+                        />
 
                         <Route path="/team-members" element={<TeamMembers />} />
+
                         <Route path="/transfer-orders" element={<TransferOrders />} />
                         <Route path="/transfer-orders/:transfer-order-id" element={<TransferOrder />} />
                         <Route path="/stock" element={<Stock />} />
+
                         <Route path="/settings" element={<Settings />} />
                         <Route path="*" element={<NotFound />} />
                       </Route>
-                      <Route
-                        path="/load-orders/add-load-order"
-                        element={<AddLoadOrder />}
-                      />
                     </Route>
                   </Routes>
                 </LocationsProvider>

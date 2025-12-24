@@ -34,3 +34,4 @@ export const getLotStocks = async (lotId: number) => {
 
   return { lotStock: adaptedLotStock, error };
 };
+

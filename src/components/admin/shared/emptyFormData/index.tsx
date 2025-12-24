@@ -115,10 +115,8 @@ export const emptyStockMovement: StockMovement = {
   movement_type: "TRANSFER",
   quantity: null,
   created_at: null,
-  from_stock_room_id: null,
-  to_stock_room_id: null,
-  from_store_id: null,
-  to_store_id: null,
+  from_location_id: null,
+  to_location_id: null,
   should_notify_owner: false,
 };
 

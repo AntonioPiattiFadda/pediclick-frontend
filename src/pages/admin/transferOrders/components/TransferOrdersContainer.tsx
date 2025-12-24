@@ -12,7 +12,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TransferOrdersTable } from "./TransferOrdersTable";
-import { LocationSelectorRoot, SelectLocation } from "../shared/selectors/locationSelector";
+import { LocationSelectorRoot, SelectLocation } from "../../../../components/admin/shared/selectors/locationSelector";
 import type { Location } from "@/types/locations";
 import { toast } from "sonner";
 import TableSkl from "@/components/ui/skeleton/tableSkl";

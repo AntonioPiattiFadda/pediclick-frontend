@@ -9,8 +9,8 @@ type StockType =
   | "STOCKROOM"
 
 export type Stock = {
-  stock_id?: number | null;
-  product_id?: number;
+  stock_id: number;
+  product_id: number;
 
   // store_id: number | null;
   // stock_room_id: number | null;

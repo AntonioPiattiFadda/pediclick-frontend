@@ -3,7 +3,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/admin/sidebar/AppSidebar";
 import { useLocation } from "react-router-dom";
 import { PUBLIC_ROUTES } from "@/App";
-import { Header } from "./admin/header/Header";
+import { Header } from "../components/admin/header/Header";
 
 interface LayoutProps {
   children: React.ReactNode;
