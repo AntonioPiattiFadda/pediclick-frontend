@@ -34,7 +34,7 @@ export const createClient = async (clientData: Partial<Client>) => {
 export const deleteClient = async (id: string | number) => {
     const { error } = await supabase
         .from("clients")
-        .update({deleted_at: new Date().toISOString()})
+        .update({ deleted_at: new Date().toISOString() })
         .eq("client_id", id);
 
     if (error) {
@@ -60,4 +60,19 @@ export const updateClient = async (
     }
 
     return data as Client;
+};
+
+
+export const getClient = async (clientId: number): Promise<{ client: Client | null, error: Error | null }> => {
+    const { data: client, error } = await supabase
+        .from("clients")
+        .select("*")
+        .eq("client_id", clientId)
+        .single()
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return { client, error };
 };

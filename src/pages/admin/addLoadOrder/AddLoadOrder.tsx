@@ -1,4 +1,4 @@
-import { AddLoadOrderContainer } from "@/components/admin/addLoadOrder/AddLoadOrderContainer";
+import { AddLoadOrderContainer } from "@/pages/admin/addLoadOrder/components/AddLoadOrderContainer";
 
 const AddLoadOrder = () => {
   return (

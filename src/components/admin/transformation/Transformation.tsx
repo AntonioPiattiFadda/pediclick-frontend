@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/select"
 import { SidebarMenuButton } from "@/components/ui/sidebar"
 import { Textarea } from "@/components/ui/textarea"
-import { createTransformation } from "@/service/transformations"
 import type { Location } from "@/types/locations"
 import type { Lot } from "@/types/lots"
 import type { Product } from "@/types/products"
@@ -30,13 +29,12 @@ import type { Transformation } from "@/types/transformation"
 import type { TransformationItems } from "@/types/transformationItems"
 import { formatDate } from "@/utils"
 import { getLotData } from "@/utils/stock"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { PlusCircle, Trash } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
-import { LocationSelectorRoot, SelectLocation } from "../shared/selectors/locationSelector"
-import { ProductPresentationSelectorRoot, SelectProductPresentation } from "../shared/selectors/productPresentationSelector"
-import ProductSelector from "../shared/selectors/productSelector"
+import { LocationSelectorRoot, SelectLocation } from "../selectors/locationSelector"
+import { ProductPresentationSelectorRoot, SelectProductPresentation } from "../selectors/productPresentationSelector"
+import ProductSelector from "../selectors/productSelector"
 
 const generateNewTransformationItems = (isOrigin: boolean, newTransformationId: number) => {
     return {
@@ -74,7 +72,7 @@ export function Transformation({
 
     const [selectedLocation, setSelectedLocation] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | null>(null);
 
-    const queryClient = useQueryClient();
+    // const queryClient = useQueryClient();
 
     const newTransformationId = Math.floor(Math.random() * 1000000);
 
@@ -99,21 +97,21 @@ export function Transformation({
     ])
 
 
-    const createTransformationMutation = useMutation({
-        mutationFn: async () => {
-            return await createTransformation(transformation, fromTransformationItems, toTransformationItems);
-        },
-        onSuccess: (data) => {
-            if (import.meta.env.DEV) console.log("Transformacion:", data)
-            queryClient.invalidateQueries({ queryKey: ["product_presentations", initialFromTransformationDetails?.product_id] })
-            toast.success("Transformación creada con éxito")
+    // const createTransformationMutation = useMutation({
+    //     mutationFn: async () => {
+    //         return await createTransformation(transformation, fromTransformationItems, toTransformationItems);
+    //     },
+    //     onSuccess: (data) => {
+    //         if (import.meta.env.DEV) console.log("Transformacion:", data)
+    //         queryClient.invalidateQueries({ queryKey: ["product_presentations", initialFromTransformationDetails?.product_id] })
+    //         toast.success("Transformación creada con éxito")
 
-        },
-        onError: (e) => {
-            console.error("Error hacer la transformación", e)
-            toast.error("Error al hacer la transformación")
-        },
-    })
+    //     },
+    //     onError: (e) => {
+    //         console.error("Error hacer la transformación", e)
+    //         toast.error("Error al hacer la transformación")
+    //     },
+    // })
 
     const showFromTrash = fromTransformationItems.length > 1;
     const showToTrash = toTransformationItems.length > 1;
@@ -122,7 +120,7 @@ export function Transformation({
 
     const fromTotalQty = fromTransformationItems.reduce((acc, detail) => acc + (detail.quantity || 0), 0);
 
-    const [toTotalCost, setToTotalCost] = useState(0)
+    const [toTotalCost] = useState(0)
 
     const handleUpdateToQuantity = (index: number, newQuantity: number) => {
         const fromQty = newQuantity;

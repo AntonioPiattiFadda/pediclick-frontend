@@ -17,7 +17,7 @@ import {
     useReactTable,
 } from '@tanstack/react-table'
 import { ChevronDown, ChevronRight } from 'lucide-react'
-import { DeleteTableElementPopUp } from '../../../../components/admin/shared/deleteTableElementPopUp'
+import { DeleteTableElementPopUp } from '../../../../components/admin/deleteTableElementPopUp'
 import LotsAndStockProductPresentationTableCell from './LotsAndStockProductPresentationTableCell'
 
 const HeaderCell = ({ children }: { children: React.ReactNode }) => (
@@ -295,7 +295,7 @@ const lotColumns = [
 export function ProductTableRenderer({
     defaultData,
 }: {
-    defaultData: Product[]
+    defaultData: any[];
 }) {
 
     const [pagination, setPagination] = React.useState({

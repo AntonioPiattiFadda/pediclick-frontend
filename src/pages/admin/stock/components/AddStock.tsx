@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Lot } from "@/types/lots";
 import { createLot } from "@/service/lots";
-import { AddLotBtn } from "../../../../components/admin/stock/addStockBtn/addLotBtn";
+import { AddLotBtn } from "./addStockBtn/addLotBtn";
 import type { Stock } from "@/types/stocks";
 import type { LotContainersStock } from "@/types/lotContainersStock";
 import { getUnassignedStock } from "@/utils/stock";
@@ -20,7 +20,8 @@ const AddStock = () => {
             const unassignedStock = getUnassignedStock(data.lot, data.stock);
 
             if (unassignedStock) {
-                data.stock.push(unassignedStock);
+                // NOTE Aca estoy omitiendo el stock_id, pero no se si es correcto
+                data.stock.push(unassignedStock as Stock);
             }
 
             return await createLot(data.lot, data.stock, data.lotContainersStock);

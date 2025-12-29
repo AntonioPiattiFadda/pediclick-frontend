@@ -9,7 +9,6 @@ const TransferOrderContainer = () => {
     const location = useLocation();
     const transferOrderId = Number(location.pathname.split("/").pop() || "0");
 
-
     const {
         data: transferOrder,
         isLoading,
@@ -30,6 +29,7 @@ const TransferOrderContainer = () => {
         );
     if (isError || !transferOrder)
         return <div className="pt-14">Error al cargar la transferencia.</div>;
+
 
     return (<TransferOrder transferOrder={transferOrder} transferOrderId={transferOrderId} />
     );

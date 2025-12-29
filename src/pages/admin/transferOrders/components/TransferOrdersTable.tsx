@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { formatDate } from "@/utils";
 import { useNavigate } from "react-router-dom";
-import { DeleteTableElementPopUp } from "../../../../components/admin/shared/deleteTableElementPopUp";
+import { DeleteTableElementPopUp } from "../../../../components/admin/deleteTableElementPopUp";
 // import { deleteTransferOrder } from "@/service/transferOrders";
 import { transferOrderStatuses } from "@/constants";
 import { deleteTransferOrder } from "@/service/transferOrders";

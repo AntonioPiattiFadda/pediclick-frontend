@@ -4,7 +4,8 @@ export type PaymentMethod =
     | "DEBIT_CARD"
     | "BANK_TRANSFER"
     | "ON_CREDIT"
-    | "CRYPTO";
+    | "CRYPTO"
+    | "OVERPAYMENT";
 
 export type FinalPaymentMethod =
     | "CASH"

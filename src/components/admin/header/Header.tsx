@@ -9,9 +9,9 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { ROLES } from "../team-members/RoleInfoPopover";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { UserProfile } from "@/types/users";
+import { ROLES } from "@/pages/admin/teamMembers/components/RoleInfoPopover";
 
 export const Header = () => {
   const dispatch = useDispatch();

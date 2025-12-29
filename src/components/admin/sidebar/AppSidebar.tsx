@@ -22,15 +22,15 @@ import { useAppSelector } from "@/hooks/useUserData";
 import { BarChart3, ChevronRight, Home, Package, type LucideProps } from "lucide-react";
 import type React from "react";
 import { Link } from "react-router-dom";
-import { CategorySelectorRoot, CreateCategory } from "../shared/selectors/categorySelector";
-import { ClientSelectorRoot, CreateClient } from "../shared/selectors/clientSelector";
-import { CreateIva, IvaSelectorRoot } from "../shared/selectors/ivaSelector";
-import { CreateProductPresentation, ProductPresentationSelectorRoot } from "../shared/selectors/productPresentationSelector";
-import { CreateProvider, ProviderSelectorRoot } from "../shared/selectors/providersSelector";
-import { CreatePurchasingAgent, PurchasingAgentSelectorRoot } from "../shared/selectors/purchasingAgentSelector";
-import { CreateSubCategory, SubCategorySelectorRoot } from "../shared/selectors/subCategorySelector";
+import { CategorySelectorRoot, CreateCategory } from "../selectors/categorySelector";
+import { ClientSelectorRoot, CreateClient } from "../selectors/clientSelector";
+import { CreateIva, IvaSelectorRoot } from "../selectors/ivaSelector";
+import { CreateProductPresentation, ProductPresentationSelectorRoot } from "../selectors/productPresentationSelector";
+import { CreateProvider, ProviderSelectorRoot } from "../selectors/providersSelector";
+import { CreatePurchasingAgent, PurchasingAgentSelectorRoot } from "../selectors/purchasingAgentSelector";
+import { CreateSubCategory, SubCategorySelectorRoot } from "../selectors/subCategorySelector";
 import { Transformation } from "../transformation/Transformation";
-import CreateProductCreator from "../shared/creator/productCreator";
+import CreateProductCreator from "../creator/productCreator";
 
 /* eslint-disable react-refresh/only-export-components */
 export const MENU_ITEMS: {

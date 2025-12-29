@@ -1,22 +1,24 @@
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { transferOrderStatuses } from "@/constants";
 import { transferOrderWithItems, updateTransferOrderWithItems } from "@/service/transferOrders";
+import type { MovementStatus } from "@/types";
 import type { Location } from "@/types/locations";
-import type { LotContainerMovement } from "@/types/lotContainerMovements";
+import type { TransferOrderItem } from "@/types/transferOrderItems";
 import type { TransferOrderType } from "@/types/transferOrders";
 import type { UserProfile } from "@/types/users";
 import { formatDate } from "@/utils";
+import { validateItemsBeforeUpdate } from "@/validator/transferOrder";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { LocationSelectorRoot, SelectLocation } from "../../../../components/admin/shared/selectors/locationSelector";
-import { CancelTeamMemberSelection, SelectTeamMember, TeamMemberSelectorRoot } from "../../../../components/admin/shared/selectors/TeamMemberSelector";
+import { LocationSelectorRoot, SelectLocation } from "../../../../components/admin/selectors/locationSelector";
+import { CancelTeamMemberSelection, SelectTeamMember, TeamMemberSelectorRoot } from "../../../../components/admin/selectors/TeamMemberSelector";
 import TransferOrderItemsTable from "./TransferOrderItemsTable";
-import type { MovementStatus } from "@/types";
 
 const TransferOrder = ({
     transferOrder,
@@ -35,9 +37,12 @@ const TransferOrder = ({
 
     const [formData, setFormData] = useState<TransferOrderType>(transferOrder)
 
+    const [transferOrderItems, setTransferOrderItems] = useState<TransferOrderItem[]>(transferOrder.transfer_order_items || []);
+
     const [selectedTeamMember, setSelectedTeamMember] = useState<Pick<UserProfile, 'id' | 'short_code' | 'full_name'> | null>(transferOrder.assigned_user ?? null);
 
     const [searchParams] = useSearchParams();
+
     const isTransferring = searchParams.get("transferring") === "true" ? true : false;
     const isEditing = searchParams.get("editing") === "true" ? true : false;
     const isReadOnly = searchParams.get("readOnly") === "true" ? true : false;
@@ -48,79 +53,6 @@ const TransferOrder = ({
     const updateTransferOrderMutation = useMutation({
         mutationFn: async () => {
 
-            //SECTION TRANSFER 
-
-            if (isTransferring) {
-                const adaptedForTransferringTransferOrderItems = formData.transfer_order_items
-                    .map((item) => {
-                        // const adaptedLotContainerMovement: Pick<LotContainerMovement, 'quantity' | 'lot_container_movement_id' | 'status'>[] = [{
-                        //     quantity: item.lot_containers_location?.quantity || 0,
-                        //     lot_container_movement_id: item.lot_containers_movement?.lot_container_movement_id || null,
-                        //     status: 'COMPLETED',
-                        //     is_transferred: true,
-                        //     // from_store_id: formData.from_store_id,
-                        //     // from_stock_room_id: formData.from_stock_room_id,
-                        //     // to_store_id: selectedLocationType === "STORE" ? selectedLocationId : null,
-                        //     // to_stock_room_id: selectedLocationType === "STOCK_ROOM" ? selectedLocationId : null,
-                        //     // from_provider_id: null,
-                        //     // to_provider_id: null,
-                        //     // from_client_id: null,
-                        //     // to_client_id: null,
-
-                        //     // lot_container_id: item.lot_containers_movement?.lot_container_id || 0,
-                        //     // lot_containers_location_id: item.lot_containers_movement?.lot_containers_location_id || null,
-
-                        //     // from_store_name: null,
-                        //     // to_store_name: null,
-                        //     // from_stock_room_name: null,
-                        //     // to_stock_room_name: null,
-                        //     // from_provider_name: null,
-                        //     // to_provider_name: null,
-                        //     // from_client_name: null,
-                        //     // to_client_name: null,
-
-                        //     // is_new: item.is_new || false
-                        // }]
-                        // console.log("🟢 adaptedLotContainerLocations:", adaptedLotContainerMovement);
-
-                        return ({
-                            transfer_order_item_id: item.is_new ? null : item.transfer_order_item_id,
-                            transfer_order_id: item.transfer_order_id,
-                            status: 'COMPLETED' as MovementStatus,
-                            // lot_containers_movements: adaptedLotContainerMovement,
-                            is_transferred: true,
-                            stock_id: item?.stock_id || null,
-                            quantity: item.quantity,
-                            to_location_id: transferOrder.to_location_id,
-                            product_id: item.product_id,
-                            product_presentation_id: item.product_presentation_id,
-                            lot_id: item.lot_id,
-                        })
-                    }
-                    );
-
-                const transferOrderStatus = 'COMPLETED' as MovementStatus
-
-                console.log("🟢 transferOrderStatus:", transferOrderStatus);
-
-                const adaptedforTransferringTransferOrder = {
-                    transfer_order_id: transferOrderId,
-                    created_at: formData.created_at,
-                    assigned_user_id: formData.assigned_user_id,
-                    from_location_id: formData.from_location_id,
-                    to_location_id: toLocationId?.location_id || null,
-                    notes: formData.notes,
-                    status: transferOrderStatus
-                }
-
-                console.log("🟢 adaptedforTransferringTransferOrder:", adaptedforTransferringTransferOrder);
-                console.log("🟢 adaptedForTransferringTransferOrderItems:", adaptedForTransferringTransferOrderItems);
-
-                return await transferOrderWithItems(adaptedforTransferringTransferOrder, adaptedForTransferringTransferOrderItems);
-            }
-
-
-            //SECTION Update
             const adaptedTransferOrder = {
                 transfer_order_id: transferOrderId,
                 created_at: formData.created_at,
@@ -128,44 +60,45 @@ const TransferOrder = ({
                 from_location_id: formData.from_location_id,
                 to_location_id: toLocationId?.location_id || null,
                 notes: formData.notes,
-                status: formData.status
+                status: formData.status,
+                from_location: formData.from_location,
+                to_location: formData.to_location,
+                assigned_user: formData.assigned_user,
             }
+
             if (!formData.transfer_order_items) {
                 toast("Debes agregar items a la orden antes de actualizar");
                 return
             }
-            const adaptedTransferOrderItems = formData.transfer_order_items.map((item) => {
-                console.log("🟢 item en adaptedTransferOrderItems:", item);
-                console.log("🟢 item en adaptedTransferOrderItems:", item.lot_containers_location);
-                console.log("🟢 item en adaptedTransferOrderItems:", item.lot_containers_movement);
-                console.log("🟢 item en adaptedTransferOrderItems:", item.lot_containers_location_id);
-                const adaptedLotContainerMovement: Omit<LotContainerMovement, 'created_at'>[] = [{
-                    quantity: item.lot_containers_location?.quantity || 0,
-                    lot_container_movement_id: item.lot_containers_movement?.lot_container_movement_id || null,
-                    from_location_id: formData.from_location_id,
-                    to_location_id: toLocationId?.location_id || null,
-                    from_provider_id: null,
-                    to_provider_id: null,
-                    from_client_id: null,
-                    to_client_id: null,
 
-                    lot_container_id: item.lot_containers_movement?.lot_container_id || 0,
-                    lot_containers_location_id: item.lot_containers_movement?.lot_containers_location_id || null,
+            const adaptedTransferOrderItems = transferOrderItems.map((item) => {
 
-                    from_store_name: null,
-                    to_store_name: null,
-                    from_stock_room_name: null,
-                    to_stock_room_name: null,
-                    from_provider_name: null,
-                    to_provider_name: null,
-                    from_client_name: null,
-                    to_client_name: null,
-                    lot_container_status: 'PENDING',
+                // const adaptedLotContainerMovement: Omit<LotContainerMovement, 'created_at'>[] = [{
+                //     quantity: item.lot_containers_location?.quantity || 0,
+                //     lot_container_movement_id: item.lot_containers_movement?.lot_container_movement_id || null,
+                //     from_location_id: formData.from_location_id,
+                //     to_location_id: toLocationId?.location_id || null,
+                //     from_provider_id: null,
+                //     to_provider_id: null,
+                //     from_client_id: null,
+                //     to_client_id: null,
 
-                    is_new: item.is_new || false
-                }]
-                console.log("🟢 adaptedLotContainerLocations:", adaptedLotContainerMovement);
-                const filteredLotContainerMovement = adaptedLotContainerMovement.filter(lcm => lcm.quantity > 0);
+                //     lot_container_id: item.lot_containers_movement?.lot_container_id || 0,
+                //     lot_containers_location_id: item.lot_containers_movement?.lot_containers_location_id || null,
+
+                //     from_store_name: null,
+                //     to_store_name: null,
+                //     from_stock_room_name: null,
+                //     to_stock_room_name: null,
+                //     from_provider_name: null,
+                //     to_provider_name: null,
+                //     from_client_name: null,
+                //     to_client_name: null,
+                //     lot_container_status: 'PENDING',
+
+                //     is_new: item.is_new || false
+                // }]
+                // const filteredLotContainerMovement = adaptedLotContainerMovement.filter(lcm => lcm.quantity > 0);
 
                 return ({
                     transfer_order_item_id: item.is_new ? null : item.transfer_order_item_id,
@@ -175,18 +108,17 @@ const TransferOrder = ({
                     quantity: item.quantity,
                     transfer_order_id: item.transfer_order_id,
                     status: 'PENDING' as MovementStatus,
-                    lot_containers_movements: filteredLotContainerMovement,
-                    lot_containers_location_id: item.lot_containers_movement?.lot_containers_location_id || null,
-                    lot_container_movement_id: item.lot_containers_movement?.lot_container_movement_id || null,
+                    // lot_containers_movements: filteredLotContainerMovement,
+                    // lot_containers_location_id: item.lot_containers_movement?.lot_containers_location_id || null,
+                    // lot_container_movement_id: item.lot_containers_movement?.lot_container_movement_id || null,
                     is_transferred: item.is_transferred || false,
                     is_new: item.is_new || false,
                     stock_id: item?.stock_id || null,
+                    is_deleted: item.is_deleted || false,
                 })
             }
             );
 
-
-            console.log("🟢 adaptedTransferOrderItems:", adaptedTransferOrderItems);
             // lot_container_stock_id: number | null;
             // lot_container_movement_id: number | null;
 
@@ -197,6 +129,8 @@ const TransferOrder = ({
             //     })) || []
             // );
             //Crear el lotContainerLocation pending
+
+            validateItemsBeforeUpdate(adaptedTransferOrderItems);
 
             return await updateTransferOrderWithItems(adaptedTransferOrder, adaptedTransferOrderItems);
         },
@@ -219,6 +153,104 @@ const TransferOrder = ({
             toast("Error al actualizar la orden", { description: e?.message || "Error desconocido" });
         },
     });
+
+
+    const transferTransferOrderMutation = useMutation({
+        mutationFn: async () => {
+
+            const adaptedForTransferringTransferOrderItems = transferOrderItems
+                .map((item) => {
+                    // const adaptedLotContainerMovement: Pick<LotContainerMovement, 'quantity' | 'lot_container_movement_id' | 'status'>[] = [{
+                    //     quantity: item.lot_containers_location?.quantity || 0,
+                    //     lot_container_movement_id: item.lot_containers_movement?.lot_container_movement_id || null,
+                    //     status: 'COMPLETED',
+                    //     is_transferred: true,
+                    //     // from_store_id: formData.from_store_id,
+                    //     // from_stock_room_id: formData.from_stock_room_id,
+                    //     // to_store_id: selectedLocationType === "STORE" ? selectedLocationId : null,
+                    //     // to_stock_room_id: selectedLocationType === "STOCK_ROOM" ? selectedLocationId : null,
+                    //     // from_provider_id: null,
+                    //     // to_provider_id: null,
+                    //     // from_client_id: null,
+                    //     // to_client_id: null,
+
+                    //     // lot_container_id: item.lot_containers_movement?.lot_container_id || 0,
+                    //     // lot_containers_location_id: item.lot_containers_movement?.lot_containers_location_id || null,
+
+                    //     // from_store_name: null,
+                    //     // to_store_name: null,
+                    //     // from_stock_room_name: null,
+                    //     // to_stock_room_name: null,
+                    //     // from_provider_name: null,
+                    //     // to_provider_name: null,
+                    //     // from_client_name: null,
+                    //     // to_client_name: null,
+
+                    //     // is_new: item.is_new || false
+                    // }]
+                    // console.log("🟢 adaptedLotContainerLocations:", adaptedLotContainerMovement);
+
+                    return ({
+                        transfer_order_item_id: item.is_new ? null : item.transfer_order_item_id,
+                        transfer_order_id: item.transfer_order_id,
+                        status: 'COMPLETED' as MovementStatus,
+                        // lot_containers_movements: adaptedLotContainerMovement,
+                        is_transferred: true,
+                        stock_id: item?.stock_id || null,
+                        quantity: item.quantity,
+                        to_location_id: transferOrder.to_location_id,
+                        product_id: item.product_id,
+                        product_presentation_id: item.product_presentation_id,
+                        lot_id: item.lot_id,
+                    })
+                }
+                );
+
+            const transferOrderStatus = 'COMPLETED' as MovementStatus
+
+            console.log("🟢 transferOrderStatus:", transferOrderStatus);
+
+            const adaptedforTransferringTransferOrder = {
+                transfer_order_id: transferOrderId,
+                created_at: formData.created_at,
+                assigned_user_id: formData.assigned_user_id,
+                from_location_id: formData.from_location_id,
+                to_location_id: toLocationId?.location_id || null,
+                notes: formData.notes,
+                status: transferOrderStatus,
+                from_location: formData.from_location,
+                to_location: formData.to_location,
+                assigned_user: formData.assigned_user,
+            }
+
+            return await transferOrderWithItems(adaptedforTransferringTransferOrder, adaptedForTransferringTransferOrderItems);
+
+
+
+            // validateItemsBeforeUpdate(adaptedTransferOrderItems);
+
+            // return await updateTransferOrderWithItems(adaptedTransferOrder, adaptedTransferOrderItems);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["transfer-order", transferOrderId],
+            });
+            formData.transfer_order_items?.forEach((item) => {
+                queryClient.invalidateQueries({
+                    queryKey: ["product_presentations", item.product_id],
+                });
+            });
+            toast("Orden actualizada con éxito");
+            navigate("/transfer-orders");
+        },
+        onError: (e: {
+            message: string;
+        }) => {
+            console.log("❌ Error updating transfer order:", e);
+            toast("Error al actualizar la orden", { description: e?.message || "Error desconocido" });
+        },
+    });
+
 
 
     return (
@@ -265,8 +297,14 @@ const TransferOrder = ({
                     {transferOrder.status === 'PENDING' && (
                         <Button
                             className="mt-auto mb-[2px]"
-                            onClick={() => updateTransferOrderMutation.mutate()}
-                            disabled={updateTransferOrderMutation.isLoading || !toLocationId || (formData?.transfer_order_items && formData?.transfer_order_items.length === 0) || isReadOnly}
+                            onClick={() => {
+                                if (isTransferring) {
+                                    transferTransferOrderMutation.mutate()
+                                } else {
+                                    updateTransferOrderMutation.mutate()
+                                }
+                            }}
+                            disabled={updateTransferOrderMutation.isLoading || !toLocationId || transferOrderItems.length === 0 || isReadOnly || transferTransferOrderMutation.isLoading}
                         >
                             {isTransferring ? "Transferir" : "Actualizar Orden"}
                         </Button>
@@ -275,13 +313,13 @@ const TransferOrder = ({
 
             </div>
             <TransferOrderItemsTable
-                transferOrder={formData}
-                onChangeOrder={(updatedOrder) => {
-                    setFormData(updatedOrder);
-                }}
+                transferOrderItems={transferOrderItems}
+                onChangeTransferOrderItems={setTransferOrderItems}
                 isTransferring={isTransferring}
                 isEditing={isEditing}
                 isReadOnly={isReadOnly}
+                transferOrderId={transferOrder.transfer_order_id}
+                fromLocationId={transferOrder.from_location_id}
             />
             <div>
                 <Label className="mb-2">Observaciones</Label>

@@ -21,13 +21,7 @@ export const getProductPresentations = async (
   isFetchedWithLotContainersLocation: boolean = false,
   locationId: number | null = null
 ) => {
-  console.log("Fetching presentations for productId:", productId);
 
-  console.log("Fetching presentations for productId:", isFetchWithLots);
-
-  console.log("Fetching presentations for productId:", isFetchedWithLotContainersLocation);
-
-  console.log("Fetching presentations for productId:", locationId);
 
   if (!productId) {
     return { presentations: [], error: null };
@@ -121,7 +115,7 @@ export const getProductPresentations = async (
 
   if (error) throw new Error(error.message);
 
-  return { presentations, error };
+  return presentations;
 };
 
 

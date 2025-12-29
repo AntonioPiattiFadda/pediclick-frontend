@@ -21,9 +21,9 @@ export interface TransferOrderItem {
 
     stock_id: number | null;
 
-    is_new?: boolean;
+    is_new: boolean;
     is_transferred: boolean;
-    is_deleted?: boolean;
+    is_deleted: boolean;
     created_at?: string;
     status: MovementStatus
 

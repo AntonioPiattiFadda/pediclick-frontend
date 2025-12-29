@@ -2,7 +2,6 @@
 import type { LoadOrder, LoadOrderUnit } from "@/types/loadOrders";
 import type { LotContainersStock } from "@/types/lotContainersStock";
 import type { Lot } from "@/types/lots";
-import type { Price } from "@/types/prices";
 import type { Stock } from "@/types/stocks";
 import { supabase } from ".";
 import { getBusinessOwnerId } from "./profiles";
@@ -77,6 +76,7 @@ export const createLoadOrder = async (
       status: loadOrder.status ?? "PENDING",
       observations: loadOrder.observations ?? null,
       total_download_cost: loadOrder.total_download_cost,
+      lots: [], // ahora se envian en p_units
     },
     p_units: units,
     p_business_owner_id: businessOwnerId,

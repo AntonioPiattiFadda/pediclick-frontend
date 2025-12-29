@@ -28,7 +28,20 @@ export type TransformationItems = {
     // lot_container_quantity: number | null;
 
     product?: Pick<Product, "product_id" | "product_name" | "short_code" | 'sell_measurement_mode' | 'updated_at'> | null;
-    product_presentation: ProductPresentation | null;
+    product_presentation: Partial<ProductPresentation> | null;
 
-    lot: Lot | null;
+    lot: {
+        lot_id: number | null,
+        final_cost_per_unit: number | null,
+        final_cost_per_bulk: number | null,
+        final_cost_total: number | null,
+        stock_id: number | null,
+        max_quantity: number | null,
+        lot: Lot | undefined | null,
+        provider_id: number | null,
+        expiration_date: string | null,
+        expiration_date_notification: boolean,
+    } | null;
+
+
 }

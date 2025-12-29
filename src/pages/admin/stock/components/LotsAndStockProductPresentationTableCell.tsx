@@ -6,6 +6,7 @@ import { useState } from 'react';
 import StockCardContainer from './StockCardContainer';
 import { formatDate } from '@/utils';
 import SalesHistory from './salesHistory';
+import { StockData } from './StockData';
 
 const StockCardComponent = ({ stock }: {
     stock?: Stock[];
@@ -31,6 +32,20 @@ const LotsAndStockProductPresentationTableCell = ({ lots }: { lots: Lot[] }) => 
         return acc + lotStock;
     }, 0) || 0;
 
+    const reducedReservedForTransferring = lots.reduce((acc, lot) => {
+        const lotStock = lot.stock?.reduce((sAcc: number, stockItem: Stock) => {
+            return sAcc + (stockItem.reserved_for_transferring_quantity || 0);
+        }, 0) || 0;
+        return acc + lotStock;
+    }, 0) || 0;
+
+    const reducedReservedForSelling = lots.reduce((acc, lot) => {
+        const lotStock = lot.stock?.reduce((sAcc: number, stockItem: Stock) => {
+            return sAcc + (stockItem.reserved_for_selling_quantity || 0);
+        }, 0) || 0;
+        return acc + lotStock;
+    }, 0) || 0;
+
 
     if (!showDetails) {
         return (
@@ -40,7 +55,13 @@ const LotsAndStockProductPresentationTableCell = ({ lots }: { lots: Lot[] }) => 
                     <Switch checked={showDetails} onCheckedChange={setShowDetails} />
                 </div>
                 <div className="mb-2">
-                    <div className="font-semibold mb-2">Cantidad: {reducedStock}</div>
+                    <div className="font-semibold flex flex-row gap-1">Cantidad: {reducedStock || 0} / {reducedReservedForTransferring || 0} / {reducedReservedForSelling || 0}
+                        <StockData stock={{
+                            quantity: reducedStock,
+                            reserved_for_selling_quantity: reducedReservedForSelling,
+                            reserved_for_transferring_quantity: reducedReservedForTransferring
+                        }} />
+                    </div>
 
                 </div>
 

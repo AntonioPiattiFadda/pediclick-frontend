@@ -1,30 +1,32 @@
 import type { StockMovement } from "@/types/stockMovements";
 import { supabase } from ".";
 
-// export const createWasteStockMovement = async (formData: StockMovement) => {
-//     //TODO Agregar el business_owner_id al llamado y el stock id a la lot_containers_location nueva
-//     console.log("createStockMovement called with formData:", formData);
-//     const { data: stockMovementData, error: stockMovementError } = await supabase
-//         .rpc("transfer_stock", {
-//             p_lot_id: formData?.lot_id,
-//             p_movement_type: formData?.movement_type,
-//             p_quantity: formData?.quantity,
-//             p_from_stock_room_id: formData?.from_stock_room_id ?? null,
-//             p_to_stock_room_id: formData?.to_stock_room_id ?? null,
-//             p_from_store_id: formData?.from_store_id ?? null,
-//             p_to_store_id: formData?.to_store_id ?? null,
-//             p_should_notify_owner: formData?.should_notify_owner ?? false,
-//             p_lot_containers_to_move: formData?.lot_containers_to_move ?? null,
-//             // p_business_owner_id: businessOwnerId,
-//         });
+
+export const createWasteStockMovement = async (formData: Omit<StockMovement, "stock_movement_id">) => {
+    //TODO Agregar el business_owner_id al llamado y el stock id a la lot_containers_location nueva
+
+    console.log("Creating waste stock movement with data:", formData);
+
+    const { data: stockMovementData, error: stockMovementError } = await supabase
+        .rpc("create_stock_movement_waste", {
+            p_lot_id: formData?.lot_id,
+            p_stock_id: formData?.stock_id,
+            p_movement_type: formData?.movement_type,
+            p_quantity: formData?.quantity,
+            p_from_location_id: formData?.from_location_id ?? null,
+            p_to_location_id: formData?.to_location_id ?? null,
+            p_should_notify_owner: formData?.should_notify_owner ?? false,
+            p_created_by: formData?.created_by ?? null,
+            // p_lot_containers_to_move: formData?.lot_containers_to_move ?? null,
+        });
 
 
-//     if (stockMovementError) {
-//         throw new Error(stockMovementError.message);
-//     }
+    if (stockMovementError) {
+        throw new Error(stockMovementError.message);
+    }
 
-//     return stockMovementData;
-// };
+    return stockMovementData;
+};
 
 export const getStockSalesHistory = async (lotId: number) => {
     const { data, error } = await supabase
@@ -54,7 +56,7 @@ export const getSalesHistoryByProductOrLot = async (lotId: number) => {
 
 export const assignStock = async (fromStockData: {
     stock_id: number;
-    productId: number;
+    product_id: number | null;
 }, stockMovement: Omit<StockMovement, "stock_movement_id" | "should_notify_owner" | "created_by" | "lot_containers_to_move" | "created_at">) => {
 
     const { data: assignedStockData, error: assignedStockError } = await supabase

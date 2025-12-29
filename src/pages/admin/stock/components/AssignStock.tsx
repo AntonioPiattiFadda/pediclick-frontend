@@ -1,4 +1,4 @@
-import { LocationSelectorRoot, SelectLocation } from "@/components/admin/shared/selectors/locationSelector";
+import { LocationSelectorRoot, SelectLocation } from "@/components/admin/selectors/locationSelector";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -33,6 +33,7 @@ const AssignStock = ({
     const initialStockQty = stock.quantity;
 
     const [stockMovement, setStockMovement] = useState<Omit<StockMovement, "stock_movement_id" | "should_notify_owner" | "created_by" | "lot_containers_to_move" | "created_at">>({
+        stock_id: stock.stock_id,
         lot_id: stock.lot_id,
         movement_type: "TRANSFER",
         quantity: stock.quantity,
@@ -62,7 +63,7 @@ const AssignStock = ({
 
             const fromStockData = {
                 stock_id: stock.stock_id,
-                productId: stock.product_id,
+                product_id: stock.product_id,
             }
 
             return await assignStock(fromStockData, adaptedStockMovement);
@@ -130,4 +131,3 @@ const AssignStock = ({
 }
 
 export default AssignStock
-

@@ -3,7 +3,7 @@ import { supabase } from ".";
 import { getBusinessOwnerId } from "./profiles";
 import type { Transformation } from "@/types/transformation";
 
-export async function createTransformation(transformation: Transformation, fromTransformationItems: TransformationItems[], toTransformationItems: TransformationItems[]) {
+export async function createTransformation(transformation: Omit<Transformation, 'created_at'>, fromTransformationItems: TransformationItems[], toTransformationItems: TransformationItems[]) {
     const businessOwnerId = await getBusinessOwnerId();
 
     const location = localStorage.getItem("selectedStore");
@@ -53,9 +53,6 @@ export async function createTransformation(transformation: Transformation, fromT
             final_cost_total: it?.lot?.final_cost_total,
             expiration_date_notification: it?.lot?.expiration_date_notification,
             is_parent_lot: false,
-
-
-
         },
     }));
 

@@ -6,16 +6,15 @@ const initialState: UserProfile = {
   email: "",
   full_name: "",
   role: "",
-  avatar_url: null,
   phone: null,
   address: null,
   is_verified: false,
-  parent_user_id: "",
-  store_id: 0,
-  job_position: null,
+  business_owner_id: '',
   created_at: "",
   updated_at: "",
-  deleted_at: null
+  deleted_at: null,
+  short_code: null,
+  password: '',
 };
 
 const userSlice = createSlice({

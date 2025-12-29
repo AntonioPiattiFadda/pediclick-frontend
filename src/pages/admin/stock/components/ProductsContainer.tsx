@@ -14,9 +14,9 @@ import { RefreshCw, Search } from "lucide-react";
 import { useState } from "react";
 import TableSkl from "../../../../components/ui/skeleton/tableSkl";
 import { ProductTableRenderer } from "./productTableRenderer";
-import { CategorySelectorRoot, SelectCategory } from "../../../../components/admin/shared/selectors/categorySelector";
-import { CancelLocationSelection, LocationSelectorRoot, SelectLocation } from "../../../../components/admin/shared/selectors/locationSelector";
-import { SelectSubCategory, SubCategorySelectorRoot } from "../../../../components/admin/shared/selectors/subCategorySelector";
+import { CategorySelectorRoot, SelectCategory } from "../../../../components/admin/selectors/categorySelector";
+import { CancelLocationSelection, LocationSelectorRoot, SelectLocation } from "../../../../components/admin/selectors/locationSelector";
+import { SelectSubCategory, SubCategorySelectorRoot } from "../../../../components/admin/selectors/subCategorySelector";
 import AddStock from "./AddStock";
 import { Label } from "@/components/ui/label"
 import {

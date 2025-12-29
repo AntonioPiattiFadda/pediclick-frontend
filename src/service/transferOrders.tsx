@@ -6,7 +6,7 @@ import { getBusinessOwnerId } from "./profiles";
 /**
  * List all transfer orders for current business owner
  */
-export const getAllTransferOrders = async () => {
+export const getAllTransferOrders = async (page: number, pageSize: number) => {
     const businessOwnerId = await getBusinessOwnerId();
     const { data: dbTransferOrders, error } = await supabase
         .from("transfer_orders")
@@ -21,6 +21,7 @@ export const getAllTransferOrders = async () => {
         `)
         .eq("business_owner_id", businessOwnerId)
         .is("deleted_at", null)
+        .range((page - 1) * pageSize, page * pageSize - 1)
         .order("created_at", { ascending: false });
 
 
@@ -141,7 +142,8 @@ export const createTransferOrder = async (location: {
  */
 export async function updateTransferOrderWithItems(
     order: TransferOrderType,
-    items: TransferOrderItem[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    items: any[]
 ) {
 
     const { data, error } = await supabase.rpc("update_transfer_order_with_items", {
@@ -160,7 +162,8 @@ export async function updateTransferOrderWithItems(
 
 export async function transferOrderWithItems(
     order: TransferOrderType,
-    items: TransferOrderItem[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    items: any[]
 ) {
     console.log("🔄 Updating transfer order with items:", order, items);
 

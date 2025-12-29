@@ -46,6 +46,8 @@ export type LoadOrder = {
     provider_name: string;
   };
 
+  lots: Lot[];
+
 
 };
 

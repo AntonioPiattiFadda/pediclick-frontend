@@ -2,6 +2,7 @@ export type StockMovement = {
   stock_movement_id: number;
 
   lot_id: number;
+  stock_id: number;
   movement_type: "TRANSFER" | "WASTE";
   quantity: number | null;
   from_location_id: number | null;

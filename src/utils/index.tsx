@@ -27,7 +27,6 @@ export const toLocalIsoString = (isoString: string): string => {
   return localISO;
 };
 
-
 export const formatDateToDDMMYY = (isoString: string): string => {
   if (!isoString) return "--";
   const localeDateIso = toLocalIsoString(isoString);
@@ -48,7 +47,6 @@ export const formatDateToDDMMYYHHMM = (isoString: string): string => {
   const minutes = localeDateIso.slice(14, 16);
   return `${day}/${month}/${year} ${hour}:${minutes}`;
 };
-
 
 export function formatDate(value?: string) {
   if (!value) return "--";
@@ -76,10 +74,15 @@ export function createClientKey(prefix: string) {
   return `${prefix}_${crypto.randomUUID()}`;
 }
 
-
-
 export function sliceLongNames(maxLength: number = 30, name?: string) {
   if (!name) return "";
   if (name.length <= maxLength) return name;
   return name.slice(0, maxLength - 3) + '...';
 }
+
+let tempIdCounter = 0;
+
+export const generateTempNumericId = () => {
+  tempIdCounter += 1;
+  return Date.now() * 1000 + tempIdCounter;
+};

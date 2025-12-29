@@ -9,90 +9,84 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import type { MovementStatus } from "@/types";
 import type { Lot } from "@/types/lots";
 import type { Product } from "@/types/products";
-import type { TransferOrderItem } from "@/types/transferOrderItems";
-import type { TransferOrderType } from "@/types/transferOrders";
-import { Trash } from "lucide-react";
-import { emptyProduct } from "../../../../components/admin/shared/emptyFormData";
-import { ProductPresentationSelectorRoot, SelectProductPresentation } from "../../../../components/admin/shared/selectors/productPresentationSelector";
-import ProductSelector from "../../../../components/admin/shared/selectors/productSelector";
-import { StockLocationTableCell } from "../../../components/admin/transferOrder/StockLocationTableCell";
-import { toast } from "sonner";
-import { formatDate } from "@/utils";
 import type { Stock } from "@/types/stocks";
-import type { MovementStatus } from "@/types";
+import type { TransferOrderItem } from "@/types/transferOrderItems";
+import { formatDate, generateTempNumericId } from "@/utils";
 import { getLotData } from "@/utils/stock";
-import { useState } from "react";
-
+import { Trash } from "lucide-react";
+import { toast } from "sonner";
+import { emptyProduct } from "../../../../components/admin/emptyFormData";
+import { ProductPresentationSelectorRoot, SelectProductPresentation } from "../../../../components/admin/selectors/productPresentationSelector";
+import ProductSelector from "../../../../components/admin/selectors/productSelector";
+import { StockLocationTableCell } from "./StockLocationTableCell";
 
 export default function TransferOrderItemsTable({
-    transferOrder,
-    onChangeOrder,
+    transferOrderItems,
+    onChangeTransferOrderItems,
     isTransferring,
     isEditing,
-    isReadOnly
+    isReadOnly,
+    transferOrderId,
+    fromLocationId
 }: {
-    transferOrder: TransferOrderType;
-    onChangeOrder?: (updatedOrder: TransferOrderType) => void;
+    transferOrderItems: TransferOrderItem[];
+    onChangeTransferOrderItems: (updatedItems: TransferOrderItem[]) => void;
     isTransferring: boolean;
     isEditing: boolean;
     isReadOnly: boolean;
+    transferOrderId: number;
+    fromLocationId: number | null;
 }) {
-    console.log("🟢 TransferOrderItemsTable transferOrder:", transferOrder);
 
-    const [initialLoadEditing, setInitialLoadEditing] = useState({
-        productPresentation: true,
-        product: true,
-    });
+
 
     const handleAddElement = () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const newItem: any = {
-            transfer_order_item_id: Math.random(),
-            transfer_order_id: transferOrder.transfer_order_id,
-            product_id: undefined,
+        const newItem: TransferOrderItem = {
+            transfer_order_item_id: generateTempNumericId(),
+            transfer_order_id: transferOrderId,
+            product_id: null,
+            product_presentation_id: null,
+            lot_containers_location_id: null,
+            lot_containers_movement_id: null,
             lot_id: null,
-            quantity: null,
+            quantity: 0,
+            is_deleted: false,
             is_new: true,
             is_transferred: false,
             status: 'PENDING' as MovementStatus,
             stock_id: null,
-            lot_containers_movement: [
-                {
-                    quantity: 0,
-                    lot_container_status: "PENDING",
-                },
-            ],
+            // lot_containers_movement: [
+            //     {
+            //         quantity: 0,
+            //         lot_container_status: "PENDING",
+            //     },
+            // ],
             product: emptyProduct,
-
-
-            lot_containers_stock: {
-                lot_container_stock_id: null,
-                lot_container_id: null,
-                quantity: null,
-            },
+            // lot_containers_stock: {
+            //     lot_container_stock_id: null,
+            //     lot_container_id: null,
+            //     quantity: null,
+            // },
 
         };
-        onChangeOrder?.({
-            ...transferOrder,
-            transfer_order_items: [...rows, newItem],
-        });
+
+        const newItems = [...transferOrderItems, newItem];
+
+        onChangeTransferOrderItems(newItems);
     };
 
     const handleRemoveItem = (itemId: number | undefined) => {
         if (itemId === undefined) return;
         if (isTransferring) return;
-        const isItemNew = rows.find((item) => item.transfer_order_item_id === itemId)?.is_new;
-        console.log("🟢 isItemNew:", isItemNew);
+        const isItemNew = transferOrderItems?.find((item) => item.transfer_order_item_id === itemId)?.is_new;
         if (isItemNew) {
-            const updatedItems = rows.filter((item) => item.transfer_order_item_id !== itemId);
-            onChangeOrder?.({
-                ...transferOrder,
-                transfer_order_items: updatedItems,
-            });
+            const updatedItems = transferOrderItems?.filter((item) => item.transfer_order_item_id !== itemId);
+            onChangeTransferOrderItems(updatedItems);
         } else {
-            const updatedItems = rows.map((item) =>
+            const updatedItems = transferOrderItems?.map((item) =>
                 item.transfer_order_item_id === itemId
                     ? {
                         ...item,
@@ -100,58 +94,60 @@ export default function TransferOrderItemsTable({
                     }
                     : item
             );
-            onChangeOrder?.({
-                ...transferOrder,
-                transfer_order_items: updatedItems,
-            });
+            onChangeTransferOrderItems(updatedItems);
         }
     };
 
     const handleSelectProduct = (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        row: any,
-        product: Pick<Product, "product_id" | "product_name" | "short_code">,
+        transfer_order_item_id: any,
+        product: Pick<Product, "product_id" | "product_name" | "short_code" | 'sell_measurement_mode' | 'updated_at'>,
     ) => {
+
         if (isTransferring) return;
-        const updatedItems = rows.map((item) =>
-            item.transfer_order_item_id === row.transfer_order_item_id
+        console.log("🟢 transferOrderItems:", transferOrderItems.length);
+
+        const updatedItemsIndex = transferOrderItems?.findIndex((item =>
+            item.transfer_order_item_id === transfer_order_item_id
+        ));
+        if (updatedItemsIndex === undefined || updatedItemsIndex === -1) return;
+
+        const updatedItems = transferOrderItems.map((item, index) =>
+            index === updatedItemsIndex
                 ? {
                     ...item,
-                    product_id: product.product_id ?? null,
-                    product,
-                    product_presentation: null,
-                    lot_id: null,
-                    quantity: null,
-                    stock_id: null,
-                    lot_containers_location: {
-                        lot_container_stock_id: null,
-                        lot_container_id: null,
-                        quantity: null,
-                    },
-                    lot_containers_movement: [
-                        {
-                            quantity: 0,
-                            lot_container_status: "PENDING",
-                        },
-                    ],
-
+                    product: product,
+                    product_id: product.product_id || null,
+                    sell_measurement_mode: product?.sell_measurement_mode || null,
+                    updated_at: product?.updated_at || null,
                 }
                 : item
         );
-        onChangeOrder?.({
-            ...transferOrder,
-            transfer_order_items: updatedItems,
-        });
+        onChangeTransferOrderItems(updatedItems);
+        // onChangeTransferOrderItems((prev: OrderItem[]) => {
+        //     return prev.map((item, index) =>
+        //         index === updatedItemsIndex
+        //             ? {
+        //                 ...item,
+        //                 product: product,
+        //                 product_id: product.product_id || null,
+        //                 sell_measurement_mode: product?.sell_measurement_mode || null,
+        //                 updated_at: product?.updated_at || null,
+        //             }
+        //             : item
+        //     );
+        // })
     };
 
-    const lotIdForProductPresentationForProductExists = (productId: number | undefined, presentationId: number | null, lotId: number | null) => {
-        const exists = transferOrder.transfer_order_items?.some(
-            (item) =>
-                item.product_id === productId &&
-                item.product_presentation_id === presentationId
-                && item.lot_id === lotId
-        );
-        const product_presentation_name = transferOrder.transfer_order_items?.find(
+    const lotIdForProductPresentationForProductExists = (productId: number | null, presentationId: number | null, lotId: number | null) => {
+        const exists = transferOrderItems?.filter((item) => !item.is_deleted)
+            .some(
+                (item) =>
+                    item.product_id === productId &&
+                    item.product_presentation_id === presentationId
+                    && item.lot_id === lotId
+            );
+        const product_presentation_name = transferOrderItems?.find(
             (item) =>
                 item.product_id === productId &&
                 item.product_presentation_id === presentationId
@@ -161,16 +157,6 @@ export default function TransferOrderItemsTable({
             product_presentation_name: product_presentation_name
         }
     };
-
-    // const locationRowLots 
-
-    const rows: TransferOrderItem[] = transferOrder.transfer_order_items?.filter(item => !item.is_deleted) || [];
-
-
-    //TODO Ubicaciones del lote
-    // TODO Asignacion de la cantidad 
-    // TODO Validaciones de los campos
-
 
     return (
         <div className="rounded-md">
@@ -194,191 +180,181 @@ export default function TransferOrderItemsTable({
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {rows.length === 0 && (
+                    {(transferOrderItems).length === 0 && (
                         <TableRow>
                             <TableCell colSpan={6} className="h-24 text-center align-middle">No hay ítems en la orden de transferencia.</TableCell>
                         </TableRow>
                     )}
-                    {rows.map((row) => {
-                        const rowLots = row.product_presentation?.lots || [];
+                    {(transferOrderItems)
+                        .filter(item => !item.is_deleted)
+                        .map((row) => {
+                            const rowLots = row.product_presentation?.lots || [];
 
-                        const selectedLot = rowLots.find((lot: Lot) => lot.lot_id === row.lot_id);
+                            const selectedLot = rowLots.find((lot: Lot) => lot.lot_id === row.lot_id);
 
-                        const filteredStocks = selectedLot?.stock?.filter((stock: Stock) => {
-                            return stock.location_id === transferOrder.from_location_id;
-                        }) || [];
+                            const filteredStocks = selectedLot?.stock?.filter((stock: Stock) => {
+                                return stock.location_id === fromLocationId;
+                            }) || [];
 
-                        // Mutations
-                        // const selectedLotLotContainerLocation = filteredStocks[0]?.lot_containers_location
-                        // const selectedLotLotContainerLocation = {
-                        //     lot_containers_location_id: filteredStocks[0]?.lot_containers_location?.lot_containers_location_id || null,
-                        //     lot_container_id: filteredStocks[0]?.lot_containers_location?.lot_container_id || null,
-                        //     quantity: filteredStocks[0]?.lot_containers_location?.quantity || null,
-                        // }
+                            // Mutations
+                            // const selectedLotLotContainerLocation = filteredStocks[0]?.lot_containers_location
+                            // const selectedLotLotContainerLocation = {
+                            //     lot_containers_location_id: filteredStocks[0]?.lot_containers_location?.lot_containers_location_id || null,
+                            //     lot_container_id: filteredStocks[0]?.lot_containers_location?.lot_container_id || null,
+                            //     quantity: filteredStocks[0]?.lot_containers_location?.quantity || null,
+                            // }
 
-                        // console.log("🟢 selectedLotLotContainerLocation:", selectedLotLotContainerLocation);
+                            // console.log("🟢 selectedLotLotContainerLocation:", selectedLotLotContainerLocation);
 
-                        // const maxLotContainerLocationQty = selectedLotLotContainerLocation?.quantity || 0;
-                        // console.log("🟢 maxLotContainerLocationQty:", maxLotContainerLocationQty);
+                            // const maxLotContainerLocationQty = selectedLotLotContainerLocation?.quantity || 0;
+                            // console.log("🟢 maxLotContainerLocationQty:", maxLotContainerLocationQty);
 
-                        console.log("🟢 filteredStocks:", filteredStocks);
+                            const maxQtyInFromLocation = filteredStocks.reduce((acc: number, stock: Stock) => {
+                                // Here you would check if the stock's location matches the transfer order's from location
+                                // For simplicity, we sum all stock quantities
+                                return acc + (stock.quantity || 0);
+                            }, 0) || 0;
 
-                        const maxQtyInFromLocation = filteredStocks.reduce((acc: number, stock: Stock) => {
-                            // Here you would check if the stock's location matches the transfer order's from location
-                            // For simplicity, we sum all stock quantities
-                            return acc + (stock.quantity || 0);
-                        }, 0) || 0;
+                            return (<TableRow key={row.transfer_order_item_id}>
+                                <TableCell className="align-top w-[50%]">
+                                    <div className="relative flex gap-1">
 
-                        return (<TableRow key={row.transfer_order_item_id}>
-                            <TableCell className="align-top w-[50%]">
-                                <div className="relative flex gap-1">
+                                        <ProductSelector
+                                            value={row.product || emptyProduct}
+                                            onChange={(p) => {
+                                                if (isReadOnly || (isEditing && !row.is_new)) return;
 
-                                    <ProductSelector
-                                        value={row.product || emptyProduct}
-                                        onChange={(p) => {
-                                            if (initialLoadEditing.product && isEditing || isReadOnly) {
-                                                setInitialLoadEditing((prev) => ({
-                                                    ...prev,
-                                                    product: false,
-                                                }));
-                                                return;
-                                            }
-                                            handleSelectProduct(row, {
-                                                product_name: p.product_name,
-                                                product_id: p.product_id,
-                                                short_code: p.short_code
-                                            })
-                                        }}
-                                        disabled={isTransferring || isReadOnly}
-                                    />
-                                    <ProductPresentationSelectorRoot
-                                        locationId={Number(transferOrder.from_location_id)}
-                                        productId={row?.product_id}
-                                        value={row?.product_presentation || null}
-                                        onChange={(selectedProductPresentation) => {
-                                            if (initialLoadEditing.productPresentation && isEditing || isReadOnly) {
-                                                setInitialLoadEditing((prev) => ({
-                                                    ...prev,
-                                                    productPresentation: false,
-                                                }));
-                                                return;
-                                            }
 
-                                            const ppLot = selectedProductPresentation?.lots || [];
-                                            const locationLots = ppLot.filter((lot: Lot) => {
-                                                const stockInLocation = lot.stock?.some((stock: Stock) => {
-                                                    if (transferOrder.from_location_id) {
-                                                        return stock.location_id === transferOrder.from_location_id;
-                                                    }
-                                                    return false;
+                                                handleSelectProduct(row.transfer_order_item_id, {
+                                                    product_name: p.product_name,
+                                                    product_id: p.product_id,
+                                                    short_code: p.short_code,
+                                                    sell_measurement_mode: p.sell_measurement_mode,
+                                                    updated_at: p.updated_at,
+                                                })
+                                            }}
+                                            disabled={isTransferring || isReadOnly || (isEditing && !row.is_new)}
+                                        />
+                                        <ProductPresentationSelectorRoot
+                                            locationId={Number(fromLocationId)}
+                                            productId={row?.product_id}
+                                            value={row?.product_presentation || null}
+                                            onChange={(selectedProductPresentation) => {
+                                                if (isReadOnly || (isEditing && !row.is_new)) return;
+
+
+                                                const ppLot = selectedProductPresentation?.lots || [];
+                                                const locationLots = ppLot.filter((lot: Lot) => {
+                                                    const stockInLocation = lot.stock?.some((stock: Stock) => {
+                                                        if (fromLocationId) {
+                                                            return stock.location_id === Number(fromLocationId);
+                                                        }
+                                                        return false;
+                                                    });
+                                                    return stockInLocation;
                                                 });
-                                                return stockInLocation;
-                                            });
 
-                                            const {
-                                                lot_id,
-                                                stock_id,
-                                                max_quantity,
-                                                lot
-                                            } = getLotData(locationLots, null, Number(transferOrder.from_location_id));
+                                                const {
+                                                    lot_id,
+                                                    stock_id,
+                                                    max_quantity,
+                                                    lot
+                                                } = getLotData(locationLots, null, Number(fromLocationId));
 
-                                            const { exists } = lotIdForProductPresentationForProductExists(
-                                                row?.product_id,
-                                                selectedProductPresentation?.product_presentation_id || null,
-                                                lot_id
-                                            );
+                                                const { exists } = lotIdForProductPresentationForProductExists(
+                                                    row?.product_id,
+                                                    selectedProductPresentation?.product_presentation_id || null,
+                                                    lot_id
+                                                );
 
-                                            console.log("🟢 exists on PP change:", exists);
-
-                                            const adaptedPresentation = {
-                                                ...selectedProductPresentation,
-                                                lots: locationLots,
-                                            }
-
-                                            if (isTransferring) return;
-                                            const updatedItems = rows.map((item) =>
-                                                item.transfer_order_item_id === row.transfer_order_item_id
-                                                    ? {
-                                                        ...item,
-                                                        product_presentation: adaptedPresentation,
-                                                        product_presentation_id: selectedProductPresentation?.product_presentation_id || null,
-                                                        lot_id: exists ? null : lot_id,
-                                                        lot: exists ? null : lot,
-                                                        quantity: null,
-                                                        stock_id: stock_id,
-                                                        max_quantity: max_quantity,
-                                                    }
-                                                    : item
-                                            );
-                                            onChangeOrder?.({
-                                                ...transferOrder,
-                                                transfer_order_items: updatedItems,
-
-                                            });
-                                        }}
-                                        disabled={isTransferring || isReadOnly}
-                                        isFetchWithLots={true}
-                                        isFetchedWithLotContainersLocation={true}
-                                    >
-                                        <SelectProductPresentation />
-                                    </ProductPresentationSelectorRoot>
-
-                                </div>
-                            </TableCell>
-
-                            <TableCell className="align-top">
-                                <StockLocationTableCell
-                                    disabled={!row.product_presentation}
-                                    productName={row.product?.product_name || ''}
-                                    lots={rowLots}
-                                />
-                            </TableCell>
-
-                            <TableCell className="align-top w-40 ">
-                                {isTransferring || isReadOnly ? (<>
-                                    <span className="w-full h-full flex items-center pt-2">
-                                        {row.quantity}
-                                    </span>
-                                </>) : (
-
-
-                                    <InputGroup>
-                                        <InputGroupInput
-                                            disabled={isTransferring || isReadOnly}
-                                            value={row.quantity ?? ""}
-                                            onChange={(e) => {
-                                                if (maxQtyInFromLocation !== null && Number(e.target.value) > maxQtyInFromLocation) {
-                                                    toast.error(`La cantidad no puede ser mayor al stock disponible (${maxQtyInFromLocation}).`);
-                                                    return;
+                                                const adaptedPresentation = {
+                                                    ...selectedProductPresentation,
+                                                    lots: locationLots,
+                                                    product_presentation_id: selectedProductPresentation?.product_presentation_id ?? null,
+                                                    product_presentation_name: selectedProductPresentation?.product_presentation_name ?? '',
                                                 }
-                                                const inputValue = e.target.value;
-                                                const quantity = inputValue === "" ? null : Number(inputValue);
-                                                const updatedItems = rows.map((item) =>
+
+                                                if (isTransferring) return;
+                                                const updatedItems = transferOrderItems.map((item) =>
                                                     item.transfer_order_item_id === row.transfer_order_item_id
                                                         ? {
                                                             ...item,
-                                                            quantity: quantity,
-
+                                                            product_presentation: adaptedPresentation,
+                                                            product_presentation_id: selectedProductPresentation?.product_presentation_id ?? 0,
+                                                            lot_id: exists ? null : lot_id,
+                                                            lot: exists ? null : lot,
+                                                            quantity: 0,
+                                                            stock_id: stock_id,
+                                                            max_quantity: max_quantity,
                                                         }
                                                         : item
                                                 );
-                                                onChangeOrder?.({
-                                                    ...transferOrder,
-                                                    transfer_order_items: updatedItems,
-                                                });
-                                            }
-                                            }
-                                            placeholder="--"
-                                        />
-                                        <InputGroupAddon align="inline-end">
-                                            /{maxQtyInFromLocation}
-                                        </InputGroupAddon>
-                                    </InputGroup>
-                                )}
 
-                            </TableCell>
+                                                onChangeTransferOrderItems(updatedItems);
 
-                            {/* <TableCell className="align-top w-40 ">
+                                            }}
+                                            disabled={isTransferring || isReadOnly || (isEditing && !row.is_new)}
+                                            isFetchWithLots={true}
+                                            isFetchedWithLotContainersLocation={true}
+                                        >
+                                            <SelectProductPresentation />
+                                        </ProductPresentationSelectorRoot>
+
+                                    </div>
+                                </TableCell>
+
+                                <TableCell className="align-top">
+                                    <StockLocationTableCell
+                                        disabled={!row.product_presentation}
+                                        productName={row.product?.product_name || ''}
+                                        lots={rowLots}
+                                    />
+                                </TableCell>
+
+                                <TableCell className="align-top w-40 ">
+                                    {isTransferring || isReadOnly ? (<>
+                                        <span className="w-full h-full flex items-center pt-2">
+                                            {row.quantity}
+                                        </span>
+                                    </>) : (
+
+
+                                        <InputGroup>
+                                            <InputGroupInput
+                                                disabled={isTransferring || isReadOnly}
+                                                value={row.quantity ?? ""}
+                                                onChange={(e) => {
+                                                    if (maxQtyInFromLocation !== null && Number(e.target.value) > maxQtyInFromLocation) {
+                                                        toast.error(`La cantidad no puede ser mayor al stock disponible (${maxQtyInFromLocation}).`);
+                                                        return;
+                                                    }
+                                                    const inputValue = e.target.value;
+                                                    const quantity = inputValue === "" ? null : Number(inputValue);
+                                                    const updatedItems = transferOrderItems.map((item) =>
+                                                        item.transfer_order_item_id === row.transfer_order_item_id
+                                                            ? {
+                                                                ...item,
+                                                                quantity: quantity || 0,
+
+                                                            }
+                                                            : item
+                                                    );
+
+                                                    onChangeTransferOrderItems(updatedItems);
+
+                                                }
+                                                }
+                                                placeholder="--"
+                                            />
+                                            <InputGroupAddon align="inline-end">
+                                                /{maxQtyInFromLocation}
+                                            </InputGroupAddon>
+                                        </InputGroup>
+                                    )}
+
+                                </TableCell>
+
+                                {/* <TableCell className="align-top w-40 ">
                                 {isTransferring ? (
                                     <>{row.lot_containers_stock?.quantity ?? ""}</>
                                 ) : (
@@ -398,7 +374,7 @@ export default function TransferOrderItemsTable({
 
                                                 const lotContainersLocationId = selectedLotLotContainerLocation?.lot_containers_location_id || null;
                                                 console.log("🟢 lotContainersLocationId:", lotContainersLocationId);
-                                                const updatedItems = rows.map((item) =>
+                                                const updatedItems = transferOrderItems.map((item) =>
                                                     item.transfer_order_item_id === row.transfer_order_item_id
                                                         ? {
                                                             ...item,
@@ -436,88 +412,91 @@ export default function TransferOrderItemsTable({
                                 )}
                             </TableCell> */}
 
-                            {
-                                (!isTransferring && !isReadOnly) && (
-                                    <TableCell className="align-top w-36 ">
-                                        {rowLots.length === 0 ? (
-                                            <span className="text-sm text-muted-foreground h-10 flex items-center">No hay lotes</span>
-                                        ) : (
-                                            <Select
-                                                value={row?.lot_id ? String(row.lot_id) : "null"}
-                                                onValueChange={(value) => {
-                                                    const lotId = value === "null" ? null : Number(value);
+                                {
+                                    (!isTransferring && !isReadOnly) && (
+                                        <TableCell className="align-top w-36 ">
+                                            {rowLots.length === 0 ? (
+                                                <span className="text-sm text-muted-foreground h-10 flex items-center">No hay lotes</span>
+                                            ) : (
+                                                <Select
+                                                    value={row?.lot_id ? String(row.lot_id) : "null"}
+                                                    onValueChange={(value) => {
+                                                        const lotId = value === "null" ? null : Number(value);
 
-                                                    const ppLot = row.product_presentation?.lots || [];
+                                                        const ppLot = row.product_presentation?.lots || [];
 
-                                                    const {
-                                                        lot_id,
-                                                        stock_id,
-                                                        max_quantity,
-                                                        lot
-                                                    } = getLotData(ppLot, lotId, Number(transferOrder.from_location_id));
-
-
-                                                    const { exists } = lotIdForProductPresentationForProductExists(
-                                                        row?.product_id,
-                                                        row?.product_presentation_id || null,
-                                                        lot_id
-                                                    );
-
-                                                    if (exists) {
-                                                        toast.error(`El lote seleccionado ya ha sido agregado para esta presentación.`);
-                                                        return;
-                                                    }
+                                                        const {
+                                                            lot_id,
+                                                            stock_id,
+                                                            max_quantity,
+                                                            lot
+                                                        } = getLotData(ppLot, lotId, Number(fromLocationId));
 
 
-                                                    const updatedItems = rows.map((item) =>
-                                                        item.transfer_order_item_id === row.transfer_order_item_id
-                                                            ? {
-                                                                ...item,
-                                                                lot_id: lot_id,
-                                                                quantity: null,
-                                                                stock_id: stock_id,
-                                                                lot: lot,
-                                                                max_quantity
-                                                            }
-                                                            : item
-                                                    );
+                                                        const { exists } = lotIdForProductPresentationForProductExists(
+                                                            row?.product_id,
+                                                            row?.product_presentation_id || null,
+                                                            lot_id
+                                                        );
 
-                                                    onChangeOrder?.({
-                                                        ...transferOrder,
-                                                        transfer_order_items: updatedItems,
-                                                    });
-                                                }}
+                                                        if (exists) {
+                                                            toast.error(`El lote seleccionado ya ha sido agregado para esta presentación.`);
+                                                            return;
+                                                        }
 
 
-                                            >
-                                                <SelectTrigger className="w-[180px]">
-                                                    <SelectValue placeholder="Seleccionar lote" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectGroup>
-                                                        <SelectLabel>Lots</SelectLabel>
-                                                        {rowLots.map((lot: Lot) => {
-                                                            return <SelectItem
-                                                                key={lot.lot_id
-                                                                    ? lot.lot_id
-                                                                    : Math.random()}
-                                                                value={lot.lot_id ? String(lot.lot_id) : "null"}
+                                                        const updatedItems = transferOrderItems.map((item) =>
+                                                            item.transfer_order_item_id === row.transfer_order_item_id
+                                                                ? {
+                                                                    ...item,
+                                                                    lot_id: lot_id,
+                                                                    quantity: 0,
+                                                                    stock_id: stock_id,
+                                                                    lot: lot,
+                                                                    max_quantity
+                                                                }
+                                                                : item
+                                                        );
 
-                                                            >
-                                                                {formatDate(lot.created_at)}
-                                                            </SelectItem>
-                                                        })}
+                                                        onChangeTransferOrderItems(updatedItems);
 
-                                                    </SelectGroup>
-                                                </SelectContent>
-                                            </Select>
-                                        )}
 
-                                    </TableCell>
-                                )
-                            }
+                                                        // onChangeOrder?.({
+                                                        //     ...transferOrder,
+                                                        //     transfer_order_items: updatedItems,
+                                                        // });
+                                                    }}
 
-                            {/* {
+
+                                                >
+                                                    <SelectTrigger className="w-[180px]">
+                                                        <SelectValue placeholder="Seleccionar lote" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectGroup>
+                                                            <SelectLabel>Lots</SelectLabel>
+                                                            {rowLots.map((lot: Lot) => {
+                                                                return <SelectItem
+                                                                    key={lot.lot_id
+                                                                        ? lot.lot_id
+                                                                        : Math.random()}
+                                                                    value={lot.lot_id ? String(lot.lot_id) : "null"}
+
+                                                                >
+                                                                    {formatDate(lot.created_at)}
+                                                                </SelectItem>
+                                                            })}
+
+                                                        </SelectGroup>
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+
+                                        </TableCell>
+                                    )
+                                }
+
+                                {/* {
                                 isTransferring && (
 
                                     <TableCell className="align-top w-36 " >
@@ -528,7 +507,7 @@ export default function TransferOrderItemsTable({
                                                 onCheckedChange={(checked) => {
                                                     const isTransferred = checked ? true : false;
 
-                                                    const updatedItems = rows.map((item) =>
+                                                    const updatedItems = transferOrderItems.map((item) =>
                                                         item.transfer_order_item_id === row.transfer_order_item_id
                                                             ? {
                                                                 ...item,
@@ -548,25 +527,25 @@ export default function TransferOrderItemsTable({
                                 )
                             } */}
 
-                            {
-                                (!isTransferring && !isReadOnly) && (
-                                    <TableCell className="text-right align-top w-20 ">
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            // disabled={!isTransferring}
-                                            className="cursor-pointer"
-                                            onClick={() => {
-                                                handleRemoveItem(row.transfer_order_item_id);
-                                            }}
-                                        >
-                                            <Trash />
-                                        </Button>
-                                    </TableCell>
-                                )
-                            }
-                        </TableRow>)
-                    })
+                                {
+                                    (!isTransferring && !isReadOnly) && (
+                                        <TableCell className="text-right align-top w-20 ">
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                // disabled={!isTransferring}
+                                                className="cursor-pointer"
+                                                onClick={() => {
+                                                    handleRemoveItem(row.transfer_order_item_id);
+                                                }}
+                                            >
+                                                <Trash />
+                                            </Button>
+                                        </TableCell>
+                                    )
+                                }
+                            </TableRow>)
+                        })
                     }
 
                     {!isTransferring && (

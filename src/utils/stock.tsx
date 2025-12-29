@@ -1,5 +1,4 @@
 
-import type { LotContainersStock } from "@/types/lotContainersStock";
 import type { Lot } from "@/types/lots";
 import type { Stock } from "@/types/stocks";
 
@@ -34,46 +33,46 @@ export const formatStockLocation = (stockItem: StockWithRelations) => {
     return { typeLabel: type || "Otro", nameLabel: "", isStore: false };
 };
 
-export function redistributeUnassigned(lotContainersStock: LotContainersStock[]): LotContainersStock[] {
-    // Agrupar por lot_container_id
-    const groups = lotContainersStock.reduce((acc, item) => {
-        if (!acc[item.lot_container_id]) acc[item.lot_container_id] = [];
-        acc[item.lot_container_id].push(item);
-        return acc;
-    }, {});
+// export function redistributeUnassigned(lotContainersStock: LotContainersStock[]): LotContainersStock[] {
+//     // Agrupar por lot_container_id
+//     const groups = lotContainersStock.reduce((acc, item) => {
+//         if (!acc[item.lot_container_id]) acc[item.lot_container_id] = [];
+//         acc[item.lot_container_id].push(item);
+//         return acc;
+//     }, {});
 
-    const result = [];
+//     const result = [];
 
-    Object.values(groups).forEach((group) => {
-        let totalAssigned = 0;
-        let unassignedRow = null;
+//     Object.values(groups).forEach((group) => {
+//         let totalAssigned = 0;
+//         let unassignedRow = null;
 
-        // Buscar asignados y no asignado
-        group.forEach((item) => {
-            if (item.location_id) {
-                totalAssigned += item.quantity ?? 0;
-            } else {
-                unassignedRow = item;
-            }
-        });
+//         // Buscar asignados y no asignado
+//         group.forEach((item) => {
+//             if (item.location_id) {
+//                 totalAssigned += item.quantity ?? 0;
+//             } else {
+//                 unassignedRow = item;
+//             }
+//         });
 
-        // Actualizar el unassigned restando el totalAssigned
-        if (unassignedRow) {
-            unassignedRow = {
-                ...unassignedRow,
-                quantity: Math.max((unassignedRow.quantity ?? 0) - totalAssigned, 0),
-            };
-        }
+//         // Actualizar el unassigned restando el totalAssigned
+//         if (unassignedRow) {
+//             unassignedRow = {
+//                 ...unassignedRow,
+//                 quantity: Math.max((unassignedRow.quantity ?? 0) - totalAssigned, 0),
+//             };
+//         }
 
-        // Agregar al resultado: primero el unassigned, luego los assigned
-        if (unassignedRow) result.push(unassignedRow);
-        group.forEach((item) => {
-            if (item.location_id) result.push(item);
-        });
-    });
+//         // Agregar al resultado: primero el unassigned, luego los assigned
+//         if (unassignedRow) result.push(unassignedRow);
+//         group.forEach((item) => {
+//             if (item.location_id) result.push(item);
+//         });
+//     });
 
-    return result;
-}
+//     return result;
+// }
 
 export const getLotData = (lots: Lot[], lotId: number | null, locationId: number) => {
 
@@ -98,14 +97,17 @@ export const getLotData = (lots: Lot[], lotId: number | null, locationId: number
         stock_id: lotStock?.stock_id || null,
         max_quantity: max_quantity,
         lot: lot,
+        provider_id: lot?.provider_id || null,
+        expiration_date: lot?.expiration_date || null,
+        expiration_date_notification: lot?.expiration_date_notification ?? false,
     }
 }
 
-export const getUnassignedStock = (lot: Lot, stock: Stock[]): Stock | null => {
+export const getUnassignedStock = (lot: Lot, stock: Stock[]): Omit<Stock, "stock_id"> | null => {
     const totalStockAssigned = stock.reduce((acc: number, stock: Stock) => acc + stock.quantity, 0);
     const unassignedQuantity = (lot.initial_stock_quantity || 0) - totalStockAssigned;
 
-    const unassignedStock: Stock = {
+    const unassignedStock: Omit<Stock, "stock_id"> = {
         product_id: lot.product_id,
         quantity: unassignedQuantity,
         lot_id: lot.lot_id!,

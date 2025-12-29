@@ -19,7 +19,7 @@ import {
     useReactTable,
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
-import { DeleteTableElementPopUp } from "../shared/deleteTableElementPopUp";
+import { DeleteTableElementPopUp } from "../deleteTableElementPopUp";
 
 interface ProvidersTableProps {
     providers: Provider[];
