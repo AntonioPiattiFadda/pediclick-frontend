@@ -5,7 +5,7 @@ import { checkIfShortCodeIsAvailable } from "@/service/products";
 
 type Props = {
     value: number | null;
-    onChange: (value: string) => void;
+    onChange: (value: number | undefined) => void;
     productId?: number;
 };
 
@@ -58,8 +58,11 @@ const ShortCodeSelector = ({ value, onChange, productId }: Props) => {
                 id="short_code"
                 type="number"
                 placeholder="Código corto"
-                value={value ?? ""}
-                onChange={(e) => onChange(e.target.value)}
+                value={value ?? undefined}
+                onChange={(e) => {
+                    const newValue = e.target.value;
+                    onChange(newValue === "" ? undefined : (Number(newValue)));
+                }}
             />
 
             <div className="min-h-5 text-sm">

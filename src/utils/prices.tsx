@@ -15,6 +15,7 @@ export const formatCurrency = (
     locale: string = 'es-AR',
     currency: string = 'ARS'
 ): string => {
+    console.log({ value, locale, currency });
     return (value).toLocaleString(locale, {
         style: 'currency',
         currency,

@@ -7,11 +7,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getAllProducts, getAllSoldProducts } from "@/service/products";
+import { getAllAvailableProducts, getAllProductsInStock, getAllSoldProducts } from "@/service/products";
 import type { Location } from "@/types/locations";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw, Search } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import TableSkl from "../../../../components/ui/skeleton/tableSkl";
 import { ProductTableRenderer } from "./productTableRenderer";
 import { CategorySelectorRoot, SelectCategory } from "../../../../components/admin/selectors/categorySelector";
@@ -24,15 +24,15 @@ import {
   RadioGroupItem,
 } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox";
+import type { StockTypeToShow } from "@/types";
+
 
 export const ProductsContainer = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLocation, setSelectedLocation] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null);
-
-  const [stockTypeToShow, setStockTypeToShow] = useState<'STOCK' | 'SOLD'>('STOCK');
-
+  const [stockTypeToShow, setStockTypeToShow] = useState<StockTypeToShow>('STOCK');
   const [viewUnassignedOnly, setViewUnassignedOnly] = useState<boolean>(false);
 
   const {
@@ -44,7 +44,7 @@ export const ProductsContainer = () => {
   } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const response = await getAllProducts();
+      const response = await getAllProductsInStock();
       return response.products
     },
   });
@@ -63,9 +63,54 @@ export const ProductsContainer = () => {
     },
   });
 
-  const productsToUse = stockTypeToShow === 'STOCK' ? products : soldStockProducts;
+  const {
+    data: allProducts = [],
+    isLoading: isLoadingAllProducts,
+    isError: isErrorAllProducts,
+    refetch: refetchAllProducts,
+    isRefetching: isRefetchingAllProducts
+  } = useQuery({
+    queryKey: ["all-products"],
+    queryFn: async () => {
+      const response = await getAllAvailableProducts();
+      return response.products
+    },
+  });
 
-  const filteredByLocation = productsToUse
+  const getNonStockProducts = (locationId: number | null) => {
+    return allProducts.filter((noStockProduct) => {
+      const existsWithStock = products.some((product) => {
+        if (product.product_id !== noStockProduct.product_id) return false;
+
+        return product.product_presentations?.some((presentation) =>
+          presentation.lots?.some((lot) =>
+            lot.stock?.some((stock) =>
+              locationId
+                ? stock.location_id === locationId && stock.quantity > 0
+                : stock.quantity > 0
+            )
+          )
+        );
+      });
+
+      // 👉 Nos quedamos solo con los que NO existen con stock
+      return !existsWithStock;
+    });
+  };
+
+  const nonStockProducts = getNonStockProducts(selectedLocation?.location_id || null);
+
+  const getProductToUse = () => {
+    if (stockTypeToShow === 'STOCK') return products;
+    if (stockTypeToShow === 'SOLD') return soldStockProducts;
+    if (stockTypeToShow === 'NO-STOCK') return nonStockProducts;
+    return products;
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const productsToUse = useMemo(() => getProductToUse(), [stockTypeToShow, products, soldStockProducts, allProducts, nonStockProducts]);
+
+  const filteredByLocation = stockTypeToShow === 'NO-STOCK' ? productsToUse : productsToUse
     .map((product) => {
       if (!selectedLocation && !viewUnassignedOnly) return product;
 
@@ -139,6 +184,9 @@ export const ProductsContainer = () => {
     );
   });
 
+  if (isLoadingAllProducts && stockTypeToShow === 'NO-STOCK') {
+    return <TableSkl />;
+  }
 
   if (isLoading && stockTypeToShow === 'STOCK') {
     return <TableSkl />;
@@ -148,7 +196,7 @@ export const ProductsContainer = () => {
     return <TableSkl />;
   }
 
-  if (isError || isErrorSoldStock) {
+  if (isError || isErrorSoldStock || isErrorAllProducts) {
     return <div>Error loading products.</div>;
   }
 
@@ -175,16 +223,18 @@ export const ProductsContainer = () => {
                 variant="outline"
                 size={'icon'}
 
-                disabled={(isRefetching && stockTypeToShow === 'STOCK') || (isRefetchingSoldStock && stockTypeToShow === 'SOLD')}
+                disabled={(isRefetching && stockTypeToShow === 'STOCK') || (isRefetchingSoldStock && stockTypeToShow === 'SOLD') || (isRefetchingAllProducts && stockTypeToShow === 'NO-STOCK')}
                 onClick={() => {
                   if (stockTypeToShow === 'SOLD') {
                     refetchSoldStock();
                     return;
                   }
-                  if (stockTypeToShow === 'STOCK') {
+                  if (stockTypeToShow === 'STOCK' || stockTypeToShow === 'NO-STOCK') {
                     refetch()
+                    refetchAllProducts()
                     return;
                   }
+
                 }}
               >
                 <RefreshCw className={`w-4 h-4 scale-x-[-1] ${isRefetching ? 'animate-spin' : ''}`} />
@@ -263,52 +313,27 @@ export const ProductsContainer = () => {
 
               <RadioGroup value={stockTypeToShow} onValueChange={(value) => {
                 setStockTypeToShow(value as 'STOCK' | 'SOLD')
-              }} defaultValue="STOCK" className="flex flex-row gap-4 mt-2" >
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="STOCK" id="r1" />
-                  <Label htmlFor="r1">En stock</Label>
-                </div>
+              }} defaultValue="STOCK" className="flex flex-row gap-4 mt-2 " >
                 <div className="flex items-center gap-3">
                   <RadioGroupItem value="SOLD" id="r3" />
-                  <Label htmlFor="r3">Vendido</Label>
+                  <Label className="w-20" htmlFor="r3">Vendido</Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <RadioGroupItem value="STOCK" id="r1" />
+                  <Label className="w-20" htmlFor="r1">En stock</Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <RadioGroupItem value="NO-STOCK" id="r2" />
+                  <Label className="w-20" htmlFor="r2">Sin stock</Label>
                 </div>
               </RadioGroup>
 
             </div>
 
-            {/* <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las categorías</SelectItem>
-                <SelectItem value="electronics">Electrónicos</SelectItem>
-                <SelectItem value="smartphones">Smartphones</SelectItem>
-                <SelectItem value="audio">Audio</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-full md:w-40">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="active">Activo</SelectItem>
-                <SelectItem value="draft">Borrador</SelectItem>
-                <SelectItem value="out_of_stock">Sin stock</SelectItem>
-              </SelectContent>
-            </Select> */}
           </div>
 
           <ProductTableRenderer defaultData={filteredProducts} />
 
-          {/* <ProductsTable
-            products={filteredProducts ?? []}
-            isSearchingTerm={searchTerm.length > 0}
-          /> */}
         </CardContent>
       </Card>
     </div>

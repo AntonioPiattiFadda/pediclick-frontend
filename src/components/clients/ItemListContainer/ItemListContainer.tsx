@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from "react";
 import { SearchContext } from "../Context/SearchContext";
 import styles from "./ItemListContainer.module.css";
+import { getAllProductsInStock } from "@/service/products";
 // import NotFound from "../NoProductFound/NoProductFound";
-import { getAllProducts } from "@/service/products";
 // import { ProductsSkeleton } from "../../Utils/Skeletons";
 
 // const transformProductsData = (data) => {
@@ -44,7 +44,7 @@ const ItemListContainer = () => {
   // const [items, setItems] = useState([]);
 
   useEffect(() => {
-    getAllProducts()
+    getAllProductsInStock()
       .then((res) => {
         setLoading(true);
         console.log("res", res);

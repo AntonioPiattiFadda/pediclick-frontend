@@ -174,7 +174,8 @@ export function Transformation({
                                 onChange={(location) => {
                                     setSelectedLocation(location);
                                     handleResetTransformationItems();
-                                }}>
+                                }}
+                            >
                                 <SelectLocation />
                             </LocationSelectorRoot>
                         </div>

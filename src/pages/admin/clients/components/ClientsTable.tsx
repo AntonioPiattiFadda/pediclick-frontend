@@ -7,7 +7,6 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import RegisterClientPayment from "@/components/unassigned/registerClientPayment";
 import { deleteClient } from "@/service/clients";
 import type { Client } from "@/types/clients";
 import type { ColumnDef, PaginationState } from "@tanstack/react-table";
@@ -24,6 +23,7 @@ import { formatCurrency } from "@/utils/prices";
 import { formatDate } from "@/utils";
 import { DeleteTableElementPopUp } from "@/components/admin/deleteTableElementPopUp";
 import ClientHistoricalMvts from "./clientHistoricalMvts";
+import RegisterClientPayment from "@/components/admin/registerClientPayment/RegisterClientPayment";
 
 interface ClientsTableProps {
     clients: Client[];
@@ -74,18 +74,14 @@ export const ClientsTable = ({ clients, filter = "" }: ClientsTableProps) => {
                                 elementName={client.full_name}
                                 deleteFn={deleteClient}
                                 queryKey={["clients"]}
-                                successMsgTitle="Cliente eliminado"
                                 successMsgDescription={`El cliente "${client.full_name}" ha sido eliminado.`}
-                                errorMsgTitle="Error al eliminar cliente"
                                 errorMsgDescription="No se pudo eliminar el cliente."
                             />
 
                             <ClientHistoricalMvts selectedClientId={client.client_id} />
 
                             <RegisterClientPayment
-                                clientId={client.client_id || 0}
-                                clientName={client.full_name}
-                                currentBalance={client.current_balance}
+                                client={client}
                             />
                         </div>
                     );

@@ -90,129 +90,133 @@ const SalesHistory = ({
                 </Button>
             </SheetTrigger>
 
-            <SheetContent side="right" className="w-full sm:max-w-2xl p-0">
-                <div className="flex h-full flex-col">
-                    <div className="border-b border-b-gray-200 px-6 py-4">
-                        <SheetHeader>
-                            <SheetTitle>Histórico de ventas</SheetTitle>
-                            <SheetDescription>
-                                Lote #{lotId ?? "-"}
-                            </SheetDescription>
-                        </SheetHeader>
-                    </div>
+            <SheetContent side="right" className="w-full sm:max-w-2xl p-0 h-screen flex flex-col">
 
-                    <div className="flex-1 overflow-auto">
-                        {isLoading && (
-                            <div className="flex h-full items-center justify-center gap-2 text-muted-foreground">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Cargando ventas...
+
+                <div className="border-b border-b-gray-200 px-6 py-4">
+                    <SheetHeader>
+                        <SheetTitle>Histórico de ventas</SheetTitle>
+                        <SheetDescription>
+                            Lote #{lotId ?? "-"}
+                        </SheetDescription>
+                    </SheetHeader>
+                </div>
+
+                <div className="flex-1 overflow-auto">
+                    {isLoading && (
+                        <div className="flex h-full items-center justify-center gap-2 text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Cargando ventas...
+                        </div>
+                    )}
+
+
+
+                    {!isLoading && !isError && sales?.length === 0 && (
+                        <div className="p-6 text-sm text-muted-foreground">
+                            No hay movimientos de ventas para este lote.
+                        </div>
+                    )}
+
+                    {!isLoading && !isError && (sales?.length ?? 0) > 0 && (
+                        <div className="px-6 py-4">
+
+                            <div className="sticky top-0 z-10 grid grid-cols-12 gap-2 border-b border-b-gray-200 bg-background px-2 py-2 text-xs font-medium text-muted-foreground">
+                                <div className="col-span-3">Fecha</div>
+                                <div className="col-span-3">Cantidad Vendida</div>
+                                <div className="col-span-2 text-right">Precio</div>
+                                <div className="col-span-4 text-right">Total</div>
                             </div>
-                        )}
+
+                            <div className="divide-y divide-gray-200">
+                                {sales && sales.filter((s): s is OrderItem => s !== undefined).map((s: OrderItem) => {
+                                    return (
+                                        <div
+                                            key={s.order_id}
+                                            className="grid grid-cols-12 gap-2 px-2 py-3 text-sm"
+                                        >
+                                            <div className="col-span-3">{formatDate(s.created_at)}</div>
+                                            <div className="col-span-3 truncate">{s.quantity}</div>
+                                            <div className="col-span-2 text-right">{formatCurrency(s.price)}</div>
+                                            <div className="col-span-4 text-right">{formatCurrency(s.total)}</div>
 
 
-
-                        {!isLoading && !isError && sales?.length === 0 && (
-                            <div className="p-6 text-sm text-muted-foreground">
-                                No hay movimientos de ventas para este lote.
-                            </div>
-                        )}
-
-                        {!isLoading && !isError && (sales?.length ?? 0) > 0 && (
-                            <div className="px-6 py-4">
-
-                                <div className="sticky top-0 z-10 grid grid-cols-12 gap-2 border-b border-b-gray-200 bg-background px-2 py-2 text-xs font-medium text-muted-foreground">
-                                    <div className="col-span-3">Fecha</div>
-                                    <div className="col-span-3">Cantidad Vendida</div>
-                                    <div className="col-span-2 text-right">Precio</div>
-                                    <div className="col-span-4 text-right">Total</div>
-                                </div>
-
-                                <div className="divide-y divide-gray-200">
-                                    {sales && sales.filter((s): s is OrderItem => s !== undefined).map((s: OrderItem) => {
-                                        return (
-                                            <div
-                                                key={s.order_id}
-                                                className="grid grid-cols-12 gap-2 px-2 py-3 text-sm"
-                                            >
-                                                <div className="col-span-3">{formatDate(s.created_at)}</div>
-                                                <div className="col-span-3 truncate">{s.quantity}</div>
-                                                <div className="col-span-2 text-right">{formatCurrency(s.price)}</div>
-                                                <div className="col-span-4 text-right">{formatCurrency(s.total)}</div>
-
-
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-
-                                <div className="p-2 flex justify-end items-center gap-2">
-                                    {/* Pagination Controls could go here */}
-                                    <Button size={'icon'}
-                                        disabled={pagination.page === 1}
-                                        onClick={() => setPagination((prev) => ({
-                                            ...prev,
-                                            page: Math.max(prev.page - 1, 1),
-                                        }))}
-                                    >
-                                        <ChevronLeft className="h-4 w-4" />
-                                    </Button>
-                                    <span>
-                                        Página {pagination.page}
-                                    </span>
-                                    <Button
-                                        size={'icon'}
-                                        disabled={(sales?.length ?? 0) < pagination.pageSize}
-                                        onClick={() => setPagination((prev) => ({
-                                            ...prev,
-                                            page: prev.page + 1,
-                                        }))}
-                                    >
-                                        <ChevronRight className="h-4 w-4" />
-                                    </Button>
-                                </div>
-
-                                <div className="divide-y divide-gray-200">
-
-                                    {isLoadingAllSales ? (
-                                        <div className="flex h-full items-center justify-center gap-2 text-muted-foreground">
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                            Calculando totales...
                                         </div>
-                                    ) : (
-                                        <>
-
-                                            <div
-                                                className="grid grid-cols-12 gap-2 px-2 py-3 text-sm font-semibold border-t border-t-gray-200 mt-4"
-                                            >
-                                                <div className="col-span-3"></div>
-                                                <div className="col-span-3"></div>
-                                                <div className="col-span-2 text-right">Promedio de precio de venta</div>
-                                                <div className="col-span-4 text-right">{formatCurrency(salePricePromedio)}</div>
-                                            </div>
-
-
-                                            <div
-                                                className="grid grid-cols-12 gap-2 px-2 py-3 text-sm font-semibold "
-                                            >
-                                                <div className="col-span-3"></div>
-                                                <div className="col-span-3"></div>
-                                                <div className="col-span-2 text-right">Total</div>
-                                                <div className="col-span-4 text-right">{formatCurrency(salesTotal)}</div>
-                                            </div>
-                                        </>
-
-                                    )}
-
-
-                                    <div className="col-span-3"></div>
-
-                                </div>
+                                    );
+                                })}
                             </div>
-                        )}
-                    </div>
+
+
+
+                        </div>
+                    )}
+                </div>
+
+
+                <div className="divide-y divide-gray-200">
+
+                    {isLoadingAllSales ? (
+                        <div className="flex h-full items-center justify-center gap-2 text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Calculando totales...
+                        </div>
+                    ) : (
+                        <>
+
+                            <div
+                                className="grid grid-cols-12 gap-2 px-2 py-3 text-sm font-semibold border-t border-t-gray-200 mt-4"
+                            >
+                                <div className="col-span-3"></div>
+                                <div className="col-span-3"></div>
+                                <div className="col-span-2 text-right">Promedio de precio de venta</div>
+                                <div className="col-span-4 text-right">{formatCurrency(salePricePromedio)}</div>
+                            </div>
+
+
+                            <div
+                                className="grid grid-cols-12 gap-2 px-2 py-3 text-sm font-semibold "
+                            >
+                                <div className="col-span-3"></div>
+                                <div className="col-span-3"></div>
+                                <div className="col-span-2 text-right">Total</div>
+                                <div className="col-span-4 text-right">{formatCurrency(salesTotal)}</div>
+                            </div>
+                        </>
+
+                    )}
+
+
+                    <div className="col-span-3"></div>
 
                 </div>
 
+
+
+                <div className="p-2 flex justify-end items-center gap-2">
+                    {/* Pagination Controls could go here */}
+                    <Button size={'icon'}
+                        disabled={pagination.page === 1}
+                        onClick={() => setPagination((prev) => ({
+                            ...prev,
+                            page: Math.max(prev.page - 1, 1),
+                        }))}
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span>
+                        Página {pagination.page}
+                    </span>
+                    <Button
+                        size={'icon'}
+                        disabled={(sales?.length ?? 0) < pagination.pageSize}
+                        onClick={() => setPagination((prev) => ({
+                            ...prev,
+                            page: prev.page + 1,
+                        }))}
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </div>
 
             </SheetContent>
         </Sheet>

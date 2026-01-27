@@ -1,34 +1,13 @@
+import { ROLES } from "@/constants";
 import { Info } from "lucide-react";
 import { useRef, useState } from "react";
 
-
-
-export const ROLES = [
-    {
-      label: "Encargado",
-      value: "MANAGER",
-      descripcion:
-        "Tendra acceso a la creacion de empleados dentro del sistema y a la gestion de inventario",
-    },
-    {
-      label: "Empleado",
-      value: "EMPLOYEE",
-      descripcion:
-        "Solo podra acceder a la pantalla de vendedor. Sin permisos para ingresar a los datos del sistema",
-    },
-    {
-      label: "Propietario",
-      value: "OWNER",
-      descripcion:
-        "Tendra acceso total a todas las funcionalidades del sistema, incluyendo la gestion de usuarios y configuraciones.",
-    }
-  ];
 
 const RolesInfoPopover = () => {
   const [isVisible, setIsVisible] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  
+
 
   const handleMouseEnter = () => {
     // Cancelar cualquier timeout pendiente

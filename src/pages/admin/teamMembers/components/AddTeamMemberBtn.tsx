@@ -27,11 +27,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { ZodIssue } from "zod";
 import { ValidationErrorMessage } from "@/components/ui/validationErrorMessage";
-import RolesInfoPopover, { ROLES } from "./RoleInfoPopover";
+import RolesInfoPopover from "./RoleInfoPopover";
 import { createTeamMember } from "@/service/profiles";
 import PasswordInfoPopover from "./PasswordInfoPopover";
 import type { UserProfile } from "@/types/users";
 import { emptyUser } from "@/constants/teamMembers";
+import { ROLES } from "@/constants";
 
 
 

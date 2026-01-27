@@ -17,11 +17,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { ImageSelector } from "../../../pages/admin/stock/components/addEditProduct/ImageSelector";
 import { adaptProductForDb } from "@/adapters/products";
 import { getProduct, updateProduct } from "@/service/products";
-import { toast } from "sonner";
 import { CategorySelectorRoot, CreateCategory, SelectCategory } from "../selectors/categorySelector";
 import { BrandSelectorRoot, CreateBrand, SelectBrand } from "../selectors/brandSelector";
 import { CreateSubCategory, SelectSubCategory, SubCategorySelectorRoot } from "../selectors/subCategorySelector";
 import ShortCodeSelector from "./shortCodeSelector";
+import toast from "react-hot-toast";
 
 interface ProductEditSheetProps {
     product: Product;
@@ -44,7 +44,6 @@ export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) 
         barcode: product.barcode ?? null,
         public_image_id: product.public_image_id ?? null,
         observations: product.observations ?? "",
-        sell_measurement_mode: product.sell_measurement_mode ?? "QUANTITY",
         allow_stock_control: product.allow_stock_control ?? false,
         lot_control: product.lot_control ?? false,
     });
@@ -61,7 +60,6 @@ export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) 
             barcode: product.barcode ?? null,
             public_image_id: product.public_image_id ?? null,
             observations: product.observations ?? "",
-            sell_measurement_mode: product.sell_measurement_mode ?? "QUANTITY",
             allow_stock_control: product.allow_stock_control ?? false,
             lot_control: product.lot_control ?? false,
         })
@@ -80,15 +78,11 @@ export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) 
             const { product: refreshed } = await getProduct(product.product_id!);
             onUpdated(refreshed);
 
-            toast("Producto actualizado exitosamente", {
-                description: "Los cambios impactan en todos los lotes del producto.",
-            });
+            toast.success("Producto actualizado exitosamente: Los cambios impactan en todos los lotes del producto.");
             setOpen(false);
         } catch (e: unknown) {
             const message = e instanceof Error ? e.message : "Intentá nuevamente más tarde.";
-            toast("Error al actualizar el producto", {
-                description: message,
-            });
+            toast.error("Error al actualizar el producto: " + message);
         } finally {
             setIsSaving(false);
         }
@@ -115,7 +109,7 @@ export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) 
                             onChange={(value) =>
                                 setFormData((p) => ({
                                     ...p,
-                                    short_code: value === "" ? null : Number(value),
+                                    short_code: value,
                                 }))
                             }
                         />

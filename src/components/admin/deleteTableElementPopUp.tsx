@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/popover";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface DeleteTableElementPopUpProps {
   elementId: number | string;
@@ -16,9 +16,7 @@ interface DeleteTableElementPopUpProps {
   deleteFn: (id: number | string) => Promise<any>;
   elementName?: string;
   size?: "sm" | "default" | "lg" | "icon";
-  successMsgTitle?: string;
   successMsgDescription?: string;
-  errorMsgTitle?: string;
   errorMsgDescription?: string;
 }
 
@@ -28,9 +26,7 @@ export function DeleteTableElementPopUp({
   deleteFn,
   elementName,
   size = "icon",
-  successMsgTitle,
   successMsgDescription,
-  errorMsgTitle,
   errorMsgDescription
 }: DeleteTableElementPopUpProps) {
   const queryClient = useQueryClient();
@@ -43,15 +39,11 @@ export function DeleteTableElementPopUp({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
       setOpen(false);
-      toast(successMsgTitle, {
-        description: successMsgDescription,
-      });
+      if (successMsgDescription) toast.success(successMsgDescription);
     },
     onError: (error: any) => {
       const errorMessage = error.message || errorMsgDescription;
-      toast(errorMsgTitle, {
-        description: errorMessage,
-      });
+      toast.error(errorMessage);
     },
   });
 

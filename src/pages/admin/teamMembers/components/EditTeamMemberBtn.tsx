@@ -29,10 +29,11 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { ZodIssue } from "zod";
 import PasswordInfoPopover from "./PasswordInfoPopover";
-import RolesInfoPopover, { ROLES } from "./RoleInfoPopover";
+import RolesInfoPopover from "./RoleInfoPopover";
 import { Edit } from "lucide-react";
 import type { UserProfile } from "@/types/users";
 import { emptyUser } from "@/constants/teamMembers";
+import { ROLES } from "@/constants";
 
 
 

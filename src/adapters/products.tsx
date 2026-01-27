@@ -16,13 +16,8 @@ export const adaptProductForDb = (product: any): Product => {
     lot_control: product.lot_control || null,
     public_image_id: product.public_image_id || null,
     observations: product.observations || null,
-    sell_measurement_mode: product.sell_measurement_mode || null,
     iva_id: product.iva_id || null,
     updated_at: product.updated_at || null,
-    equivalence_minor_mayor_selling: {
-      minor: Number(product.equivalence_minor_mayor_selling?.minor) || null,
-      mayor: Number(product.equivalence_minor_mayor_selling?.mayor) || null,
-    },
     product_presentations: product.product_presentations as ProductPresentation[] | undefined,
   };
 };

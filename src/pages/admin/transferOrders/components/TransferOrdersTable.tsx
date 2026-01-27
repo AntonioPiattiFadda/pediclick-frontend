@@ -23,13 +23,17 @@ interface TransferOrdersTableProps {
 }
 
 export const TransferOrdersTable = ({ transferOrders }: TransferOrdersTableProps) => {
+
   const navigate = useNavigate();
+
   const queryClient = useQueryClient();
 
   const deleteOrderMutation = useMutation({
     mutationFn: (id: string | number) => deleteTransferOrder(id),
     onSuccess: () => {
+
       queryClient.invalidateQueries({ queryKey: ["transfer-orders"] });
+
       toast("Orden eliminada", {
         description: "La orden se eliminó correctamente.",
       });
@@ -95,6 +99,7 @@ export const TransferOrdersTable = ({ transferOrders }: TransferOrdersTableProps
                         </Button>
                       </>
                     )}
+
                   <DeleteTableElementPopUp
                     elementId={to.transfer_order_id}
                     elementName={to.transfer_order_id?.toString()}
@@ -103,9 +108,7 @@ export const TransferOrdersTable = ({ transferOrders }: TransferOrdersTableProps
 
                     }}
                     queryKey={["transfer-orders"]}
-                    successMsgTitle="Transferencia eliminada"
                     successMsgDescription="La transferencia ha sido eliminada correctamente."
-                    errorMsgTitle="Error al eliminar transferencia"
                     errorMsgDescription="No se pudo eliminar la transferencia."
                   />
 

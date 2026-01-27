@@ -7,10 +7,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
-import { ROLES } from "./RoleInfoPopover";
 import { deleteTeamMember } from "@/service/profiles";
 import type { UserProfile } from "@/types/users";
 import { DeleteTableElementPopUp } from "@/components/admin/deleteTableElementPopUp";
+import { ROLES } from "@/constants";
 
 interface TeamMemberTableProps {
   teamMembers: UserProfile[];
@@ -45,9 +45,7 @@ export const TeamMemberTable = ({ teamMembers }: TeamMemberTableProps) => {
                       await deleteTeamMember(String(id));
                     }}
                     queryKey={["team-members"]}
-                    successMsgTitle="Miembro eliminado"
                     successMsgDescription="El miembro de equipo ha sido eliminado correctamente."
-                    errorMsgTitle="Error al eliminar miembro"
                     errorMsgDescription="No se pudo eliminar el miembro de equipo."
                   />
                 </TableCell>

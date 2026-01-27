@@ -18,6 +18,7 @@ export type Stock = {
   location_id: number | null;
 
   quantity: number;
+  over_sell_quantity: number | null;
   lot_id: number;
   min_notification: number | null;
   max_notification: number | null;

@@ -1,29 +1,17 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAppSelector } from "@/hooks/useUserData";
-import { signOut } from "@/service/auth";
 import { getUserDataByUid } from "@/service/profiles";
 import { setUser } from "@/stores/userSlice";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { LogOut } from "lucide-react";
+import type { UserProfile } from "@/types/users";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { UserProfile } from "@/types/users";
-import { ROLES } from "@/pages/admin/teamMembers/components/RoleInfoPopover";
+import UserData from "./UserData";
 
 export const Header = () => {
   const dispatch = useDispatch();
 
-  const signOutMutation = useMutation({
-    mutationFn: async () => {
-      return await signOut();
-    },
-    onSuccess: () => {
-      window.location.href = "/sign-in";
-    },
-  });
+
 
   //In this component fetch the user data if the store does not have it
   const { data: userData } = useQuery<UserProfile | null>({
@@ -70,44 +58,9 @@ export const Header = () => {
           </div>
         </div>
 
+        <UserData userData={userData || null} />
 
 
-        {userData ? (
-          <div className="flex items-center gap-3">
-            <div className="hidden md:block text-right">
-              <p className="text-sm font-medium text-foreground">
-                {userData?.email}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Rol:{" "}
-                {ROLES.find((role) => role.value === userData?.role)?.label}
-              </p>
-            </div>
-
-            <Avatar className="w-8 h-8">
-              <AvatarImage
-                src={`https://ui-avatars.com/api/?name=${userData?.full_name || userData?.email
-                  }`}
-                alt="Usuario"
-              />
-              <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                {/* JP */}
-              </AvatarFallback>
-            </Avatar>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => signOutMutation.mutate()}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden md:inline ml-2">Salir</span>
-            </Button>
-          </div>
-        ) : (
-          <Skeleton className="h-8 w-48" />
-        )}
       </div>
     </header>
   );

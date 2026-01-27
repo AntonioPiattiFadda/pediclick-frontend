@@ -2,24 +2,67 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 // import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
-// import { ROLES } from "./RoleInfoPopover";
 import type { LoadOrder } from "@/types/loadOrders";
 import { DeleteTableElementPopUp } from "../../../../components/admin/deleteTableElementPopUp";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "@/utils";
+import MainTablePagination from "@/components/admin/mainTablePagination/MainTablePagination";
+import type { PaginationType } from "@/types";
+import { Spinner } from "@/components/ui/spinner";
+import { deleteLoadOrder } from "@/service/loadOrders";
 
-interface TeamMemberTableProps {
+interface LoadOrdersTableProps {
   loadOrders: LoadOrder[];
+  onChangePagination: (pagination: PaginationType) => void;
+  pagination: PaginationType;
+  isLoading: boolean;
 }
 
-export const LoadOrdersTable = ({ loadOrders }: TeamMemberTableProps) => {
+export const LoadOrdersTable = ({ loadOrders, onChangePagination, pagination, isLoading }: LoadOrdersTableProps) => {
   const navigate = useNavigate();
+
+  if (isLoading) {
+    return <div className="rounded-md">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Acciones</TableHead>
+            <TableHead>Nro de remito</TableHead>
+            <TableHead>Nro de factura</TableHead>
+
+            <TableHead>Proveedor</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+
+          <TableRow>
+            <TableCell colSpan={6} className="text-center">
+              <Spinner className="mx-auto my-4" />
+            </TableCell>
+          </TableRow>
+
+        </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={6}>
+              <MainTablePagination
+                pagination={pagination}
+                onChangePagination={onChangePagination}
+                disabled={(loadOrders?.length ?? 0) < pagination.pageSize || isLoading}
+              />
+            </TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
+    </div>
+  }
 
   return (
     <div className="rounded-md">
@@ -46,13 +89,10 @@ export const LoadOrdersTable = ({ loadOrders }: TeamMemberTableProps) => {
                       loadOrder?.load_order_number?.toString() ?? "Remito"
                     }
                     deleteFn={async (id: string | number) => {
-                      console.log("Eliminar orden de carga con ID:", id);
-                      // await deleteTeamMember(String(id));
+                      await deleteLoadOrder(Number(id));
                     }}
                     queryKey={["load-orders"]}
-                    successMsgTitle="Remito eliminada"
                     successMsgDescription="El remito ha sido eliminado correctamente."
-                    errorMsgTitle="Error al eliminar remito"
                     errorMsgDescription="No se pudo eliminar el remito."
                   />
                 </TableCell>
@@ -115,6 +155,17 @@ export const LoadOrdersTable = ({ loadOrders }: TeamMemberTableProps) => {
             </TableRow>
           )}
         </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={6}>
+              <MainTablePagination
+                pagination={pagination}
+                onChangePagination={onChangePagination}
+                disabled={(loadOrders?.length ?? 0) < pagination.pageSize}
+              />
+            </TableCell>
+          </TableRow>
+        </TableFooter>
       </Table>
     </div>
   );

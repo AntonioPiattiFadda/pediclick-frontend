@@ -11,29 +11,23 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import TableSkl from "../../../../components/ui/skeleton/tableSkl";
 import { LoadOrdersTable } from "./LoadOrdersTable";
+import { useState } from "react";
 
 export const LoadOrdersContainer = () => {
-  // const [searchTerm, setSearchTerm] = useState("");
-  // const [selectedCategory, setSelectedCategory] = useState("all");
-  // const [selectedStatus, setSelectedStatus] = useState("all");
 
+  const [pagination, setPagination] = useState({ page: 1, pageSize: 12 });
 
   const {
     data: dbLoadOrders,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["load-orders"],
+    queryKey: ["load-orders", pagination.page, pagination.pageSize],
     queryFn: async () => {
-      const response = await getAllLoadOrders();
+      const response = await getAllLoadOrders(pagination.page, pagination.pageSize);
       return response.dbLoadOrders;
     }
   });
-
-
-  if (isLoading) {
-    return <TableSkl />;
-  }
 
   if (isError) {
     return <TableSkl />;
@@ -96,7 +90,12 @@ export const LoadOrdersContainer = () => {
             </Select>
           </div> */}
 
-          <LoadOrdersTable loadOrders={dbLoadOrders} />
+          <LoadOrdersTable
+            onChangePagination={setPagination}
+            pagination={pagination}
+            loadOrders={dbLoadOrders ?? []}
+            isLoading={isLoading}
+          />
         </CardContent>
       </Card>
     </div>

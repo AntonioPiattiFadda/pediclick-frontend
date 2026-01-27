@@ -25,7 +25,7 @@ const ProductSelector = ({
   onChange,
   withLots = false
 }: {
-  value: Pick<Product, "product_id" | "product_name" | "short_code" | 'sell_measurement_mode' | 'updated_at'>;
+  value: Pick<Product, "product_id" | "product_name" | "short_code" | 'updated_at'>;
   disabled?: boolean;
   onChange: (value: Product) => void;
   withLots?: boolean;
@@ -218,9 +218,10 @@ const ProductSelector = ({
     <div className="relative w-full  inline-flex  border border-gray-200 rounded-md h-9 " ref={comboboxRef}>
 
       <Input
-        className={`  border-none    h-9 w-14  truncate`}
+        className={`  border-none    h-9 w-14  truncate `}
         value={shortCode ?? ""}
         placeholder="Código"
+        type="number"
         disabled={disabled}
         onChange={(e) => {
           const val = e.target.value;
@@ -345,7 +346,7 @@ const ProductSelector = ({
                 onClick={() => {
                   handleCreateProduct(inputValue);
                 }}
-                disabled={!inputValue || createProductMutation.isLoading}
+                disabled={!inputValue || createProductMutation.isLoading || isSearching}
                 className={` flex
                      cursor-pointer  gap-2 items-center `}
               >

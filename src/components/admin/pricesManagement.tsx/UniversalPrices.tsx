@@ -174,9 +174,10 @@ const UniversalPrices = ({ productPresentationId, finalCost, disabled, productPr
                                 <div className="relative">
                                     <Percent className="absolute w-3 h-3 left-2 top-1/2 -translate-y-1/2 opacity-50" />
                                     <Input
+                                        type='number'
                                         placeholder="Ganancia %"
                                         className="pl-5"
-                                        value={price.profit_percentage}
+                                        value={price.profit_percentage || undefined}
                                         disabled={disabled}
                                         onChange={(e) =>
                                             onChange(updatePriceField(value, price.price_id!, "profit_percentage", e.target.value, price_type))

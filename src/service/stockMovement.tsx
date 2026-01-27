@@ -64,8 +64,10 @@ export const assignStock = async (fromStockData: {
             p_from_stock_data: fromStockData,
             p_stock_movement: stockMovement
         });
+
     if (assignedStockError) {
         throw new Error(assignedStockError.message);
     }
+
     return assignedStockData;
 }

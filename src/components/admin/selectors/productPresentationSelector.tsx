@@ -30,13 +30,15 @@ import {
     useState,
     type ReactNode,
 } from "react";
-import { Label } from "recharts";
 import ProductSelector from "./productSelector";
 import type { Product } from "@/types/products";
 import toast from "react-hot-toast";
 import { debounce } from "lodash";
 import type { ProductPresentation } from "@/types/productPresentation";
 import { sliceLongNames } from "@/utils";
+import { Label } from "@/components/ui/label";
+import type { SellType } from "@/types";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 // ---------- Context ----------
 interface ProductPresentationSelectorContextType {
@@ -48,6 +50,7 @@ interface ProductPresentationSelectorContextType {
     productId: number | null;
     shortCode: number | null;
     onChangeCode: (code: number | null) => void;
+    locationId: number | null;
 }
 
 const ProductPresentationSelectorContext =
@@ -85,8 +88,6 @@ const ProductPresentationSelectorRoot = ({
     locationId,
 }: RootProps) => {
 
-    console.log('locationId:', locationId);
-
     const { data: presentations, isLoading, isError } = useQuery({
         queryKey: ["product_presentations", productId],
         queryFn: async () => {
@@ -113,7 +114,7 @@ const ProductPresentationSelectorRoot = ({
                 productId,
                 shortCode,
                 onChangeCode: setShortCode,
-
+                locationId,
 
 
             }}
@@ -127,7 +128,7 @@ const ProductPresentationSelectorRoot = ({
 const SelectProductPresentation = ({ children }: {
     children?: ReactNode;
 }) => {
-    const { value, onChange, disabled, presentations, isLoading, shortCode, onChangeCode } =
+    const { value, onChange, disabled, presentations, isLoading, shortCode, onChangeCode, locationId } =
         useProductPresentationSelectorContext();
 
 
@@ -202,7 +203,7 @@ const SelectProductPresentation = ({ children }: {
                                     value={String(p.product_presentation_id)}
                                 >
 
-                                    {`${p.short_code ? `${p.short_code} - ` : ''}`} {sliceLongNames(15, p.product_presentation_name)}   {`${p.bulk_quantity_equivalence && `X${p.bulk_quantity_equivalence}`}`} {hasStock ? '' : '(S/S)'}
+                                    {`${p.short_code ? `${p.short_code} - ` : ''}`} {sliceLongNames(15, p.product_presentation_name)}   {`${p.bulk_quantity_equivalence ? `x${p.bulk_quantity_equivalence}` : ''}`} {hasStock || !locationId ? '' : '(S/S)'}  {`${p.sell_type === 'UNIT' ? `xUn` : 'xKg'}`}
                                 </SelectItem>
                             })}
                         </SelectGroup>
@@ -258,6 +259,7 @@ const CreateProductPresentation = ({
     const [newShortCode, setNewShortCode] = useState<number | null>(null);
     const [newBulkQuantityEquivalence, setNewBulkQuantityEquivalence] = useState<number | null>(null);
     const [open, setOpen] = useState(false);
+    const [sellType, setSellType] = useState<SellType>("UNIT");
 
     const createMutation = useMutation({
         mutationFn: async (data: {
@@ -265,14 +267,14 @@ const CreateProductPresentation = ({
             shortCode: number | null;
             productId: number;
             bulkQuantityEquivalence: number | null;
+            sellType: SellType;
         }) => {
-            return await createProductPresentation(data.name, data.shortCode, data.productId, data.bulkQuantityEquivalence);
+            return await createProductPresentation(data.name, data.shortCode, data.productId, data.bulkQuantityEquivalence, sellType);
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({
                 queryKey: ["product_presentations", productId ? productId : product?.product_id],
             });
-            console.log("data", data);
             onChange(data);
             setOpen(false);
             setNewPresentation("");
@@ -296,6 +298,7 @@ const CreateProductPresentation = ({
                 shortCode: newShortCode,
                 productId: productId ? productId : product.product_id || 0,
                 bulkQuantityEquivalence: newBulkQuantityEquivalence,
+                sellType: sellType,
             });
         } catch (err) {
             console.error("Error creating presentation:", err);
@@ -334,31 +337,55 @@ const CreateProductPresentation = ({
                     </>
                 )}
 
-                <Input
-                    value={newPresentation}
-                    disabled={createMutation.isLoading}
-                    onChange={(e) => setNewPresentation(e.target.value)}
-                    placeholder="Nombre de la presentación"
-                />
+                <div className="flex flex-col gap-2">
+                    <Label className="mt-1">Nombre</Label>
+                    <Input
+                        value={newPresentation}
+                        disabled={createMutation.isLoading}
+                        onChange={(e) => setNewPresentation(e.target.value)}
+                        placeholder="Nombre de la presentación"
+                    />
+                </div>
 
-                <Label className="mt-2 mb-1">Código corto</Label>
-                <Input
-                    value={newShortCode === null ? "" : String(newShortCode)}
-                    type="number"
-                    disabled={createMutation.isLoading}
-                    onChange={(e) => setNewShortCode(e.target.value === "" ? null : Number(e.target.value))}
-                    placeholder="Código corto"
-                />
+                <div className="flex flex-col gap-2">
+                    <Label className="mt-1">Código corto</Label>
+                    <Input
+                        value={newShortCode === null ? "" : String(newShortCode)}
+                        type="number"
+                        disabled={createMutation.isLoading}
+                        onChange={(e) => setNewShortCode(e.target.value === "" ? null : Number(e.target.value))}
+                        placeholder="Código corto"
+                    />
+                </div>
 
-                <Label className="mt-2 mb-1">Código corto</Label>
-                <Input
-                    value={newBulkQuantityEquivalence === null ? "" : String(newBulkQuantityEquivalence)}
-                    type="number"
-                    disabled={createMutation.isLoading}
-                    onChange={(e) => setNewBulkQuantityEquivalence(e.target.value === "" ? null : Number(e.target.value))}
-                    placeholder="Unidad/Kg por presentacion"
-                />
+                <div className="flex flex-col gap-2">
+                    <Label className="mt-1">Tipo de venta</Label>
+                    <RadioGroup
+                        defaultValue="UNIT"
+                        onValueChange={(value) => setSellType(value as SellType)}
+                        value={sellType}
+                    >
+                        <div className="flex items-center gap-3">
+                            <RadioGroupItem value="UNIT" id="r1" />
+                            <Label htmlFor="r1">Por unidad</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <RadioGroupItem value="WEIGHT" id="r2" />
+                            <Label htmlFor="r2">Por peso</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
 
+                <div className="flex flex-col gap-2">
+                    <Label className="mt-1">Cantidad por bulto</Label>
+                    <Input
+                        value={newBulkQuantityEquivalence === null ? "" : String(newBulkQuantityEquivalence)}
+                        type="number"
+                        disabled={createMutation.isLoading}
+                        onChange={(e) => setNewBulkQuantityEquivalence(e.target.value === "" ? null : Number(e.target.value))}
+                        placeholder="Unidad/Kg por presentacion"
+                    />
+                </div>
 
 
 

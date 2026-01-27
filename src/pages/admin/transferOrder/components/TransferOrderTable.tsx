@@ -7,7 +7,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 // import { EditTeamMemberBtn } from "./EditTeamMemberBtn";
-// import { ROLES } from "./RoleInfoPopover";
 import type { Lot } from "@/types/lots";
 import type { Stock } from "@/types/stocks";
 import { formatStockLocation, type StockWithRelations } from "@/utils/stock";

@@ -76,7 +76,7 @@ const DisposeWaste = ({ lotId, stockId }: {
                 </Button>
             </DialogTrigger>
             <DialogContent className='max-w-[350px]'>
-                <h3 className='text-lg font-medium mb-4'>Desechar stock</h3>
+                <h3 className='text-lg font-medium mb-2'>Mermar stock</h3>
                 <div className='flex gap-2'>
                     <Input
                         value={wasteData?.quantity ?? ""}
@@ -86,7 +86,7 @@ const DisposeWaste = ({ lotId, stockId }: {
                                 ...(prev as StockMovement),
                                 quantity: newValue ? Number(newValue) : null
                             } as StockMovement))
-                        }} placeholder='Cantidad a desechar' type='number'
+                        }} placeholder='Cantidad a mermar' type='number'
                     />
                     <Button
                         disabled={createLoadOrderMutation.isLoading}

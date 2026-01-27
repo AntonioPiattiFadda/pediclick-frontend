@@ -22,7 +22,7 @@ import { adaptLoadOrderForSubmission } from "@/adapters/loadOrders";
 //   },
 // ];
 
-export const getAllLoadOrders = async () => {
+export const getAllLoadOrders = async (page: number, pageSize: number) => {
   const businessOwnerId = await getBusinessOwnerId();
   const { data: dbLoadOrders, error } = await supabase
     .from("load_orders")
@@ -31,7 +31,11 @@ export const getAllLoadOrders = async () => {
       providers(provider_name)
         `
     )
+    .order("created_at", { ascending: false })
+    .is("deleted_at", null)
+    .range((page - 1) * pageSize, page * pageSize - 1)
     .eq("business_owner_id", businessOwnerId);
+
 
 
   if (error) {
@@ -164,3 +168,17 @@ export const getFollowingLoadOrderNumber = async (): Promise<number> => {
   return lastLoadOrderNumber + 1;
 };
 
+export const deleteLoadOrder = async (loadOrderId: number): Promise<void> => {
+  const businessOwnerId = await getBusinessOwnerId();
+  const { error } = await supabase
+    .from("load_orders")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("load_order_id", loadOrderId)
+    .eq("business_owner_id", businessOwnerId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return;
+}

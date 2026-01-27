@@ -70,9 +70,7 @@ export const ProvidersTable = ({ providers, filter = "" }: ProvidersTableProps) 
                                 elementName={provider.provider_name}
                                 deleteFn={deleteProvider}
                                 queryKey={["providers"]}
-                                successMsgTitle="Proveedor eliminado"
                                 successMsgDescription={`El proveedor "${provider.provider_name}" ha sido eliminado.`}
-                                errorMsgTitle="Error al eliminar el proveedor"
                                 errorMsgDescription="No se pudo eliminar el proveedor."
                             />
 

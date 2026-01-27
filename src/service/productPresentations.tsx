@@ -2,6 +2,7 @@ import { handleSupabaseError } from "@/utils/handleSupabaseErrors";
 import { supabase } from ".";
 import { getBusinessOwnerId } from "./profiles";
 import type { SubapaseConstrains } from "@/types/shared";
+import type { SellType } from "@/types";
 
 export const productPresentationConstraints: SubapaseConstrains[] = [{
   value: "unique_shortcode_per_owner",
@@ -142,11 +143,11 @@ export const getProductPresentation = async (productPresentationId: number | nul
   return { presentation, error };
 };
 
-export const createProductPresentation = async (name: string, shortCode: number | null, productId: number, bulkQuantityEquivalence: number | null) => {
+export const createProductPresentation = async (name: string, shortCode: number | null, productId: number, bulkQuantityEquivalence: number | null, sellType: SellType) => {
   const businessOwnerId = await getBusinessOwnerId();
   const { data, error } = await supabase
     .from("product_presentations")
-    .insert({ product_presentation_name: name, short_code: shortCode, business_owner_id: businessOwnerId, product_id: productId, bulk_quantity_equivalence: bulkQuantityEquivalence })
+    .insert({ product_presentation_name: name, short_code: shortCode, business_owner_id: businessOwnerId, product_id: productId, bulk_quantity_equivalence: bulkQuantityEquivalence, sell_type: sellType })
     .select()
     .single();
 

@@ -102,7 +102,7 @@ const columns = [
             const productPresentations = info.getValue()
             const hasStock = productPresentations?.some((presentation: any) =>
                 presentation.lots?.some((lot: any) =>
-                    lot.stock && lot.stock.length > 0
+                    lot.stock && lot.stock.length > 0 && lot.stock.some((stockItem: any) => stockItem.quantity > 0)
                 )
             );
             return hasStock ? <div className='text-green-400'>
@@ -136,9 +136,7 @@ const columns = [
                 }}
                 elementName="el producto"
                 size="icon"
-                successMsgTitle="Elemento eliminado"
                 successMsgDescription="El producto ha sido eliminado correctamente."
-                errorMsgTitle="Error al eliminar"
                 errorMsgDescription="No se pudo eliminar el producto."
             />
         </div>
@@ -184,6 +182,14 @@ const lotColumns = [
         header: "Stock",
         cell: info => {
             const lots: Lot[] = info.getValue() as Lot[];
+            const hasNoStock = lots.every(lot => {
+                const totalStock = lot.stock?.reduce((acc, stockItem) => acc + (stockItem.quantity || 0), 0) || 0;
+                return totalStock <= 0;
+            });
+            if (hasNoStock) {
+                return <div className='text-red-400'>--</div>;
+            }
+            console.log("lots in presentation table cell:", lots);
             return <div className='min-w-[270px] '>
                 <LotsAndStockProductPresentationTableCell lots={lots} />
             </div>
@@ -272,9 +278,7 @@ const lotColumns = [
                 }}
                 elementName="la presentación"
                 size="icon"
-                successMsgTitle="Presentación eliminada"
                 successMsgDescription="La presentación ha sido eliminada correctamente."
-                errorMsgTitle="Error al eliminar"
                 errorMsgDescription="No se pudo eliminar la presentación."
             />
 
@@ -293,7 +297,7 @@ const lotColumns = [
 
 
 export function ProductTableRenderer({
-    defaultData,
+    defaultData
 }: {
     defaultData: any[];
 }) {

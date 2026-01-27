@@ -1,12 +1,13 @@
 import { InputGroup, InputGroupInput, InputGroupAddon } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
+import { formatCurrency } from "@/utils/prices";
 
 interface MoneyInputProps {
-    label: string;
+    label?: string;
     value?: number | null;
     placeholder?: string;
     disabled?: boolean;
-    onChange: (value: number) => void;
+    onChange: (value: number | null) => void;
     currency?: string; // por defecto $
     id?: string;
 }
@@ -14,29 +15,34 @@ interface MoneyInputProps {
 export function MoneyInput({
     label,
     value,
-    placeholder,
     disabled,
     onChange,
-    currency = "$",
     id,
 }: MoneyInputProps) {
+    const formattedValue = formatCurrency(value ?? 0)
     return (
         <div className="flex flex-col gap-2">
-            <Label htmlFor={id}>{label}</Label>
+            {label && <Label htmlFor={id}>{label}</Label>}
 
-            <InputGroup>
+            <InputGroup className="relative">
+                <span className="absolute z-10 top-[50%] left-2 translate-y-[-50%]">{formattedValue}</span>
                 <InputGroupInput
                     id={id}
-                    type="number"
-                    placeholder={placeholder || label}
                     disabled={disabled}
                     value={value ?? undefined}
-                    onChange={(e) => onChange(Number(e.target.value))}
+                    type="number"
+                    onChange={(e) => {
+                        const newValue = e.target.value;
+                        const formattedValue = parseFloat(newValue).toFixed(2);
+                        const numberValue = Number(formattedValue);
+                        onChange(newValue === "" ? null : numberValue);
+                    }}
+                    className="pl-6 text-white"
                 />
 
-                <InputGroupAddon align="inline-start">
+                {/* <InputGroupAddon align="inline-start">
                     {currency}
-                </InputGroupAddon>
+                </InputGroupAddon> */}
             </InputGroup>
         </div>
     );

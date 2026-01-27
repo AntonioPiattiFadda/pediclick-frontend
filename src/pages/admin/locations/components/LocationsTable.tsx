@@ -58,9 +58,7 @@ export const LocationsTable = ({ locations, filter = "" }: LocationsTableProps) 
                                 elementName={loc.name}
                                 deleteFn={deleteLocation}
                                 queryKey={["locations"]}
-                                successMsgTitle="Ubicación eliminada"
                                 successMsgDescription={`La ubicación "${loc.name}" ha sido eliminada.`}
-                                errorMsgTitle="Error al eliminar ubicación"
                                 errorMsgDescription="No se pudo eliminar la ubicación."
                             />
                         </div>

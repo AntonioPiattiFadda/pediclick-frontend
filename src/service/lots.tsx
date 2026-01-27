@@ -7,6 +7,8 @@ import type { Stock } from "@/types/stocks";
 export const createLot = async (lot: Lot, stock: Stock[], lotContainersStock: LotContainersStock[]) => {
   const businessOwnerId = await getBusinessOwnerId();
 
+  alert('casd')
+
   console.log("Creating lot with data:", { lot, stock, lotContainersStock, businessOwnerId });
 
   const { data, error } = await supabase.rpc("add_stock", {

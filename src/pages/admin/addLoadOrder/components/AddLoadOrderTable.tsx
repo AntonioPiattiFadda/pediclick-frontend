@@ -208,9 +208,7 @@ export const AddLoadOrderTable = ({
                     elementId={index}
                     queryKey={["load-order-form-lots"]}
                     elementName={lot.product_name}
-                    successMsgTitle="Lote eliminado"
                     successMsgDescription="El lote fue eliminado del remito."
-                    errorMsgTitle="Error al eliminar"
                     errorMsgDescription="No se pudo eliminar el lote del remito."
                     deleteFn={async () => {
                       onDeleteLot?.(index);
