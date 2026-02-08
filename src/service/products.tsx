@@ -1,10 +1,10 @@
 import { adaptProductsForClient } from "@/adapters/products";
 import type { Product } from "@/types/products";
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 
 export const getAllProductsInStock = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data: dbProducts, error } = await supabase
     .from("products")
     .select(`
@@ -36,7 +36,7 @@ export const getAllProductsInStock = async () => {
 `)
     .is("product_presentations.deleted_at", null)
     .is("deleted_at", null)
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .gt("product_presentations.lots.stock.quantity", 0)
     .order("product_name", { ascending: true });
 
@@ -65,7 +65,7 @@ export const getAllProductsInStock = async () => {
 
 export const getAllAvailableProducts = async () => {
 
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { data: dbProducts, error } = await supabase
     .from("products")
@@ -96,7 +96,7 @@ export const getAllAvailableProducts = async () => {
 `)
     .is("product_presentations.deleted_at", null)
     .is("deleted_at", null)
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .lte("product_presentations.lots.stock.quantity", 0)
     .order("product_name", { ascending: true });
 
@@ -114,44 +114,39 @@ export const getAllAvailableProducts = async () => {
 };
 
 export const getAllSoldProducts = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { data: dbProducts, error } = await supabase
     .from("products")
     .select(`
-  product_id,
-  product_name,
-  short_code,
-  category_id,
-  sub_category_id,
-  public_images(public_image_src),
-  categories(category_name),
-  sub_categories(sub_category_name),
-  brands(brand_name),
-  product_presentations!inner (
-    product_presentation_id,
-    product_presentation_name,
-    bulk_quantity_equivalence,
-    lots(
+    product_id,
+    product_name,
+    short_code,
+    category_id,
+    sub_category_id,
+    public_images(public_image_src),
+    categories(category_name),
+    sub_categories(sub_category_name),
+    brands(brand_name),
+    product_presentations!inner(
+      product_presentation_id,
+      product_presentation_name,
+      bulk_quantity_equivalence,
+      lots!inner(
       lot_id,
-      created_at,
       is_sold_out,
-      expiration_date,
-      stock!inner(
-        *,
-        locations(name),
-        lot_containers_stock(*)
+        is_finished
       )
     )
-  )
-`)
-    .is("product_presentations.deleted_at", null)
-    .eq("product_presentations.lots.stock.quantity", 0)
-    .eq("product_presentations.lots.is_sold_out", true)
-    .eq("product_presentations.lots.stock.is_closed", false)
+  `)
     .is("deleted_at", null)
-    .eq("business_owner_id", businessOwnerId)
+    .is("product_presentations.deleted_at", null)
+    .eq("product_presentations.lots.is_sold_out", true)
+    .eq("product_presentations.lots.is_finished", false)
+    .eq("organization_id", organizationId)
     .order("product_name", { ascending: true });
+
+
 
   if (error) {
     throw new Error(error.message);
@@ -222,12 +217,12 @@ export const updateProduct = async (
 };
 
 export const createProduct = async (product: Product) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { data: newProduct, error: productError } = await supabase
     .from("products")
     .insert({
-      business_owner_id: businessOwnerId,
+      organization_id: organizationId,
       ...product,
     })
     .select()
@@ -259,13 +254,13 @@ export const deleteProduct = async (productId: string | number) => {
 export const getProductsByShortCode = async (
   shortCode: string
 ) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { data: dbProducts, error } = await supabase
     .from("products")
     .select("*")
     .is("deleted_at", null)
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .order("product_name", { ascending: true })
     .eq("short_code", shortCode);
 
@@ -284,7 +279,7 @@ export const getProductsByShortCode = async (
 // }
 
 export const getProductsByName = async (name: string, withLots: boolean) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const q = name.trim();
   const isNumeric = /^\d+$/.test(q);
@@ -301,7 +296,7 @@ export const getProductsByName = async (name: string, withLots: boolean) => {
     ${withLots ? ", lots(lot_id,created_at, stock(stock_id, quantity))" : ""}
   `)
     .is("deleted_at", null)
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .order("product_name", { ascending: true })
     .limit(2);
 
@@ -332,11 +327,11 @@ export const checkIfShortCodeIsAvailable = async (
   shortCode: number,
   productId?: number
 ) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { data, error } = await supabase.rpc('get_products_stock_status_by_short_code', {
     p_short_code: shortCode,
-    p_business_owner_id: businessOwnerId,
+    p_organization_id: organizationId,
   });
 
 
@@ -359,12 +354,12 @@ export const checkIfShortCodeIsAvailable = async (
 };
 
 export const getProductCountByCategory = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { data: products, error } = await supabase
     .from("products")
     .select("category_id")
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .is("deleted_at", null);
 
   console.log(products?.length);
@@ -382,7 +377,7 @@ export const getProductCountByCategory = async () => {
   const { data: categories, error: categoriesError } = await supabase
     .from("categories")
     .select("category_id, category_name")
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .is("deleted_at", null);
 
   if (categoriesError) throw new Error(categoriesError.message);
@@ -420,12 +415,12 @@ export const getProductCountByCategory = async () => {
 
 
 export const getProductCount = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { data: products, error } = await supabase
     .from("products")
     .select("product_id")
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .is("deleted_at", null);
 
   if (error) throw new Error(error.message);

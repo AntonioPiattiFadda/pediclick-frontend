@@ -1,13 +1,13 @@
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 
 export const getProviders = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data: providers, error } = await supabase
     .from("providers")
     .select("*")
     .is("deleted_at", null) // Exclude soft-deleted providers
-    .eq("business_owner_id", businessOwnerId);
+    .eq("organization_id", organizationId);
 
 
   if (error) {
@@ -18,10 +18,10 @@ export const getProviders = async () => {
 };
 
 export const createProvider = async (name: string, shortCode: string) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data, error } = await supabase
     .from("providers")
-    .insert({ provider_name: name, short_code: shortCode, business_owner_id: businessOwnerId })
+    .insert({ provider_name: name, short_code: shortCode, organization_id: organizationId })
     .select()
     .single();
 

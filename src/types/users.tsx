@@ -9,7 +9,7 @@ export interface UserProfile {
   phone: string | null;
   address: Address | null;
   is_verified: boolean;
-  business_owner_id?: string;
+  organization_id?: string;
 
   short_code: number | null;
 

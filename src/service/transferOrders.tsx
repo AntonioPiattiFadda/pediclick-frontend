@@ -1,13 +1,13 @@
 import type { TransferOrderItem } from "@/types/transferOrderItems";
 import type { TransferOrderType } from "@/types/transferOrders";
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 
 /**
  * List all transfer orders for current business owner
  */
 export const getAllTransferOrders = async (page: number, pageSize: number) => {
-    const businessOwnerId = await getBusinessOwnerId();
+    const organizationId = await getOrganizationId();
     const { data: dbTransferOrders, error } = await supabase
         .from("transfer_orders")
         .select(`*,  
@@ -19,7 +19,7 @@ export const getAllTransferOrders = async (page: number, pageSize: number) => {
             from_location:from_location_id(name, type),
             to_location:to_location_id(name, type)
         `)
-        .eq("business_owner_id", businessOwnerId)
+        .eq("organization_id", organizationId)
         .is("deleted_at", null)
         .range((page - 1) * pageSize, page * pageSize - 1)
         .order("created_at", { ascending: false });
@@ -37,7 +37,7 @@ export const getTransferOrder = async (
     transferOrderId: string | number,
 ): Promise<{ dbTransferOrder: TransferOrderType | null; error: string | null }> => {
 
-    const businessOwnerId = await getBusinessOwnerId();
+    const organizationId = await getOrganizationId();
 
     const { data: dbTransferOrder, error } = await supabase
         .from("transfer_orders")
@@ -75,7 +75,7 @@ export const getTransferOrder = async (
                 short_code)
     )
   `)
-        .eq("business_owner_id", businessOwnerId)
+        .eq("organization_id", organizationId)
         .eq("transfer_order_id", transferOrderId)
         .is("deleted_at", null)
         .single();
@@ -119,11 +119,11 @@ export const getTransferOrder = async (
 export const createTransferOrder = async (location: {
     from_location_id?: number | null;
 }) => {
-    const businessOwnerId = await getBusinessOwnerId();
+    const organizationId = await getOrganizationId();
     const { data, error } = await supabase
         .from("transfer_orders")
         .insert({
-            business_owner_id: businessOwnerId,
+            organization_id: organizationId,
             status: "PENDING",
             ...location
         })

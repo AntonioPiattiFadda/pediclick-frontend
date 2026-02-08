@@ -62,7 +62,7 @@ import StockAssignationContainer from "./StockAssignationContainer";
 //   purchasing_agent_commision_type: 'NONE',
 //   purchasing_agent_commision_percentage: null,
 //   purchasing_agent_commision_unit_value: null,
-//   parent_lot_id: null,
+//   : null,
 //   is_expired: false,
 //   lot_control: false,
 //   product_presentation_id: null,
@@ -135,7 +135,7 @@ import StockAssignationContainer from "./StockAssignationContainer";
 //   product_presentation_name: 'CAJON',
 //   short_code: 5,
 //   product_id: 117,
-//   business_owner_id: '3a145754-a901-46e1-8ad2-480f8968d8be',
+//   organization_id: '3a145754-a901-46e1-8ad2-480f8968d8be',
 //   deleted_at: null,
 //   bulk_quantity_equivalence: 360,
 //   updated_at: null
@@ -148,6 +148,10 @@ export function AddLotBtn({
   onAddElement: (lot: Lot, stock: Stock[], lotContainersStock: LotContainersStock[]) => void;
   loading?: boolean;
 }) {
+
+
+
+  // checkHasOverSell
   // const [creationMode, setCreationMode] = useState<CreationMode>("SHORT");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -175,14 +179,12 @@ export function AddLotBtn({
   }, [loading]);
 
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isProductSelected) {
       toast('Debes seleccionar un producto para agregar al remito');
       return
     };
-    //TODO ACTUALIZAR PRODUCTO SI ESTA EN MODO EDICION
 
-    //TODO AGREGAR AL REMITO
 
     const adaptedStock = stock.map(s => ({
       ...s,
@@ -522,8 +524,12 @@ export function AddLotBtn({
         {!isEditing && (
           <ProductSelector
             value={selectedProduct}
-            onChange={(value) =>
+            onChange={(value) => {
               setSelectedProduct({ ...selectedProduct, ...value })
+              setStock([]);
+
+            }
+
             }
           />
         )}
@@ -546,6 +552,7 @@ export function AddLotBtn({
                     console.log("value", value);
                     // setLotContainersStock(emptyLotContainerStock)
                     setSelectedProductPresentation(value)
+                    setStock([]);
                   }
                   }
                 >
@@ -710,7 +717,7 @@ export function AddLotBtn({
                       label="Costo de envío total"
                       value={formData.delivery_cost_total || undefined}
                       onChange={(v) =>
-                        handleUpdateLotField("delivery_cost_total", v)
+                        handleUpdateLotField("delivery_cost_total", v ?? 0)
                       }
                     />
 
@@ -719,7 +726,7 @@ export function AddLotBtn({
                       label="Costo de envío por bulto"
                       value={formData.delivery_cost_per_bulk || undefined}
                       onChange={(v) =>
-                        handleUpdateLotField("delivery_cost_per_bulk", v)
+                        handleUpdateLotField("delivery_cost_per_bulk", v ?? 0)
                       }
                     />
 
@@ -727,7 +734,7 @@ export function AddLotBtn({
                       label="Costo de envío por unidad / Kg"
                       value={formData.delivery_cost_per_unit || undefined}
                       onChange={(v) =>
-                        handleUpdateLotField("delivery_cost_per_unit", v)
+                        handleUpdateLotField("delivery_cost_per_unit", v ?? 0)
                       }
                     />
 
@@ -740,7 +747,7 @@ export function AddLotBtn({
                       label="Costo total de descarga"
                       value={formData.download_total_cost || undefined}
                       onChange={(v) =>
-                        handleUpdateLotField("download_total_cost", v)
+                        handleUpdateLotField("download_total_cost", v ?? 0)
                       }
                     />
 
@@ -749,7 +756,7 @@ export function AddLotBtn({
                       label="Costo total de descarga por bulto"
                       value={formData.download_cost_per_bulk || undefined}
                       onChange={(v) =>
-                        handleUpdateLotField("download_cost_per_bulk", v)
+                        handleUpdateLotField("download_cost_per_bulk", v ?? 0)
                       }
                     />
 
@@ -757,7 +764,7 @@ export function AddLotBtn({
                       label="Costo de descarga por unidad/Kg"
                       value={formData.download_cost_per_unit || undefined}
                       onChange={(v) =>
-                        handleUpdateLotField("download_cost_per_unit", v)
+                        handleUpdateLotField("download_cost_per_unit", v ?? 0)
                       }
                     />
 
@@ -770,7 +777,7 @@ export function AddLotBtn({
                       label="Costo extra total"
                       value={formData.extra_cost_total || undefined}
                       onChange={(v) =>
-                        handleUpdateLotField("extra_cost_total", v)
+                        handleUpdateLotField("extra_cost_total", v ?? 0)
                       }
                     />
 
@@ -1066,6 +1073,8 @@ export function AddLotBtn({
                   onChangeLotContainersStock={(newLotContainers: LotContainersStock[]) => {
                     setLotContainersStock(newLotContainers);
                   }}
+                  pId={selectedProduct.product_id || 0}
+                  ppId={selectedProductPresentation?.product_presentation_id || 0}
                 />
 
 

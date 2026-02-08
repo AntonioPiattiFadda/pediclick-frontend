@@ -8,6 +8,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
+import { getLotPerformance } from "@/service/lotPerformance";
 import { getAllLotSales, getLotSales } from "@/service/orderItems";
 import type { OrderItem } from "@/types/orderItems";
 import { formatDate } from "@/utils";
@@ -26,6 +27,15 @@ const SalesHistory = ({
         page: 1,
         pageSize: 12
     })
+
+
+    const { data: lotPerformance, isLoading: isLoadingLotPerformance, isError: isErrorLotPerformance } = useQuery({
+        queryKey: ["lot-performance", lotId],
+        queryFn: () => getLotPerformance(lotId!),
+        enabled: !!lotId,
+    });
+
+    console.log(lotPerformance, isLoadingLotPerformance, isErrorLotPerformance);
 
     const { data: sales, isLoading, isError, error } = useQuery({
         queryKey: ["lot-sales-history", lotId, pagination.page, pagination.pageSize],

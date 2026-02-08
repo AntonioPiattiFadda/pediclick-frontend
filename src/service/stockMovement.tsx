@@ -3,7 +3,7 @@ import { supabase } from ".";
 
 
 export const createWasteStockMovement = async (formData: Omit<StockMovement, "stock_movement_id">) => {
-    //TODO Agregar el business_owner_id al llamado y el stock id a la lot_containers_location nueva
+    //TODO Agregar el organization_id al llamado y el stock id a la lot_containers_location nueva
 
     console.log("Creating waste stock movement with data:", formData);
 

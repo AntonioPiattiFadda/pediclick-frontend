@@ -4,7 +4,7 @@ import type { LotContainersStock } from "@/types/lotContainersStock";
 import type { Lot } from "@/types/lots";
 import type { Stock } from "@/types/stocks";
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 import { adaptLoadOrderForSubmission } from "@/adapters/loadOrders";
 
 // const mockLoadOrders: LoadOrder[] = [
@@ -23,7 +23,7 @@ import { adaptLoadOrderForSubmission } from "@/adapters/loadOrders";
 // ];
 
 export const getAllLoadOrders = async (page: number, pageSize: number) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data: dbLoadOrders, error } = await supabase
     .from("load_orders")
     .select(
@@ -34,7 +34,7 @@ export const getAllLoadOrders = async (page: number, pageSize: number) => {
     .order("created_at", { ascending: false })
     .is("deleted_at", null)
     .range((page - 1) * pageSize, page * pageSize - 1)
-    .eq("business_owner_id", businessOwnerId);
+    .eq("organization_id", organizationId);
 
 
 
@@ -49,7 +49,7 @@ export const getAllLoadOrders = async (page: number, pageSize: number) => {
 // create or replace function public.create_load_order(
 //   p_load_order jsonb,
 //   p_units jsonb,
-//   p_business_owner_id uuid
+//   p_organization_id uuid
 // )
 export const createLoadOrder = async (
   loadOrder: LoadOrder,
@@ -61,15 +61,15 @@ export const createLoadOrder = async (
   const units: LoadOrderUnit[] = adaptLoadOrderForSubmission(lots, stock, lotContainersStock);
   console.log("units", units);
 
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const reqBody: {
     p_load_order: LoadOrder,
     p_units: LoadOrderUnit[],
-    p_business_owner_id: number,
+    p_organization_id: number,
   } = {
     p_load_order: {
-      business_owner_id: businessOwnerId, // viene del user logueado
+      organization_id: organizationId, // viene del user logueado
       load_order_number: Number(loadOrder.load_order_number) || null,
       provider_id: Number(loadOrder.provider_id) || null,
       delivery_date: loadOrder.delivery_date,
@@ -83,7 +83,7 @@ export const createLoadOrder = async (
       lots: [], // ahora se envian en p_units
     },
     p_units: units,
-    p_business_owner_id: businessOwnerId,
+    p_organization_id: organizationId,
   };
 
   const { data, error } = await supabase.rpc(
@@ -100,7 +100,7 @@ export const createLoadOrder = async (
 
 
 export const getLoadOrder = async (loadOrderId: string,): Promise<{ dbLoadOrder: LoadOrder | null, error: string | null }> => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data: dbLoadOrder, error } = await supabase
     .from("load_orders")
     .select(
@@ -117,7 +117,7 @@ export const getLoadOrder = async (loadOrderId: string,): Promise<{ dbLoadOrder:
 
     `
     )
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .eq("load_order_id", loadOrderId)
     // .gt("lots.stock.quantity", 0)
     .single();
@@ -150,11 +150,11 @@ export const getLoadOrder = async (loadOrderId: string,): Promise<{ dbLoadOrder:
 };
 
 export const getFollowingLoadOrderNumber = async (): Promise<number> => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data, error } = await supabase
     .from("load_orders")
     .select("load_order_number")
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .order("load_order_number", { ascending: false }) // ordenar de mayor a menor
     .limit(1)
 
@@ -169,12 +169,12 @@ export const getFollowingLoadOrderNumber = async (): Promise<number> => {
 };
 
 export const deleteLoadOrder = async (loadOrderId: number): Promise<void> => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { error } = await supabase
     .from("load_orders")
     .update({ deleted_at: new Date().toISOString() })
     .eq("load_order_id", loadOrderId)
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .single();
 
   if (error) {

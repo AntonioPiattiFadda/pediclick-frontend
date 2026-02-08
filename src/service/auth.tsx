@@ -22,7 +22,9 @@ export const signOut = async () => {
   }
 };
 
-export const signUp = async (email: string, password: string) => {
+export const signUp = async (email: string, password: string, organizationName: string) => {
+  console.log("Signing up user:", email, organizationName);
+
   const { userExists } = await checkUserExists(email);
 
   if (userExists) {
@@ -46,7 +48,7 @@ export const signUp = async (email: string, password: string) => {
   }
   const newUserUID = data.user.id;
 
-  const { error: profileError } = await insertNewAdminUser(email, newUserUID);
+  const { error: profileError } = await insertNewAdminUser(email, newUserUID, organizationName);
 
   if (profileError) {
     throw new Error(profileError.message);

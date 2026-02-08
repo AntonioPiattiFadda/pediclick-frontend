@@ -1,12 +1,12 @@
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 
 export const getPurchasingAgents = async () => {
-    const businessOwnerId = await getBusinessOwnerId();
+    const organizationId = await getOrganizationId();
     const { data: purchasingAgents, error } = await supabase
         .from("purchasing_agents")
         .select("*")
-        .eq("business_owner_id", businessOwnerId);
+        .eq("organization_id", organizationId);
 
     if (error) {
         throw new Error(error.message);
@@ -16,10 +16,10 @@ export const getPurchasingAgents = async () => {
 };
 
 export const createPurchasingAgent = async (name: string) => {
-    const businessOwnerId = await getBusinessOwnerId();
+    const organizationId = await getOrganizationId();
     const { data, error } = await supabase
         .from("purchasing_agents")
-        .insert({ purchasing_agent_name: name, business_owner_id: businessOwnerId })
+        .insert({ purchasing_agent_name: name, organization_id: organizationId })
         .select()
         .single();
 

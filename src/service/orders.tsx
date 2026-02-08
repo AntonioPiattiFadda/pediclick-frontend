@@ -1,13 +1,13 @@
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 
 export const getDailySalesLast30Days = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { data, error } = await supabase
     .from("orders")
     .select("created_at, total_amount")
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
 
   if (error) throw new Error(error.message);

@@ -37,6 +37,13 @@ export type Stock = {
   updated_at: string | null;
 
 
+
+  has_to_compensate: boolean;
+  has_over_sell?: boolean;
+  is_compensation_checked?: boolean;
+  quantity_to_compensate?: number;
+
+
   // transformed_to_product_id: number | null;
   // reserved_to_transferring_quantity: number | null;
   // stock_movement_status: MovementStatus | null;

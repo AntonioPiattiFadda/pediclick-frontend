@@ -1,10 +1,10 @@
 import type { TransformationItems } from "@/types/transformationItems";
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 import type { Transformation } from "@/types/transformation";
 
 export async function createTransformation(transformation: Omit<Transformation, 'created_at'>, fromTransformationItems: TransformationItems[], toTransformationItems: TransformationItems[]) {
-    const businessOwnerId = await getBusinessOwnerId();
+    const organizationId = await getOrganizationId();
 
     const location = localStorage.getItem("selectedStore");
     const locationId = location ? Number(JSON.parse(location)) : 0;
@@ -47,7 +47,6 @@ export async function createTransformation(transformation: Omit<Transformation, 
             provider_id: it?.lot?.provider_id,
             product_presentation_id: it.product_presentation_id,
             expiration_date: it?.lot?.expiration_date,
-            parent_lot_id: it?.lot?.lot_id,
             final_cost_per_unit: it?.lot?.final_cost_per_unit,
             final_cost_per_bulk: it?.lot?.final_cost_per_bulk,
             final_cost_total: it?.lot?.final_cost_total,
@@ -58,7 +57,7 @@ export async function createTransformation(transformation: Omit<Transformation, 
 
     const adaptedTranformationData = {
         ...transformation,
-        business_owner_id: businessOwnerId,
+        organization_id: organizationId,
     };
 
     console.log("Adapted Transformation Data:", adaptedTranformationData);

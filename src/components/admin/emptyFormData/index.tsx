@@ -35,7 +35,7 @@ export const emptyLotWithLotControl = {
   prices: [{ price: "", quantity: "", type: "PRIMARY" }],
 };
 
-export const emptyProduct: Pick<Product, "product_id" | "product_name" | "short_code" | 'sell_measurement_mode' | 'updated_at'> = {
+export const emptyProduct: Pick<Product, "product_id" | "product_name" | "short_code" | 'updated_at'> = {
   short_code: null,
   product_name: "",
   // product_description: "",
@@ -46,7 +46,6 @@ export const emptyProduct: Pick<Product, "product_id" | "product_name" | "short_
   // iva_id: null,
   // public_image_id: null,
   // observations: "",
-  sell_measurement_mode: "QUANTITY",
   // allow_stock_control: false,
   // lot_control: false,
   // equivalence_minor_mayor_selling: {
@@ -58,15 +57,16 @@ export const emptyProduct: Pick<Product, "product_id" | "product_name" | "short_
 };
 
 export const emptyLot: Lot = {
+  lot_id: 0,
+  created_at: '',
+  updated_at: '',
+  bulk_quantity_equivalence: null,
   expiration_date: null,
   expiration_date_notification: false,
   provider_id: null,
   load_order_id: null,
   product_id: 0,
-  has_lot_container: false,
-  is_parent_lot: false,
   is_sold_out: false,
-  lot_containers: [],
   initial_stock_quantity: 0,
 
   purchase_cost_per_bulk: null,
@@ -94,16 +94,12 @@ export const emptyLot: Lot = {
   purchasing_agent_commision_percentage: null,
   purchasing_agent_commision_unit_value: null,
 
-  parent_lot_id: null,
   is_expired: false,
+  is_finished: false,
 
 
-  lot_control: false,
 
   product_presentation_id: null,
-  is_derived: false,
-  is_transformed: false,
-  quantity_transformed: null,
   extra_cost_total: null,
 };
 

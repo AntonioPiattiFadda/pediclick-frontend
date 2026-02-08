@@ -1,11 +1,11 @@
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 
 export const createSubCategory = async (name: string) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data, error } = await supabase
     .from("sub_categories")
-    .insert({ sub_category_name: name, business_owner_id: businessOwnerId })
+    .insert({ sub_category_name: name, organization_id: organizationId })
     .select()
     .single();
 
@@ -17,11 +17,11 @@ export const createSubCategory = async (name: string) => {
 };
 
 export const getSubCategories = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data: categories, error } = await supabase
     .from("sub_categories")
     .select("*")
-    .eq("business_owner_id", businessOwnerId);
+    .eq("organization_id", organizationId);
 
   if (error) {
     throw new Error(error.message);

@@ -1,12 +1,12 @@
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 
 export const getCategories = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data: categories, error } = await supabase
     .from("categories")
     .select("*")
-    .eq("business_owner_id", businessOwnerId);
+    .eq("organization_id", organizationId);
 
   if (error) {
     throw new Error(error.message);
@@ -16,10 +16,10 @@ export const getCategories = async () => {
 };
 
 export const createCategory = async (name: string) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data, error } = await supabase
     .from("categories")
-    .insert({ category_name: name, business_owner_id: businessOwnerId })
+    .insert({ category_name: name, organization_id: organizationId })
     .select()
     .single();
 
@@ -31,12 +31,12 @@ export const createCategory = async (name: string) => {
 };
 
 export const getCategoriesCount = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { data: categories, error } = await supabase
     .from("categories")
     .select("category_id")
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .is("deleted_at", null);
 
   if (error) throw new Error(error.message);

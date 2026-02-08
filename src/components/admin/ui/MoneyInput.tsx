@@ -1,4 +1,4 @@
-import { InputGroup, InputGroupInput, InputGroupAddon } from "@/components/ui/input-group";
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/utils/prices";
 

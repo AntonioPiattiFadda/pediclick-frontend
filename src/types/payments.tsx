@@ -39,7 +39,7 @@ export interface Payment {
     provider_id: number | null;
     payment_type: PaymentType;
     payment_direction: "IN" | "OUT";
-
+    terminal_session_id: number | null;
 
     selected: boolean; // para UI
 }

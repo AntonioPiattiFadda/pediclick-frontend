@@ -35,3 +35,32 @@ export const getLotStocks = async (lotId: number) => {
   return { lotStock: adaptedLotStock, error };
 };
 
+export const checkHasOverSell = async ({
+  productId,
+  productPresentationId,
+  locationId,
+}: {
+  productId: number | null;
+  productPresentationId: number | null;
+  locationId: number | null;
+}) => {
+  console.log('checkHasOverSell called with', { productId, productPresentationId, locationId });
+
+  if (!productId || !productPresentationId || !locationId) {
+    throw new Error("Faltan parámetros para verificar el sobreventa");
+  }
+
+  const { data, error } = await supabase.rpc("get_last_over_sell_stock", {
+    p_product_id: Number(productId),
+    p_product_presentation_id: Number(productPresentationId),
+    p_location_id: Number(locationId),
+  });
+
+  console.log('checkHasOverSell result', { data, error });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};

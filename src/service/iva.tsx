@@ -1,14 +1,14 @@
 import type { Iva } from "@/types/iva";
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 
 
 export const getIva = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data: ivas, error } = await supabase
     .from("iva")
     .select("*")
-    .eq("business_owner_id", businessOwnerId);
+    .eq("organization_id", organizationId);
 
   if (error) {
     throw new Error(error.message);
@@ -18,10 +18,10 @@ export const getIva = async () => {
 };
 
 export const createIva = async (iva: Iva) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data, error } = await supabase
     .from("iva")
-    .insert({ iva_number: iva.iva_number, business_owner_id: businessOwnerId })
+    .insert({ iva_number: iva.iva_number, organization_id: organizationId })
     .select()
     .single();
 

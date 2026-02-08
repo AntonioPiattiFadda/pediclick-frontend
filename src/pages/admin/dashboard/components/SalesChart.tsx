@@ -39,7 +39,7 @@ export const SalesChart = () => {
   return (
     <>
       {sales.length === 0 && (
-        <div className="flex h-full w-full items-center justify-center">No hay datos de ventas disponibles.</div>
+        <div className="flex h-full w-full items-center justify-center text-gray-400">No hay datos de ventas.</div>
       )}
       <ChartContainer config={chartConfig} className="h-[300px]">
 

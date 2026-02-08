@@ -8,8 +8,9 @@ import type { Location } from "@/types/locations";
 import type { LotContainersStock } from "@/types/lotContainersStock";
 import type { Stock } from "@/types/stocks";
 import { useQuery } from "@tanstack/react-query";
-import toast from "react-hot-toast";
 import { useEffect } from "react";
+import toast from "react-hot-toast";
+import StockCompensation from "./StockCompensation";
 
 export default function StockAssignationContainer({
     disabled = false,
@@ -18,6 +19,8 @@ export default function StockAssignationContainer({
     onChangeStock,
     lotContainersStock,
     onChangeLotContainersStock,
+    ppId,
+    pId
 }: {
     disabled?: boolean;
     initial_stock_quantity?: number;
@@ -25,7 +28,12 @@ export default function StockAssignationContainer({
     onChangeStock?: (nextStock: Stock[]) => void;
     lotContainersStock: LotContainersStock[];
     onChangeLotContainersStock: (nextLotContainersStock: LotContainersStock[]) => void;
+    ppId: number;
+    pId: number;
 }) {
+    console.log('StockAssignationContainer render', { ppId, pId });
+
+
     const { data: locations = [], isLoading, isError } = useQuery({
         queryKey: ["locations"],
         queryFn: async () => {
@@ -97,8 +105,10 @@ export default function StockAssignationContainer({
         return <div>Error al cargar las ubicaciones</div>;
     }
 
-    const handleUpdateStock = (locationId: number | null, quantity: number) => {
+    const handleUpdateStock = async (locationId: number | null, quantity: number) => {
         if (!onChangeStock || !initial_stock_quantity || !locationId) return;
+
+
 
         const selectedLocation = locations.find((location) => location.id === locationId);
         const locationType = selectedLocation?.type;
@@ -150,6 +160,12 @@ export default function StockAssignationContainer({
                 transformed_from_product_id: null,
                 updated_at: null,
                 product_id: null,
+                over_sell_quantity: null,
+
+                is_compensation_checked: false,
+                has_to_compensate: false,
+                has_over_sell: false,
+
             };
             updatedStock = [...(stock || []), newStockEntry];
         }
@@ -167,7 +183,11 @@ export default function StockAssignationContainer({
         .reduce((acc, lcl) => acc + (lcl?.quantity || 0), 0) || 0;
 
     const remainingLotContainersToAssign = totalLotContainersStockUnassigned - totalLotContainersStockAssigned;
+
+
+
     console.log('remainingLotContainersToAssign', remainingLotContainersToAssign);
+    console.log('stock', stock);
 
     return (
         <Card className="border-none p-2 shadow-none bg-transparent">
@@ -208,6 +228,22 @@ export default function StockAssignationContainer({
                                     value={stock?.find(s => s.location_id === location.location_id)?.quantity || ''}
                                     className="w-[150px]"
                                 />
+
+                                <StockCompensation
+                                    pId={pId}
+                                    ppId={ppId}
+                                    stock={
+                                        stock?.find(s => s.location_id === location.location_id)
+                                    }
+                                    onChangeStock={(updatedStock) => {
+                                        const updatedStockArray = stock?.map(s =>
+                                            s.location_id === location.location_id ? updatedStock : s
+                                        ) || [];
+                                        onChangeStock?.(updatedStockArray);
+                                    }}
+                                />
+
+
 
                                 {/* <LotContainerStockAssignation
                                     lotContainersStock={lotContainersStock}

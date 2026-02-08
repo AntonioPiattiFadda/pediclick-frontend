@@ -1,12 +1,12 @@
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 
 export const getBrands = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data: brands, error } = await supabase
     .from("brands")
     .select("*")
-    .eq("business_owner_id", businessOwnerId);
+    .eq("organization_id", organizationId);
 
   if (error) {
     throw new Error(error.message);
@@ -16,10 +16,10 @@ export const getBrands = async () => {
 };
 
 export const createBrand = async (name: string) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data, error } = await supabase
     .from("brands")
-    .insert({ brand_name: name, business_owner_id: businessOwnerId })
+    .insert({ brand_name: name, organization_id: organizationId })
     .select()
     .single();
 
@@ -31,16 +31,16 @@ export const createBrand = async (name: string) => {
 
 
 export const updateBrand = async (brandId: number, updates: Partial<{ brand_name: string }>) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { data, error } = await supabase
     .from("brands")
     .update({
       ...updates,
-      business_owner_id: businessOwnerId, 
+      organization_id: organizationId,
     })
     .eq("brand_id", brandId)
-    .eq("business_owner_id", businessOwnerId) 
+    .eq("organization_id", organizationId)
     .select()
     .single();
 

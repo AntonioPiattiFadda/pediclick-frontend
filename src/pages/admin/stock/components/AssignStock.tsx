@@ -17,7 +17,7 @@ import type { Location } from "@/types/locations";
 import type { StockMovement } from "@/types/stockMovements";
 import type { Stock } from "@/types/stocks";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "lucide-react";
+import { Info, Link } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -42,7 +42,6 @@ const AssignStock = ({
     });
 
     const [toLocation, setToLocation] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | null>(null);
-
 
     const assignStockMutation = useMutation({
         mutationFn: async () => {
@@ -84,17 +83,21 @@ const AssignStock = ({
         },
     });
 
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <form>
                 <DialogTrigger asChild>
                     <Button size={'icon'} variant={'ghost'}><Link /></Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[625px]">
                     <DialogHeader>
                         <DialogTitle>Asignar</DialogTitle>
-                        <DialogDescription>
+                        {/* <DialogDescription>
                             Asignar stock a una ubicaci&oacute;n
+                        </DialogDescription> */}
+                        <DialogDescription className="text-red-400 flex items-center gap-1">
+                            <Info className="w-4 h-4" /> La asignacion directa compensara sobreventa del mismo lote automaticamente
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4">

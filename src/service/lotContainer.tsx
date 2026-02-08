@@ -1,12 +1,12 @@
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 
 export const getLotContainers = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data: lotContainers, error } = await supabase
     .from("lot_containers")
     .select("*")
-    .eq("business_owner_id", businessOwnerId);
+    .eq("organization_id", organizationId);
 
   if (error) {
     throw new Error(error.message);
@@ -16,14 +16,14 @@ export const getLotContainers = async () => {
 };
 
 export const getLotContainersLocation = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { data, error } = await supabase
     .from("lot_containers_location")
     .select(
       `*`
     )
-    .eq("business_owner_id", businessOwnerId);
+    .eq("organization_id", organizationId);
   // stores(store_name),
   // categories(category_name),
   // sub_categories(sub_category_name),
@@ -64,13 +64,13 @@ export const createLotContainer = async (
   lot_container_name: string,
   lot_container_price: number | null,
 ) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data, error } = await supabase
     .from("lot_containers")
     .insert({
       lot_container_name,
       lot_container_price,
-      business_owner_id: businessOwnerId,
+      organization_id: organizationId,
     })
     .select()
     .single();

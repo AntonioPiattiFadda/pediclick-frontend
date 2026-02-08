@@ -7,16 +7,12 @@ import {
 import { getUserId, supabase } from ".";
 import type { UserProfile } from "@/types/users";
 
-export const insertNewAdminUser = async (email: string, userUid: string) => {
-  const { data, error } = await supabase
-    .from("users")
-    .insert({
-      email,
-      role: "OWNER",
-      id: userUid,
-    })
-    .select()
-    .single();
+export const insertNewAdminUser = async (email: string, userUid: string, organizationName: string) => {
+  const { data, error } = await supabase.rpc("create_organization_with_owner", {
+    p_user_id: userUid,
+    p_email: email,
+    p_organization_name: organizationName,
+  });
 
   if (error) {
     return { error };
@@ -119,7 +115,7 @@ export async function createNewUser(email: string, password: string) {
 export const getParentUserId = async (userId: string) => {
   const { data: user, error } = await supabase
     .from("users")
-    .select("business_owner_id")
+    .select("organization_id")
     .eq("id", userId)
     .single();
 
@@ -127,10 +123,10 @@ export const getParentUserId = async (userId: string) => {
     throw new Error(error.message);
   }
 
-  return user?.business_owner_id;
+  return user?.organization_id;
 };
 
-export const getBusinessOwnerId = async () => {
+export const getOrganizationId = async () => {
   const userId = await getUserId();
   const { data: userData, error } = await supabase
     .from("users")
@@ -143,16 +139,16 @@ export const getBusinessOwnerId = async () => {
   }
 
   //FIXME aca hago una llamada extra pero es mas seguro
-  const businessOwnerId =
-    userData.role === "OWNER" ? userId : userData.business_owner_id;
+  const organizationId = userData.organization_id
 
-  return businessOwnerId;
+
+  return organizationId;
 };
 
-// const getBusinessOwnerId = async (storeId: number) => {
+// const getOrganizationId = async (storeId: number) => {
 //   const { data: store, error } = await supabase
 //     .from("stores")
-//     .select("business_owner_id")
+//     .select("organization_id")
 //     .eq("store_id", storeId)
 //     .single();
 
@@ -160,16 +156,16 @@ export const getBusinessOwnerId = async () => {
 //     throw new Error(error.message);
 //   }
 
-//   return store?.business_owner_id;
+//   return store?.organization_id;
 // };
 
 export const getUserTeamMembers = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { data: teamMembers, error } = await supabase
     .from("users")
     .select("*")
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .is("deleted_at", null);
 
   if (error) {
@@ -180,7 +176,7 @@ export const getUserTeamMembers = async () => {
 };
 
 export const createTeamMember = async (newUserData: Omit<UserProfile, "id" | "is_verified">) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { error: createUserError, data: user } = await createNewUser(
     newUserData.email,
@@ -209,7 +205,7 @@ export const createTeamMember = async (newUserData: Omit<UserProfile, "id" | "is
     address: newUserData.address,
     phone: newUserData.phone,
     is_verified: false,
-    business_owner_id: businessOwnerId,
+    organization_id: organizationId,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     deleted_at: null,

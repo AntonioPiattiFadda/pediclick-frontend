@@ -1,10 +1,10 @@
 import { handleSupabaseError } from "@/utils/handleSupabaseErrors";
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 import type { SubapaseConstrains } from "@/types/shared";
 import type { SellType } from "@/types";
 
-export const productPresentationConstraints: SubapaseConstrains[] = [{
+export const entityConstraints: SubapaseConstrains[] = [{
   value: "unique_shortcode_per_owner",
   errorMsg: "El código corto ya está en uso para otra presentación de producto.",
 },
@@ -28,7 +28,7 @@ export const getProductPresentations = async (
     return { presentations: [], error: null };
   }
 
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const lotsSelect = isFetchWithLots
     ? isFetchedWithLotContainersLocation
@@ -87,7 +87,7 @@ export const getProductPresentations = async (
     .from("product_presentations")
     .select(lotsSelect)
     .is("deleted_at", null)
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .eq("product_id", productId);
 
 
@@ -121,7 +121,7 @@ export const getProductPresentations = async (
 
 
 export const getProductPresentation = async (productPresentationId: number | null) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data: presentation, error } = await supabase
     .from("product_presentations")
     .select(`
@@ -132,7 +132,7 @@ export const getProductPresentation = async (productPresentationId: number | nul
       )
         `)
     .is("deleted_at", null) // Exclude soft-deleted providers
-    .eq("business_owner_id", businessOwnerId)
+    .eq("organization_id", organizationId)
     .eq("product_presentation_id", productPresentationId)
     .single();
 
@@ -144,15 +144,15 @@ export const getProductPresentation = async (productPresentationId: number | nul
 };
 
 export const createProductPresentation = async (name: string, shortCode: number | null, productId: number, bulkQuantityEquivalence: number | null, sellType: SellType) => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
   const { data, error } = await supabase
     .from("product_presentations")
-    .insert({ product_presentation_name: name, short_code: shortCode, business_owner_id: businessOwnerId, product_id: productId, bulk_quantity_equivalence: bulkQuantityEquivalence, sell_type: sellType })
+    .insert({ product_presentation_name: name, short_code: shortCode, organization_id: organizationId, product_id: productId, bulk_quantity_equivalence: bulkQuantityEquivalence, sell_type: sellType })
     .select()
     .single();
 
   if (error) {
-    handleSupabaseError(error, productPresentationConstraints);
+    handleSupabaseError(error, entityConstraints);
   }
 
   return data;

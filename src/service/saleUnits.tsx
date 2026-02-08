@@ -1,17 +1,17 @@
 // import { supabase } from ".";
-// import { getBusinessOwnerId } from "./profiles";
+// import { getOrganizationId } from "./profiles";
 
 // export const getSaleUnits = async (userRole: string) => {
-//   const businessOwnerId = await getBusinessOwnerId(userRole);
+//   const organizationId = await getOrganizationId(userRole);
 //   const { data: saleUnits, error } = await supabase
 //     .from("sale_units")
 //     .select("*")
-//     .eq("business_owner_id", businessOwnerId);
+//     .eq("organization_id", organizationId);
 
 //   const { data: publicUnits, error: publicUnitError } = await supabase
 //     .from("sale_units")
 //     .select("*")
-//     .is("business_owner_id", null);
+//     .is("organization_id", null);
 
 //   if (error || publicUnitError) {
 //     throw new Error(
@@ -23,10 +23,10 @@
 // };
 
 // export const createSaleUnit = async (name: string) => {
-//   const businessOwnerId = await getBusinessOwnerId();
+//   const organizationId = await getOrganizationId();
 //   const { data: saleUnits, error } = await supabase
 //     .from("sale_units")
-//     .insert({ sale_unit_name: name, business_owner_id: businessOwnerId })
+//     .insert({ sale_unit_name: name, organization_id: organizationId })
 //     .select()
 //     .single();
 

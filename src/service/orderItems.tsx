@@ -1,6 +1,6 @@
 import type { OrderItem } from "@/types/orderItems";
 import { supabase } from ".";
-import { getBusinessOwnerId } from "./profiles";
+import { getOrganizationId } from "./profiles";
 
 export const getLotSales = async (lotId: number, page: number, pageSize: number): Promise<Partial<OrderItem>[]> => {
 
@@ -32,12 +32,12 @@ export const getAllLotSales = async (lotId: number): Promise<Partial<OrderItem>[
 };
 
 export const getMostSoldProducts = async () => {
-  const businessOwnerId = await getBusinessOwnerId();
+  const organizationId = await getOrganizationId();
 
   const { data, error } = await supabase.rpc(
     "get_top_products_last_month",
     {
-      p_business_owner_id: businessOwnerId,
+      p_organization_id: organizationId,
     }
   );
 

@@ -2,20 +2,21 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
-import React, { useState } from "react";
-import { AuthLayout } from "./AuthLayout";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { signUp } from "@/service/auth";
-import { toast } from "sonner";
-import SignUpSuccessMessage from "./SignUpSuccessMessage";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Building, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { AuthLayout } from "./AuthLayout";
+import SignUpSuccessMessage from "./SignUpSuccessMessage";
 
 export function SignUp() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
+    organizationName: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -27,8 +28,8 @@ export function SignUp() {
 
   // Mutation de react-query
   const signUpMutation = useMutation({
-    mutationFn: async (credentials: { email: string; password: string }) => {
-      return await signUp(credentials.email, credentials.password);
+    mutationFn: async (credentials: { email: string; password: string, organizationName: string }) => {
+      return await signUp(credentials.email, credentials.password, credentials.organizationName);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
@@ -78,6 +79,7 @@ export function SignUp() {
     signUpMutation.mutate({
       email: formData.email,
       password: formData.password,
+      organizationName: formData.organizationName,
     });
   };
 
@@ -124,6 +126,26 @@ export function SignUp() {
             </div>
             {errors.email && (
               <p className="text-red-500 text-xs">{errors.email}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="organizationName" className="text-foreground font-medium">
+              Nombre de la organización (Opcional)
+            </Label>
+            <div className="relative">
+              <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                id="organizationName"
+                type="text"
+                value={formData.organizationName}
+                onChange={(e) => handleInputChange("organizationName", e.target.value)}
+                className="pl-10"
+                placeholder="Nombre de la organización (Opcional)"
+              />
+            </div>
+            {errors.organizationName && (
+              <p className="text-red-500 text-xs">{errors.organizationName}</p>
             )}
           </div>
 
@@ -239,7 +261,8 @@ export function SignUp() {
             </a>
           </div>
         </form>
-      )}
-    </AuthLayout>
+      )
+      }
+    </AuthLayout >
   );
 }
