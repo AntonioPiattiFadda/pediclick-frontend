@@ -26,4 +26,9 @@ dist-ssr
 
 .env
 
+supabase
+.agents 
+.claude
+
 db.sql
+dump.sql

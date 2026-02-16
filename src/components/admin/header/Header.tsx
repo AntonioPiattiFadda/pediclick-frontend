@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import UserData from "./UserData";
+import Chatbot from "../Chatbot";
 
 export const Header = () => {
   const dispatch = useDispatch();
@@ -57,6 +58,8 @@ export const Header = () => {
             </p>
           </div>
         </div>
+
+        <Chatbot />
 
         <UserData userData={userData || null} />
 
