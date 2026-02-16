@@ -135,7 +135,8 @@ export const getAllSoldProducts = async () => {
       lots!inner(
       lot_id,
       is_sold_out,
-        is_finished
+        is_finished,
+        created_at
       )
     )
   `)

@@ -8,7 +8,7 @@ import { deleteProduct } from '@/service/products'
 import type { Lot } from '@/types/lots'
 import type { ProductPresentation } from '@/types/productPresentation'
 import type { Product } from '@/types/products'
-import { sliceLongNames } from '@/utils'
+import { formatDate, sliceLongNames } from '@/utils'
 import {
     createColumnHelper,
     flexRender,
@@ -19,6 +19,9 @@ import {
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { DeleteTableElementPopUp } from '../../../../components/admin/deleteTableElementPopUp'
 import LotsAndStockProductPresentationTableCell from './LotsAndStockProductPresentationTableCell'
+import { divide } from 'lodash'
+import { Label } from '@/components/ui/label'
+import SalesHistory from './salesHistory'
 
 const HeaderCell = ({ children }: { children: React.ReactNode }) => (
     <div className="">
@@ -186,10 +189,15 @@ const lotColumns = [
                 const totalStock = lot.stock?.reduce((acc, stockItem) => acc + (stockItem.quantity || 0), 0) || 0;
                 return totalStock <= 0;
             });
+
             if (hasNoStock) {
-                return <div className='text-red-400'>--</div>;
-            }
-            console.log("lots in presentation table cell:", lots);
+                return lots.map((lot) => {
+                    return <div className='flex items-center gap-2'>
+                        <Label>Lote: {formatDate(lot.created_at)}</Label>
+                        <SalesHistory lotId={lot.lot_id || null} />
+                    </div>
+                })
+            };
             return <div className='min-w-[270px] '>
                 <LotsAndStockProductPresentationTableCell lots={lots} />
             </div>

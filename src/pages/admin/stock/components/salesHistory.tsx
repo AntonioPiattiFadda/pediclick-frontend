@@ -200,7 +200,7 @@ const SalesHistory = ({
 
                 </div>
 
-
+                <CloseLotDialog lotId={lotId} />
 
                 <div className="p-2 flex justify-end items-center gap-2">
                     {/* Pagination Controls could go here */}

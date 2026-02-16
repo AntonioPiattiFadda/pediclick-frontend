@@ -63,6 +63,7 @@ export const createLoadOrder = async (
 
   const organizationId = await getOrganizationId();
 
+
   const reqBody: {
     p_load_order: LoadOrder,
     p_units: LoadOrderUnit[],
@@ -85,6 +86,7 @@ export const createLoadOrder = async (
     p_units: units,
     p_organization_id: organizationId,
   };
+  console.log("reqBody", reqBody);
 
   const { data, error } = await supabase.rpc(
     "create_load_order",
