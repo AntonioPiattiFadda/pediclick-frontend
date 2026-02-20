@@ -41,3 +41,19 @@ export const getFollowingLotNumber = async (productId: number): Promise<number> 
   const lastLotNumber = data?.[0]?.lot_number ?? 0;
   return lastLotNumber + 1;
 };
+
+export const closeLot = async (lotId: number) => {
+
+  const { data, error } = await supabase
+    .from("lots")
+    .update({ is_finished: true })
+    .eq("lot_id", lotId)
+    .select();
+
+  if (error) {
+    console.error("Error closing lot:", error);
+    throw error;
+  }
+
+  return data;
+};

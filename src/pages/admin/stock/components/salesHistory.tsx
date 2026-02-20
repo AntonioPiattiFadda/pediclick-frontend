@@ -16,12 +16,14 @@ import { formatCurrency } from "@/utils/prices";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Loader2, TrendingUp } from "lucide-react";
 import { useState } from "react";
+import CloseLotDialog from "./CloseLotDialog";
 
 const SalesHistory = ({
     lotId,
 }: {
     lotId: number | null;
 }) => {
+    const [open, setOpen] = useState(false);
 
     const [pagination, setPagination] = useState({
         page: 1,
@@ -58,7 +60,7 @@ const SalesHistory = ({
 
 
     if (isErrorAllSales || isError) {
-        return <Sheet>
+        return <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
                 <Button variant="outline" disabled={!lotId}>
                     <TrendingUp />
@@ -93,7 +95,7 @@ const SalesHistory = ({
 
 
     return (
-        <Sheet>
+        <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
                 <Button variant="outline" disabled={!lotId}>
                     <TrendingUp />
@@ -200,7 +202,9 @@ const SalesHistory = ({
 
                 </div>
 
-                <CloseLotDialog lotId={lotId} />
+                <div className="border-t border-gray-200 px-6 py-4">
+                    <CloseLotDialog lotId={lotId} onClose={() => setOpen(false)} />
+                </div>
 
                 <div className="p-2 flex justify-end items-center gap-2">
                     {/* Pagination Controls could go here */}

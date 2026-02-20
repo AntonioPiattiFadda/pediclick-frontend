@@ -19,7 +19,6 @@ import {
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { DeleteTableElementPopUp } from '../../../../components/admin/deleteTableElementPopUp'
 import LotsAndStockProductPresentationTableCell from './LotsAndStockProductPresentationTableCell'
-import { divide } from 'lodash'
 import { Label } from '@/components/ui/label'
 import SalesHistory from './salesHistory'
 
