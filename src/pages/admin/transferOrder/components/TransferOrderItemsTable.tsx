@@ -101,7 +101,7 @@ export default function TransferOrderItemsTable({
     const handleSelectProduct = (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         transfer_order_item_id: any,
-        product: Pick<Product, "product_id" | "product_name" | "short_code" | 'sell_measurement_mode' | 'updated_at'>,
+        product: Pick<Product, "product_id" | "product_name" | "short_code" | 'updated_at'>,
     ) => {
 
         if (isTransferring) return;
@@ -118,7 +118,6 @@ export default function TransferOrderItemsTable({
                     ...item,
                     product: product,
                     product_id: product.product_id || null,
-                    sell_measurement_mode: product?.sell_measurement_mode || null,
                     updated_at: product?.updated_at || null,
                 }
                 : item
@@ -229,7 +228,6 @@ export default function TransferOrderItemsTable({
                                                     product_name: p.product_name,
                                                     product_id: p.product_id,
                                                     short_code: p.short_code,
-                                                    sell_measurement_mode: p.sell_measurement_mode,
                                                     updated_at: p.updated_at,
                                                 })
                                             }}

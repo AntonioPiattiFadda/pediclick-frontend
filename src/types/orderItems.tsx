@@ -36,6 +36,6 @@ export interface OrderItem {
 
   created_at: string;
 
-  product: Pick<Product, "product_id" | "product_name" | "short_code" | 'sell_measurement_mode' | 'updated_at'> | null;
+  product: Pick<Product, "product_id" | "product_name" | "short_code" | 'updated_at'> | null;
   product_presentation: ProductPresentation | null;
 }

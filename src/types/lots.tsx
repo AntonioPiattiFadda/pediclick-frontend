@@ -45,4 +45,7 @@ export type Lot = {
   is_finished: boolean | null;
 
   stock?: Stock[];
+  product_name?: string;
+
+
 };

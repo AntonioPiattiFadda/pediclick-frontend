@@ -119,6 +119,8 @@ export const getUnassignedStock = (lot: Lot, stock: Stock[]): Omit<Stock, "stock
         reserved_for_selling_quantity: lot.stock?.[0]?.reserved_for_selling_quantity || null,
         transformed_from_product_id: lot.stock?.[0]?.transformed_from_product_id || null,
         updated_at: null,
+        over_sell_quantity: lot.stock?.[0]?.over_sell_quantity || null,
+        has_to_compensate: lot.stock?.[0]?.has_to_compensate || false,
     }
     if (unassignedQuantity > 0) {
         return unassignedStock;

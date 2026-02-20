@@ -28,7 +28,7 @@ export interface TransferOrderItem {
     status: MovementStatus
 
     //Primero los estados de db
-    product?: Pick<Product, "product_id" | "product_name" | "short_code" | 'sell_measurement_mode' | 'updated_at'> | null;
+    product?: Pick<Product, "product_id" | "product_name" | "short_code" | 'updated_at'> | null;
     product_presentation?: Pick<ProductPresentation, "product_presentation_id" | "product_presentation_name" | 'lots'> | null;
     lot?: Lot | null;
     lot_containers_stock?: LotContainersStock | null;

@@ -212,7 +212,7 @@ export function Transformation({
                                         <Label>Producto Nro: {index + 1}</Label>
                                         <ProductSelector
                                             disabled={!selectedLocation}
-                                            value={td.product ?? {} as Pick<Product, "product_id" | "product_name" | "short_code" | 'sell_measurement_mode' | 'updated_at'>}
+                                            value={td.product ?? {} as Pick<Product, "product_id" | "product_name" | "short_code" | 'updated_at'>}
                                             onChange={
                                                 (product: Product) => {
                                                     const productIndex = fromTransformationItems.findIndex((item) => item.transformation_item_id === td.transformation_item_id);

@@ -27,7 +27,7 @@ export type TransformationItems = {
     // lot_container_id: number | null;
     // lot_container_quantity: number | null;
 
-    product?: Pick<Product, "product_id" | "product_name" | "short_code" | 'sell_measurement_mode' | 'updated_at'> | null;
+    product?: Pick<Product, "product_id" | "product_name" | "short_code" | 'updated_at'> | null;
     product_presentation: Partial<ProductPresentation> | null;
 
     lot: {
