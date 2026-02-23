@@ -1,11 +1,11 @@
-import type { DisabledPrice, Price } from "@/types/prices";
+import type { DisabledPrice, EnabledPriceClient, Price } from "@/types/prices";
 import { supabase } from ".";
 
 export const getProductPrices = async (productId: number, locationId: number | null) => {
   console.log("Fetching prices for productId:", productId, "and locationId:", locationId);
   let query = supabase
     .from("prices")
-    .select(`*`)
+    .select(`*, enabled_prices_clients(client_id)`)
     .eq("product_presentation_id", productId);
 
   if (locationId !== null) {
@@ -118,8 +118,37 @@ export const enablePrice = async (priceId: number, locationId: number): Promise<
   if (error) throw new Error(error.message);
 };
 
+export const addClientToPrice = async (priceId: number, clientId: number): Promise<EnabledPriceClient> => {
+  const { data, error } = await supabase
+    .from("enabled_prices_clients")
+    .insert({ price_id: priceId, client_id: clientId })
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+};
+
+export const removeClientFromPrice = async (priceId: number, clientId: number): Promise<void> => {
+  const { error } = await supabase
+    .from("enabled_prices_clients")
+    .delete()
+    .eq("price_id", priceId)
+    .eq("client_id", clientId);
+
+  if (error) throw new Error(error.message);
+};
+
 export const createPrices = async (priceData: Price[], pricesToDelete: number[]) => {
   if (pricesToDelete.length > 0) {
+    const { error: clientsError } = await supabase
+      .from("enabled_prices_clients")
+      .delete()
+      .in("price_id", pricesToDelete);
+
+    if (clientsError) throw new Error(clientsError.message);
+
     const { error: disabledError } = await supabase
       .from("disabled_prices")
       .delete()

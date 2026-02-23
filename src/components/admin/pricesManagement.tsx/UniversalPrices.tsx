@@ -1,11 +1,14 @@
 import { pricesAdapter } from '@/adapters/prices';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TabsContent } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { createPrices } from '@/service/prices';
+import { getClients } from '@/service/clients';
+import { addClientToPrice, createPrices, removeClientFromPrice } from '@/service/prices';
+import type { Client } from '@/types/clients';
 import type { Price, PriceLogicType } from '@/types/prices';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DollarSign, Percent, Plus, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -37,6 +40,15 @@ const UniversalPrices = ({
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
 
+    const { data: allClients = [] } = useQuery({
+        queryKey: ["clients"],
+        queryFn: async () => {
+            const response = await getClients();
+            return response.clients ?? [];
+        },
+        staleTime: 5 * 60 * 1000,
+    });
+
     const saveMutation = useMutation({
         mutationFn: async ({ prices, toDelete }: { prices: Price[]; toDelete: number[] }) => {
             return await createPrices(prices, toDelete);
@@ -48,6 +60,24 @@ const UniversalPrices = ({
         onError: (error: { message: string }) => {
             toast.error(error.message || "Error al guardar precios");
         },
+    });
+
+    const addClientMutation = useMutation({
+        mutationFn: ({ priceId, clientId }: { priceId: number; clientId: number }) =>
+            addClientToPrice(priceId, clientId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId] });
+        },
+        onError: (error: { message: string }) => toast.error(error.message || "Error al agregar cliente"),
+    });
+
+    const removeClientMutation = useMutation({
+        mutationFn: ({ priceId, clientId }: { priceId: number; clientId: number }) =>
+            removeClientFromPrice(priceId, clientId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId] });
+        },
+        onError: (error: { message: string }) => toast.error(error.message || "Error al quitar cliente"),
     });
 
     const saveDebounced = (prices: Price[]) => {
@@ -116,12 +146,18 @@ const UniversalPrices = ({
             .filter((p) => p.logic_type === logic_type)
             .sort((a, b) => a.price_number - b.price_number);
         const isLimitedOffer = logic_type === "LIMITED_OFFER";
+        const isSpecial = logic_type === "SPECIAL";
 
         return (
             <div className="space-y-2">
                 {filtered.map((price, index) => {
                     const key = String(price.price_id ?? `new-${index}`);
                     const isVisible = showObservations[key] ?? false;
+                    const enabledClients = price.enabled_prices_clients ?? [];
+                    const availableClients = (allClients as Client[]).filter(
+                        (c) => !enabledClients.some((ec) => ec.client_id === c.client_id)
+                    );
+
                     return (
                         <div key={index} className="flex flex-col gap-1">
                             <div className="grid grid-cols-[1fr_1fr_1fr_40px] gap-2 items-center">
@@ -232,6 +268,45 @@ const UniversalPrices = ({
                                         }}
                                         className="border border-gray-300 rounded px-2 py-1"
                                     />
+                                </div>
+                            )}
+
+                            {isSpecial && !price.is_new && (
+                                <div className="flex flex-wrap gap-1 items-center mt-1">
+                                    {enabledClients.length === 0 ? (
+                                        <Badge variant="secondary" className="text-xs">Todos los clientes</Badge>
+                                    ) : (
+                                        enabledClients.map(({ client_id }) => {
+                                            const client = (allClients as Client[]).find((c) => c.client_id === client_id);
+                                            return (
+                                                <Badge key={client_id} variant="outline" className="text-xs flex gap-1 items-center pr-1">
+                                                    {client?.full_name ?? `#${client_id}`}
+                                                    <button
+                                                        className="ml-0.5 hover:text-red-500"
+                                                        disabled={removeClientMutation.isLoading}
+                                                        onClick={() => removeClientMutation.mutate({ priceId: price.price_id!, clientId: client_id })}
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </Badge>
+                                            );
+                                        })
+                                    )}
+                                    {!disabled && availableClients.length > 0 && (
+                                        <select
+                                            className="text-xs border border-gray-300 rounded px-1 py-0.5 bg-white"
+                                            onChange={(e) => {
+                                                if (!e.target.value) return;
+                                                addClientMutation.mutate({ priceId: price.price_id!, clientId: Number(e.target.value) });
+                                                e.target.value = "";
+                                            }}
+                                        >
+                                            <option value="">+ Cliente</option>
+                                            {availableClients.map((c) => (
+                                                <option key={c.client_id} value={c.client_id}>{c.full_name}</option>
+                                            ))}
+                                        </select>
+                                    )}
                                 </div>
                             )}
                         </div>
