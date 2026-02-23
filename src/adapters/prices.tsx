@@ -10,13 +10,10 @@ export const pricesAdapter = (prices: any[], locationId: number | null): Price[]
         qty_per_price: p.qty_per_price,
         profit_percentage: p.profit_percentage,
         product_presentation_id: p.product_presentation_id,
-        price_type: p.price_type,
         logic_type: p.logic_type,
         observations: p.observations,
-        is_limited_offer: p.logic_type === "LIMITED_OFFER",
         is_active: p.is_active,
         valid_from: p.valid_from,
         valid_until: p.valid_until,
-    }
-    ));
+    }));
 }

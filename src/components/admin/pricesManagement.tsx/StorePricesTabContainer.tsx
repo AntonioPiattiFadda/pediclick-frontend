@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import StorePricesTab from './StorePricesTab';
 import type { Location } from '@/types/locations';
 
-const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost, disabled, onClose }: {
+const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost, disabled, onClose, onDirtyChange, onRegisterActions }: {
     productPresentationId: number;
     store: Location;
     key: number;
@@ -15,6 +15,8 @@ const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost,
     };
     disabled?: boolean;
     onClose: () => void;
+    onDirtyChange: (isDirty: boolean) => void;
+    onRegisterActions: (save: (afterSave?: () => void) => void, discard: () => void) => void;
 }) => {
 
     const { data: productPrices = [], isLoading, isError } = useQuery({
@@ -53,6 +55,8 @@ const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost,
             disabled={disabled}
             productPrices={productPrices}
             onClose={onClose}
+            onDirtyChange={onDirtyChange}
+            onRegisterActions={onRegisterActions}
         />
     )
 }

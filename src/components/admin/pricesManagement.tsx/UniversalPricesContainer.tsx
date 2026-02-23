@@ -4,7 +4,7 @@ import { getProductPrices } from '@/service/prices';
 import { useQuery } from '@tanstack/react-query';
 import UniversalPrices from './UniversalPrices';
 
-const UniversalPricesContainer = ({ productPresentationId, finalCost, onClose }: {
+const UniversalPricesContainer = ({ productPresentationId, finalCost, onClose, onDirtyChange, onRegisterActions }: {
     productPresentationId: number;
     finalCost: {
         final_cost_total: number | null;
@@ -12,6 +12,8 @@ const UniversalPricesContainer = ({ productPresentationId, finalCost, onClose }:
         final_cost_per_bulk: number | null;
     };
     onClose: () => void;
+    onDirtyChange: (isDirty: boolean) => void;
+    onRegisterActions: (save: (afterSave?: () => void) => void, discard: () => void) => void;
 }) => {
 
     const locationId = null;
@@ -45,6 +47,8 @@ const UniversalPricesContainer = ({ productPresentationId, finalCost, onClose }:
             disabled={false}
             productPrices={productPrices}
             onClose={onClose}
+            onDirtyChange={onDirtyChange}
+            onRegisterActions={onRegisterActions}
         />
     )
 }
