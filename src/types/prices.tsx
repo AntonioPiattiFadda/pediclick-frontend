@@ -27,7 +27,6 @@ export type Price = {
   logic_type: PriceLogicType;
   observations: string | null;
 
-  is_active: boolean;
   valid_from: string | null;
   valid_until: string | null;
   created_at?: string;

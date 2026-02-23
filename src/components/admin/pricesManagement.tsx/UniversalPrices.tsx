@@ -9,7 +9,8 @@ import { addClientToPrice, createPrices, removeClientFromPrice } from '@/service
 import type { Client } from '@/types/clients';
 import type { Price, PriceLogicType } from '@/types/prices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { DollarSign, Percent, Plus, Trash2, X } from 'lucide-react';
+import { MoneyInput } from '@/components/admin/ui/MoneyInput';
+import { Percent, Plus, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -84,7 +85,7 @@ const UniversalPrices = ({
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => {
             saveMutation.mutate({ prices: pricesAdapter(prices, null), toDelete: [] });
-        }, 800);
+        }, 900);
     };
 
     const saveImmediate = (prices: Price[], toDelete: number[] = []) => {
@@ -178,29 +179,29 @@ const UniversalPrices = ({
                                         />
                                     </div>
                                 )}
-                                <div className="relative">
-                                    <DollarSign className="absolute w-3 h-3 left-2 top-1/2 -translate-y-1/2 opacity-50" />
-                                    <Input
-                                        placeholder="Precio total"
-                                        className="pl-5"
-                                        value={price.price}
-                                        disabled={disabled}
-                                        onChange={(e) => {
-                                            const next = updatePriceField(value, price.price_id!, "price", e.target.value);
-                                            onChange(next);
-                                            saveDebounced(next);
-                                        }}
-                                    />
-                                </div>
-                                <Input
-                                    placeholder="Unidades"
-                                    value={price.qty_per_price}
+                                <MoneyInput
+                                    value={price.price}
                                     disabled={disabled}
-                                    onChange={(e) => {
-                                        const next = updatePriceField(value, price.price_id!, "qty_per_price", e.target.value);
+                                    onChange={(v) => {
+                                        const next = updatePriceField(value, price.price_id!, "price", v ?? 0);
                                         onChange(next);
                                         saveDebounced(next);
                                     }}
+                                />
+                                <Input
+                                    type="number"
+                                    placeholder="Unidades"
+                                    value={price.qty_per_price === null ? "" : String(price.qty_per_price)}
+                                    disabled={disabled}
+                                    onChange={(e) => {
+                                        const newValue = e.target.value === "" ? null : Number(e.target.value)
+                                        const next = updatePriceField(value, price.price_id!, "qty_per_price", newValue);
+                                        onChange(next);
+                                        saveDebounced(next);
+                                    }}
+
+                                // onChange={(e) => setNewShortCode(e.target.value === "" ? null : Number(e.target.value))}
+
                                 />
                                 <Button
                                     variant="ghost"
