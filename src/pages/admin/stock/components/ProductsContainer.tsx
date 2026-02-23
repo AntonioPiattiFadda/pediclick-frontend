@@ -104,13 +104,18 @@ export const ProductsContainer = () => {
     if (stockTypeToShow === 'STOCK') return products;
     if (stockTypeToShow === 'SOLD') return soldStockProducts;
     if (stockTypeToShow === 'NO-STOCK') return nonStockProducts;
+    if (stockTypeToShow === 'ALL') {
+      const stockIds = new Set(products.map(p => p.product_id));
+      const onlyNoStock = nonStockProducts.filter(p => !stockIds.has(p.product_id));
+      return [...products, ...onlyNoStock];
+    }
     return products;
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const productsToUse = useMemo(() => getProductToUse(), [stockTypeToShow, products, soldStockProducts, allProducts, nonStockProducts]);
 
-  const filteredByLocation = stockTypeToShow === 'NO-STOCK' ? productsToUse : productsToUse
+  const filteredByLocation = (stockTypeToShow === 'NO-STOCK' || stockTypeToShow === 'ALL') ? productsToUse : productsToUse
     .map((product) => {
       if (!selectedLocation && !viewUnassignedOnly) return product;
 
@@ -182,13 +187,13 @@ export const ProductsContainer = () => {
       matchesSubCategory &&
       (matchesSearchTerm || matchesShortCode || matchesBarcode)
     );
-  });
+  }).sort((a, b) => a!.product_name.localeCompare(b!.product_name));
 
-  if (isLoadingAllProducts && stockTypeToShow === 'NO-STOCK') {
+  if (isLoadingAllProducts && (stockTypeToShow === 'NO-STOCK' || stockTypeToShow === 'ALL')) {
     return <TableSkl />;
   }
 
-  if (isLoading && stockTypeToShow === 'STOCK') {
+  if (isLoading && (stockTypeToShow === 'STOCK' || stockTypeToShow === 'ALL')) {
     return <TableSkl />;
   }
 
@@ -312,7 +317,7 @@ export const ProductsContainer = () => {
 
 
               <RadioGroup value={stockTypeToShow} onValueChange={(value) => {
-                setStockTypeToShow(value as 'STOCK' | 'SOLD')
+                setStockTypeToShow(value as StockTypeToShow)
               }} defaultValue="STOCK" className="flex flex-row gap-4 mt-2 " >
                 <div className="flex items-center gap-3">
                   <RadioGroupItem value="SOLD" id="r3" />
@@ -325,6 +330,10 @@ export const ProductsContainer = () => {
                 <div className="flex items-center gap-3">
                   <RadioGroupItem value="NO-STOCK" id="r2" />
                   <Label className="w-20" htmlFor="r2">Sin stock</Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <RadioGroupItem value="ALL" id="r4" />
+                  <Label className="w-20" htmlFor="r4">Todos</Label>
                 </div>
               </RadioGroup>
 

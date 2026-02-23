@@ -17,16 +17,43 @@ import {
     useReactTable,
 } from '@tanstack/react-table'
 import { ChevronDown, ChevronRight } from 'lucide-react'
+import ManageProductPrices from '@/components/admin/pricesManagement.tsx/ManageProductPricesTabs'
+import { ProductEditSheet } from '@/components/admin/stock/productEditSheet'
 import { DeleteTableElementPopUp } from '../../../../components/admin/deleteTableElementPopUp'
 import LotsAndStockProductPresentationTableCell from './LotsAndStockProductPresentationTableCell'
 import { Label } from '@/components/ui/label'
 import SalesHistory from './salesHistory'
+import { useQueryClient } from '@tanstack/react-query'
 
 const HeaderCell = ({ children }: { children: React.ReactNode }) => (
     <div className="">
         {children}
     </div>
 )
+
+const ProductActionsCell = ({ product }: { product: Product }) => {
+    const queryClient = useQueryClient();
+    return (
+        <div className='flex gap-2 justify-end'>
+            <ProductEditSheet
+                product={product}
+                onUpdated={() => {
+                    queryClient.invalidateQueries({ queryKey: ['products'] });
+                    queryClient.invalidateQueries({ queryKey: ['all-products'] });
+                }}
+            />
+            <DeleteTableElementPopUp
+                elementId={product.product_id || ''}
+                queryKey={['products']}
+                deleteFn={async (id) => { await deleteProduct(Number(id)); }}
+                elementName="el producto"
+                size="icon"
+                successMsgDescription="El producto ha sido eliminado correctamente."
+                errorMsgDescription="No se pudo eliminar el producto."
+            />
+        </div>
+    );
+};
 
 
 const columnHelper = createColumnHelper<Product>()
@@ -129,21 +156,7 @@ const columns = [
 
     columnHelper.accessor('product_id', {
         header: () => <HeaderCell>Acciones</HeaderCell>,
-        cell: info => <div className='flex gap-2 justify-end'>
-            <DeleteTableElementPopUp
-                elementId={info.getValue() || ''}
-                queryKey={['products']}
-                deleteFn={async (id) => {
-                    await deleteProduct(Number(id));
-                }}
-                elementName="el producto"
-                size="icon"
-                successMsgDescription="El producto ha sido eliminado correctamente."
-                errorMsgDescription="No se pudo eliminar el producto."
-            />
-        </div>
-        ,
-
+        cell: info => <ProductActionsCell product={info.row.original} />,
         footer: info => info.column.id,
     }),
 ]
@@ -276,7 +289,11 @@ const lotColumns = [
 
     lotColumnHelper.accessor("product_presentation_id", {
         header: "Acciones",
-        cell: info => <div className='w-10 flex gap-2'>
+        cell: info => <div className='flex gap-2 items-center'>
+            <ManageProductPrices
+                productPresentationId={info.getValue()}
+                finalCost={{ final_cost_total: null, final_cost_per_unit: null, final_cost_per_bulk: null }}
+            />
             <DeleteTableElementPopUp
                 elementId={info.getValue() || ''}
                 queryKey={['products']}
@@ -288,10 +305,7 @@ const lotColumns = [
                 successMsgDescription="La presentación ha sido eliminada correctamente."
                 errorMsgDescription="No se pudo eliminar la presentación."
             />
-
-        </div>
-        ,
-
+        </div>,
         footer: info => info.column.id,
     }),
 ];

@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DollarSign } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,7 +42,7 @@ export default function ManageProductPrices({
         return (
             <Sheet open={false}>
                 <SheetTrigger asChild>
-                    <Button className="w-[150px]" disabled>Modificar precios</Button>
+                    <Button variant="outline" size="icon" disabled><DollarSign className="w-4 h-4" /></Button>
                 </SheetTrigger>
             </Sheet>
         );
@@ -50,9 +51,9 @@ export default function ManageProductPrices({
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button className="w-[150px]">Modificar precios</Button>
+                <Button variant="outline" size="icon"><DollarSign className="w-4 h-4" /></Button>
             </SheetTrigger>
-            <SheetContent className="sm:max-w-[1040px] max-h-screen overflow-y-auto" side="right">
+            <SheetContent className="sm:max-w-[1240px] max-h-screen overflow-y-auto" side="right">
                 <SheetHeader>
                     <SheetTitle>Modificar precios</SheetTitle>
                     <SheetDescription>

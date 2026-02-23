@@ -10,4 +10,4 @@ export type SellType = 'MINOR' | 'MAYOR';
 
 export type SellUnit = 'BY_UNIT' | 'BY_WEIGHT';
 
-export type StockTypeToShow = 'STOCK' | 'SOLD' | 'NO-STOCK';
+export type StockTypeToShow = 'STOCK' | 'SOLD' | 'NO-STOCK' | 'ALL';

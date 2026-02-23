@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Product } from "@/types/products";
 import { Button } from "@/components/ui/button";
+import { Pencil } from "lucide-react";
 import {
     Sheet,
     SheetContent,
@@ -91,7 +92,7 @@ export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) 
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button disabled={!canEdit}>Modificar producto</Button>
+                <Button variant="outline" size="icon" disabled={!canEdit}><Pencil className="w-4 h-4" /></Button>
             </SheetTrigger>
             <SheetContent className="sm:max-w-[640px] max-h-screen overflow-y-auto" side="right">
                 <SheetHeader>
