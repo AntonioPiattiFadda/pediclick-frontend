@@ -1,5 +1,5 @@
 import type { MovementStatus } from ".";
-import type { PriceLogicType, PriceType } from "./prices";
+import type { PriceLogicType } from "./prices";
 import type { ProductPresentation } from "./productPresentation";
 import type { Product } from "./products";
 
@@ -21,7 +21,6 @@ export interface OrderItem {
   quantity: number;
   price: number;
 
-  price_type: PriceType;
   logic_type: PriceLogicType;
 
   subtotal: number;

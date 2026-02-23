@@ -1,7 +1,8 @@
-import type { SellType } from ".";
+import type { SellUnit } from ".";
 import type { Lot } from "./lots";
 import type { Price } from "./prices";
 
+export type SellType = "MINOR" | "MAYOR";
 
 export type ProductPresentation = {
     product_presentation_id: number | null;
@@ -12,6 +13,7 @@ export type ProductPresentation = {
     updated_at: string;
 
     bulk_quantity_equivalence: number | null;
+    sell_unit: SellUnit;
     sell_type: SellType;
 
     // allow_price_edition: boolean;
