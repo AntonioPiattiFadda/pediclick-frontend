@@ -1,10 +1,10 @@
 import { TabsContent } from '@/components/ui/tabs';
-import { getProductPrices } from '@/service/prices';
+import { getDisabledPrices, getProductPrices } from '@/service/prices';
+import type { Location } from '@/types/locations';
 import { useQuery } from '@tanstack/react-query';
 import StorePricesTab from './StorePricesTab';
-import type { Location } from '@/types/locations';
 
-const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost, disabled, onClose, onDirtyChange, onRegisterActions }: {
+const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost, disabled }: {
     productPresentationId: number;
     store: Location;
     key: number;
@@ -14,12 +14,9 @@ const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost,
         final_cost_per_bulk: number | null;
     };
     disabled?: boolean;
-    onClose: () => void;
-    onDirtyChange: (isDirty: boolean) => void;
-    onRegisterActions: (save: (afterSave?: () => void) => void, discard: () => void) => void;
 }) => {
 
-    const { data: productPrices = [], isLoading, isError } = useQuery({
+    const { data: localPrices = [], isLoading: isLocalLoading, isError: isLocalError } = useQuery({
         queryKey: ["prices", productPresentationId, store.location_id],
         queryFn: async () => {
             const response = await getProductPrices(productPresentationId, store.location_id);
@@ -29,6 +26,29 @@ const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost,
         cacheTime: 0,
         enabled: !!productPresentationId,
     });
+
+    const { data: universalPrices = [], isLoading: isUniversalLoading, isError: isUniversalError } = useQuery({
+        queryKey: ["prices", productPresentationId, null],
+        queryFn: async () => {
+            const response = await getProductPrices(productPresentationId, null);
+            return response.productPrices;
+        },
+        staleTime: Infinity,
+        cacheTime: 0,
+        enabled: !!productPresentationId,
+    });
+
+    const { data: disabledPrices = [], isLoading: isDisabledLoading, isError: isDisabledError } = useQuery({
+        queryKey: ["disabled_prices", productPresentationId, store.location_id],
+        queryFn: async () => {
+            const response = await getDisabledPrices(productPresentationId, store.location_id);
+            return response.disabledPrices;
+        },
+        enabled: !!productPresentationId,
+    });
+
+    const isLoading = isLocalLoading || isUniversalLoading || isDisabledLoading;
+    const isError = isLocalError || isUniversalError || isDisabledError;
 
     if (isLoading) {
         return (
@@ -53,12 +73,11 @@ const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost,
             store={store}
             finalCost={finalCost}
             disabled={disabled}
-            productPrices={productPrices}
-            onClose={onClose}
-            onDirtyChange={onDirtyChange}
-            onRegisterActions={onRegisterActions}
+            localPrices={localPrices}
+            universalPrices={universalPrices}
+            disabledPrices={disabledPrices}
         />
-    )
-}
+    );
+};
 
-export default StorePricesTabContainer
+export default StorePricesTabContainer;

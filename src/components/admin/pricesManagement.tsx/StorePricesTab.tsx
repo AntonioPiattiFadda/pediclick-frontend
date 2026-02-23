@@ -1,20 +1,20 @@
 import { pricesAdapter } from '@/adapters/prices';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { TabsContent } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { createPrices } from '@/service/prices';
+import { disablePrice, enablePrice, createPrices } from '@/service/prices';
 import type { Location } from '@/types/locations';
-import type { Price, PriceLogicType } from '@/types/prices';
+import type { DisabledPrice, Price, PriceLogicType } from '@/types/prices';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { DollarSign, Percent, Plus, Trash2, X } from 'lucide-react';
+import { DollarSign, Percent, Plus, RotateCcw, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 
 const StorePricesTab = ({
     productPresentationId, store, finalCost,
-    disabled, productPrices, onClose, onDirtyChange, onRegisterActions
+    disabled, localPrices, universalPrices, disabledPrices
 }: {
     productPresentationId: number;
     store: Location;
@@ -24,70 +24,74 @@ const StorePricesTab = ({
         final_cost_per_bulk: number | null;
     };
     disabled?: boolean;
-    productPrices: Price[];
-    onClose: () => void;
-    onDirtyChange: (isDirty: boolean) => void;
-    onRegisterActions: (save: (afterSave?: () => void) => void, discard: () => void) => void;
+    localPrices: Price[];
+    universalPrices: Price[];
+    disabledPrices: DisabledPrice[];
 }) => {
     const locationId = store.location_id;
     const queryClient = useQueryClient();
 
-    const [value, onChange] = useState<Price[]>(productPrices);
-    const [pricesToDelete, setPricesToDelete] = useState<number[]>([]);
+    const [value, onChange] = useState<Price[]>(localPrices);
     const [showObservations, setShowObservations] = useState<Record<string, boolean>>({});
 
-    // Dirty tracking
-    const isDirty = JSON.stringify(value) !== JSON.stringify(productPrices) || pricesToDelete.length > 0;
-
+    // Sync value with fresh server data after invalidation+refetch
+    const isFirstRender = useRef(true);
     useEffect(() => {
-        onDirtyChange(isDirty);
-    }, [isDirty]);
+        if (isFirstRender.current) { isFirstRender.current = false; return; }
+        onChange(localPrices);
+    }, [localPrices]);
 
-    // Ref para el callback post-guardado (usado al cambiar de tab)
-    const afterSaveCallbackRef = useRef<(() => void) | null>(null);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
 
-    const createPricesMutation = useMutation({
-        mutationFn: async (adaptedPrices: Price[]) => {
-            return await createPrices(adaptedPrices, pricesToDelete);
+    const saveMutation = useMutation({
+        mutationFn: async ({ prices, toDelete }: { prices: Price[]; toDelete: number[] }) => {
+            return await createPrices(prices, toDelete);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId] });
-            toast.success("Precios actualizados correctamente");
-            if (afterSaveCallbackRef.current) {
-                afterSaveCallbackRef.current();
-                afterSaveCallbackRef.current = null;
-            } else {
-                onClose();
-            }
+            queryClient.invalidateQueries({ queryKey: ["disabled_prices", productPresentationId] });
         },
         onError: (error: { message: string }) => {
-            toast.error(error.message || "Error al crear precios");
-            afterSaveCallbackRef.current = null;
+            toast.error(error.message || "Error al guardar precios");
         },
     });
 
-    const handleSave = (afterSave?: () => void) => {
-        afterSaveCallbackRef.current = afterSave ?? null;
-        const adaptedPrices = pricesAdapter(value, locationId);
-        createPricesMutation.mutate(adaptedPrices);
+    const saveDebounced = (prices: Price[]) => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+            saveMutation.mutate({ prices: pricesAdapter(prices, locationId), toDelete: [] });
+        }, 800);
     };
 
-    const handleDiscard = () => {
-        onChange(productPrices);
-        setPricesToDelete([]);
+    const saveImmediate = (prices: Price[], toDelete: number[] = []) => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        saveMutation.mutate({ prices: pricesAdapter(prices, locationId), toDelete });
     };
 
-    // Registrar acciones en el padre con ref estable
-    const actionsRef = useRef({ save: handleSave, discard: handleDiscard });
-    useEffect(() => {
-        actionsRef.current = { save: handleSave, discard: handleDiscard };
+    // Mutación: deshabilitar precio universal para este local
+    const disableMutation = useMutation({
+        mutationFn: ({ priceId }: { priceId: number }) => disablePrice(priceId, locationId),
+        onSuccess: () => {
+            toast.success("Precio deshabilitado para este local");
+            queryClient.invalidateQueries({ queryKey: ["disabled_prices", productPresentationId, locationId] });
+        },
+        onError: (error: { message: string }) => {
+            toast.error(error.message || "Error al deshabilitar precio");
+        },
     });
-    useEffect(() => {
-        onRegisterActions(
-            (afterSave) => actionsRef.current.save(afterSave),
-            () => actionsRef.current.discard()
-        );
-    }, []);
+
+    // Mutación: re-habilitar precio universal para este local
+    const enableMutation = useMutation({
+        mutationFn: ({ priceId }: { priceId: number }) => enablePrice(priceId, locationId),
+        onSuccess: () => {
+            toast.success("Precio habilitado para este local");
+            queryClient.invalidateQueries({ queryKey: ["disabled_prices", productPresentationId, locationId] });
+        },
+        onError: (error: { message: string }) => {
+            toast.error(error.message || "Error al habilitar precio");
+        },
+    });
 
     // Helpers
     const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -114,7 +118,6 @@ const StorePricesTab = ({
         return prices.map((row) => {
             if (row.price_id !== priceId) return row;
             let next: Price = { ...row };
-
             const toNumber = (v: string | number) =>
                 typeof v === "number" ? v : parseFloat(v.replace(",", "."));
 
@@ -132,30 +135,72 @@ const StorePricesTab = ({
                 const units = toNumber(val);
                 next.qty_per_price = Number.isFinite(units) ? Math.max(1, units) : 1;
             }
-            if (field === "observations") {
-                next.observations = String(val);
-            }
-            if (field === "valid_until") {
-                next.valid_until = String(val);
-            }
+            if (field === "observations") next.observations = String(val);
+            if (field === "valid_until") next.valid_until = String(val);
 
             return next;
         });
     }
 
-    function renderCategory(prices: Price[], logic_type: PriceLogicType) {
-        const filtered = prices
+    function renderCategory(logic_type: PriceLogicType) {
+        const disabledPriceIds = new Set(disabledPrices.map((d) => d.price_id));
+        const isLimitedOffer = logic_type === "LIMITED_OFFER";
+
+        const activeUniversal = universalPrices
+            .filter((p) => p.logic_type === logic_type && !disabledPriceIds.has(p.price_id!))
+            .sort((a, b) => a.price_number - b.price_number);
+
+        const activeLocal = value
             .filter((p) => p.logic_type === logic_type)
             .sort((a, b) => a.price_number - b.price_number);
-        const isLimitedOffer = logic_type === "LIMITED_OFFER";
+
+        const disabledUniversal = universalPrices
+            .filter((p) => p.logic_type === logic_type && disabledPriceIds.has(p.price_id!))
+            .sort((a, b) => a.price_number - b.price_number);
 
         return (
             <div className="space-y-2">
-                {filtered.map((price, index) => {
+
+                {/* Universales activos (read-only) */}
+                {activeUniversal.map((price) => (
+                    <div key={`u-${price.price_id}`} className="flex flex-col gap-1">
+                        <Badge className="w-fit text-xs bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">
+                            Universal
+                        </Badge>
+                        <div className="grid grid-cols-[1fr_1fr_1fr_40px] gap-2 items-center">
+                            {finalCost?.final_cost_total && (
+                                <div className="relative">
+                                    <Percent className="absolute w-3 h-3 left-2 top-1/2 -translate-y-1/2 opacity-40" />
+                                    <Input className="pl-5" value={price.profit_percentage} disabled />
+                                </div>
+                            )}
+                            <div className="relative">
+                                <DollarSign className="absolute w-3 h-3 left-2 top-1/2 -translate-y-1/2 opacity-40" />
+                                <Input className="pl-5" value={price.price} disabled />
+                            </div>
+                            <Input value={price.qty_per_price} disabled />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                title="Deshabilitar para este local"
+                                disabled={disableMutation.isLoading}
+                                onClick={() => disableMutation.mutate({ priceId: price.price_id! })}
+                            >
+                                <X className="w-4 h-4 text-muted-foreground" />
+                            </Button>
+                        </div>
+                    </div>
+                ))}
+
+                {/* Locales activos (editables) */}
+                {activeLocal.map((price, index) => {
                     const key = String(price.price_id ?? `new-${index}`);
                     const isVisible = showObservations[key] ?? false;
                     return (
-                        <div key={index} className="flex flex-col gap-1">
+                        <div key={`l-${key}`} className="flex flex-col gap-1">
+                            <Badge className="w-fit text-xs bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
+                                Local
+                            </Badge>
                             <div className="grid grid-cols-[1fr_1fr_1fr_40px] gap-2 items-center">
                                 {finalCost?.final_cost_total && (
                                     <div className="relative">
@@ -166,9 +211,11 @@ const StorePricesTab = ({
                                             className="pl-5"
                                             value={price.profit_percentage}
                                             disabled={disabled}
-                                            onChange={(e) =>
-                                                onChange(updatePriceField(value, price.price_id!, "profit_percentage", e.target.value))
-                                            }
+                                            onChange={(e) => {
+                                                const next = updatePriceField(value, price.price_id!, "profit_percentage", e.target.value);
+                                                onChange(next);
+                                                saveDebounced(next);
+                                            }}
                                         />
                                     </div>
                                 )}
@@ -179,27 +226,32 @@ const StorePricesTab = ({
                                         className="pl-5"
                                         value={price.price}
                                         disabled={disabled}
-                                        onChange={(e) =>
-                                            onChange(updatePriceField(value, price.price_id!, "price", e.target.value))
-                                        }
+                                        onChange={(e) => {
+                                            const next = updatePriceField(value, price.price_id!, "price", e.target.value);
+                                            onChange(next);
+                                            saveDebounced(next);
+                                        }}
                                     />
                                 </div>
                                 <Input
                                     placeholder="Unidades"
                                     value={price.qty_per_price}
                                     disabled={disabled}
-                                    onChange={(e) =>
-                                        onChange(updatePriceField(value, price.price_id!, "qty_per_price", e.target.value))
-                                    }
+                                    onChange={(e) => {
+                                        const next = updatePriceField(value, price.price_id!, "qty_per_price", e.target.value);
+                                        onChange(next);
+                                        saveDebounced(next);
+                                    }}
                                 />
                                 <Button
                                     variant="ghost"
                                     size="icon"
                                     disabled={disabled}
                                     onClick={() => {
-                                        onChange(value.filter((p) => p.price_id !== price.price_id));
-                                        if (price.price_id && !price.is_new) {
-                                            setPricesToDelete((prev) => [...prev, price.price_id!]);
+                                        const next = value.filter((p) => p.price_id !== price.price_id);
+                                        onChange(next);
+                                        if (!price.is_new) {
+                                            saveImmediate(next, [price.price_id!]);
                                         }
                                     }}
                                 >
@@ -213,15 +265,19 @@ const StorePricesTab = ({
                                         placeholder="Observaciones"
                                         value={price.observations ?? ""}
                                         disabled={disabled}
-                                        onChange={(e) =>
-                                            onChange(updatePriceField(value, price.price_id!, "observations", e.target.value))
-                                        }
+                                        onChange={(e) => {
+                                            const next = updatePriceField(value, price.price_id!, "observations", e.target.value);
+                                            onChange(next);
+                                            saveDebounced(next);
+                                        }}
                                     />
                                     <button
                                         className="absolute top-1 right-1"
                                         onClick={() => {
                                             setShowObservations((prev) => ({ ...prev, [key]: false }));
-                                            onChange(updatePriceField(value, price.price_id!, "observations", ""));
+                                            const next = updatePriceField(value, price.price_id!, "observations", "");
+                                            onChange(next);
+                                            saveDebounced(next);
                                         }}
                                     >
                                         <X className="w-4 h-4 cursor-pointer" />
@@ -234,9 +290,7 @@ const StorePricesTab = ({
                                     variant="outline"
                                     size="sm"
                                     disabled={disabled}
-                                    onClick={() =>
-                                        setShowObservations((prev) => ({ ...prev, [key]: true }))
-                                    }
+                                    onClick={() => setShowObservations((prev) => ({ ...prev, [key]: true }))}
                                 >
                                     + Agregar observación
                                 </Button>
@@ -248,9 +302,11 @@ const StorePricesTab = ({
                                     <input
                                         type="date"
                                         value={price.valid_until ? price.valid_until.split("T")[0] : ""}
-                                        onChange={(e) =>
-                                            onChange(updatePriceField(value, price.price_id!, "valid_until", e.target.value))
-                                        }
+                                        onChange={(e) => {
+                                            const next = updatePriceField(value, price.price_id!, "valid_until", e.target.value);
+                                            onChange(next);
+                                            saveDebounced(next);
+                                        }}
                                         className="border border-gray-300 rounded px-2 py-1"
                                     />
                                 </div>
@@ -258,6 +314,8 @@ const StorePricesTab = ({
                         </div>
                     );
                 })}
+
+                {/* Botón agregar precio local */}
                 <Button
                     variant="outline"
                     disabled={disabled}
@@ -277,11 +335,48 @@ const StorePricesTab = ({
                             valid_from: null,
                             valid_until: null,
                         };
-                        onChange([...value, newPrice]);
+                        const next = [...value, newPrice];
+                        onChange(next);
+                        saveImmediate(next);
                     }}
                 >
                     <Plus className="w-4 h-4" /> Agregar precio
                 </Button>
+
+                {/* Universales deshabilitados */}
+                {disabledUniversal.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-t-gray-300 space-y-2">
+                        {disabledUniversal.map((price) => (
+                            <div key={`d-${price.price_id}`} className="flex flex-col gap-1">
+                                <Badge variant="destructive" className="w-fit text-xs">
+                                    Deshabilitado
+                                </Badge>
+                                <div className="grid grid-cols-[1fr_1fr_1fr_40px] gap-2 items-center opacity-70">
+                                    {finalCost?.final_cost_total && (
+                                        <div className="relative">
+                                            <Percent className="absolute w-3 h-3 left-2 top-1/2 -translate-y-1/2 opacity-50" />
+                                            <Input className="pl-5" value={price.profit_percentage} disabled />
+                                        </div>
+                                    )}
+                                    <div className="relative">
+                                        <DollarSign className="absolute w-3 h-3 left-2 top-1/2 -translate-y-1/2 opacity-50" />
+                                        <Input className="pl-5" value={price.price} disabled />
+                                    </div>
+                                    <Input value={price.qty_per_price} disabled />
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Habilitar para este local"
+                                        disabled={enableMutation.isLoading}
+                                        onClick={() => enableMutation.mutate({ priceId: price.price_id! })}
+                                    >
+                                        <RotateCcw className="w-4 h-4 text-green-600" />
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         );
     }
@@ -291,27 +386,17 @@ const StorePricesTab = ({
             <div className="grid grid-cols-3 gap-4">
                 <div>
                     <h3 className="font-semibold mb-2">Por cantidad</h3>
-                    {renderCategory(value, "QUANTITY_DISCOUNT")}
+                    {renderCategory("QUANTITY_DISCOUNT")}
                 </div>
                 <div>
                     <h3 className="font-semibold mb-2">Especial</h3>
-                    {renderCategory(value, "SPECIAL")}
+                    {renderCategory("SPECIAL")}
                 </div>
                 <div>
                     <h3 className="font-semibold mb-2">Oferta</h3>
-                    {renderCategory(value, "LIMITED_OFFER")}
+                    {renderCategory("LIMITED_OFFER")}
                 </div>
             </div>
-
-            <CardFooter className="mt-14 p-0 flex justify-end">
-                <Button
-                    disabled={createPricesMutation.isLoading || !isDirty}
-                    onClick={() => handleSave()}
-                    type="submit"
-                >
-                    Guardar
-                </Button>
-            </CardFooter>
         </TabsContent>
     );
 };

@@ -1,4 +1,4 @@
-import type { Price, PriceLogicType, PriceType } from "@/types/prices";
+import type { DisabledPrice, Price } from "@/types/prices";
 import { supabase } from ".";
 
 export const getProductPrices = async (productId: number, locationId: number | null) => {
@@ -13,8 +13,6 @@ export const getProductPrices = async (productId: number, locationId: number | n
   } else {
     query = query.is("location_id", null);
   }
-
-
 
 
   const { data: productPrices, error } = await query;
@@ -69,48 +67,67 @@ export const getStockPrices = async (stockId: number) => {
 };
 
 
-export const getPreviousPrice = async (
-  productId: number,
-  priceType: PriceType,
-  logicType: PriceLogicType,
-  storeId?: number
-) => {
-  // 1. Buscar el último lote creado del producto
-  const { data: lots, error: lotError } = await supabase
-    .from("lots")
-    .select("lot_id")
-    .eq("product_id", productId)
-    .order("created_at", { ascending: false })
-    .limit(2);
-
-  const lastLot = lots?.[1] ? lots[1] : null; // Obtener el penúltimo lote si existe, sino el último
-
-  if (lotError) throw new Error(lotError.message);
-  if (!lastLot) return [];
-
-  // 2. Buscar el último preci registrado para ese lote
-  let query = supabase
+export const getDisabledPrices = async (
+  productPresentationId: number,
+  locationId: number
+): Promise<{ disabledPrices: DisabledPrice[] }> => {
+  const { data: prices, error: pricesError } = await supabase
     .from("prices")
+    .select("price_id")
+    .eq("product_presentation_id", productPresentationId)
+    .is("location_id", null);
+
+
+  if (pricesError) throw new Error(pricesError.message);
+
+  const priceIds = prices?.map((p) => p.price_id) ?? [];
+
+  if (priceIds.length === 0) return { disabledPrices: [] };
+
+  const { data, error } = await supabase
+    .from("disabled_prices")
     .select("*")
-    .eq("product_id", productId)
-    .eq("lot_id", lastLot?.lot_id)
-    .eq("price_type", priceType)
-    .eq("logic_type", logicType);
+    .eq("location_id", locationId)
+    .in("price_id", priceIds);
 
-  if (storeId) {
-    query = query.eq("store_id", storeId);
-  }
 
-  const { data, error } = await query
-    .order("price_id", { ascending: false })
+  if (error) throw new Error(error.message);
+
+  return { disabledPrices: data ?? [] };
+};
+
+export const disablePrice = async (priceId: number, locationId: number): Promise<DisabledPrice> => {
+  const { data, error } = await supabase
+    .from("disabled_prices")
+    .insert({ price_id: priceId, location_id: locationId })
+    .select()
+    .single();
 
   if (error) throw new Error(error.message);
 
   return data;
 };
 
+export const enablePrice = async (priceId: number, locationId: number): Promise<void> => {
+  const { error } = await supabase
+    .from("disabled_prices")
+    .delete()
+    .eq("price_id", priceId)
+    .eq("location_id", locationId);
+
+  if (error) throw new Error(error.message);
+};
+
 export const createPrices = async (priceData: Price[], pricesToDelete: number[]) => {
-  console.log("Creating prices with data:", priceData, "and deleting prices with IDs:", pricesToDelete);
+  if (pricesToDelete.length > 0) {
+    const { error: disabledError } = await supabase
+      .from("disabled_prices")
+      .delete()
+      .in("price_id", pricesToDelete);
+
+    if (disabledError) throw new Error(disabledError.message);
+  }
+
   const { data, error } = await supabase.rpc(
     "update_prices",
     { p_prices: priceData, p_delete_ids: pricesToDelete }

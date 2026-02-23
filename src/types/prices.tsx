@@ -1,5 +1,12 @@
 export type PriceLogicType = "QUANTITY_DISCOUNT" | "SPECIAL" | "LIMITED_OFFER";
 
+export type DisabledPrice = {
+  id?: number;
+  price_id: number;
+  location_id: number;
+  created_at?: string;
+};
+
 export type Price = {
   price_id?: number;
   location_id: number | null;

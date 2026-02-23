@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     Table,
@@ -10,10 +9,10 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import type { Price } from "@/types/prices";
-import ManageProductPrices from "./ManageProductPricesTabs";
-import CostBadges from "./CostBadges";
 import type { Location } from "@/types/locations";
+import type { Price } from "@/types/prices";
+import CostBadges from "./CostBadges";
+import ManageProductPrices from "./ManageProductPricesTabs";
 
 type Props = {
     productPrices: Price[];
@@ -92,7 +91,6 @@ export default function ProductPricesViewer({ productPrices, finalCost, stores, 
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Tienda</TableHead>
-                                <TableHead>Tipo</TableHead>
                                 <TableHead>Lógica</TableHead>
                                 <TableHead>Cant. por precio</TableHead>
                                 <TableHead>Precio total</TableHead>
@@ -115,14 +113,6 @@ export default function ProductPricesViewer({ productPrices, finalCost, stores, 
                                     <TableRow key={price.price_id}>
                                         <TableCell>{getStoreName(price.location_id)}</TableCell>
                                         <TableCell>
-                                            <Badge
-                                                variant={price.price_type === "MINOR" ? "default" : "outline"}
-                                                className="capitalize"
-                                            >
-                                                {price.price_type === "MINOR" ? "Minorista" : "Mayorista"}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
                                             {price.logic_type === "QUANTITY_DISCOUNT"
                                                 ? "Por cantidad"
                                                 : price.logic_type === "SPECIAL"
@@ -134,9 +124,9 @@ export default function ProductPricesViewer({ productPrices, finalCost, stores, 
                                         <TableCell>{price.qty_per_price}</TableCell>
                                         <TableCell>${price.price.toFixed(2)}</TableCell>
                                         <TableCell>
-                                            {price.profit_percentage !== null
-                                                ? `${price.profit_percentage.toFixed(2)}%`
-                                                : "--"}
+                                            {!price.profit_percentage
+                                                ? "--"
+                                                : `${price.profit_percentage.toFixed(2)}%`}
                                         </TableCell>
                                         <TableCell className="max-w-[250px] truncate" title={price.observations ?? ""}>
                                             {price.observations ?? "--"}
