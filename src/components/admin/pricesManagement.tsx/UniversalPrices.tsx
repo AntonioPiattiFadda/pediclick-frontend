@@ -31,15 +31,22 @@ const UniversalPrices = ({
     const [value, onChange] = useState<Price[]>(productPrices);
     const [showObservations, setShowObservations] = useState<Record<string, boolean>>({});
 
-    // Sync value with fresh server data after invalidation+refetch
-    const isFirstRender = useRef(true);
+    const valueRef = useRef<Price[]>(productPrices);
+    const hasPendingRef = useRef(false);
+
+    // Sync with server data only when there are no pending local edits
     useEffect(() => {
-        if (isFirstRender.current) { isFirstRender.current = false; return; }
-        onChange(productPrices);
+        if (!hasPendingRef.current) onChange(productPrices);
     }, [productPrices]);
 
-    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
+    // Save on unmount (safety net for sheet close)
+    useEffect(() => {
+        return () => {
+            if (hasPendingRef.current) {
+                createPrices(pricesAdapter(valueRef.current, null), []);
+            }
+        };
+    }, []);
 
     const { data: allClients = [] } = useQuery({
         queryKey: ["clients"],
@@ -54,20 +61,33 @@ const UniversalPrices = ({
         mutationFn: async ({ prices, toDelete }: { prices: Price[]; toDelete: number[] }) => {
             return await createPrices(prices, toDelete);
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId] });
-            queryClient.invalidateQueries({ queryKey: ["disabled_prices", productPresentationId] });
-        },
         onError: (error: { message: string }) => {
             toast.error(error.message || "Error al guardar precios");
+        },
+    });
+
+    const addPriceMutation = useMutation({
+        mutationFn: async (newPrice: Price) => {
+            return await createPrices(pricesAdapter([newPrice], null), []);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId, null] });
+        },
+        onError: (error: { message: string }) => {
+            toast.error(error.message || "Error al agregar precio");
         },
     });
 
     const addClientMutation = useMutation({
         mutationFn: ({ priceId, clientId }: { priceId: number; clientId: number }) =>
             addClientToPrice(priceId, clientId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId] });
+        onSuccess: (_, { priceId, clientId }) => {
+            onChange(prev => prev.map(p =>
+                p.price_id !== priceId ? p : {
+                    ...p,
+                    enabled_prices_clients: [...(p.enabled_prices_clients ?? []), { client_id: clientId }]
+                }
+            ));
         },
         onError: (error: { message: string }) => toast.error(error.message || "Error al agregar cliente"),
     });
@@ -75,22 +95,32 @@ const UniversalPrices = ({
     const removeClientMutation = useMutation({
         mutationFn: ({ priceId, clientId }: { priceId: number; clientId: number }) =>
             removeClientFromPrice(priceId, clientId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId] });
+        onSuccess: (_, { priceId, clientId }) => {
+            onChange(prev => prev.map(p =>
+                p.price_id !== priceId ? p : {
+                    ...p,
+                    enabled_prices_clients: (p.enabled_prices_clients ?? []).filter(ec => ec.client_id !== clientId)
+                }
+            ));
         },
         onError: (error: { message: string }) => toast.error(error.message || "Error al quitar cliente"),
     });
 
-    const saveDebounced = (prices: Price[]) => {
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(() => {
-            saveMutation.mutate({ prices: pricesAdapter(prices, null), toDelete: [] });
-        }, 900);
+    const saveImmediate = (prices: Price[], toDelete: number[] = []) => {
+        saveMutation.mutate({ prices: pricesAdapter(prices, null), toDelete });
     };
 
-    const saveImmediate = (prices: Price[], toDelete: number[] = []) => {
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-        saveMutation.mutate({ prices: pricesAdapter(prices, null), toDelete });
+    const markAndSet = (next: Price[]) => {
+        valueRef.current = next;
+        hasPendingRef.current = true;
+        onChange(next);
+    };
+
+    const saveOnRowBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node) && hasPendingRef.current) {
+            saveImmediate(valueRef.current);
+            hasPendingRef.current = false;
+        }
     };
 
     // Helpers
@@ -160,7 +190,7 @@ const UniversalPrices = ({
                     );
 
                     return (
-                        <div key={index} className="flex flex-col gap-1">
+                        <div key={index} className="flex flex-col gap-1" onBlur={saveOnRowBlur}>
                             <div className="grid grid-cols-[auto_auto_auto_40px] gap-2 items-center">
                                 {finalCost?.final_cost_total && (
                                     <div className="relative">
@@ -172,9 +202,7 @@ const UniversalPrices = ({
                                             value={price.profit_percentage || undefined}
                                             disabled={disabled}
                                             onChange={(e) => {
-                                                const next = updatePriceField(value, price.price_id!, "profit_percentage", e.target.value);
-                                                onChange(next);
-                                                saveDebounced(next);
+                                                markAndSet(updatePriceField(value, price.price_id!, "profit_percentage", e.target.value));
                                             }}
                                         />
                                     </div>
@@ -183,9 +211,7 @@ const UniversalPrices = ({
                                     value={price.price}
                                     disabled={disabled}
                                     onChange={(v) => {
-                                        const next = updatePriceField(value, price.price_id!, "price", v ?? 0);
-                                        onChange(next);
-                                        saveDebounced(next);
+                                        markAndSet(updatePriceField(value, price.price_id!, "price", v ?? 0));
                                     }}
                                 />
                                 <Input
@@ -194,14 +220,9 @@ const UniversalPrices = ({
                                     value={price.qty_per_price === null ? "" : String(price.qty_per_price)}
                                     disabled={disabled}
                                     onChange={(e) => {
-                                        const newValue = e.target.value === "" ? null : Number(e.target.value)
-                                        const next = updatePriceField(value, price.price_id!, "qty_per_price", newValue);
-                                        onChange(next);
-                                        saveDebounced(next);
+                                        const newValue = e.target.value === "" ? null : Number(e.target.value);
+                                        markAndSet(updatePriceField(value, price.price_id!, "qty_per_price", newValue));
                                     }}
-
-                                // onChange={(e) => setNewShortCode(e.target.value === "" ? null : Number(e.target.value))}
-
                                 />
                                 <Button
                                     variant="ghost"
@@ -226,9 +247,7 @@ const UniversalPrices = ({
                                         value={price.observations ?? ""}
                                         disabled={disabled}
                                         onChange={(e) => {
-                                            const next = updatePriceField(value, price.price_id!, "observations", e.target.value);
-                                            onChange(next);
-                                            saveDebounced(next);
+                                            markAndSet(updatePriceField(value, price.price_id!, "observations", e.target.value));
                                         }}
                                     />
                                     <button
@@ -236,8 +255,10 @@ const UniversalPrices = ({
                                         onClick={() => {
                                             setShowObservations((prev) => ({ ...prev, [key]: false }));
                                             const next = updatePriceField(value, price.price_id!, "observations", "");
+                                            valueRef.current = next;
+                                            hasPendingRef.current = false;
                                             onChange(next);
-                                            saveDebounced(next);
+                                            saveImmediate(next);
                                         }}
                                     >
                                         <X className="w-4 h-4 cursor-pointer" />
@@ -263,9 +284,7 @@ const UniversalPrices = ({
                                         type="date"
                                         value={price.valid_until ? price.valid_until.split("T")[0] : ""}
                                         onChange={(e) => {
-                                            const next = updatePriceField(value, price.price_id!, "valid_until", e.target.value);
-                                            onChange(next);
-                                            saveDebounced(next);
+                                            markAndSet(updatePriceField(value, price.price_id!, "valid_until", e.target.value));
                                         }}
                                         className="border border-gray-300 rounded px-2 py-1"
                                     />
@@ -315,7 +334,7 @@ const UniversalPrices = ({
                 })}
                 <Button
                     variant="outline"
-                    disabled={disabled}
+                    disabled={disabled || addPriceMutation.isLoading}
                     onClick={() => {
                         const newPrice: Price = {
                             price_id: Math.random(),
@@ -332,9 +351,8 @@ const UniversalPrices = ({
                             valid_from: null,
                             valid_until: null,
                         };
-                        const next = [...value, newPrice];
-                        onChange(next);
-                        saveImmediate(next);
+                        onChange([...value, newPrice]);
+                        addPriceMutation.mutate(newPrice);
                     }}
                 >
                     <Plus className="w-4 h-4" /> Agregar precio

@@ -6,8 +6,8 @@ import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetDescrip
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getLocations } from "@/service/locations";
 import type { Location } from "@/types/locations";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import CostBadges from "./CostBadges";
 import StorePricesTabContainer from "./StorePricesTabContainer";
 import UniversalPricesContainer from "./UniversalPricesContainer";
@@ -27,8 +27,14 @@ export default function ManageProductPrices({
     disabled = false,
     finalCost
 }: PricesDialogProps) {
+    const queryClient = useQueryClient();
     const [open, setOpen] = useState(false);
     const [currentTab, setCurrentTab] = useState("all-stores");
+
+    useEffect(() => {
+        queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId] });
+        queryClient.invalidateQueries({ queryKey: ["disabled_prices", productPresentationId] });
+    }, [currentTab]);
 
     const { data: stores = [], isLoading: isStoreLoading } = useQuery({
         queryKey: ["stores"],

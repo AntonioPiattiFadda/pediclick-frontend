@@ -36,15 +36,22 @@ const StorePricesTab = ({
     const [value, onChange] = useState<Price[]>(localPrices);
     const [showObservations, setShowObservations] = useState<Record<string, boolean>>({});
 
-    // Sync value with fresh server data after invalidation+refetch
-    const isFirstRender = useRef(true);
+    const valueRef = useRef<Price[]>(localPrices);
+    const hasPendingRef = useRef(false);
+
+    // Sync with server data only when there are no pending local edits
     useEffect(() => {
-        if (isFirstRender.current) { isFirstRender.current = false; return; }
-        onChange(localPrices);
+        if (!hasPendingRef.current) onChange(localPrices);
     }, [localPrices]);
 
-    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
+    // Save on unmount (safety net for sheet close)
+    useEffect(() => {
+        return () => {
+            if (hasPendingRef.current) {
+                createPrices(pricesAdapter(valueRef.current, locationId), []);
+            }
+        };
+    }, []);
 
     const { data: allClients = [] } = useQuery({
         queryKey: ["clients"],
@@ -59,25 +66,38 @@ const StorePricesTab = ({
         mutationFn: async ({ prices, toDelete }: { prices: Price[]; toDelete: number[] }) => {
             return await createPrices(prices, toDelete);
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId] });
-            queryClient.invalidateQueries({ queryKey: ["disabled_prices", productPresentationId] });
-        },
         onError: (error: { message: string }) => {
             toast.error(error.message || "Error al guardar precios");
         },
     });
 
-    const saveDebounced = (prices: Price[]) => {
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(() => {
-            saveMutation.mutate({ prices: pricesAdapter(prices, locationId), toDelete: [] });
-        }, 800);
-    };
+    const addPriceMutation = useMutation({
+        mutationFn: async (newPrice: Price) => {
+            return await createPrices(pricesAdapter([newPrice], locationId), []);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId, locationId] });
+        },
+        onError: (error: { message: string }) => {
+            toast.error(error.message || "Error al agregar precio");
+        },
+    });
 
     const saveImmediate = (prices: Price[], toDelete: number[] = []) => {
-        if (debounceRef.current) clearTimeout(debounceRef.current);
         saveMutation.mutate({ prices: pricesAdapter(prices, locationId), toDelete });
+    };
+
+    const markAndSet = (next: Price[]) => {
+        valueRef.current = next;
+        hasPendingRef.current = true;
+        onChange(next);
+    };
+
+    const saveOnRowBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node) && hasPendingRef.current) {
+            saveImmediate(valueRef.current);
+            hasPendingRef.current = false;
+        }
     };
 
     // Mutación: deshabilitar precio universal para este local
@@ -107,8 +127,13 @@ const StorePricesTab = ({
     const addClientMutation = useMutation({
         mutationFn: ({ priceId, clientId }: { priceId: number; clientId: number }) =>
             addClientToPrice(priceId, clientId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId] });
+        onSuccess: (_, { priceId, clientId }) => {
+            onChange(prev => prev.map(p =>
+                p.price_id !== priceId ? p : {
+                    ...p,
+                    enabled_prices_clients: [...(p.enabled_prices_clients ?? []), { client_id: clientId }]
+                }
+            ));
         },
         onError: (error: { message: string }) => toast.error(error.message || "Error al agregar cliente"),
     });
@@ -116,8 +141,13 @@ const StorePricesTab = ({
     const removeClientMutation = useMutation({
         mutationFn: ({ priceId, clientId }: { priceId: number; clientId: number }) =>
             removeClientFromPrice(priceId, clientId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId] });
+        onSuccess: (_, { priceId, clientId }) => {
+            onChange(prev => prev.map(p =>
+                p.price_id !== priceId ? p : {
+                    ...p,
+                    enabled_prices_clients: (p.enabled_prices_clients ?? []).filter(ec => ec.client_id !== clientId)
+                }
+            ));
         },
         onError: (error: { message: string }) => toast.error(error.message || "Error al quitar cliente"),
     });
@@ -248,7 +278,7 @@ const StorePricesTab = ({
                     );
 
                     return (
-                        <div key={`l-${key}`} className="flex flex-col gap-1">
+                        <div key={`l-${key}`} className="flex flex-col gap-1" onBlur={saveOnRowBlur}>
                             <Badge className="w-fit text-xs bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
                                 Local
                             </Badge>
@@ -263,9 +293,7 @@ const StorePricesTab = ({
                                             value={price.profit_percentage}
                                             disabled={disabled}
                                             onChange={(e) => {
-                                                const next = updatePriceField(value, price.price_id!, "profit_percentage", e.target.value);
-                                                onChange(next);
-                                                saveDebounced(next);
+                                                markAndSet(updatePriceField(value, price.price_id!, "profit_percentage", e.target.value));
                                             }}
                                         />
                                     </div>
@@ -278,9 +306,7 @@ const StorePricesTab = ({
                                         value={price.price}
                                         disabled={disabled}
                                         onChange={(e) => {
-                                            const next = updatePriceField(value, price.price_id!, "price", e.target.value);
-                                            onChange(next);
-                                            saveDebounced(next);
+                                            markAndSet(updatePriceField(value, price.price_id!, "price", e.target.value));
                                         }}
                                     />
                                 </div>
@@ -289,9 +315,7 @@ const StorePricesTab = ({
                                     value={price.qty_per_price}
                                     disabled={disabled}
                                     onChange={(e) => {
-                                        const next = updatePriceField(value, price.price_id!, "qty_per_price", e.target.value);
-                                        onChange(next);
-                                        saveDebounced(next);
+                                        markAndSet(updatePriceField(value, price.price_id!, "qty_per_price", e.target.value));
                                     }}
                                 />
                                 <Button
@@ -317,9 +341,7 @@ const StorePricesTab = ({
                                         value={price.observations ?? ""}
                                         disabled={disabled}
                                         onChange={(e) => {
-                                            const next = updatePriceField(value, price.price_id!, "observations", e.target.value);
-                                            onChange(next);
-                                            saveDebounced(next);
+                                            markAndSet(updatePriceField(value, price.price_id!, "observations", e.target.value));
                                         }}
                                     />
                                     <button
@@ -327,8 +349,10 @@ const StorePricesTab = ({
                                         onClick={() => {
                                             setShowObservations((prev) => ({ ...prev, [key]: false }));
                                             const next = updatePriceField(value, price.price_id!, "observations", "");
+                                            valueRef.current = next;
+                                            hasPendingRef.current = false;
                                             onChange(next);
-                                            saveDebounced(next);
+                                            saveImmediate(next);
                                         }}
                                     >
                                         <X className="w-4 h-4 cursor-pointer" />
@@ -354,9 +378,7 @@ const StorePricesTab = ({
                                         type="date"
                                         value={price.valid_until ? price.valid_until.split("T")[0] : ""}
                                         onChange={(e) => {
-                                            const next = updatePriceField(value, price.price_id!, "valid_until", e.target.value);
-                                            onChange(next);
-                                            saveDebounced(next);
+                                            markAndSet(updatePriceField(value, price.price_id!, "valid_until", e.target.value));
                                         }}
                                         className="border border-gray-300 rounded px-2 py-1"
                                     />
@@ -408,7 +430,7 @@ const StorePricesTab = ({
                 {/* Botón agregar precio local */}
                 <Button
                     variant="outline"
-                    disabled={disabled}
+                    disabled={disabled || addPriceMutation.isLoading}
                     onClick={() => {
                         const newPrice: Price = {
                             price_id: Math.random(),
@@ -425,9 +447,8 @@ const StorePricesTab = ({
                             valid_from: null,
                             valid_until: null,
                         };
-                        const next = [...value, newPrice];
-                        onChange(next);
-                        saveImmediate(next);
+                        onChange([...value, newPrice]);
+                        addPriceMutation.mutate(newPrice);
                     }}
                 >
                     <Plus className="w-4 h-4" /> Agregar precio
