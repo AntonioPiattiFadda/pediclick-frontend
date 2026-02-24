@@ -175,7 +175,7 @@ const UniversalPrices = ({
     function renderCategory(prices: Price[], logic_type: PriceLogicType) {
         const filtered = prices
             .filter((p) => p.logic_type === logic_type)
-            .sort((a, b) => a.price_number - b.price_number);
+            .sort((a, b) => (a.qty_per_price ?? 0) - (b.qty_per_price ?? 0));
         const isLimitedOffer = logic_type === "LIMITED_OFFER";
         const isSpecial = logic_type === "SPECIAL";
 
@@ -336,6 +336,9 @@ const UniversalPrices = ({
                     variant="outline"
                     disabled={disabled || addPriceMutation.isLoading}
                     onClick={() => {
+                        const maxQty = value
+                            .filter((p) => p.logic_type === logic_type)
+                            .reduce((max, p) => Math.max(max, p.qty_per_price ?? 0), 0);
                         const newPrice: Price = {
                             price_id: Math.random(),
                             is_new: true,
@@ -343,7 +346,7 @@ const UniversalPrices = ({
                             location_id: null,
                             price_number: value.length + 1,
                             price: 0,
-                            qty_per_price: 1,
+                            qty_per_price: maxQty + 1,
                             profit_percentage: 0,
                             logic_type,
                             observations: null,

@@ -208,15 +208,15 @@ const StorePricesTab = ({
 
         const activeUniversal = universalPrices
             .filter((p) => p.logic_type === logic_type && !disabledPriceIds.has(p.price_id!))
-            .sort((a, b) => a.price_number - b.price_number);
+            .sort((a, b) => (a.qty_per_price ?? 0) - (b.qty_per_price ?? 0));
 
         const activeLocal = value
             .filter((p) => p.logic_type === logic_type)
-            .sort((a, b) => a.price_number - b.price_number);
+            .sort((a, b) => (a.qty_per_price ?? 0) - (b.qty_per_price ?? 0));
 
         const disabledUniversal = universalPrices
             .filter((p) => p.logic_type === logic_type && disabledPriceIds.has(p.price_id!))
-            .sort((a, b) => a.price_number - b.price_number);
+            .sort((a, b) => (a.qty_per_price ?? 0) - (b.qty_per_price ?? 0));
 
         return (
             <div className="space-y-2">
@@ -432,6 +432,9 @@ const StorePricesTab = ({
                     variant="outline"
                     disabled={disabled || addPriceMutation.isLoading}
                     onClick={() => {
+                        const maxQty = value
+                            .filter((p) => p.logic_type === logic_type)
+                            .reduce((max, p) => Math.max(max, p.qty_per_price ?? 0), 0);
                         const newPrice: Price = {
                             price_id: Math.random(),
                             is_new: true,
@@ -439,7 +442,7 @@ const StorePricesTab = ({
                             location_id: locationId,
                             price_number: value.length + 1,
                             price: 0,
-                            qty_per_price: 1,
+                            qty_per_price: maxQty + 1,
                             profit_percentage: 0,
                             logic_type,
                             observations: null,
