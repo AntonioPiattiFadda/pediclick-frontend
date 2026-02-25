@@ -15,7 +15,6 @@ import { useMemo, useState } from "react";
 import TableSkl from "../../../../components/ui/skeleton/tableSkl";
 import { ProductTableRenderer } from "./productTableRenderer";
 import { CategorySelectorRoot, SelectCategory } from "../../../../components/admin/selectors/categorySelector";
-import { CancelLocationSelection, LocationSelectorRoot, SelectLocation } from "../../../../components/admin/selectors/locationSelector";
 import { SelectSubCategory, SubCategorySelectorRoot } from "../../../../components/admin/selectors/subCategorySelector";
 import AddStock from "./AddStock";
 import { Label } from "@/components/ui/label"
@@ -23,17 +22,32 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from "@/components/ui/radio-group"
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { UseLocationsContext } from "@/contexts/LocationsContext";
 import type { StockTypeToShow } from "@/types";
 
 
 export const ProductsContainer = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | null>(null);
+  const [locationFilter, setLocationFilter] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | 'NO_LOCATION' | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null);
   const [stockTypeToShow, setStockTypeToShow] = useState<StockTypeToShow>('STOCK');
-  const [viewUnassignedOnly, setViewUnassignedOnly] = useState<boolean>(false);
+
+  const { locations } = UseLocationsContext();
+
+  const locationTypes = {
+    STORE: "Punto de venta",
+    STOCK_ROOM: "Depósito",
+  };
 
   const {
     data: products = [],
@@ -98,7 +112,8 @@ export const ProductsContainer = () => {
     });
   };
 
-  const nonStockProducts = getNonStockProducts(selectedLocation?.location_id || null);
+  const activeLocationId = locationFilter === null || locationFilter === 'NO_LOCATION' ? null : locationFilter.location_id;
+  const nonStockProducts = getNonStockProducts(activeLocationId);
 
   const getProductToUse = () => {
     if (stockTypeToShow === 'STOCK') return products;
@@ -117,9 +132,9 @@ export const ProductsContainer = () => {
 
   const filteredByLocation = (stockTypeToShow === 'NO-STOCK' || stockTypeToShow === 'ALL') ? productsToUse : productsToUse
     .map((product) => {
-      if (!selectedLocation && !viewUnassignedOnly) return product;
+      if (locationFilter === null) return product;
 
-      const locationId = selectedLocation?.location_id || null;
+      const locationId = locationFilter === 'NO_LOCATION' ? null : locationFilter.location_id;
 
       const filteredPresentations =
         product.product_presentations
@@ -209,7 +224,7 @@ export const ProductsContainer = () => {
     setSearchTerm("");
     setSelectedCategory(null);
     setSelectedSubCategory(null);
-    setSelectedLocation(null);
+    setLocationFilter(null);
   };
 
   return (
@@ -266,31 +281,38 @@ export const ProductsContainer = () => {
               />
             </div>
 
-            <div className="col-span-2 grid grid-cols-[2fr_1fr] gap-4 w-full">
-
-              <LocationSelectorRoot
-                value={selectedLocation}
-                onChange={(value) => {
-                  setSelectedLocation(value);
-                  setViewUnassignedOnly(false);
-                }}>
-                <SelectLocation />
-                <CancelLocationSelection />
-              </LocationSelectorRoot>
-
-
-              <div className="flex flex-row gap-2 items-center">
-                <Checkbox
-                  checked={viewUnassignedOnly}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setSelectedLocation(null);
-                    }
-                    setViewUnassignedOnly(!!checked);
-                  }}
-                />
-                <Label>No assignados</Label>
-              </div>
+            <div className="col-span-2">
+              <Select
+                value={
+                  locationFilter === null ? "ALL_LOCATIONS" :
+                    locationFilter === 'NO_LOCATION' ? "NO_LOCATION" :
+                      locationFilter.location_id.toString()
+                }
+                onValueChange={(val) => {
+                  if (val === "ALL_LOCATIONS") setLocationFilter(null);
+                  else if (val === "NO_LOCATION") setLocationFilter('NO_LOCATION');
+                  else {
+                    const found = locations.find(l => l.location_id.toString() === val);
+                    setLocationFilter(found ?? null);
+                  }
+                }}
+              >
+                <SelectTrigger className="h-11 w-full border-gray-200">
+                  <SelectValue placeholder="Seleccionar ubicación" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL_LOCATIONS">Todas las ubicaciones</SelectItem>
+                  <SelectGroup>
+                    <SelectLabel>Ubicaciones</SelectLabel>
+                    {locations.map((l) => (
+                      <SelectItem key={l.location_id} value={l.location_id.toString()}>
+                        {`${locationTypes[l.type as keyof typeof locationTypes]} - ${l.name}`}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                  <SelectItem value="NO_LOCATION">Sin ubicación asignada</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
 

@@ -350,7 +350,6 @@ const UniversalPrices = ({
                             profit_percentage: 0,
                             logic_type,
                             observations: null,
-                            is_active: true,
                             valid_from: null,
                             valid_until: null,
                         };
