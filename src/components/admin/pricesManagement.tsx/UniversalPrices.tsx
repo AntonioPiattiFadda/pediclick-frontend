@@ -14,6 +14,42 @@ import { Percent, Plus, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 
+function QtyInput({ value, disabled, onChange }: {
+    value: number | null;
+    disabled?: boolean;
+    onChange: (val: string) => void;
+}) {
+    const [raw, setRaw] = useState(value != null ? String(value) : "");
+
+    useEffect(() => {
+        const parsed = raw === "" ? null : parseFloat(raw);
+        const isDifferent = parsed !== value && !(parsed == null && value == null);
+        if (isDifferent) setRaw(value != null ? String(value) : "");
+    }, [value]);
+
+    return (
+        <Input
+            type="text"
+            inputMode="decimal"
+            placeholder="Unidades"
+            disabled={disabled}
+            value={raw}
+            onChange={(e) => {
+                const v = e.target.value;
+                if (v !== "" && !/^\d*\.?\d*$/.test(v)) return;
+                setRaw(v);
+                if (!v.endsWith(".")) onChange(v);
+            }}
+            onBlur={() => {
+                const parsed = parseFloat(raw);
+                const cleaned = isNaN(parsed) || parsed < 0 ? "0" : String(parsed);
+                setRaw(cleaned);
+                onChange(cleaned);
+            }}
+        />
+    );
+}
+
 const UniversalPrices = ({
     productPresentationId, finalCost, disabled, productPrices
 }: {
@@ -125,7 +161,7 @@ const UniversalPrices = ({
 
     // Helpers
     const round2 = (n: number) => Math.round(n * 100) / 100;
-    const ensureUnits = (u?: number) => (u && u > 0 ? u : 1);
+    const ensureUnits = (u?: number) => (u != null && u > 0 ? u : 0.01);
 
     function recalcFromPercentage(row: Price): Price {
         if (!finalCost?.final_cost_per_unit) return row;
@@ -163,7 +199,7 @@ const UniversalPrices = ({
             }
             if (field === "qty_per_price") {
                 const units = toNumber(val);
-                next.qty_per_price = Number.isFinite(units) ? Math.max(1, units) : 1;
+                next.qty_per_price = Number.isFinite(units) && units >= 0 ? units : 0;
             }
             if (field === "observations") next.observations = String(val);
             if (field === "valid_until") next.valid_until = String(val);
@@ -214,15 +250,10 @@ const UniversalPrices = ({
                                         markAndSet(updatePriceField(value, price.price_id!, "price", v ?? 0));
                                     }}
                                 />
-                                <Input
-                                    type="number"
-                                    placeholder="Unidades"
-                                    value={price.qty_per_price === null ? "" : String(price.qty_per_price)}
+                                <QtyInput
+                                    value={price.qty_per_price}
                                     disabled={disabled}
-                                    onChange={(e) => {
-                                        const newValue = e.target.value === "" ? null : Number(e.target.value);
-                                        markAndSet(updatePriceField(value, price.price_id!, "qty_per_price", newValue));
-                                    }}
+                                    onChange={(v) => markAndSet(updatePriceField(value, price.price_id!, "qty_per_price", v))}
                                 />
                                 <Button
                                     variant="ghost"

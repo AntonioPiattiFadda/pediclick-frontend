@@ -18,7 +18,7 @@ import { ChevronLeft, ChevronRight, Loader2, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import CloseLotDialog from "./CloseLotDialog";
 
-const SalesHistory = ({
+const LotHistory = ({
     lotId,
 }: {
     lotId: number | null;
@@ -45,11 +45,15 @@ const SalesHistory = ({
         enabled: !!lotId,
     });
 
+    console.log(sales, isLoading, isError, error);
+
     const { data: allSales, isLoading: isLoadingAllSales, isError: isErrorAllSales } = useQuery({
         queryKey: ["lot-all-sales", lotId],
         queryFn: () => getAllLotSales(lotId!),
         enabled: !!lotId,
     });
+
+    console.log(allSales, isLoadingAllSales, isErrorAllSales);
 
 
     const salesTotal = allSales?.reduce((acc, sale) => acc + (sale?.total || 0), 0) || 0;
@@ -237,4 +241,4 @@ const SalesHistory = ({
     );
 };
 
-export default SalesHistory;
+export default LotHistory;

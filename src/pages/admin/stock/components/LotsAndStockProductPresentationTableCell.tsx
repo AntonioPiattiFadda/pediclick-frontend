@@ -5,7 +5,7 @@ import type { Stock } from '@/types/stocks';
 import { useState } from 'react';
 import StockCardContainer from './StockCardContainer';
 import { formatDate } from '@/utils';
-import SalesHistory from './salesHistory';
+import LotHistory from './LotHistory';
 import { StockData } from './StockData';
 
 const StockCardComponent = ({ stock, productPresentationId }: {
@@ -80,7 +80,7 @@ const LotsAndStockProductPresentationTableCell = ({ lots, productPresentationId 
                         <span>
                             {formatDate(lot.created_at)}
                         </span>
-                        <SalesHistory lotId={lot.lot_id || null} />
+                        <LotHistory lotId={lot.lot_id || null} />
                     </div>
                     <StockCardComponent stock={lot.stock} productPresentationId={productPresentationId} />
                 </div>

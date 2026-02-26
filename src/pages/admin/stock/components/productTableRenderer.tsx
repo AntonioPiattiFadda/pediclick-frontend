@@ -23,7 +23,7 @@ import { ProductPresentationEditSheet } from '@/components/admin/stock/productPr
 import { DeleteTableElementPopUp } from '../../../../components/admin/deleteTableElementPopUp'
 import LotsAndStockProductPresentationTableCell from './LotsAndStockProductPresentationTableCell'
 import { Label } from '@/components/ui/label'
-import SalesHistory from './salesHistory'
+import SalesHistory from './LotHistory'
 import { useQueryClient } from '@tanstack/react-query'
 
 const HeaderCell = ({ children }: { children: React.ReactNode }) => (
