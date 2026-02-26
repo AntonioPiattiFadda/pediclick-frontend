@@ -22,23 +22,27 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 
 const AssignStock = ({
-    stock
+    stock,
+    productPresentationId,
 }
     : {
         stock: Stock;
+        productPresentationId: number;
     }) => {
     const [open, setOpen] = useState(false);
     const queryClient = useQueryClient();
 
+
     const initialStockQty = stock.quantity;
 
-    const [stockMovement, setStockMovement] = useState<Omit<StockMovement, "stock_movement_id" | "should_notify_owner" | "created_by" | "lot_containers_to_move" | "created_at">>({
+    const [stockMovement, setStockMovement] = useState<Omit<StockMovement, "stock_movement_id" | "should_notify_owner" | "lot_containers_to_move" | "created_at" | 'created_by'>>({
         stock_id: stock.stock_id,
         lot_id: stock.lot_id,
         movement_type: "TRANSFER",
         quantity: stock.quantity,
         from_location_id: null,
         to_location_id: null,
+        product_presentation_id: productPresentationId,
     });
 
     const [toLocation, setToLocation] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | null>(null);
@@ -62,7 +66,6 @@ const AssignStock = ({
 
             const fromStockData = {
                 stock_id: stock.stock_id,
-                product_id: stock.product_id,
             }
 
             return await assignStock(fromStockData, adaptedStockMovement);

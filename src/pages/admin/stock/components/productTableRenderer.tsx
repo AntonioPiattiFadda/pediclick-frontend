@@ -19,6 +19,7 @@ import {
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import ManageProductPrices from '@/components/admin/pricesManagement.tsx/ManageProductPricesTabs'
 import { ProductEditSheet } from '@/components/admin/stock/productEditSheet'
+import { ProductPresentationEditSheet } from '@/components/admin/stock/productPresentationEditSheet'
 import { DeleteTableElementPopUp } from '../../../../components/admin/deleteTableElementPopUp'
 import LotsAndStockProductPresentationTableCell from './LotsAndStockProductPresentationTableCell'
 import { Label } from '@/components/ui/label'
@@ -55,6 +56,31 @@ const ProductActionsCell = ({ product }: { product: Product }) => {
     );
 };
 
+
+const PresentationActionsCell = ({ presentation }: { presentation: ProductPresentation }) => {
+    const queryClient = useQueryClient();
+    return (
+        <div className='flex gap-2 items-center'>
+            <ManageProductPrices
+                productPresentationId={presentation.product_presentation_id}
+                finalCost={{ final_cost_total: null, final_cost_per_unit: null, final_cost_per_bulk: null }}
+            />
+            <ProductPresentationEditSheet
+                presentation={presentation}
+                onUpdated={() => queryClient.invalidateQueries({ queryKey: ['products'] })}
+            />
+            <DeleteTableElementPopUp
+                elementId={presentation.product_presentation_id || ''}
+                queryKey={['products']}
+                deleteFn={async (id) => { await deleteProductPresentation(Number(id)); }}
+                elementName="la presentación"
+                size="icon"
+                successMsgDescription="La presentación ha sido eliminada correctamente."
+                errorMsgDescription="No se pudo eliminar la presentación."
+            />
+        </div>
+    );
+};
 
 const columnHelper = createColumnHelper<Product>()
 
@@ -197,6 +223,9 @@ const lotColumns = [
         header: "Stock",
         cell: info => {
             const lots: Lot[] = info.getValue() as Lot[];
+            const productPresentationId = info.row.original.product_presentation_id;
+            console.log('Rendering stock cell for lots', productPresentationId);
+
             const hasNoStock = lots.every(lot => {
                 const totalStock = lot.stock?.reduce((acc, stockItem) => acc + (stockItem.quantity || 0), 0) || 0;
                 return totalStock <= 0;
@@ -211,7 +240,9 @@ const lotColumns = [
                 })
             };
             return <div className='min-w-[270px] '>
-                <LotsAndStockProductPresentationTableCell lots={lots} />
+                <LotsAndStockProductPresentationTableCell lots={lots as (Lot & { product_presentation_id: number })[]}
+                    productPresentationId={productPresentationId}
+                />
             </div>
 
         }
@@ -289,23 +320,7 @@ const lotColumns = [
 
     lotColumnHelper.accessor("product_presentation_id", {
         header: "Acciones",
-        cell: info => <div className='flex gap-2 items-center'>
-            <ManageProductPrices
-                productPresentationId={info.getValue()}
-                finalCost={{ final_cost_total: null, final_cost_per_unit: null, final_cost_per_bulk: null }}
-            />
-            <DeleteTableElementPopUp
-                elementId={info.getValue() || ''}
-                queryKey={['products']}
-                deleteFn={async (id) => {
-                    await deleteProductPresentation(Number(id));
-                }}
-                elementName="la presentación"
-                size="icon"
-                successMsgDescription="La presentación ha sido eliminada correctamente."
-                errorMsgDescription="No se pudo eliminar la presentación."
-            />
-        </div>,
+        cell: info => <PresentationActionsCell presentation={info.row.original} />,
         footer: info => info.column.id,
     }),
 ];

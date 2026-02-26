@@ -30,5 +30,3 @@ supabase
 .agents 
 .claude
 
-db.sql
-dump.sql

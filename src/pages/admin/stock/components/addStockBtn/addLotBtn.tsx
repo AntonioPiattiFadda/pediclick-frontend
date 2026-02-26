@@ -185,20 +185,6 @@ export function AddLotBtn({
       return
     };
 
-
-    const adaptedStock = stock.map(s => ({
-      ...s,
-      product_id: selectedProduct.product_id!,
-      lot_id: formData.lot_id!,
-    }));
-
-    // const redistributedLcs = redistributeUnassigned(lotContainersStock);
-
-    // const adaptedLotContainersStock = redistributedLcs.map(loc => ({
-    //   ...loc,
-    //   lot_id: formData.lot_id!,
-    // }));
-
     if (!selectedProduct.product_id) {
       toast('Debes seleccionar un producto para agregar');
       return
@@ -209,11 +195,22 @@ export function AddLotBtn({
       return
     }
 
+    // Quantities entered by the user are in presentation units (e.g. cajones).
+    // Multiply by bulk_quantity_equivalence to get base units before sending to the backend.
+    const equiv = selectedProductPresentation?.bulk_quantity_equivalence || 1;
+
+    const adaptedStock = stock.map(s => ({
+      ...s,
+      product_id: selectedProduct.product_id!,
+      lot_id: formData.lot_id!,
+      quantity: (s.quantity || 0) * equiv,
+    }));
+
     onAddElement({
       ...formData,
       product_name: selectedProduct.product_name,
       product_id: selectedProduct.product_id,
-      product_presentation_id: selectedProductPresentation?.product_presentation_id || null,
+      initial_stock_quantity: (formData.initial_stock_quantity || 0) * equiv,
     } as Lot, adaptedStock as Stock[], [] as LotContainersStock[]);
 
     if (!loading) {
@@ -445,9 +442,14 @@ export function AddLotBtn({
 
     }
 
+    // initial_stock_quantity is in presentation units (e.g. cajones).
+    // extra_cost distributes per bulk first, then per unit = per_bulk / bulk_equiv.
+    const extraPerBulk = newExtraCostTotal / (newInitialStock || 1);
+    const extraPerUnit = extraPerBulk / (bulkQuantityEquivalence || 1);
+
     let final_cost_total: number | null = newTotalCost + newDownloadTotalCost + newDeliveryCostTotal + newExtraCostTotal;
-    let final_cost_per_unit: number | null = newCostPerUnit + newDownloadCostPerUnit + newDeliveryCostPerUnit + newExtraCostTotal / (newInitialStock || 1);
-    let final_cost_per_bulk: number | null = newCostPerBulk + newDownloadCostPerBulk + newDeliveryCostPerBulk + newExtraCostTotal / (newInitialStock || 1) * bulkQuantityEquivalence;
+    let final_cost_per_unit: number | null = newCostPerUnit + newDownloadCostPerUnit + newDeliveryCostPerUnit + extraPerUnit;
+    let final_cost_per_bulk: number | null = newCostPerBulk + newDownloadCostPerBulk + newDeliveryCostPerBulk + extraPerBulk;
 
     if (!bulkQuantityEquivalence) {
       final_cost_per_bulk = null;
@@ -578,15 +580,23 @@ export function AddLotBtn({
 
             <div className="grid grid-cols-2 gap-4 w-full">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="initial_stock_quantity">Stock nuevo</Label>
+                <Label htmlFor="initial_stock_quantity">
+                  {selectedProductPresentation?.product_presentation_name
+                    ? `Stock nuevo (en ${selectedProductPresentation.product_presentation_name})`
+                    : "Stock nuevo"}
+                </Label>
                 <Input
                   type="number"
                   placeholder="--"
-                  // disabled={!isEditing}
                   value={formData.initial_stock_quantity || undefined}
                   onChange={(e) => handleUpdateLotField("initial_stock_quantity", Number(e.target.value))}
                 />
-
+                {selectedProductPresentation?.bulk_quantity_equivalence && formData.initial_stock_quantity ? (
+                  <p className="text-xs text-muted-foreground">
+                    = {(formData.initial_stock_quantity || 0) * selectedProductPresentation.bulk_quantity_equivalence}{" "}
+                    unidades base (kg)
+                  </p>
+                ) : null}
               </div>
 
               {/* <div className="flex flex-col gap-2">
@@ -1075,6 +1085,7 @@ export function AddLotBtn({
                   }}
                   pId={selectedProduct.product_id || 0}
                   ppId={selectedProductPresentation?.product_presentation_id || 0}
+                  unitLabel={selectedProductPresentation?.product_presentation_name ?? undefined}
                 />
 
 

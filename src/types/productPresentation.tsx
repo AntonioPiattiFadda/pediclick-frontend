@@ -1,8 +1,6 @@
-import type { SellUnit } from ".";
+import type { SellType, SellUnit } from ".";
 import type { Lot } from "./lots";
 import type { Price } from "./prices";
-
-export type SellType = "MINOR" | "MAYOR";
 
 export type ProductPresentation = {
     product_presentation_id: number | null;

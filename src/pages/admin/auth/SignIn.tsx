@@ -3,12 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "@/service/auth";
-import type { AppDispatch } from "@/stores/store";
-import { setUser } from "@/stores/userSlice";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
 import { AuthLayout } from "./AuthLayout";
 
 export function SignIn() {
@@ -19,7 +16,6 @@ export function SignIn() {
   const queryClient = useQueryClient();
 
   // const user = useSelector((state: RootState) => state.user);
-  const dispatch = useDispatch<AppDispatch>();
 
 
   const loginMutation = useMutation({
@@ -32,10 +28,7 @@ export function SignIn() {
 
       //Buscar al usuario en base de datos para ponerlo en la app
 
-      dispatch(setUser({
-        email, full_name: "", role: "user", id: "1", phone: null, address: null, is_verified: false, created_at: "", updated_at: "", deleted_at: null, password: "",
-        short_code: 0
-      }));
+
 
       window.location.href = "/dashboard";
     },

@@ -97,9 +97,6 @@ export const emptyLot: Lot = {
   is_expired: false,
   is_finished: false,
 
-
-
-  product_presentation_id: null,
   extra_cost_total: null,
 };
 

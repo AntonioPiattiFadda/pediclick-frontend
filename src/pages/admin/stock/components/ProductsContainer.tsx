@@ -243,18 +243,23 @@ export const ProductsContainer = () => {
                 variant="outline"
                 size={'icon'}
 
-                disabled={(isRefetching && stockTypeToShow === 'STOCK') || (isRefetchingSoldStock && stockTypeToShow === 'SOLD') || (isRefetchingAllProducts && stockTypeToShow === 'NO-STOCK')}
+                disabled={isRefetching || isRefetchingSoldStock || isRefetchingAllProducts}
                 onClick={() => {
                   if (stockTypeToShow === 'SOLD') {
                     refetchSoldStock();
                     return;
                   }
                   if (stockTypeToShow === 'STOCK' || stockTypeToShow === 'NO-STOCK') {
-                    refetch()
-                    refetchAllProducts()
+                    refetch();
+                    refetchAllProducts();
                     return;
                   }
-
+                  if (stockTypeToShow === 'ALL') {
+                    refetch();
+                    refetchAllProducts();
+                    refetchSoldStock();
+                    return;
+                  }
                 }}
               >
                 <RefreshCw className={`w-4 h-4 scale-x-[-1] ${isRefetching ? 'animate-spin' : ''}`} />

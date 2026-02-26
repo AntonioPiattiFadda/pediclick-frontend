@@ -52,7 +52,6 @@ export const checkHasOverSell = async ({
 
   const { data, error } = await supabase.rpc("get_last_over_sell_stock", {
     p_product_id: Number(productId),
-    p_product_presentation_id: Number(productPresentationId),
     p_location_id: Number(locationId),
   });
 

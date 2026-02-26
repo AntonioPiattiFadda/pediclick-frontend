@@ -37,7 +37,7 @@ import { debounce } from "lodash";
 import type { ProductPresentation } from "@/types/productPresentation";
 import { sliceLongNames } from "@/utils";
 import { Label } from "@/components/ui/label";
-import type { SellType } from "@/types";
+import type { SellType, SellUnit } from "@/types";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 // ---------- Context ----------
@@ -259,7 +259,8 @@ const CreateProductPresentation = ({
     const [newShortCode, setNewShortCode] = useState<number | null>(null);
     const [newBulkQuantityEquivalence, setNewBulkQuantityEquivalence] = useState<number | null>(null);
     const [open, setOpen] = useState(false);
-    const [sellType, setSellType] = useState<SellType>("UNIT");
+    const [sellType, setSellType] = useState<SellType>("MINOR");
+    const [sellUnit, setSellUnit] = useState<SellUnit>("BY_UNIT");
 
     const createMutation = useMutation({
         mutationFn: async (data: {
@@ -268,8 +269,9 @@ const CreateProductPresentation = ({
             productId: number;
             bulkQuantityEquivalence: number | null;
             sellType: SellType;
+            sellUnit: SellUnit;
         }) => {
-            return await createProductPresentation(data.name, data.shortCode, data.productId, data.bulkQuantityEquivalence, sellType);
+            return await createProductPresentation(data.name, data.shortCode, data.productId, data.bulkQuantityEquivalence, data.sellType, data.sellUnit);
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({
@@ -299,6 +301,7 @@ const CreateProductPresentation = ({
                 productId: productId ? productId : product.product_id || 0,
                 bulkQuantityEquivalence: newBulkQuantityEquivalence,
                 sellType: sellType,
+                sellUnit: sellUnit,
             });
         } catch (err) {
             console.error("Error creating presentation:", err);
@@ -361,17 +364,35 @@ const CreateProductPresentation = ({
                 <div className="flex flex-col gap-2">
                     <Label className="mt-1">Tipo de venta</Label>
                     <RadioGroup
-                        defaultValue="UNIT"
+                        defaultValue="MINOR"
                         onValueChange={(value) => setSellType(value as SellType)}
                         value={sellType}
                     >
                         <div className="flex items-center gap-3">
-                            <RadioGroupItem value="UNIT" id="r1" />
-                            <Label htmlFor="r1">Por unidad</Label>
+                            <RadioGroupItem value="MINOR" id="r1" />
+                            <Label htmlFor="r1">Minorista</Label>
                         </div>
                         <div className="flex items-center gap-3">
-                            <RadioGroupItem value="WEIGHT" id="r2" />
-                            <Label htmlFor="r2">Por peso</Label>
+                            <RadioGroupItem value="MAYOR" id="r2" />
+                            <Label htmlFor="r2">Mayorista</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <Label className="mt-1">Unidad de venta</Label>
+                    <RadioGroup
+                        defaultValue="BY_UNIT"
+                        onValueChange={(value) => setSellUnit(value as SellUnit)}
+                        value={sellUnit}
+                    >
+                        <div className="flex items-center gap-3">
+                            <RadioGroupItem value="BY_UNIT" id="u1" />
+                            <Label htmlFor="u1">Por unidad</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <RadioGroupItem value="BY_WEIGHT" id="u2" />
+                            <Label htmlFor="u2">Por peso</Label>
                         </div>
                     </RadioGroup>
                 </div>

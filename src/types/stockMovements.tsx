@@ -5,6 +5,7 @@ export type StockMovement = {
   stock_id: number;
   movement_type: "TRANSFER" | "WASTE";
   quantity: number | null;
+  product_presentation_id: number;
   from_location_id: number | null;
   to_location_id: number | null;
 

@@ -20,14 +20,14 @@ export const getUserId = async () => {
   return userId;
 };
 
-export const uploadImage = async (file: File) => {
-  const { data, error } = await supabase.storage
-    .from("PediClick-panarce")
-    .upload(file.name, file);
+// export const uploadImage = async (file: File) => {
+//   const { data, error } = await supabase.storage
+//     .from("PediClick-panarce")
+//     .upload(file.name, file);
 
-  if (error) {
-    throw new Error(error.message);
-  }
+//   if (error) {
+//     throw new Error(error.message);
+//   }
 
-  return data;
-};
+//   return data;
+// };

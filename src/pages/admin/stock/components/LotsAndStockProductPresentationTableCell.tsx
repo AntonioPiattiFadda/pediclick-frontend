@@ -8,20 +8,18 @@ import { formatDate } from '@/utils';
 import SalesHistory from './salesHistory';
 import { StockData } from './StockData';
 
-const StockCardComponent = ({ stock }: {
+const StockCardComponent = ({ stock, productPresentationId }: {
     stock?: Stock[];
+    productPresentationId: number;
 }) => {
-
-
-
     return (stock?.map((stock) => {
         return (
-            <StockCardContainer stock={stock} />
+            <StockCardContainer key={stock.stock_id} stock={stock} productPresentationId={productPresentationId} />
         )
     }))
 };
 
-const LotsAndStockProductPresentationTableCell = ({ lots }: { lots: Lot[] }) => {
+const LotsAndStockProductPresentationTableCell = ({ lots, productPresentationId }: { lots: (Lot & { product_presentation_id: number })[], productPresentationId: number }) => {
 
     const [showDetails, setShowDetails] = useState(false);
 
@@ -84,7 +82,7 @@ const LotsAndStockProductPresentationTableCell = ({ lots }: { lots: Lot[] }) => 
                         </span>
                         <SalesHistory lotId={lot.lot_id || null} />
                     </div>
-                    <StockCardComponent stock={lot.stock} />
+                    <StockCardComponent stock={lot.stock} productPresentationId={productPresentationId} />
                 </div>
             ))}
         </div>

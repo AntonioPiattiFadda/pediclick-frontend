@@ -13,23 +13,14 @@ export interface OrderItem {
   lot_id: number;
   stock_id: number;
   location_id: number;
-
-  //La va a determinar la balanza si es producto por kg
-  //Si es por unidad lo va a seleccionar el usuario
-  //Se calculaara price en base a esto
-
   quantity: number;
+  qty_in_base_units: number;
   price: number;
-
   logic_type: PriceLogicType;
-
   subtotal: number;
-
-
   discount?: number;
   tax?: number;
   is_deleted: boolean;
-
   total: number;
   status: MovementStatus;
 

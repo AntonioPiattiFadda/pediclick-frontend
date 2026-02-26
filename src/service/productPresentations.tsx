@@ -2,7 +2,7 @@ import { handleSupabaseError } from "@/utils/handleSupabaseErrors";
 import { supabase } from ".";
 import { getOrganizationId } from "./profiles";
 import type { SubapaseConstrains } from "@/types/shared";
-import type { SellType } from "@/types";
+import type { SellType, SellUnit } from "@/types";
 
 export const entityConstraints: SubapaseConstrains[] = [{
   value: "unique_shortcode_per_owner",
@@ -126,10 +126,7 @@ export const getProductPresentation = async (productPresentationId: number | nul
     .from("product_presentations")
     .select(`
       *,
-      products(product_name),
-      lots(*
-      , stock(*)
-      )
+      products(product_name)
         `)
     .is("deleted_at", null) // Exclude soft-deleted providers
     .eq("organization_id", organizationId)
@@ -143,11 +140,11 @@ export const getProductPresentation = async (productPresentationId: number | nul
   return { presentation, error };
 };
 
-export const createProductPresentation = async (name: string, shortCode: number | null, productId: number, bulkQuantityEquivalence: number | null, sellType: SellType) => {
+export const createProductPresentation = async (name: string, shortCode: number | null, productId: number, bulkQuantityEquivalence: number | null, sellType: SellType, sellUnit: SellUnit) => {
   const organizationId = await getOrganizationId();
   const { data, error } = await supabase
     .from("product_presentations")
-    .insert({ product_presentation_name: name, short_code: shortCode, organization_id: organizationId, product_id: productId, bulk_quantity_equivalence: bulkQuantityEquivalence, sell_type: sellType })
+    .insert({ product_presentation_name: name, short_code: shortCode, organization_id: organizationId, product_id: productId, bulk_quantity_equivalence: bulkQuantityEquivalence, sell_type: sellType, sell_unit: sellUnit })
     .select()
     .single();
 
@@ -157,6 +154,32 @@ export const createProductPresentation = async (name: string, shortCode: number 
 
   return data;
 
+};
+
+export const updateProductPresentation = async (
+  id: number,
+  data: {
+    product_presentation_name: string;
+    short_code: number | null;
+    bulk_quantity_equivalence: number | null;
+    sell_type: SellType;
+    sell_unit: SellUnit;
+  }
+) => {
+  const { error } = await supabase
+    .from("product_presentations")
+    .update({
+      product_presentation_name: data.product_presentation_name,
+      short_code: data.short_code,
+      bulk_quantity_equivalence: data.bulk_quantity_equivalence,
+      sell_type: data.sell_type,
+      sell_unit: data.sell_unit,
+    })
+    .eq("product_presentation_id", id);
+
+  if (error) {
+    handleSupabaseError(error, entityConstraints);
+  }
 };
 
 export const deleteProductPresentation = async (id: string | number) => {

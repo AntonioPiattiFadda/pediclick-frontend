@@ -17,27 +17,27 @@ export const getAllProductsInStock = async () => {
   categories(category_name),
   sub_categories(sub_category_name),
   brands(brand_name),
-  product_presentations!inner (
+  product_presentations (
     product_presentation_id,
     product_presentation_name,
-    bulk_quantity_equivalence,
-    lots!inner(
-      lot_id,
-      created_at,
-      is_sold_out,
-      expiration_date,
-      stock!inner(
-        *,
-        locations(name),
-        lot_containers_stock(*)
-      )
+    bulk_quantity_equivalence
+  ),
+  lots!inner(
+    lot_id,
+    created_at,
+    is_sold_out,
+    expiration_date,
+    stock!inner(
+      *,
+      locations(name),
+      lot_containers_stock(*)
     )
   )
 `)
     .is("product_presentations.deleted_at", null)
     .is("deleted_at", null)
     .eq("organization_id", organizationId)
-    .gt("product_presentations.lots.stock.quantity", 0)
+    .gt("lots.stock.quantity", 0)
     .order("product_name", { ascending: true });
 
   if (error) {
@@ -46,15 +46,10 @@ export const getAllProductsInStock = async () => {
 
   console.log("dbProducts", dbProducts);
 
-
   const filteredProducts = dbProducts.filter((product) => {
-    return product.product_presentations.some(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (presentation: any) =>
-        presentation.lots && presentation.lots.length > 0
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (product as any).lots && (product as any).lots.length > 0;
   });
-
 
   console.log("dbProducts", filteredProducts);
 
@@ -79,25 +74,25 @@ export const getAllAvailableProducts = async () => {
       categories(category_name),
       sub_categories(sub_category_name),
       brands(brand_name),
-      product_presentations!inner (
+      product_presentations (
         product_presentation_id,
         product_presentation_name,
-        bulk_quantity_equivalence,
-          lots(
-            lot_id,
-            stock!inner(
-              stock_id,
-              location_id,
-              locations(name),
-              lot_containers_stock(*)
+        bulk_quantity_equivalence
+      ),
+      lots (
+        lot_id,
+        stock (
+          stock_id,
+          location_id,
+          quantity,
+          locations(name),
+          lot_containers_stock(*)
+        )
       )
-    )
-  )
-`)
+    `)
     .is("product_presentations.deleted_at", null)
     .is("deleted_at", null)
     .eq("organization_id", organizationId)
-    .lte("product_presentations.lots.stock.quantity", 0)
     .order("product_name", { ascending: true });
 
   // No tienen quantity en ningun stock de sus lotes
@@ -128,22 +123,22 @@ export const getAllSoldProducts = async () => {
     categories(category_name),
     sub_categories(sub_category_name),
     brands(brand_name),
-    product_presentations!inner(
+    product_presentations (
       product_presentation_id,
       product_presentation_name,
-      bulk_quantity_equivalence,
-      lots!inner(
+      bulk_quantity_equivalence
+    ),
+    lots!inner(
       lot_id,
       is_sold_out,
-        is_finished,
-        created_at
-      )
+      is_finished,
+      created_at
     )
   `)
     .is("deleted_at", null)
     .is("product_presentations.deleted_at", null)
-    .eq("product_presentations.lots.is_sold_out", true)
-    .eq("product_presentations.lots.is_finished", false)
+    .eq("lots.is_sold_out", true)
+    .eq("lots.is_finished", false)
     .eq("organization_id", organizationId)
     .order("product_name", { ascending: true });
 
@@ -156,11 +151,8 @@ export const getAllSoldProducts = async () => {
   console.log("dbProducts", dbProducts);
 
   const filteredProducts = dbProducts.filter((product) => {
-    return product.product_presentations.some(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (presentation: any) =>
-        presentation.lots && presentation.lots.length > 0
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (product as any).lots && (product as any).lots.length > 0;
   });
 
   console.log("dbProducts", filteredProducts);

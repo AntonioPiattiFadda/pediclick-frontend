@@ -20,7 +20,8 @@ export default function StockAssignationContainer({
     lotContainersStock,
     onChangeLotContainersStock,
     ppId,
-    pId
+    pId,
+    unitLabel,
 }: {
     disabled?: boolean;
     initial_stock_quantity?: number;
@@ -30,6 +31,7 @@ export default function StockAssignationContainer({
     onChangeLotContainersStock: (nextLotContainersStock: LotContainersStock[]) => void;
     ppId: number;
     pId: number;
+    unitLabel?: string;
 }) {
     console.log('StockAssignationContainer render', { ppId, pId });
 
@@ -196,10 +198,11 @@ export default function StockAssignationContainer({
                     <div className="flex gap-1 items-center justify-center">
                         <CardTitle className="">Stock:</CardTitle>
                         <div className="flex gap-2 items-center">
-                            <Label className="font-medium">Cantidad de stock para asignar:</Label>
+                            <Label className="font-medium">
+                                {unitLabel ? `${unitLabel} para asignar:` : "Cantidad de stock para asignar:"}
+                            </Label>
                             <Badge variant="secondary">{remainingQuantityToAssign || '0'}</Badge>
                         </div>
-
                     </div>
                     {/* <div className="flex gap-1 items-center justify-center">
                         <CardTitle className="">Vacíos:</CardTitle>
@@ -219,7 +222,7 @@ export default function StockAssignationContainer({
                                 <Label className="mb-2 font-medium w-36">{location.name}</Label>
                                 <Input
                                     type="number"
-                                    placeholder="Cantidad a asignar"
+                                    placeholder={unitLabel ? `Cantidad en ${unitLabel}` : "Cantidad a asignar"}
                                     min={0}
                                     disabled={disabled}
                                     onChange={(e) => {

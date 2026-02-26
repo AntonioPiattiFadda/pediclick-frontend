@@ -1,5 +1,5 @@
 import type { StockMovement } from "@/types/stockMovements";
-import { supabase } from ".";
+import { getUserId, supabase } from ".";
 
 
 export const createWasteStockMovement = async (formData: Omit<StockMovement, "stock_movement_id">) => {
@@ -56,13 +56,21 @@ export const getSalesHistoryByProductOrLot = async (lotId: number) => {
 
 export const assignStock = async (fromStockData: {
     stock_id: number;
-    product_id: number | null;
-}, stockMovement: Omit<StockMovement, "stock_movement_id" | "should_notify_owner" | "created_by" | "lot_containers_to_move" | "created_at">) => {
+}, stockMovement: Omit<StockMovement, "stock_movement_id" | "should_notify_owner" | "lot_containers_to_move" | "created_at" | "created_by">) => {
+
+    const userId = await getUserId();
 
     const { data: assignedStockData, error: assignedStockError } = await supabase
         .rpc("assign_stock_to_location", {
-            p_from_stock_data: fromStockData,
-            p_stock_movement: stockMovement
+            p_from_stock_data: {
+                stock_id: fromStockData.stock_id,
+            },
+            p_stock_movement: {
+                quantity: stockMovement.quantity,
+                to_location_id: stockMovement.to_location_id,
+                product_presentation_id: stockMovement.product_presentation_id,
+                created_by: userId,
+            },
         });
 
     if (assignedStockError) {
