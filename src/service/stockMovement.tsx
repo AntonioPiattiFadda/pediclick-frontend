@@ -13,11 +13,12 @@ export const createWasteStockMovement = async (formData: Omit<StockMovement, "st
             p_stock_id: formData?.stock_id,
             p_movement_type: formData?.movement_type,
             p_quantity: formData?.quantity,
+            p_qty_in_base_units: formData?.qty_in_base_units,
+            p_product_presentation_id: formData?.product_presentation_id,
             p_from_location_id: formData?.from_location_id ?? null,
             p_to_location_id: formData?.to_location_id ?? null,
             p_should_notify_owner: formData?.should_notify_owner ?? false,
             p_created_by: formData?.created_by ?? null,
-            // p_lot_containers_to_move: formData?.lot_containers_to_move ?? null,
         });
 
 

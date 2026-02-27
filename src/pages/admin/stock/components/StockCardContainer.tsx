@@ -2,7 +2,7 @@ import { UseLocationsContext } from '@/contexts/LocationsContext';
 import type { Stock } from '@/types/stocks';
 import AssignStock from './AssignStock';
 import { StockData } from './StockData';
-import DisposeWaste from '@/components/admin/stock/DisposeWaste';
+import RegisterWaste from '@/components/admin/stock/RegisterWaste';
 
 const StockCardContainer = ({ stock, productPresentationId }: {
     stock: Stock;
@@ -22,7 +22,7 @@ const StockCardContainer = ({ stock, productPresentationId }: {
             {isUnassignedStock && (
                 <AssignStock stock={stock} productPresentationId={productPresentationId} />
             )}
-            <DisposeWaste lotId={stock.lot_id} stockId={stock.stock_id} />
+            <RegisterWaste lotId={stock.lot_id} stockId={stock.stock_id} productPresentationId={productPresentationId} />
         </div>
     )
 }

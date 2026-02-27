@@ -72,8 +72,6 @@ export function Transformation({
 
     const [selectedLocation, setSelectedLocation] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | null>(null);
 
-    // const queryClient = useQueryClient();
-
     const newTransformationId = Math.floor(Math.random() * 1000000);
 
     const getInitialFromTransformationDetails: TransformationItems = generateNewTransformationItems(true, newTransformationId);
@@ -95,23 +93,6 @@ export function Transformation({
             ...getInitialToTransformationDetails
         }
     ])
-
-
-    // const createTransformationMutation = useMutation({
-    //     mutationFn: async () => {
-    //         return await createTransformation(transformation, fromTransformationItems, toTransformationItems);
-    //     },
-    //     onSuccess: (data) => {
-    //         if (import.meta.env.DEV) console.log("Transformacion:", data)
-    //         queryClient.invalidateQueries({ queryKey: ["product_presentations", initialFromTransformationDetails?.product_id] })
-    //         toast.success("Transformación creada con éxito")
-
-    //     },
-    //     onError: (e) => {
-    //         console.error("Error hacer la transformación", e)
-    //         toast.error("Error al hacer la transformación")
-    //     },
-    // })
 
     const showFromTrash = fromTransformationItems.length > 1;
     const showToTrash = toTransformationItems.length > 1;
