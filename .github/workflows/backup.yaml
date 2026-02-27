@@ -21,6 +21,14 @@ jobs:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       BACKUP_ENABLED: ${{ vars.BACKUP_ENABLED }} # Repository variable (true or false)
     steps:
+
+      - name: Test connection
+        if: env.BACKUP_ENABLED == 'true'
+        run: |
+          echo "URL length: ${#SUPABASE_DB_URL}"
+          supabase db dump --db-url "$SUPABASE_DB_URL" --dry-run 2>&1 || true
+
+
       - name: Check if backups are enabled
         run: |
           if [ "$BACKUP_ENABLED" != "true" ]; then
