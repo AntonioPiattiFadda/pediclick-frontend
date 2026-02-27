@@ -40,9 +40,11 @@ const AssignStock = ({
         lot_id: stock.lot_id,
         movement_type: "TRANSFER",
         quantity: stock.quantity,
+        qty_in_base_units: null,
         from_location_id: null,
         to_location_id: null,
         product_presentation_id: productPresentationId,
+
     });
 
     const [toLocation, setToLocation] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | null>(null);

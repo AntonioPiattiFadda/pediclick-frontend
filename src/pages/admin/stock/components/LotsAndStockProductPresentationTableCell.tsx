@@ -19,9 +19,11 @@ const StockCardComponent = ({ stock, productPresentationId }: {
     }))
 };
 
-const LotsAndStockProductPresentationTableCell = ({ lots, productPresentationId }: { lots: (Lot & { product_presentation_id: number })[], productPresentationId: number }) => {
+const LotsAndStockProductPresentationTableCell = ({ lots, productPresentationId }: { lots: (Lot & { product_presentation_id: number })[], productPresentationId: number | null }) => {
 
     const [showDetails, setShowDetails] = useState(false);
+
+    if (!productPresentationId) return null;
 
     const reducedStock = lots.reduce((acc, lot) => {
         const lotStock = lot.stock?.reduce((sAcc: number, stockItem: Stock) => {

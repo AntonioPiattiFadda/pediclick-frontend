@@ -100,9 +100,9 @@ const ProductPresentationSelectorRoot = ({
     });
 
     const [shortCode, setShortCode] = useState<number | null>(value?.short_code || null);
-    console.log(error)
+
     if (isError) {
-        return <div>Error loading product presentations: {error?.message}</div>;
+        return <div>Error loading product presentations: {error instanceof Error ? error.message : 'Unknown error'}</div>;
     }
 
     return (
@@ -205,7 +205,7 @@ const SelectProductPresentation = ({ children }: {
                                     value={String(p.product_presentation_id)}
                                 >
 
-                                    {`${p.short_code ? `${p.short_code} - ` : ''}`} {sliceLongNames(15, p.product_presentation_name)}   {`${p.bulk_quantity_equivalence ? `x${p.bulk_quantity_equivalence}` : ''}`} {hasStock || !locationId ? '' : '(S/S)'}  {`${p.sell_type === 'UNIT' ? `xUn` : 'xKg'}`}
+                                    {`${p.short_code ? `${p.short_code} - ` : ''}`} {sliceLongNames(15, p.product_presentation_name)}   {`${p.bulk_quantity_equivalence ? `x${p.bulk_quantity_equivalence}` : ''}`} {hasStock || !locationId ? '' : '(S/S)'}  {`${p.sell_unit === 'BY_UNIT' ? `xUn` : 'xKg'}`}
                                 </SelectItem>
                             })}
                         </SelectGroup>

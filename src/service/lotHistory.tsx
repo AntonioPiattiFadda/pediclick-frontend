@@ -46,7 +46,8 @@ export const getLotSalesRpc = async (lotId: number): Promise<LotSaleRow[]> => {
 
     if (error) throw new Error(error.message);
 
-    return (data ?? []) as LotSaleRow[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data ?? []) as any[];
 };
 
 // ─── Transformations ──────────────────────────────────────────────────────────
@@ -116,5 +117,6 @@ export const getLotWastesRpc = async (lotId: number): Promise<LotWasteRow[]> => 
         .order("created_at", { ascending: false });
 
     if (error) throw new Error(error.message);
-    return (data ?? []) as LotWasteRow[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (data ?? []) as any[];
 };

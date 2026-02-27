@@ -13,7 +13,7 @@ import StorePricesTabContainer from "./StorePricesTabContainer";
 import UniversalPricesContainer from "./UniversalPricesContainer";
 
 interface PricesDialogProps {
-    productPresentationId: number;
+    productPresentationId: number | null;
     disabled?: boolean;
     finalCost: {
         final_cost_total: number | null;
@@ -34,6 +34,7 @@ export default function ManageProductPrices({
     useEffect(() => {
         queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId] });
         queryClient.invalidateQueries({ queryKey: ["disabled_prices", productPresentationId] });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentTab]);
 
     const { data: stores = [], isLoading: isStoreLoading } = useQuery({
@@ -43,6 +44,8 @@ export default function ManageProductPrices({
             return response.locations?.filter(loc => loc.type === "STORE") || [];
         },
     });
+
+    if (!productPresentationId) return null;
 
     if (isStoreLoading) {
         return (

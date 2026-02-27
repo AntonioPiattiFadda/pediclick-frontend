@@ -120,7 +120,8 @@ const LotHistory = ({ lotId }: { lotId: number | null }) => {
         .map(([name, { revenue }]) => `${name}: ${formatCurrency(revenue)}`)
         .join(" · ");
     const uniqueSalesSellUnits = [...new Set(
-        sales.map(s => s.product_presentations?.sell_unit).filter((u): u is string => !!u)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sales.map(s => s.product_presentations?.sell_unit).filter((u): u is any => !!u)
     )];
     const salesTotalUnitLabel = uniqueSalesSellUnits.length === 1
         ? (uniqueSalesSellUnits[0] === "BY_WEIGHT" ? "kg" : "un.")
@@ -137,7 +138,8 @@ const LotHistory = ({ lotId }: { lotId: number | null }) => {
         .map(([name, qty]) => `${qty} ${name}`)
         .join(" · ");
     const uniqueSellUnits = [...new Set(
-        wastes.map(w => w.product_presentations?.sell_unit).filter((u): u is string => !!u)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        wastes.map(w => w.product_presentations?.sell_unit).filter((u): u is any => !!u)
     )];
     const totalUnitLabel = uniqueSellUnits.length === 1
         ? (uniqueSellUnits[0] === "BY_WEIGHT" ? "kg" : "un.")
@@ -149,11 +151,14 @@ const LotHistory = ({ lotId }: { lotId: number | null }) => {
     // ── Timeline ───────────────────────────────────────────────────────────
     const allEvents: TimelineEvent[] = [
         ...sales.map((s): SaleEvent => ({ kind: "sale", date: s.created_at, data: s })),
-        ...transformations.map((t): TransformOriginEvent | TransformResultEvent =>
-            t.is_origin
-                ? { kind: "transform_origin", date: t.transformation_date, data: t }
-                : { kind: "transform_result", date: t.transformation_date, data: t }
-        ),
+        ...transformations
+            .filter((t) => !!t.transformation_date && !!t.transformation_id)
+            .map((t) => {
+                const completeT = t as LotTransformationRow;
+                return t.is_origin
+                    ? { kind: "transform_origin" as const, date: t.transformation_date!, data: completeT }
+                    : { kind: "transform_result" as const, date: t.transformation_date!, data: completeT };
+            }),
         ...wastes.map((w): WasteEvent => ({ kind: "waste", date: w.created_at, data: w })),
     ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
