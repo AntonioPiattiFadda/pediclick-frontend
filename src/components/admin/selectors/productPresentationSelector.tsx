@@ -77,6 +77,8 @@ interface RootProps {
     locationId: number | null;
 }
 
+
+
 const ProductPresentationSelectorRoot = ({
     productId,
     value,
@@ -88,19 +90,19 @@ const ProductPresentationSelectorRoot = ({
     locationId,
 }: RootProps) => {
 
-    const { data: presentations, isLoading, isError } = useQuery({
-        queryKey: ["product_presentations", productId],
+    const { data: presentations, isLoading, isError, error } = useQuery({
+        queryKey: ["product_presentations", productId, locationId, isFetchWithLots, isFetchedWithLotContainersLocation],
         queryFn: async () => {
             const response = await getProductPresentations(productId, isFetchWithLots, isFetchedWithLotContainersLocation, locationId);
-            return response as Partial<ProductPresentation>[];
+            return response as any[];
         },
         enabled: !!productId,
     });
 
     const [shortCode, setShortCode] = useState<number | null>(value?.short_code || null);
-
+    console.log(error)
     if (isError) {
-        return <div>Error loading product presentations.</div>;
+        return <div>Error loading product presentations: {error?.message}</div>;
     }
 
     return (

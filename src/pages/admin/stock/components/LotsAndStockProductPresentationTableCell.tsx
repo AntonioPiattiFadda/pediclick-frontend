@@ -5,7 +5,7 @@ import type { Stock } from '@/types/stocks';
 import { useState } from 'react';
 import StockCardContainer from './StockCardContainer';
 import { formatDate } from '@/utils';
-import LotHistory from './LotHistory';
+import LotHistory from './lotHistoty/LotHistory';
 import { StockData } from './StockData';
 
 const StockCardComponent = ({ stock, productPresentationId }: {

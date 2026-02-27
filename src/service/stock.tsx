@@ -5,26 +5,12 @@ export const getLotStocks = async (lotId: number) => {
   const { data, error } = await supabase
     .from("stock")
     .select(`
-    *,
-    stores (
-      store_name
-    ),
-    stock_rooms (
-      stock_room_name
-      )
-         ,
-       lot_containers_location (
-         *
-       )
-      `)
+    *`)
     .eq("lot_id", lotId)
 
 
   const adaptedLotStock = data?.map(stock => ({
     ...stock,
-    store_name: stock.stores?.store_name || null,
-    stock_room_name: stock.stock_rooms?.stock_room_name || null,
-    lot_containers_location: stock?.lot_containers_location[0] || [],
   })) || [];
 
 
@@ -33,6 +19,15 @@ export const getLotStocks = async (lotId: number) => {
   }
 
   return { lotStock: adaptedLotStock, error };
+};
+
+export const correctStockOversell = async (stockId: number) => {
+  const { data, error } = await supabase.rpc("correct_oversell_stock", {
+    p_stock_id: stockId,
+  });
+
+  if (error) throw new Error(error.message);
+  return data;
 };
 
 export const checkHasOverSell = async ({

@@ -16,19 +16,20 @@ import {
     type LotTransformationRow,
     type LotWasteRow,
 } from "@/service/lotHistory";
-import { formatDate } from "@/utils";
+import { getLotStocks } from "@/service/stock";
 import { formatCurrency } from "@/utils/prices";
 import { useQuery } from "@tanstack/react-query";
 import {
-    ArrowDownToLine,
-    ArrowUpFromLine,
     Loader2,
-    ShoppingCart,
-    TrendingUp,
-    Trash2,
+    TrendingUp
 } from "lucide-react";
 import { useState } from "react";
-import CloseLotDialog from "./CloseLotDialog";
+import CloseLotDialog from "../CloseLotDialog";
+import { OverSellPopover } from "./OversellPopover";
+import { SaleCard } from "./SaleCard";
+import { StatCard } from "./StatCard";
+import { TransformOriginCard, TransformResultCard } from "./TransformCards";
+import { WasteCard } from "./WasteCard";
 
 // ─── Timeline event union ────────────────────────────────────────────────────
 
@@ -40,166 +41,15 @@ type TimelineEvent = SaleEvent | TransformOriginEvent | TransformResultEvent | W
 
 type FilterType = "all" | "sale" | "transformation" | "waste";
 
-// ─── Stat card ───────────────────────────────────────────────────────────────
+type OverSoldStock = {
+    stock_id: number;
+    location_id: number | null;
+    store_name: string | null;
+    stock_room_name: string | null;
+    over_sell_quantity: number;
+};
 
-function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
-    return (
-        <div className="flex flex-col gap-0.5 rounded-lg border border-border bg-card px-4 py-3">
-            <span className="text-xs text-muted-foreground">{label}</span>
-            <span className="text-lg font-semibold leading-tight">{value}</span>
-            {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
-        </div>
-    );
-}
 
-// ─── Timeline event card ─────────────────────────────────────────────────────
-
-function SaleCard({ data }: { data: LotSaleRow }) {
-    const presentation = data.product_presentations;
-    const presentationName = presentation?.product_presentation_name;
-    const baseUnitLabel = presentation?.sell_unit === "BY_WEIGHT" ? "kg" : "un.";
-    const showBaseUnits =
-        data.qty_in_base_units != null &&
-        presentation?.bulk_quantity_equivalence != null &&
-        presentation.bulk_quantity_equivalence !== 1;
-
-    return (
-        <div className="flex gap-3">
-            <div className="flex flex-col items-center">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600">
-                    <ShoppingCart className="h-4 w-4" />
-                </div>
-                <div className="mt-1 w-px flex-1 bg-border" />
-            </div>
-            <div className="mb-4 flex-1 rounded-lg border border-green-200 bg-green-50/40 p-3">
-                <div className="flex items-start justify-between gap-2">
-                    <div>
-                        <span className="text-xs font-medium text-green-700">Venta</span>
-                        <p className="text-sm font-medium">
-                            Orden #{data.orders?.order_number ?? "—"}
-                        </p>
-                        {presentationName && (
-                            <p className="text-xs text-muted-foreground">
-                                {data.quantity} {presentationName}
-                            </p>
-                        )}
-                        {showBaseUnits && (
-                            <p className="text-xs text-muted-foreground">
-                                = {data.qty_in_base_units} {baseUnitLabel}
-                            </p>
-                        )}
-                    </div>
-                    <div className="text-right shrink-0">
-                        <p className="text-sm font-semibold text-green-700">{formatCurrency(data.total)}</p>
-                        <p className="text-xs text-muted-foreground">
-                            {data.quantity} × {formatCurrency(data.price)}
-                        </p>
-                    </div>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">{formatDate(data.created_at)}</p>
-            </div>
-        </div>
-    );
-}
-
-function TransformOriginCard({ data }: { data: LotTransformationRow }) {
-    return (
-        <div className="flex gap-3">
-            <div className="flex flex-col items-center">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-600">
-                    <ArrowUpFromLine className="h-4 w-4" />
-                </div>
-                <div className="mt-1 w-px flex-1 bg-border" />
-            </div>
-            <div className="mb-4 flex-1 rounded-lg border border-orange-200 bg-orange-50/40 p-3">
-                <div className="flex items-start justify-between gap-2">
-                    <div>
-                        <span className="text-xs font-medium text-orange-700">Transformación — Insumo</span>
-                        <p className="text-sm font-medium">→ {data.product_name}</p>
-                        {data.notes && <p className="text-xs text-muted-foreground">{data.notes}</p>}
-                    </div>
-                    <div className="text-right shrink-0">
-                        <p className="text-sm font-semibold text-orange-700">{data.quantity} un.</p>
-                        {data.transformation_cost != null && (
-                            <p className="text-xs text-muted-foreground">Costo: {formatCurrency(data.transformation_cost)}</p>
-                        )}
-                    </div>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">{formatDate(data.transformation_date)}</p>
-            </div>
-        </div>
-    );
-}
-
-function TransformResultCard({ data }: { data: LotTransformationRow }) {
-    return (
-        <div className="flex gap-3">
-            <div className="flex flex-col items-center">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                    <ArrowDownToLine className="h-4 w-4" />
-                </div>
-                <div className="mt-1 w-px flex-1 bg-border" />
-            </div>
-            <div className="mb-4 flex-1 rounded-lg border border-blue-200 bg-blue-50/40 p-3">
-                <div className="flex items-start justify-between gap-2">
-                    <div>
-                        <span className="text-xs font-medium text-blue-700">Transformación — Resultado</span>
-                        <p className="text-sm font-medium">← {data.product_name}</p>
-                        {data.notes && <p className="text-xs text-muted-foreground">{data.notes}</p>}
-                    </div>
-                    <div className="text-right shrink-0">
-                        <p className="text-sm font-semibold text-blue-700">{data.quantity} un.</p>
-                        {data.final_cost_total != null && (
-                            <p className="text-xs text-muted-foreground">Costo total: {formatCurrency(data.final_cost_total)}</p>
-                        )}
-                    </div>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">{formatDate(data.transformation_date)}</p>
-            </div>
-        </div>
-    );
-}
-
-function WasteCard({ data }: { data: LotWasteRow }) {
-    const presentation = data.product_presentations;
-    const presentationName = presentation?.product_presentation_name;
-    const baseUnitLabel = presentation?.sell_unit === "BY_WEIGHT" ? "kg" : "un.";
-    const showBaseUnits =
-        data.qty_in_base_units != null &&
-        presentation?.bulk_quantity_equivalence != null &&
-        presentation.bulk_quantity_equivalence !== 1;
-    const authorName = data.users?.full_name ?? data.users?.email;
-
-    return (
-        <div className="flex gap-3">
-            <div className="flex flex-col items-center">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
-                    <Trash2 className="h-4 w-4" />
-                </div>
-                <div className="mt-1 w-px flex-1 bg-border" />
-            </div>
-            <div className="mb-4 flex-1 rounded-lg border border-red-200 bg-red-50/40 p-3">
-                <div className="flex items-start justify-between gap-2">
-                    <div>
-                        <span className="text-xs font-medium text-red-700">Merma</span>
-                        <p className="text-sm font-medium">
-                            {data.quantity}{presentationName ? ` ${presentationName}` : " un."} descartado{(data.quantity ?? 0) !== 1 ? "s" : ""}
-                        </p>
-                        {showBaseUnits && (
-                            <p className="text-xs text-muted-foreground">
-                                = {data.qty_in_base_units} {baseUnitLabel}
-                            </p>
-                        )}
-                        {authorName && (
-                            <p className="text-xs text-muted-foreground">Por: {authorName}</p>
-                        )}
-                    </div>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">{formatDate(data.created_at)}</p>
-            </div>
-        </div>
-    );
-}
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
@@ -226,6 +76,25 @@ const LotHistory = ({ lotId }: { lotId: number | null }) => {
         queryFn: () => getLotWastesRpc(lotId!),
         enabled,
     });
+
+    const { data: lotStocksRaw = [] } = useQuery({
+        queryKey: ["lot-stocks", lotId],
+        queryFn: async () => {
+            const { lotStock } = await getLotStocks(lotId!);
+            return lotStock;
+        },
+        enabled,
+    });
+
+    const overSoldStocks: OverSoldStock[] = lotStocksRaw
+        .filter((s) => (s.over_sell_quantity ?? 0) > 0)
+        .map((s) => ({
+            stock_id: s.stock_id,
+            location_id: s.location_id,
+            store_name: s.store_name ?? null,
+            stock_room_name: s.stock_room_name ?? null,
+            over_sell_quantity: s.over_sell_quantity!,
+        }));
 
     const isLoading = loadingSales || loadingTransformations || loadingWastes;
 
@@ -315,10 +184,13 @@ const LotHistory = ({ lotId }: { lotId: number | null }) => {
 
                 {/* Header */}
                 <div className="border-b px-6 py-4 shrink-0">
-                    <SheetHeader>
-                        <SheetTitle>Ciclo de vida del lote</SheetTitle>
-                        <SheetDescription>Lote #{lotId ?? "—"}</SheetDescription>
-                    </SheetHeader>
+                    <div className="flex items-start justify-between gap-3">
+                        <SheetHeader>
+                            <SheetTitle>Ciclo de vida del lote</SheetTitle>
+                            <SheetDescription>Lote #{lotId ?? "—"}</SheetDescription>
+                        </SheetHeader>
+                        <OverSellPopover stocks={overSoldStocks} lotId={lotId!} />
+                    </div>
                 </div>
 
                 {isLoading ? (
