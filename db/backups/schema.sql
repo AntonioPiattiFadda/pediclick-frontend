@@ -264,6 +264,15 @@ CREATE TYPE "public"."transaction_type" AS ENUM (
 ALTER TYPE "public"."transaction_type" OWNER TO "postgres";
 
 
+CREATE TYPE "public"."transformation_type" AS ENUM (
+    'TRANSFORMATION',
+    'FRACTION'
+);
+
+
+ALTER TYPE "public"."transformation_type" OWNER TO "postgres";
+
+
 CREATE TYPE "public"."user_role_enum" AS ENUM (
     'OWNER',
     'MANAGER',
@@ -5648,7 +5657,8 @@ CREATE TABLE IF NOT EXISTS "public"."product_presentations" (
     "updated_at" timestamp with time zone,
     "sell_type" "public"."sell_type",
     "organization_id" "uuid",
-    "sell_unit" "public"."sell_unit"
+    "sell_unit" "public"."sell_unit",
+    "auto_stock_calc" boolean DEFAULT true NOT NULL
 );
 
 
@@ -5836,7 +5846,8 @@ CREATE TABLE IF NOT EXISTS "public"."stock" (
     "reserved_for_selling_quantity" numeric,
     "location_id" bigint,
     "is_closed" boolean DEFAULT false,
-    "over_sell_quantity" numeric
+    "over_sell_quantity" numeric,
+    "product_presentation_id" bigint
 );
 
 
@@ -6083,7 +6094,10 @@ CREATE TABLE IF NOT EXISTS "public"."transformations" (
     "transformation_id" bigint NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "transformation_cost" numeric,
-    "notes" "text"
+    "notes" "text",
+    "transformation_type" "public"."transformation_type" DEFAULT 'TRANSFORMATION'::"public"."transformation_type" NOT NULL,
+    "organization_id" "uuid",
+    "created_by" "uuid"
 );
 
 
@@ -6441,7 +6455,7 @@ CREATE UNIQUE INDEX "one_open_session_per_terminal" ON "public"."terminal_sessio
 
 
 
-CREATE UNIQUE INDEX "stock_unique" ON "public"."stock" USING "btree" ("lot_id", "product_id", "location_id");
+CREATE UNIQUE INDEX "stock_unique" ON "public"."stock" USING "btree" ("lot_id", "product_id", "location_id", COALESCE("product_presentation_id", ('-1'::integer)::bigint));
 
 
 
@@ -6846,6 +6860,11 @@ ALTER TABLE ONLY "public"."stock"
 
 
 
+ALTER TABLE ONLY "public"."stock"
+    ADD CONSTRAINT "stock_product_presentation_id_fkey" FOREIGN KEY ("product_presentation_id") REFERENCES "public"."product_presentations"("product_presentation_id");
+
+
+
 ALTER TABLE ONLY "public"."store_order_sequences"
     ADD CONSTRAINT "store_order_sequences_location_id_fkey" FOREIGN KEY ("location_id") REFERENCES "public"."locations"("location_id");
 
@@ -6948,6 +6967,16 @@ ALTER TABLE ONLY "public"."transformation_items"
 
 ALTER TABLE ONLY "public"."transformation_items"
     ADD CONSTRAINT "transformation_items_transformation_id_fkey" FOREIGN KEY ("transformation_id") REFERENCES "public"."transformations"("transformation_id");
+
+
+
+ALTER TABLE ONLY "public"."transformations"
+    ADD CONSTRAINT "transformations_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id");
+
+
+
+ALTER TABLE ONLY "public"."transformations"
+    ADD CONSTRAINT "transformations_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("organization_id");
 
 
 
