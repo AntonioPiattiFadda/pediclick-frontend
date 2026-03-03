@@ -115,11 +115,11 @@ export const getProductPresentation = async (productPresentationId: number | nul
   return { presentation, error };
 };
 
-export const createProductPresentation = async (name: string, shortCode: number | null, productId: number, bulkQuantityEquivalence: number | null, sellType: SellType, sellUnit: SellUnit) => {
+export const createProductPresentation = async (name: string, shortCode: number | null, productId: number, bulkQuantityEquivalence: number | null, sellType: SellType, sellUnit: SellUnit, autoStockCalc: boolean = true) => {
   const organizationId = await getOrganizationId();
   const { data, error } = await supabase
     .from("product_presentations")
-    .insert({ product_presentation_name: name, short_code: shortCode, organization_id: organizationId, product_id: productId, bulk_quantity_equivalence: bulkQuantityEquivalence, sell_type: sellType, sell_unit: sellUnit })
+    .insert({ product_presentation_name: name, short_code: shortCode, organization_id: organizationId, product_id: productId, bulk_quantity_equivalence: bulkQuantityEquivalence, sell_type: sellType, sell_unit: sellUnit, auto_stock_calc: autoStockCalc })
     .select()
     .single();
 
@@ -139,6 +139,7 @@ export const updateProductPresentation = async (
     bulk_quantity_equivalence: number | null;
     sell_type: SellType;
     sell_unit: SellUnit;
+    auto_stock_calc: boolean;
   }
 ) => {
   const { error } = await supabase
@@ -149,6 +150,7 @@ export const updateProductPresentation = async (
       bulk_quantity_equivalence: data.bulk_quantity_equivalence,
       sell_type: data.sell_type,
       sell_unit: data.sell_unit,
+      auto_stock_calc: data.auto_stock_calc,
     })
     .eq("product_presentation_id", id);
 

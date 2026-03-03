@@ -263,6 +263,7 @@ const CreateProductPresentation = ({
     const [open, setOpen] = useState(false);
     const [sellType, setSellType] = useState<SellType>("MINOR");
     const [sellUnit, setSellUnit] = useState<SellUnit>("BY_UNIT");
+    const [autoStockCalc, setAutoStockCalc] = useState(true);
 
     const createMutation = useMutation({
         mutationFn: async (data: {
@@ -272,8 +273,9 @@ const CreateProductPresentation = ({
             bulkQuantityEquivalence: number | null;
             sellType: SellType;
             sellUnit: SellUnit;
+            autoStockCalc: boolean;
         }) => {
-            return await createProductPresentation(data.name, data.shortCode, data.productId, data.bulkQuantityEquivalence, data.sellType, data.sellUnit);
+            return await createProductPresentation(data.name, data.shortCode, data.productId, data.bulkQuantityEquivalence, data.sellType, data.sellUnit, data.autoStockCalc);
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({
@@ -283,6 +285,7 @@ const CreateProductPresentation = ({
             setOpen(false);
             setNewPresentation("");
             setNewShortCode(null);
+            setAutoStockCalc(true);
             if (isShortCut) {
                 toast("Presentación creada", { icon: "✅" });
             }
@@ -304,6 +307,7 @@ const CreateProductPresentation = ({
                 bulkQuantityEquivalence: newBulkQuantityEquivalence,
                 sellType: sellType,
                 sellUnit: sellUnit,
+                autoStockCalc: autoStockCalc,
             });
         } catch (err) {
             console.error("Error creating presentation:", err);
@@ -395,6 +399,23 @@ const CreateProductPresentation = ({
                         <div className="flex items-center gap-3">
                             <RadioGroupItem value="BY_WEIGHT" id="u2" />
                             <Label htmlFor="u2">Por peso</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <Label className="mt-1">Cálculo de stock</Label>
+                    <RadioGroup
+                        value={autoStockCalc ? "true" : "false"}
+                        onValueChange={(value) => setAutoStockCalc(value === "true")}
+                    >
+                        <div className="flex items-center gap-3">
+                            <RadioGroupItem value="true" id="asc1" />
+                            <Label htmlFor="asc1">Automático (stock base ÷ cantidad por bulto)</Label>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <RadioGroupItem value="false" id="asc2" />
+                            <Label htmlFor="asc2">Explícito (fracción con costo)</Label>
                         </div>
                     </RadioGroup>
                 </div>

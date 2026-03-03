@@ -31,6 +31,7 @@ const emptyForm = {
     bulk_quantity_equivalence: null as number | null,
     sell_type: "MINOR" as SellType,
     sell_unit: "BY_UNIT" as SellUnit,
+    auto_stock_calc: true,
 };
 
 export function ProductPresentationEditSheet({ presentation, onUpdated }: ProductPresentationEditSheetProps) {
@@ -58,6 +59,7 @@ export function ProductPresentationEditSheet({ presentation, onUpdated }: Produc
             bulk_quantity_equivalence: data.bulk_quantity_equivalence ?? null,
             sell_type: (data.sell_type ?? "MINOR") as SellType,
             sell_unit: (data.sell_unit ?? "BY_UNIT") as SellUnit,
+            auto_stock_calc: data.auto_stock_calc ?? true,
         });
     }, [data]);
 
@@ -161,6 +163,23 @@ export function ProductPresentationEditSheet({ presentation, onUpdated }: Produc
                                 <div className="flex items-center gap-3">
                                     <RadioGroupItem value="BY_WEIGHT" id={`sell-unit-byweight-${uid}`} />
                                     <Label htmlFor={`sell-unit-byweight-${uid}`}>Por peso</Label>
+                                </div>
+                            </RadioGroup>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label>Cálculo de stock</Label>
+                            <RadioGroup
+                                value={formData.auto_stock_calc ? "true" : "false"}
+                                onValueChange={(value) => setFormData((p) => ({ ...p, auto_stock_calc: value === "true" }))}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <RadioGroupItem value="true" id={`asc-auto-${uid}`} />
+                                    <Label htmlFor={`asc-auto-${uid}`}>Automático (stock base ÷ cantidad por bulto)</Label>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <RadioGroupItem value="false" id={`asc-explicit-${uid}`} />
+                                    <Label htmlFor={`asc-explicit-${uid}`}>Explícito (fracción con costo)</Label>
                                 </div>
                             </RadioGroup>
                         </div>

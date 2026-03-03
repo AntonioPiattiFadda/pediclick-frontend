@@ -13,6 +13,7 @@ export type ProductPresentation = {
     bulk_quantity_equivalence: number | null;
     sell_unit: SellUnit;
     sell_type: SellType;
+    auto_stock_calc: boolean;
 
     // allow_price_edition: boolean;
     // minimum_price: number | null;
