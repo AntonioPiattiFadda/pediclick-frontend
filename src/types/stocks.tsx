@@ -43,6 +43,9 @@ export type Stock = {
   is_compensation_checked?: boolean;
   quantity_to_compensate?: number;
 
+  product_presentation_id: number | null;
+
+
 
   // transformed_to_product_id: number | null;
   // reserved_to_transferring_quantity: number | null;

@@ -27,27 +27,45 @@ export const adaptProductsForClient = (products: any): Product[] => {
     const productLots: any[] = product.lots ?? [];
 
     // Distribute product-level lots to each presentation.
-    // Stock quantities are divided by bulk_quantity_equivalence so each presentation
-    // row shows its own unit count (e.g. 400 kg base → cajón row shows 2, kg row shows 400).
+    // auto_stock_calc = true  → base stock rows (product_presentation_id IS NULL), divided by bulk_quantity_equivalence
+    // auto_stock_calc = false → dedicated stock rows (product_presentation_id = pp.product_presentation_id), no division
     const adaptedPresentations = product.product_presentations?.map((pp: any) => {
+      if (pp.auto_stock_calc === false) {
+        const lots = productLots
+          .map((lot: any) => ({
+            ...lot,
+            product_presentation_id: pp.product_presentation_id,
+            stock: (lot.stock ?? []).filter(
+              (s: any) => s.product_presentation_id === pp.product_presentation_id
+            ),
+          }))
+          .filter((lot: any) => lot.stock.length > 0);
+        return {
+          ...pp,
+          lots,
+        };
+      }
+
       const equiv: number = pp.bulk_quantity_equivalence || 1;
       return {
         ...pp,
         lots: productLots.map((lot: any) => ({
           ...lot,
           product_presentation_id: pp.product_presentation_id,
-          stock: (lot.stock ?? []).map((s: any) => ({
-            ...s,
-            quantity: Math.floor((s.quantity || 0) / equiv),
-            reserved_for_selling_quantity:
-              s.reserved_for_selling_quantity != null
-                ? Math.floor((s.reserved_for_selling_quantity || 0) / equiv)
-                : null,
-            reserved_for_transferring_quantity:
-              s.reserved_for_transferring_quantity != null
-                ? Math.floor((s.reserved_for_transferring_quantity || 0) / equiv)
-                : null,
-          })),
+          stock: (lot.stock ?? [])
+            .filter((s: any) => s.product_presentation_id == null)
+            .map((s: any) => ({
+              ...s,
+              quantity: Math.floor((s.quantity || 0) / equiv),
+              reserved_for_selling_quantity:
+                s.reserved_for_selling_quantity != null
+                  ? Math.floor((s.reserved_for_selling_quantity || 0) / equiv)
+                  : null,
+              reserved_for_transferring_quantity:
+                s.reserved_for_transferring_quantity != null
+                  ? Math.floor((s.reserved_for_transferring_quantity || 0) / equiv)
+                  : null,
+            })),
         })),
       };
     });
