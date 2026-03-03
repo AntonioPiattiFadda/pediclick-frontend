@@ -232,21 +232,16 @@ export function Transformation({
                                                 productId={td.product_id}
                                                 value={td.product_presentation}
                                                 onChange={(presentation) => {
-                                                    const firstLotData = getLotData(presentation?.lots || [], null, Number(selectedLocation?.location_id))
+                                                    const bulkEq = presentation?.bulk_quantity_equivalence || 1
                                                     const updatedDetails = fromTransformationItems.map(item =>
                                                         item.transformation_item_id === td.transformation_item_id
                                                             ? {
                                                                 ...item,
-                                                                lot_id: firstLotData.lot_id || null,
-                                                                lot: firstLotData,
-                                                                stock_id: firstLotData.stock_id || null,
-                                                                max_quantity: firstLotData.max_quantity || null,
-                                                                final_cost_per_unit: firstLotData.final_cost_per_unit || null,
-                                                                final_cost_per_bulk: firstLotData.final_cost_per_bulk || null,
-                                                                final_cost_total: firstLotData.final_cost_total || null,
                                                                 product_presentation_id: presentation?.product_presentation_id ?? null,
                                                                 product_presentation: presentation,
                                                                 bulk_quantity_equivalence: presentation?.bulk_quantity_equivalence ?? null,
+                                                                final_cost_per_unit: (item.lot?.final_cost_per_unit || 0) * bulkEq,
+                                                                quantity: null,
                                                             }
                                                             : item
                                                     )

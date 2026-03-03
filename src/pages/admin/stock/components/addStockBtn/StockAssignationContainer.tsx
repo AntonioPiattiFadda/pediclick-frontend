@@ -163,7 +163,7 @@ export default function StockAssignationContainer({
                 updated_at: null,
                 product_id: null,
                 over_sell_quantity: null,
-
+                product_presentation_id: null,
                 is_compensation_checked: false,
                 has_to_compensate: false,
                 has_over_sell: false,
