@@ -2348,6 +2348,41 @@ $$;
 ALTER FUNCTION "public"."generate_order_number"("p_location_id" bigint) OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_total" numeric, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) RETURNS "record"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+BEGIN
+  SELECT
+    COALESCE(l.final_cost_total, 0),
+    COALESCE(l.final_cost_per_unit, 0),
+    COALESCE(l.final_cost_per_bulk, 0)
+  INTO
+    final_cost_total,
+    final_cost_per_unit,
+    final_cost_per_bulk
+  FROM lots l
+  WHERE l.product_id = (
+    SELECT product_id
+    FROM product_presentations
+    WHERE product_presentation_id = p_product_presentation_id
+    LIMIT 1
+  )
+  ORDER BY l.created_at DESC
+  LIMIT 1;
+
+  IF NOT FOUND THEN
+    final_cost_total    := 0;
+    final_cost_per_unit := 0;
+    final_cost_per_bulk := 0;
+  END IF;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_total" numeric, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."get_last_over_sell_stock"("p_product_id" bigint, "p_location_id" bigint) RETURNS TABLE("stock_id" bigint, "lot_id" bigint, "over_sell_quantity" numeric)
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
@@ -7333,6 +7368,12 @@ GRANT ALL ON FUNCTION "public"."deliver_order"("p_order_id" bigint) TO "service_
 GRANT ALL ON FUNCTION "public"."generate_order_number"("p_location_id" bigint) TO "anon";
 GRANT ALL ON FUNCTION "public"."generate_order_number"("p_location_id" bigint) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."generate_order_number"("p_location_id" bigint) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_total" numeric, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_total" numeric, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_total" numeric, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) TO "service_role";
 
 
 
