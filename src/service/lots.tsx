@@ -7,8 +7,24 @@ import type { Stock } from "@/types/stocks";
 export const createLot = async (lot: Lot, stock: Stock[], lotContainersStock: LotContainersStock[]) => {
   const organizationId = await getOrganizationId();
 
+  // Strip columns removed from the DB schema — only *_per_unit values are persisted.
+  // *_total and *_per_bulk are calculated on the fly by the DB or frontend.
+  const {
+    purchase_cost_total: _pct,
+    purchase_cost_per_bulk: _pcpb,
+    download_total_cost: _dtc,
+    download_cost_per_bulk: _dcpb,
+    delivery_cost_total: _dct,
+    delivery_cost_per_bulk: _dcb,
+    final_cost_total: _fct,
+    final_cost_per_bulk: _fcpb,
+    extra_cost_total: _ect,
+    bulk_quantity_equivalence: _bqe,
+    ...lotForDb
+  } = lot;
+
   const { data, error } = await supabase.rpc("add_stock", {
-    p_lot: lot,
+    p_lot: lotForDb,
     p_stocks: stock,
     p_lot_containers_location: lotContainersStock,
     p_organization_id: organizationId,
@@ -45,7 +61,7 @@ export const getLastLotCosts = async (productPresentationId: number) => {
     .rpc("get_last_lot_costs", { p_product_presentation_id: productPresentationId });
 
   if (error) throw error;
-  return data as { final_cost_total: number | null; final_cost_per_unit: number | null; final_cost_per_bulk: number | null } | null;
+  return data as { final_cost_per_unit: number | null } | null;
 };
 
 export const closeLot = async (lotId: number) => {

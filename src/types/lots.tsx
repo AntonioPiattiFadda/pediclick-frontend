@@ -41,6 +41,7 @@ export type Lot = {
   purchasing_agent_commision_percentage: number | null;
   purchasing_agent_commision_unit_value: number | null;
   extra_cost_total: number | null;
+  extra_cost_per_unit: number | null;
   is_finished: boolean | null;
 
   stock?: Stock[];

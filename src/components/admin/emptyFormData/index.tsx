@@ -98,6 +98,7 @@ export const emptyLot: Lot = {
   is_finished: false,
 
   extra_cost_total: null,
+  extra_cost_per_unit: null,
 };
 
 export const emptyPrices: Price[] = [];

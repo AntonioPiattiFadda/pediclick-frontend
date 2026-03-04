@@ -481,6 +481,7 @@ export function AddLotBtn({
       final_cost_per_bulk: formatSmartNumber(final_cost_per_bulk || 0),
 
       extra_cost_total: formatSmartNumber(newExtraCostTotal),
+      extra_cost_per_unit: formatSmartNumber(extraPerUnit),
     }));
   };
 
