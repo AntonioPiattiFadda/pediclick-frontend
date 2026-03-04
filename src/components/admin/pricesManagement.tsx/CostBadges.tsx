@@ -8,6 +8,7 @@ const CostBadges = ({ finalCost }: {
         final_cost_per_bulk: number | null;
     };
 }) => {
+    console.log("CostBadges - finalCost:", finalCost);
 
     return (
         <div className="flex gap-4 flex-wrap text-sm">

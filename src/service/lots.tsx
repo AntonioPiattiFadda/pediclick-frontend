@@ -40,6 +40,14 @@ export const getFollowingLotNumber = async (productId: number): Promise<number> 
   return lastLotNumber + 1;
 };
 
+export const getLastLotCosts = async (productPresentationId: number) => {
+  const { data, error } = await supabase
+    .rpc("get_last_lot_costs", { p_product_presentation_id: productPresentationId });
+
+  if (error) throw error;
+  return data as { final_cost_total: number | null; final_cost_per_unit: number | null; final_cost_per_bulk: number | null } | null;
+};
+
 export const closeLot = async (lotId: number) => {
 
   const { data, error } = await supabase

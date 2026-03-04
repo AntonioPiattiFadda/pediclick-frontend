@@ -44,7 +44,7 @@ export const signUp = async (email: string, password: string, organizationName: 
   }
 
   if (!data.user) {
-    throw new Error("User information is missing from sign up response.");
+    throw new Error("Error desconocido al crear el usuario.");
   }
   const newUserUID = data.user.id;
 

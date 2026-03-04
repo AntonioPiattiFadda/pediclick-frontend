@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getLocations } from "@/service/locations";
+import { getLastLotCosts } from "@/service/lots";
 import type { Location } from "@/types/locations";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -36,6 +37,23 @@ export default function ManageProductPrices({
         queryClient.invalidateQueries({ queryKey: ["disabled_prices", productPresentationId] });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentTab]);
+
+    const needsCostFetch = finalCost.final_cost_total === null && finalCost.final_cost_per_unit === null && finalCost.final_cost_per_bulk === null;
+
+    const { data: fetchedCosts, isLoading: isCostLoading, refetch: refetchCosts } = useQuery({
+        queryKey: ["last_lot_costs", productPresentationId],
+        queryFn: () => getLastLotCosts(productPresentationId!),
+        enabled: false,
+    });
+
+    useEffect(() => {
+        if (open && needsCostFetch && productPresentationId) {
+            refetchCosts();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open]);
+
+    const resolvedCost = needsCostFetch ? (fetchedCosts ?? finalCost) : finalCost;
 
     const { data: stores = [], isLoading: isStoreLoading } = useQuery({
         queryKey: ["stores"],
@@ -73,7 +91,7 @@ export default function ManageProductPrices({
                 <Card className="p-0 border-none shadow-none mt-2">
                     <CardHeader className="p-0 flex flex-row justify-between">
                         <CardTitle>Costos (Último lote registrado con costos):</CardTitle>
-                        <CostBadges finalCost={finalCost} />
+                        {isCostLoading ? <div>Cargando costos...</div> : <CostBadges finalCost={resolvedCost} />}
                     </CardHeader>
 
                     <Badge variant="secondary" className="text-xs">
@@ -93,7 +111,7 @@ export default function ManageProductPrices({
 
                         <UniversalPricesContainer
                             productPresentationId={productPresentationId}
-                            finalCost={finalCost}
+                            finalCost={resolvedCost}
                         />
 
                         {stores.map((store: Location) => (
@@ -101,7 +119,7 @@ export default function ManageProductPrices({
                                 key={store.location_id}
                                 productPresentationId={productPresentationId}
                                 store={store}
-                                finalCost={finalCost}
+                                finalCost={resolvedCost}
                                 disabled={disabled}
                             />
                         ))}
