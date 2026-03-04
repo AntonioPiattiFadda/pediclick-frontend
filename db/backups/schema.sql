@@ -289,172 +289,152 @@ CREATE OR REPLACE FUNCTION "public"."add_stock"("p_lot" "jsonb", "p_stocks" "jso
     SET "search_path" TO 'public'
     AS $$
 declare
-  v_lot_id bigint;
-  v_result jsonb := '{}'::jsonb;
-
-  v_checked jsonb;
-  v_lot_checked jsonb;
-  v_stocks_checked jsonb;
-  v_lc_checked jsonb;
-
+    v_lot_id         bigint;
+    v_result         jsonb := '{}'::jsonb;
+    v_checked        jsonb;
+    v_lot_checked    jsonb;
+    v_stocks_checked jsonb;
+    v_lc_checked     jsonb;
 begin
-  /* ============================================================
-     Detect if any stock must compensate oversell
-     ============================================================ */
-  if exists (
-    select 1
-    from jsonb_array_elements(p_stocks) s
-    where coalesce((s->>'has_to_compensate')::boolean, false) = true
-  ) then
-    v_checked := public.compensate_over_sell_lots(
-      p_lot, p_stocks, p_lot_containers_location, p_organization_id
-    );
-  else
-    v_checked := jsonb_build_object(
-      'lot', p_lot,
-      'stocks', p_stocks,
-      'lot_containers_location', p_lot_containers_location,
-      'continue', true
-    );
-  end if;
+    if exists (
+        select 1 from jsonb_array_elements(p_stocks) s
+        where coalesce((s->>'has_to_compensate')::boolean, false) = true
+    ) then
+        v_checked := public.compensate_over_sell_lots(
+            p_lot, p_stocks, p_lot_containers_location, p_organization_id
+        );
+    else
+        v_checked := jsonb_build_object(
+            'lot',                    p_lot,
+            'stocks',                 p_stocks,
+            'lot_containers_location', p_lot_containers_location,
+            'continue',               true
+        );
+    end if;
 
-  if (v_checked->>'continue')::boolean is not true then
-    return jsonb_build_object('lot_id', null, 'skipped', true);
-  end if;
+    if (v_checked->>'continue')::boolean is not true then
+        return jsonb_build_object('lot_id', null, 'skipped', true);
+    end if;
 
-  v_lot_checked := v_checked->'lot';
-  v_stocks_checked := v_checked->'stocks';
-  v_lc_checked := v_checked->'lot_containers_location';
+    v_lot_checked    := v_checked->'lot';
+    v_stocks_checked := v_checked->'stocks';
+    v_lc_checked     := v_checked->'lot_containers_location';
 
-  ---------------------------------------------------------------------------
-  -- 1️⃣ Insert lot (SIN product_presentation_id)
-  --    quantity llega en unidad base desde el frontend
-  ---------------------------------------------------------------------------
-  insert into lots (
-    load_order_id,
-    product_id,
-    -- ❌ product_presentation_id eliminado
-    expiration_date,
-    expiration_date_notification,
-    provider_id,
-    initial_stock_quantity,
-    download_total_cost,
-    download_cost_per_unit,
-    download_cost_per_bulk,
-    purchase_cost_total,
-    purchase_cost_per_unit,
-    purchase_cost_per_bulk,
-    final_cost_total,
-    final_cost_per_unit,
-    final_cost_per_bulk,
-    is_sold_out,
-    is_expired,
-    created_at
-  )
-  values (
-    nullif(v_lot_checked->>'load_order_id', '')::bigint,
-    (v_lot_checked->>'product_id')::bigint,
-    -- ❌ product_presentation_id eliminado
-    nullif(v_lot_checked->>'expiration_date', '')::timestamptz,
-    (v_lot_checked->>'expiration_date_notification')::boolean,
-    nullif(v_lot_checked->>'provider_id', '')::bigint,
-    (v_lot_checked->>'initial_stock_quantity')::numeric,
-    (v_lot_checked->>'download_total_cost')::numeric,
-    (v_lot_checked->>'download_cost_per_unit')::numeric,
-    (v_lot_checked->>'download_cost_per_bulk')::numeric,
-    (v_lot_checked->>'purchase_cost_total')::numeric,
-    (v_lot_checked->>'purchase_cost_per_unit')::numeric,
-    (v_lot_checked->>'purchase_cost_per_bulk')::numeric,
-    (v_lot_checked->>'final_cost_total')::numeric,
-    (v_lot_checked->>'final_cost_per_unit')::numeric,
-    (v_lot_checked->>'final_cost_per_bulk')::numeric,
-    false,
-    false,
-    now()
-  )
-  returning lot_id into v_lot_id;
+    ---------------------------------------------------------------------------
+    -- INSERT lot
+    -- Solo *_per_unit. Los totales y los per_bulk se calculan on the fly:
+    --   *_total     = *_per_unit × initial_stock_quantity
+    --   *_per_bulk  = *_per_unit × bulk_quantity_equivalence
+    ---------------------------------------------------------------------------
+    insert into lots (
+        load_order_id,
+        product_id,
+        expiration_date,
+        expiration_date_notification,
+        provider_id,
+        initial_stock_quantity,
+        purchase_cost_per_unit,
+        download_cost_per_unit,
+        delivery_cost_per_unit,
+        extra_cost_per_unit,
+        final_cost_per_unit,
+        -- ❌ eliminados: purchase_cost_total, purchase_cost_per_bulk
+        -- ❌ eliminados: download_total_cost,  download_cost_per_bulk
+        -- ❌ eliminados: delivery_cost_total,  delivery_cost_per_bulk
+        -- ❌ eliminados: final_cost_total,     final_cost_per_bulk
+        -- ❌ eliminado:  extra_cost_total (renombrado a extra_cost_per_unit)
+        is_sold_out,
+        is_expired,
+        created_at
+    )
+    values (
+        nullif(v_lot_checked->>'load_order_id', '')::bigint,
+        (v_lot_checked->>'product_id')::bigint,
+        nullif(v_lot_checked->>'expiration_date', '')::timestamptz,
+        (v_lot_checked->>'expiration_date_notification')::boolean,
+        nullif(v_lot_checked->>'provider_id', '')::bigint,
+        (v_lot_checked->>'initial_stock_quantity')::numeric,
+        (v_lot_checked->>'purchase_cost_per_unit')::numeric,
+        (v_lot_checked->>'download_cost_per_unit')::numeric,
+        (v_lot_checked->>'delivery_cost_per_unit')::numeric,
+        (v_lot_checked->>'extra_cost_per_unit')::numeric,
+        (v_lot_checked->>'final_cost_per_unit')::numeric,
+        false,
+        false,
+        now()
+    )
+    returning lot_id into v_lot_id;
 
-  ---------------------------------------------------------------------------
-  -- 2️⃣ Insert stock (quantity = unidad base, sin filtrar por product_presentation_id)
-  ---------------------------------------------------------------------------
-  insert into stock (
-    lot_id,
-    product_id,
-    location_id,
-    quantity,
-    min_notification,
-    max_notification,
-    stock_type,
-    reserved_for_transferring_quantity,
-    reserved_for_selling_quantity,
-    transformed_from_product_id,
-    transformed_to_product_id,
-    created_at
-  )
-  select
-    v_lot_id,
-    (s->>'product_id')::bigint,
-    nullif(s->>'location_id', '')::bigint,
-    (s->>'quantity')::numeric,           -- ✅ ya viene en unidad base
-    (s->>'min_notification')::numeric,
-    (s->>'max_notification')::numeric,
-    (s->>'stock_type')::stock_type,
-    (s->>'reserved_for_transferring_quantity')::numeric,
-    (s->>'reserved_for_selling_quantity')::numeric,
-    nullif(s->>'transformed_from_product_id', '')::bigint,
-    nullif(s->>'transformed_to_product_id', '')::bigint,
-    now()
-  from jsonb_array_elements(v_stocks_checked) s;
+    ---------------------------------------------------------------------------
+    -- INSERT stock
+    ---------------------------------------------------------------------------
+    insert into stock (
+        lot_id,
+        product_id,
+        location_id,
+        quantity,
+        min_notification,
+        max_notification,
+        stock_type,
+        reserved_for_transferring_quantity,
+        reserved_for_selling_quantity,
+        transformed_from_product_id,
+        transformed_to_product_id,
+        created_at
+    )
+    select
+        v_lot_id,
+        (s->>'product_id')::bigint,
+        nullif(s->>'location_id', '')::bigint,
+        (s->>'quantity')::numeric,
+        (s->>'min_notification')::numeric,
+        (s->>'max_notification')::numeric,
+        (s->>'stock_type')::stock_type,
+        (s->>'reserved_for_transferring_quantity')::numeric,
+        (s->>'reserved_for_selling_quantity')::numeric,
+        nullif(s->>'transformed_from_product_id', '')::bigint,
+        nullif(s->>'transformed_to_product_id', '')::bigint,
+        now()
+    from jsonb_array_elements(v_stocks_checked) s;
 
-  ---------------------------------------------------------------------------
-  -- 3️⃣ Insert lot_containers_stock
-  ---------------------------------------------------------------------------
-  create temp table tmp_lc on commit drop as
-  select
-    (lc->>'lot_container_id')::bigint   as lot_container_id,
-    nullif(lc->>'location_id', '')::bigint as location_id,
-    (lc->>'quantity')::numeric          as quantity,
-    nullif(lc->>'client_id', '')::bigint as client_id,
-    nullif(lc->>'provider_id', '')::bigint as provider_id
-  from jsonb_array_elements(v_lc_checked) lc;
+    ---------------------------------------------------------------------------
+    -- INSERT lot_containers_stock
+    ---------------------------------------------------------------------------
+    create temp table tmp_lc on commit drop as
+    select
+        (lc->>'lot_container_id')::bigint      as lot_container_id,
+        nullif(lc->>'location_id', '')::bigint as location_id,
+        (lc->>'quantity')::numeric             as quantity,
+        nullif(lc->>'client_id', '')::bigint   as client_id,
+        nullif(lc->>'provider_id', '')::bigint as provider_id
+    from jsonb_array_elements(v_lc_checked) lc;
 
-  insert into lot_containers_stock (
-    organization_id,
-    stock_id,
-    lot_container_id,
-    quantity,
-    created_at,
-    location_id,
-    client_id,
-    provider_id
-  )
-  select
-    p_organization_id,
-    (
-      select s.stock_id
-      from stock s
-      where s.lot_id = v_lot_id
-        and coalesce(s.location_id, -1) = coalesce(lc.location_id, -1)
-      limit 1
-    ),
-    lc.lot_container_id,
-    lc.quantity,
-    now(),
-    lc.location_id,
-    lc.client_id,
-    lc.provider_id
-  from tmp_lc lc;
+    insert into lot_containers_stock (
+        organization_id, stock_id, lot_container_id,
+        quantity, created_at, location_id, client_id, provider_id
+    )
+    select
+        p_organization_id,
+        (
+            select s.stock_id from stock s
+            where s.lot_id = v_lot_id
+              and coalesce(s.location_id, -1) = coalesce(lc.location_id, -1)
+            limit 1
+        ),
+        lc.lot_container_id,
+        lc.quantity,
+        now(),
+        lc.location_id,
+        lc.client_id,
+        lc.provider_id
+    from tmp_lc lc;
 
-  drop table tmp_lc;
+    drop table tmp_lc;
 
-  ---------------------------------------------------------------------------
-  -- 4️⃣ Result
-  ---------------------------------------------------------------------------
-  return jsonb_build_object('lot_id', v_lot_id);
+    return jsonb_build_object('lot_id', v_lot_id);
 
 exception
-  when others then
-    raise;
+    when others then raise;
 end;
 $$;
 
@@ -730,19 +710,13 @@ CREATE OR REPLACE FUNCTION "public"."apply_transformation_stock"("p_is_origin" b
     SET "search_path" TO 'public'
     AS $$
 declare
-    v_origin_lot_id bigint;
-
-    v_existing_lot_id bigint;
+    v_origin_lot_id     bigint;
+    v_existing_lot_id   bigint;
     v_existing_stock_id bigint;
-
-    v_new_lot_id bigint;
-    v_new_stock_id bigint;
+    v_new_lot_id        bigint;
+    v_new_stock_id      bigint;
 begin
-    -------------------------------------------------------------------
-    -- 🎯 Lote origen SIEMPRE desde origin_stock_id
-    -------------------------------------------------------------------
-    select lot_id
-    into v_origin_lot_id
+    select lot_id into v_origin_lot_id
     from stock
     where stock_id = p_origin_stock_id;
 
@@ -750,118 +724,87 @@ begin
         raise exception 'Origin lot not found for stock_id %', p_origin_stock_id;
     end if;
 
-
     -------------------------------------------------------------------
-    -- 🟥 ORIGEN
+    -- 🟥 ORIGEN: restar stock y retornar
     -------------------------------------------------------------------
     if p_is_origin is true then
-
         update stock
         set quantity = quantity - p_quantity
         where stock_id = p_origin_stock_id;
 
         return jsonb_build_object(
-            'lot_id', v_origin_lot_id,
-            'stock_id', p_origin_stock_id,
+            'lot_id',           v_origin_lot_id,
+            'stock_id',         p_origin_stock_id,
             'quantity_applied', -p_quantity
         );
     end if;
 
-
     -------------------------------------------------------------------
-    -- 🔍 Buscar lote destino ya existente desde este origen
+    -- 🔍 DESTINO: buscar lote ya existente desde este origen
     -------------------------------------------------------------------
     select l.lot_id, s.stock_id
     into v_existing_lot_id, v_existing_stock_id
     from lot_traces t
-    join lots l on l.lot_id = t.lot_to_id
+    join lots  l on l.lot_id = t.lot_to_id
     join stock s on s.lot_id = l.lot_id
     where t.lot_from_id = v_origin_lot_id
-      and l.product_id = (p_lot->>'product_id')::bigint
-      and l.product_presentation_id = (p_lot->>'product_presentation_id')::bigint
+      and l.product_id  = (p_lot->>'product_id')::bigint
       and s.location_id = p_location_id
     limit 1;
 
-
     -------------------------------------------------------------------
-    -- 🟢 Reusar lote
+    -- 🟢 Reusar lote existente
     -------------------------------------------------------------------
     if v_existing_stock_id is not null then
-
         update stock
         set quantity = quantity + p_quantity
         where stock_id = v_existing_stock_id;
 
         return jsonb_build_object(
-            'lot_id', v_existing_lot_id,
-            'stock_id', v_existing_stock_id,
+            'lot_id',           v_existing_lot_id,
+            'stock_id',         v_existing_stock_id,
             'quantity_applied', p_quantity,
-            'reused_lot', true
+            'reused_lot',       true
         );
     end if;
 
-
     -------------------------------------------------------------------
     -- 🆕 Crear lote nuevo
+    -- Solo se guarda final_cost_per_unit (dato atómico).
+    -- final_cost_total = final_cost_per_unit × initial_stock_quantity → on the fly
+    -- ❌ final_cost_per_bulk eliminado
+    -- ❌ final_cost_total eliminado
     -------------------------------------------------------------------
     insert into lots (
         product_id,
         provider_id,
-        product_presentation_id,
         expiration_date,
         expiration_date_notification,
         initial_stock_quantity,
-        final_cost_per_unit,
-        final_cost_per_bulk,
-        final_cost_total
+        final_cost_per_unit
     )
     values (
         (p_lot->>'product_id')::bigint,
         (p_lot->>'provider_id')::bigint,
-        (p_lot->>'product_presentation_id')::bigint,
         (p_lot->>'expiration_date')::timestamptz,
         (p_lot->>'expiration_date_notification')::boolean,
         p_quantity,
-        (p_lot->>'final_cost_per_unit')::numeric,
-        (p_lot->>'final_cost_per_bulk')::numeric,
-        (p_lot->>'final_cost_total')::numeric
+        (p_lot->>'final_cost_per_unit')::numeric
     )
     returning lot_id into v_new_lot_id;
 
-
-    insert into stock (
-        lot_id,
-        quantity,
-        stock_type,
-        product_id,
-        location_id
-    )
-    values (
-        v_new_lot_id,
-        p_quantity,
-        'STORE',
-        (p_lot->>'product_id')::bigint,
-        p_location_id
-    )
+    insert into stock (lot_id, quantity, stock_type, product_id, location_id)
+    values (v_new_lot_id, p_quantity, 'STORE', (p_lot->>'product_id')::bigint, p_location_id)
     returning stock_id into v_new_stock_id;
 
-
-    -------------------------------------------------------------------
-    -- 🔗 Crear traza REAL
-    -------------------------------------------------------------------
-    perform public.create_lot_trace(
-        v_origin_lot_id,
-        v_new_lot_id
-    );
-
+    perform public.create_lot_trace(v_origin_lot_id, v_new_lot_id);
 
     return jsonb_build_object(
-        'lot_id', v_new_lot_id,
-        'stock_id', v_new_stock_id,
+        'lot_id',           v_new_lot_id,
+        'stock_id',         v_new_stock_id,
         'quantity_applied', p_quantity,
-        'reused_lot', false
+        'reused_lot',       false
     );
-
 end;
 $$;
 
@@ -2348,17 +2291,26 @@ $$;
 ALTER FUNCTION "public"."generate_order_number"("p_location_id" bigint) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_total" numeric, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) RETURNS "record"
+CREATE OR REPLACE FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) RETURNS "record"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
+DECLARE
+  v_bulk_quantity_equivalence numeric;
 BEGIN
+  -- Obtener bulk_quantity_equivalence de la presentación
+  SELECT pp.bulk_quantity_equivalence
+  INTO v_bulk_quantity_equivalence
+  FROM product_presentations pp
+  WHERE pp.product_presentation_id = p_product_presentation_id
+  LIMIT 1;
+
+  -- Obtener el último lote del producto
   SELECT
-    COALESCE(l.final_cost_total, 0),
     COALESCE(l.final_cost_per_unit, 0),
-    COALESCE(l.final_cost_per_bulk, 0)
+    COALESCE(l.final_cost_per_unit, 0) * COALESCE(v_bulk_quantity_equivalence, 1)
+    -- ✅ final_cost_per_bulk calculado on the fly
   INTO
-    final_cost_total,
     final_cost_per_unit,
     final_cost_per_bulk
   FROM lots l
@@ -2372,7 +2324,6 @@ BEGIN
   LIMIT 1;
 
   IF NOT FOUND THEN
-    final_cost_total    := 0;
     final_cost_per_unit := 0;
     final_cost_per_bulk := 0;
   END IF;
@@ -2380,7 +2331,7 @@ END;
 $$;
 
 
-ALTER FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_total" numeric, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) OWNER TO "postgres";
+ALTER FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_last_over_sell_stock"("p_product_id" bigint, "p_location_id" bigint) RETURNS TABLE("stock_id" bigint, "lot_id" bigint, "over_sell_quantity" numeric)
@@ -4452,19 +4403,16 @@ CREATE OR REPLACE FUNCTION "public"."transformation_items"("p_transformation_id"
     SET "search_path" TO 'public'
     AS $$
 declare
-    rec jsonb;
-
+    rec               jsonb;
     v_origin_stock_id bigint;
-
-    v_stock_result jsonb;
-    v_final_lot_id bigint;
-    v_final_stock_id bigint;
-
-    v_detail_id bigint;
-    v_results jsonb := '[]'::jsonb;
+    v_stock_result    jsonb;
+    v_final_lot_id    bigint;
+    v_final_stock_id  bigint;
+    v_detail_id       bigint;
+    v_results         jsonb := '[]'::jsonb;
 begin
     -------------------------------------------------------------------
-    -- 1️⃣ Detectar el stock ORIGEN (debe haber uno)
+    -- 1️⃣ Detectar el stock ORIGEN
     -------------------------------------------------------------------
     select (item->>'stock_id')::bigint
     into v_origin_stock_id
@@ -4476,48 +4424,29 @@ begin
         raise exception 'No origin stock found in transformation items';
     end if;
 
-
     -------------------------------------------------------------------
     -- 2️⃣ Procesar cada item
     -------------------------------------------------------------------
-    for rec in
-        select * from jsonb_array_elements(p_items)
+    for rec in select * from jsonb_array_elements(p_items)
     loop
-
-        -------------------------------------------------------------------
-        -- Aplicar stock (origen o destino)
-        -------------------------------------------------------------------
         v_stock_result := public.apply_transformation_stock(
             (rec->>'is_origin')::boolean,
-            v_origin_stock_id,                      -- 🔥 origen real
+            v_origin_stock_id,
             (rec->>'stock_id')::bigint,
             (rec->>'quantity')::numeric,
             (rec->>'location_id')::bigint,
             rec->'lot'
         );
 
-
-        -------------------------------------------------------------------
-        -- Determinar IDs finales
-        -------------------------------------------------------------------
         if (rec->>'is_origin')::boolean = true then
-
             v_final_stock_id := v_origin_stock_id;
-
-            select lot_id
-            into v_final_lot_id
-            from stock
-            where stock_id = v_origin_stock_id;
-
+            select lot_id into v_final_lot_id
+            from stock where stock_id = v_origin_stock_id;
         else
-            v_final_lot_id := (v_stock_result->>'lot_id')::bigint;
+            v_final_lot_id   := (v_stock_result->>'lot_id')::bigint;
             v_final_stock_id := (v_stock_result->>'stock_id')::bigint;
         end if;
 
-
-        -------------------------------------------------------------------
-        -- Guardar transformation_item
-        -------------------------------------------------------------------
         insert into transformation_items (
             transformation_id,
             product_id,
@@ -4527,9 +4456,9 @@ begin
             is_origin,
             quantity,
             bulk_quantity_equivalence,
-            final_cost_per_unit,
-            final_cost_per_bulk,
-            final_cost_total
+            final_cost_per_unit
+            -- ❌ final_cost_per_bulk eliminado (= final_cost_per_unit × bulk_quantity_equivalence)
+            -- ❌ final_cost_total eliminado (= final_cost_per_unit × quantity)
         )
         values (
             p_transformation_id,
@@ -4540,27 +4469,19 @@ begin
             (rec->>'is_origin')::boolean,
             (rec->>'quantity')::numeric,
             (rec->>'bulk_quantity_equivalence')::numeric,
-            (rec->>'final_cost_per_unit')::numeric,
-            (rec->>'final_cost_per_bulk')::numeric,
-            (rec->>'final_cost_total')::numeric
+            (rec->>'final_cost_per_unit')::numeric
         )
-        returning transformation_item_id
-        into v_detail_id;
+        returning transformation_item_id into v_detail_id;
 
-
-        -------------------------------------------------------------------
-        -- Respuesta acumulada
-        -------------------------------------------------------------------
         v_results := v_results || jsonb_build_object(
-            'transformation_item_id', v_detail_id,
-            'product_id', rec->>'product_id',
+            'transformation_item_id',  v_detail_id,
+            'product_id',              rec->>'product_id',
             'product_presentation_id', rec->>'product_presentation_id',
-            'lot_id', v_final_lot_id,
-            'stock_id', v_final_stock_id,
-            'quantity', rec->>'quantity',
-            'is_origin', rec->>'is_origin'
+            'lot_id',                  v_final_lot_id,
+            'stock_id',                v_final_stock_id,
+            'quantity',                rec->>'quantity',
+            'is_origin',               rec->>'is_origin'
         );
-
     end loop;
 
     return v_results;
@@ -5486,7 +5407,8 @@ CREATE TABLE IF NOT EXISTS "public"."lot_traces" (
     "lot_trace_id" bigint NOT NULL,
     "lot_from_id" bigint NOT NULL,
     "lot_to_id" bigint NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "transformation_id" bigint
 );
 
 
@@ -5516,18 +5438,10 @@ CREATE TABLE IF NOT EXISTS "public"."lots" (
     "is_expired" boolean,
     "load_order_id" bigint,
     "product_id" bigint,
-    "purchase_cost_total" numeric,
     "purchase_cost_per_unit" numeric,
-    "download_total_cost" numeric,
     "download_cost_per_unit" numeric,
-    "final_cost_total" numeric,
     "final_cost_per_unit" numeric,
-    "purchase_cost_per_bulk" numeric,
-    "download_cost_per_bulk" numeric,
-    "final_cost_per_bulk" numeric,
-    "delivery_cost_total" numeric,
     "delivery_cost_per_unit" numeric,
-    "delivery_cost_per_bulk" numeric,
     "productor_commission_type" "public"."commission_type" DEFAULT 'NONE'::"public"."commission_type" NOT NULL,
     "productor_commission_percentage" numeric,
     "productor_commission_unit_value" numeric,
@@ -5535,8 +5449,8 @@ CREATE TABLE IF NOT EXISTS "public"."lots" (
     "purchasing_agent_commision_type" "public"."commission_type" DEFAULT 'NONE'::"public"."commission_type" NOT NULL,
     "purchasing_agent_commision_percentage" numeric,
     "purchasing_agent_commision_unit_value" numeric,
-    "extra_cost_total" numeric,
-    "is_finished" boolean
+    "is_finished" boolean,
+    "extra_cost_per_unit" numeric
 );
 
 
@@ -6104,8 +6018,6 @@ CREATE TABLE IF NOT EXISTS "public"."transformation_items" (
     "max_quantity" numeric,
     "bulk_quantity_equivalence" numeric,
     "final_cost_per_unit" numeric,
-    "final_cost_per_bulk" numeric,
-    "final_cost_total" numeric,
     "location_id" bigint,
     "transformation_id" bigint
 );
@@ -6672,6 +6584,11 @@ ALTER TABLE ONLY "public"."lot_traces"
 
 ALTER TABLE ONLY "public"."lot_traces"
     ADD CONSTRAINT "lot_traces_lot_to_fk" FOREIGN KEY ("lot_to_id") REFERENCES "public"."lots"("lot_id") ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."lot_traces"
+    ADD CONSTRAINT "lot_traces_transformation_id_fkey" FOREIGN KEY ("transformation_id") REFERENCES "public"."transformations"("transformation_id");
 
 
 
@@ -7371,9 +7288,9 @@ GRANT ALL ON FUNCTION "public"."generate_order_number"("p_location_id" bigint) T
 
 
 
-GRANT ALL ON FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_total" numeric, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) TO "anon";
-GRANT ALL ON FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_total" numeric, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_total" numeric, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) TO "service_role";
 
 
 
