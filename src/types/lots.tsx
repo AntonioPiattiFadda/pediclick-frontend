@@ -20,19 +20,23 @@ export type Lot = {
   is_expired: boolean | null;
   load_order_id: number | null;
   product_id: number | null;
+
   purchase_cost_total: number | null;
+  purchase_cost_per_bulk: number | null;
   purchase_cost_per_unit: number | null;
+
   download_total_cost: number | null;
   download_cost_per_unit: number | null;
+  download_cost_per_bulk: number | null;
+
   final_cost_total: number | null;
   final_cost_per_unit: number | null;
-  purchase_cost_per_bulk: number | null;
-  download_cost_per_bulk: number | null;
   final_cost_per_bulk: number | null;
-  bulk_quantity_equivalence: number | null;
+
   delivery_cost_total: number | null;
   delivery_cost_per_unit: number | null;
   delivery_cost_per_bulk: number | null;
+
   productor_commission_type: CommissionType;
   productor_commission_percentage: number | null;
   productor_commission_unit_value: number | null;

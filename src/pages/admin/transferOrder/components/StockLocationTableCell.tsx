@@ -9,10 +9,9 @@ import {
     SheetTrigger
 } from "@/components/ui/sheet"
 import type { Lot } from "@/types/lots"
-import StockLocationTable from "../../../../components/admin/stockUNUSED/manageStockBtnUNUSED/StockLocationTable"
+import StockLocationTable from "../../../../components/admin/stock/StockLocationTable"
 
 export function StockLocationTableCell({ lots, productName, disabled = false }: { lots: Lot[], productName: string, disabled?: boolean }) {
-
 
     return (
         <div className="flex gap-2 items-center">

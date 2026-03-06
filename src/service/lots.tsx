@@ -10,16 +10,6 @@ export const createLot = async (lot: Lot, stock: Stock[], lotContainersStock: Lo
   // Strip columns removed from the DB schema — only *_per_unit values are persisted.
   // *_total and *_per_bulk are calculated on the fly by the DB or frontend.
   const {
-    purchase_cost_total: _pct,
-    purchase_cost_per_bulk: _pcpb,
-    download_total_cost: _dtc,
-    download_cost_per_bulk: _dcpb,
-    delivery_cost_total: _dct,
-    delivery_cost_per_bulk: _dcb,
-    final_cost_total: _fct,
-    final_cost_per_bulk: _fcpb,
-    extra_cost_total: _ect,
-    bulk_quantity_equivalence: _bqe,
     ...lotForDb
   } = lot;
 

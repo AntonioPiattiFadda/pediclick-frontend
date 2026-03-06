@@ -205,7 +205,7 @@ const SelectProductPresentation = ({ children }: {
                                     value={String(p.product_presentation_id)}
                                 >
 
-                                    {`${p.short_code ? `${p.short_code} - ` : ''}`} {sliceLongNames(15, p.product_presentation_name)}   {`${p.bulk_quantity_equivalence ? `x${p.bulk_quantity_equivalence}` : ''}`} {hasStock || !locationId ? '' : '(S/S)'}  {`${p.sell_unit === 'BY_UNIT' ? `xUn` : 'xKg'}`}
+                                    {`${p.short_code ? `${p.short_code} - ` : ''}`} {sliceLongNames(15, p.product_presentation_name)}   {`${p.bulk_quantity_equivalence ? `x${p.bulk_quantity_equivalence}` : ''}`} {hasStock || !locationId ? '' : '(S/S)'}  {`${p.sell_unit === 'BY_UNIT' ? `Un` : 'Kg'}`}
                                 </SelectItem>
                             })}
                         </SelectGroup>

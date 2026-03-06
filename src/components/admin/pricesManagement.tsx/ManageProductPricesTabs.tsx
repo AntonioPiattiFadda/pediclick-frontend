@@ -21,13 +21,20 @@ interface PricesDialogProps {
         final_cost_per_unit: number | null;
         final_cost_per_bulk: number | null;
     };
+    needsCostFetch: boolean;
+    bulkQuantityEquivalence?: number | null;
 }
 
 export default function ManageProductPrices({
     productPresentationId,
     disabled = false,
-    finalCost
+    finalCost,
+    needsCostFetch = false,
+    bulkQuantityEquivalence = null,
 }: PricesDialogProps) {
+
+    console.log("Final cost received in ManageProductPrices:", finalCost);
+
     const queryClient = useQueryClient();
     const [open, setOpen] = useState(false);
     const [currentTab, setCurrentTab] = useState("all-stores");
@@ -38,22 +45,25 @@ export default function ManageProductPrices({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentTab]);
 
-    const needsCostFetch = finalCost.final_cost_total === null && finalCost.final_cost_per_unit === null && finalCost.final_cost_per_bulk === null;
+    console.log("Needs cost fetch:", needsCostFetch);
 
-    const { data: fetchedCosts, isLoading: isCostLoading, refetch: refetchCosts } = useQuery({
+    const allCostsNull = !finalCost?.final_cost_total && !finalCost?.final_cost_per_unit && !finalCost?.final_cost_per_bulk;
+    const shouldFetch = needsCostFetch || allCostsNull;
+
+    const { data: fetchedCosts, isLoading: isCostLoading, refetch: refetchCosts, isSuccess: isCostSuccess } = useQuery({
         queryKey: ["last_lot_costs", productPresentationId],
         queryFn: () => getLastLotCosts(productPresentationId!),
         enabled: false,
     });
 
     useEffect(() => {
-        if (open && needsCostFetch && productPresentationId) {
+        if (open && shouldFetch && productPresentationId) {
             refetchCosts();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
 
-    const resolvedCost = needsCostFetch ? (fetchedCosts ?? finalCost) : finalCost;
+    const resolvedCost = shouldFetch ? (fetchedCosts ?? finalCost) : finalCost;
 
     const { data: stores = [], isLoading: isStoreLoading } = useQuery({
         queryKey: ["stores"],
@@ -86,12 +96,16 @@ export default function ManageProductPrices({
                     <SheetDescription>
                         Esta edición afectará a todos los lotes de este producto, incluidos los creados anteriormente.
                     </SheetDescription>
+                    <SheetDescription>
+                        {isCostSuccess && ('Costos del ultimo lote registrado')}
+                        {finalCost?.final_cost_per_bulk && ('Costos del lote que estamos agregando')}
+                    </SheetDescription>
                 </SheetHeader>
 
                 <Card className="p-0 border-none shadow-none mt-2">
                     <CardHeader className="p-0 flex flex-row justify-between">
                         <CardTitle>Costos (Último lote registrado con costos):</CardTitle>
-                        {isCostLoading ? <div>Cargando costos...</div> : <CostBadges finalCost={resolvedCost} />}
+                        {isCostLoading && shouldFetch ? <div>Cargando costos...</div> : <CostBadges finalCost={resolvedCost} />}
                     </CardHeader>
 
                     <Badge variant="secondary" className="text-xs">
@@ -112,6 +126,7 @@ export default function ManageProductPrices({
                         <UniversalPricesContainer
                             productPresentationId={productPresentationId}
                             finalCost={resolvedCost}
+                            bulkQuantityEquivalence={bulkQuantityEquivalence}
                         />
 
                         {stores.map((store: Location) => (
@@ -121,6 +136,7 @@ export default function ManageProductPrices({
                                 store={store}
                                 finalCost={resolvedCost}
                                 disabled={disabled}
+                                bulkQuantityEquivalence={bulkQuantityEquivalence}
                             />
                         ))}
                     </Tabs>

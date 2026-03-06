@@ -1,13 +1,14 @@
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import ProductPricesViewerContainer from '../../../../../components/admin/pricesManagement.tsx/ProductPricesViewerContainer';
 
-const PricesAccordion = ({ productPresentationId, finalCost }: {
+const PricesAccordion = ({ productPresentationId, finalCost, bulkQuantityEquivalence }: {
     productPresentationId: number | null;
     finalCost?: {
         final_cost_total: number | null;
         final_cost_per_unit: number | null;
         final_cost_per_bulk: number | null;
     };
+    bulkQuantityEquivalence?: number | null;
 }) => {
     return (
         <AccordionItem disabled={productPresentationId === null} value="prices"
@@ -24,6 +25,7 @@ const PricesAccordion = ({ productPresentationId, finalCost }: {
                         final_cost_per_unit: finalCost?.final_cost_per_unit || null,
                         final_cost_per_bulk: finalCost?.final_cost_per_bulk || null,
                     }}
+                    bulkQuantityEquivalence={bulkQuantityEquivalence}
                 />
             </AccordionContent>
         </AccordionItem>

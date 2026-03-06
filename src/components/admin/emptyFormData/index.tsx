@@ -60,7 +60,7 @@ export const emptyLot: Lot = {
   lot_id: 0,
   created_at: '',
   updated_at: '',
-  bulk_quantity_equivalence: null,
+
   expiration_date: null,
   expiration_date_notification: false,
   provider_id: null,

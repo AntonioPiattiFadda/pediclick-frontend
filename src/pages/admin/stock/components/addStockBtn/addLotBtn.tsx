@@ -247,6 +247,7 @@ export function AddLotBtn({
 
     // si es numérico, convertimos; si no, dejamos el valor tal cual
     const value = isNumericField ? (Number(rawValue) || 0) : rawValue;
+    const round2 = (n: number) => Math.round(n * 100) / 100;
 
     // valores actuales (default 0 si son null/undefined)
     const currentInitialStock = formData.initial_stock_quantity ?? 0;
@@ -332,24 +333,24 @@ export function AddLotBtn({
 
         if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
 
-        newCostPerBulk = value as number * bulkQuantityEquivalence;
-        newTotalCost = newCostPerBulk * currentInitialStock;
+        newCostPerBulk = round2(value as number * bulkQuantityEquivalence);
+        newTotalCost = round2(newCostPerBulk * currentInitialStock);
         break;
       }
       case "purchase_cost_per_bulk": {
         newCostPerBulk = value as number;
         if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
 
-        newCostPerUnit = value as number / bulkQuantityEquivalence;
-        newTotalCost = value as number * currentInitialStock;
+        newCostPerUnit = round2(value as number / bulkQuantityEquivalence);
+        newTotalCost = round2(value as number * currentInitialStock);
         break;
       }
       case "purchase_cost_total": {
         newTotalCost = value as number;
         if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
 
-        newCostPerBulk = value as number / currentInitialStock;
-        newCostPerUnit = newCostPerBulk / bulkQuantityEquivalence;
+        newCostPerBulk = round2(value as number / currentInitialStock);
+        newCostPerUnit = round2(newCostPerBulk / bulkQuantityEquivalence);
         break;
       }
         newTotalCost = value as number;
@@ -358,7 +359,7 @@ export function AddLotBtn({
           // si borra costo total → costo unitario a 0
           newCostPerUnit = 0;
         } else if (currentInitialStock > 0) {
-          newCostPerUnit = newTotalCost / currentInitialStock;
+          newCostPerUnit = round2(newTotalCost / currentInitialStock);
         }
         break;
 
@@ -366,8 +367,8 @@ export function AddLotBtn({
         newDownloadCostPerUnit = value as number;
         if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
 
-        newDownloadCostPerBulk = value as number * bulkQuantityEquivalence;
-        newDownloadTotalCost = newDownloadCostPerBulk * currentInitialStock;
+        newDownloadCostPerBulk = round2(value as number * bulkQuantityEquivalence);
+        newDownloadTotalCost = round2(newDownloadCostPerBulk * currentInitialStock);
         break;
       }
 
@@ -375,15 +376,15 @@ export function AddLotBtn({
         newDownloadCostPerBulk = value as number;
         if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
 
-        newDownloadCostPerUnit = value as number / bulkQuantityEquivalence;
-        newDownloadTotalCost = value as number * currentInitialStock;
+        newDownloadCostPerUnit = round2(value as number / bulkQuantityEquivalence);
+        newDownloadTotalCost = round2(value as number * currentInitialStock);
         break;
       }
       case "download_total_cost": {
         newDownloadTotalCost = value as number;
         if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
-        newDownloadCostPerBulk = value as number / currentInitialStock;
-        newDownloadCostPerUnit = newDownloadCostPerBulk / bulkQuantityEquivalence;
+        newDownloadCostPerBulk = round2(value as number / currentInitialStock);
+        newDownloadCostPerUnit = round2(newDownloadCostPerBulk / bulkQuantityEquivalence);
 
         break;
       }
@@ -406,8 +407,8 @@ export function AddLotBtn({
         newDeliveryCostPerUnit = value as number;
         if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
 
-        newDeliveryCostPerBulk = value as number * bulkQuantityEquivalence;
-        newDeliveryCostTotal = newDeliveryCostPerBulk * currentInitialStock;
+        newDeliveryCostPerBulk = round2(value as number * bulkQuantityEquivalence);
+        newDeliveryCostTotal = round2(newDeliveryCostPerBulk * currentInitialStock);
         break;
       }
 
@@ -415,8 +416,8 @@ export function AddLotBtn({
         newDeliveryCostPerBulk = value as number;
         if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
 
-        newDeliveryCostPerUnit = value as number / bulkQuantityEquivalence;
-        newDeliveryCostTotal = value as number * currentInitialStock;
+        newDeliveryCostPerUnit = round2(value as number / bulkQuantityEquivalence);
+        newDeliveryCostTotal = round2(value as number * currentInitialStock);
         break;
       }
 
@@ -424,8 +425,8 @@ export function AddLotBtn({
         newDeliveryCostTotal = value as number;
         if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
 
-        newDeliveryCostPerBulk = value as number / currentInitialStock;
-        newDeliveryCostPerUnit = newDeliveryCostPerBulk / bulkQuantityEquivalence;
+        newDeliveryCostPerBulk = round2(value as number / currentInitialStock);
+        newDeliveryCostPerUnit = round2(newDeliveryCostPerBulk / bulkQuantityEquivalence);
         break;
       }
 
@@ -444,12 +445,12 @@ export function AddLotBtn({
 
     // initial_stock_quantity is in presentation units (e.g. cajones).
     // extra_cost distributes per bulk first, then per unit = per_bulk / bulk_equiv.
-    const extraPerBulk = newExtraCostTotal / (newInitialStock || 1);
-    const extraPerUnit = extraPerBulk / (bulkQuantityEquivalence || 1);
+    const extraPerBulk = round2(newExtraCostTotal / (newInitialStock || 1));
+    const extraPerUnit = round2(extraPerBulk / (bulkQuantityEquivalence || 1));
 
-    let final_cost_total: number | null = newTotalCost + newDownloadTotalCost + newDeliveryCostTotal + newExtraCostTotal;
-    let final_cost_per_unit: number | null = newCostPerUnit + newDownloadCostPerUnit + newDeliveryCostPerUnit + extraPerUnit;
-    let final_cost_per_bulk: number | null = newCostPerBulk + newDownloadCostPerBulk + newDeliveryCostPerBulk + extraPerBulk;
+    let final_cost_total: number | null = round2(newTotalCost + newDownloadTotalCost + newDeliveryCostTotal + newExtraCostTotal);
+    let final_cost_per_unit: number | null = round2(newCostPerUnit + newDownloadCostPerUnit + newDeliveryCostPerUnit + extraPerUnit);
+    let final_cost_per_bulk: number | null = round2(newCostPerBulk + newDownloadCostPerBulk + newDeliveryCostPerBulk + extraPerBulk);
 
     if (!bulkQuantityEquivalence) {
       final_cost_per_bulk = null;
@@ -463,25 +464,25 @@ export function AddLotBtn({
       initial_stock_quantity: newInitialStock,
 
 
-      purchase_cost_total: formatSmartNumber(newTotalCost),
-      purchase_cost_per_unit: formatSmartNumber(newCostPerUnit),
-      purchase_cost_per_bulk: formatSmartNumber(newCostPerBulk),
+      purchase_cost_total: round2(newTotalCost),
+      purchase_cost_per_unit: round2(newCostPerUnit),
+      purchase_cost_per_bulk: round2(newCostPerBulk),
 
 
-      download_total_cost: formatSmartNumber(newDownloadTotalCost),
-      download_cost_per_bulk: formatSmartNumber(newDownloadCostPerBulk),
-      download_cost_per_unit: formatSmartNumber(newDownloadCostPerUnit),
+      download_total_cost: round2(newDownloadTotalCost),
+      download_cost_per_bulk: round2(newDownloadCostPerBulk),
+      download_cost_per_unit: round2(newDownloadCostPerUnit),
 
-      delivery_cost_total: formatSmartNumber(newDeliveryCostTotal),
-      delivery_cost_per_bulk: formatSmartNumber(newDeliveryCostPerBulk),
-      delivery_cost_per_unit: formatSmartNumber(newDeliveryCostPerUnit),
+      delivery_cost_total: round2(newDeliveryCostTotal),
+      delivery_cost_per_bulk: round2(newDeliveryCostPerBulk),
+      delivery_cost_per_unit: round2(newDeliveryCostPerUnit),
 
-      final_cost_total: formatSmartNumber(final_cost_total || 0),
-      final_cost_per_unit: formatSmartNumber(final_cost_per_unit || 0),
-      final_cost_per_bulk: formatSmartNumber(final_cost_per_bulk || 0),
+      final_cost_total: final_cost_total !== null ? round2(final_cost_total) : null,
+      final_cost_per_unit: final_cost_per_unit !== null ? round2(final_cost_per_unit) : null,
+      final_cost_per_bulk: final_cost_per_bulk !== null ? round2(final_cost_per_bulk) : null,
 
-      extra_cost_total: formatSmartNumber(newExtraCostTotal),
-      extra_cost_per_unit: formatSmartNumber(extraPerUnit),
+      extra_cost_total: round2(newExtraCostTotal),
+      extra_cost_per_unit: round2(extraPerUnit),
     }));
   };
 
@@ -572,6 +573,7 @@ export function AddLotBtn({
                   final_cost_per_unit: formData?.final_cost_per_unit || null,
                   final_cost_per_bulk: formData?.final_cost_per_bulk || null,
                 }}
+                bulkQuantityEquivalence={selectedProductPresentation?.bulk_quantity_equivalence ?? null}
               />
 
 

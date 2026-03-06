@@ -52,7 +52,7 @@ function QtyInput({ value, disabled, onChange }: {
 
 const StorePricesTab = ({
     productPresentationId, store, finalCost,
-    disabled, localPrices, universalPrices, disabledPrices
+    disabled, localPrices, universalPrices, disabledPrices, bulkQuantityEquivalence
 }: {
     productPresentationId: number;
     store: Location;
@@ -65,6 +65,7 @@ const StorePricesTab = ({
     localPrices: Price[];
     universalPrices: Price[];
     disabledPrices: DisabledPrice[];
+    bulkQuantityEquivalence?: number | null;
 }) => {
     const locationId = store.location_id;
     const queryClient = useQueryClient();
@@ -191,19 +192,19 @@ const StorePricesTab = ({
     // Helpers
     const round2 = (n: number) => Math.round(n * 100) / 100;
     const ensureUnits = (u?: number) => (u != null && u > 0 ? u : 0.01);
+    const bqe = bulkQuantityEquivalence ?? 1;
+    const costPerPresentation = (finalCost?.final_cost_per_unit ?? 0) * bqe;
 
     function recalcFromPercentage(row: Price): Price {
-        if (!finalCost?.final_cost_per_unit) return row;
-        const units = ensureUnits(row.qty_per_price);
+        if (!costPerPresentation) return row;
         const pct = row.profit_percentage ?? 0;
-        const price = round2(finalCost.final_cost_per_unit * (1 + pct / 100) * units);
-        return { ...row, qty_per_price: units, price };
+        const price = round2(costPerPresentation * (1 + pct / 100));
+        return { ...row, price };
     }
 
     function recalcFromPrice(row: Price): Price {
-        if (!finalCost?.final_cost_per_unit) return row;
-        const profit_percentage =
-            (row.price * 100) / (finalCost.final_cost_per_unit * row.qty_per_price) - 100;
+        if (!costPerPresentation) return row;
+        const profit_percentage = (row.price / costPerPresentation - 1) * 100;
         return { ...row, profit_percentage };
     }
 

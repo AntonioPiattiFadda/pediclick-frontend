@@ -4,7 +4,7 @@ import type { Location } from '@/types/locations';
 import { useQuery } from '@tanstack/react-query';
 import StorePricesTab from './StorePricesTab';
 
-const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost, disabled }: {
+const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost, disabled, bulkQuantityEquivalence }: {
     productPresentationId: number;
     store: Location;
     key: number;
@@ -14,6 +14,7 @@ const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost,
         final_cost_per_bulk: number | null;
     };
     disabled?: boolean;
+    bulkQuantityEquivalence?: number | null;
 }) => {
 
     const { data: localPrices = [], isLoading: isLocalLoading, isError: isLocalError } = useQuery({
@@ -76,6 +77,7 @@ const StorePricesTabContainer = ({ key, productPresentationId, store, finalCost,
             localPrices={localPrices}
             universalPrices={universalPrices}
             disabledPrices={disabledPrices}
+            bulkQuantityEquivalence={bulkQuantityEquivalence}
         />
     );
 };
