@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import ProductPricesViewer from "./ProductPricesViewer";
 import { getLocations } from "@/service/locations";
 
-const ProductPricesViewerContainer = ({ productPresentationId, finalCost, bulkQuantityEquivalence }: {
+const ProductPricesViewerContainer = ({ productPresentationId, finalCost, bulkQuantityEquivalence, sellUnit, presentationName }: {
     productPresentationId: number;
     finalCost: {
         final_cost_total: number | null;
@@ -11,6 +11,8 @@ const ProductPricesViewerContainer = ({ productPresentationId, finalCost, bulkQu
         final_cost_per_bulk: number | null;
     };
     bulkQuantityEquivalence?: number | null;
+    sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
+    presentationName?: string | null;
 }) => {
 
     const {
@@ -73,6 +75,8 @@ const ProductPricesViewerContainer = ({ productPresentationId, finalCost, bulkQu
                 final_cost_per_bulk: finalCost?.final_cost_per_bulk || null,
             }}
             bulkQuantityEquivalence={bulkQuantityEquivalence}
+            sellUnit={sellUnit}
+            presentationName={presentationName}
         />
     )
 }

@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import UserData from "./UserData";
 import Chatbot from "../Chatbot";
+import { Button } from "@/components/ui/button";
 
 export const Header = () => {
   const dispatch = useDispatch();
@@ -39,6 +40,10 @@ export const Header = () => {
     return null;
   }
 
+  const handleDownloadExe = () => {
+    window.open("https://github.com/AntonioPiattiFadda/market-store-releases/releases/latest/download/Market-Store-0.1.0-Setup.exe");
+  };
+
   return (
     <header
       // style={{
@@ -58,6 +63,8 @@ export const Header = () => {
             </p>
           </div>
         </div>
+
+        <Button onClick={handleDownloadExe}>Descargar .exe</Button>
 
         <Chatbot />
 

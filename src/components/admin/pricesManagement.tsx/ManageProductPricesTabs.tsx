@@ -23,6 +23,8 @@ interface PricesDialogProps {
     };
     needsCostFetch: boolean;
     bulkQuantityEquivalence?: number | null;
+    sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
+    presentationName?: string | null;
 }
 
 export default function ManageProductPrices({
@@ -31,9 +33,11 @@ export default function ManageProductPrices({
     finalCost,
     needsCostFetch = false,
     bulkQuantityEquivalence = null,
+    sellUnit = null,
+    presentationName = null,
 }: PricesDialogProps) {
 
-    console.log("Final cost received in ManageProductPrices:", finalCost);
+    console.log("Final cost received in ManageProductPrices:", finalCost, sellUnit, bulkQuantityEquivalence, presentationName);
 
     const queryClient = useQueryClient();
     const [open, setOpen] = useState(false);
@@ -63,7 +67,11 @@ export default function ManageProductPrices({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
 
-    const resolvedCost = shouldFetch ? (fetchedCosts ?? finalCost) : finalCost;
+    const resolvedCost = {
+        final_cost_total: (shouldFetch ? null : finalCost?.final_cost_total) ?? null,
+        final_cost_per_unit: (shouldFetch && fetchedCosts ? fetchedCosts.final_cost_per_unit : finalCost?.final_cost_per_unit) ?? null,
+        final_cost_per_bulk: (shouldFetch ? null : finalCost?.final_cost_per_bulk) ?? null,
+    };
 
     const { data: stores = [], isLoading: isStoreLoading } = useQuery({
         queryKey: ["stores"],
@@ -92,13 +100,16 @@ export default function ManageProductPrices({
             </SheetTrigger>
             <SheetContent className="sm:max-w-[1240px] max-h-screen overflow-y-auto" side="right">
                 <SheetHeader>
-                    <SheetTitle>Modificar precios</SheetTitle>
+                    <SheetTitle>Modificar precios{presentationName ? ` — ${presentationName}` : ''}</SheetTitle>
                     <SheetDescription>
                         Esta edición afectará a todos los lotes de este producto, incluidos los creados anteriormente.
                     </SheetDescription>
                     <SheetDescription>
                         {isCostSuccess && ('Costos del ultimo lote registrado')}
                         {finalCost?.final_cost_per_bulk && ('Costos del lote que estamos agregando')}
+                    </SheetDescription>
+                    <SheetDescription>
+                        {sellUnit}, {bulkQuantityEquivalence}, {presentationName}
                     </SheetDescription>
                 </SheetHeader>
 
@@ -127,6 +138,7 @@ export default function ManageProductPrices({
                             productPresentationId={productPresentationId}
                             finalCost={resolvedCost}
                             bulkQuantityEquivalence={bulkQuantityEquivalence}
+                            sellUnit={sellUnit}
                         />
 
                         {stores.map((store: Location) => (
@@ -137,6 +149,7 @@ export default function ManageProductPrices({
                                 finalCost={resolvedCost}
                                 disabled={disabled}
                                 bulkQuantityEquivalence={bulkQuantityEquivalence}
+                                sellUnit={sellUnit}
                             />
                         ))}
                     </Tabs>

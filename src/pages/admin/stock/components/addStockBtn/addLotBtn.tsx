@@ -18,7 +18,6 @@ import type { Lot } from "@/types/lots";
 import type { ProductPresentation } from "@/types/productPresentation";
 import type { Product } from "@/types/products";
 import type { Stock } from "@/types/stocks";
-import { formatSmartNumber } from "@/utils";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { Info, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -574,6 +573,8 @@ export function AddLotBtn({
                   final_cost_per_bulk: formData?.final_cost_per_bulk || null,
                 }}
                 bulkQuantityEquivalence={selectedProductPresentation?.bulk_quantity_equivalence ?? null}
+                sellUnit={selectedProductPresentation?.sell_unit ?? null}
+                presentationName={selectedProductPresentation?.product_presentation_name ?? null}
               />
 
 

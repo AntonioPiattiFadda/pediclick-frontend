@@ -51,7 +51,7 @@ function QtyInput({ value, disabled, onChange }: {
 }
 
 const UniversalPrices = ({
-    productPresentationId, finalCost, disabled, productPrices, bulkQuantityEquivalence
+    productPresentationId, finalCost, disabled, productPrices, bulkQuantityEquivalence, sellUnit
 }: {
     productPresentationId: number;
     finalCost: {
@@ -62,6 +62,7 @@ const UniversalPrices = ({
     disabled?: boolean;
     productPrices: Price[];
     bulkQuantityEquivalence?: number | null;
+    sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
 }) => {
     const queryClient = useQueryClient();
 
@@ -162,10 +163,11 @@ const UniversalPrices = ({
 
     // Helpers
     const round2 = (n: number) => Math.round(n * 100) / 100;
-    const ensureUnits = (u?: number) => (u != null && u > 0 ? u : 0.01);
+    // const ensureUnits = (u?: number) => (u != null && u > 0 ? u : 0.01);
 
     const bqe = bulkQuantityEquivalence ?? 1;
     const costPerPresentation = (finalCost?.final_cost_per_unit ?? 0) * bqe;
+    const unitLabel = sellUnit === 'BY_WEIGHT' ? 'Kg' : 'Ud';
 
     function recalcFromPercentage(row: Price): Price {
         if (!costPerPresentation) return row;
@@ -252,11 +254,14 @@ const UniversalPrices = ({
                                         markAndSet(updatePriceField(value, price.price_id!, "price", v ?? 0));
                                     }}
                                 />
-                                <QtyInput
-                                    value={price.qty_per_price}
-                                    disabled={disabled}
-                                    onChange={(v) => markAndSet(updatePriceField(value, price.price_id!, "qty_per_price", v))}
-                                />
+                                <div className="flex items-center gap-1">
+                                    <QtyInput
+                                        value={price.qty_per_price}
+                                        disabled={disabled}
+                                        onChange={(v) => markAndSet(updatePriceField(value, price.price_id!, "qty_per_price", v))}
+                                    />
+                                    <span className="text-sm text-muted-foreground w-6 shrink-0">{unitLabel}</span>
+                                </div>
                                 <Button
                                     variant="ghost"
                                     size="icon"

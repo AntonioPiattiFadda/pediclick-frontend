@@ -52,7 +52,7 @@ function QtyInput({ value, disabled, onChange }: {
 
 const StorePricesTab = ({
     productPresentationId, store, finalCost,
-    disabled, localPrices, universalPrices, disabledPrices, bulkQuantityEquivalence
+    disabled, localPrices, universalPrices, disabledPrices, bulkQuantityEquivalence, sellUnit
 }: {
     productPresentationId: number;
     store: Location;
@@ -66,6 +66,7 @@ const StorePricesTab = ({
     universalPrices: Price[];
     disabledPrices: DisabledPrice[];
     bulkQuantityEquivalence?: number | null;
+    sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
 }) => {
     const locationId = store.location_id;
     const queryClient = useQueryClient();
@@ -191,9 +192,10 @@ const StorePricesTab = ({
 
     // Helpers
     const round2 = (n: number) => Math.round(n * 100) / 100;
-    const ensureUnits = (u?: number) => (u != null && u > 0 ? u : 0.01);
+    // const ensureUnits = (u?: number) => (u != null && u > 0 ? u : 0.01);
     const bqe = bulkQuantityEquivalence ?? 1;
     const costPerPresentation = (finalCost?.final_cost_per_unit ?? 0) * bqe;
+    const unitLabel = sellUnit === 'BY_WEIGHT' ? 'Kg' : 'Ud';
 
     function recalcFromPercentage(row: Price): Price {
         if (!costPerPresentation) return row;
@@ -275,7 +277,10 @@ const StorePricesTab = ({
                                 <DollarSign className="absolute w-3 h-3 left-2 top-1/2 -translate-y-1/2 opacity-40" />
                                 <Input className="pl-5" value={price.price} disabled />
                             </div>
-                            <Input value={price.qty_per_price} disabled />
+                            <div className="flex items-center gap-1">
+                                <Input value={price.qty_per_price} disabled />
+                                <span className="text-sm text-muted-foreground w-6 shrink-0">{unitLabel}</span>
+                            </div>
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -347,11 +352,14 @@ const StorePricesTab = ({
                                         }}
                                     />
                                 </div>
-                                <QtyInput
-                                    value={price.qty_per_price}
-                                    disabled={disabled}
-                                    onChange={(v) => markAndSet(updatePriceField(value, price.price_id!, "qty_per_price", v))}
-                                />
+                                <div className="flex items-center gap-1">
+                                    <QtyInput
+                                        value={price.qty_per_price}
+                                        disabled={disabled}
+                                        onChange={(v) => markAndSet(updatePriceField(value, price.price_id!, "qty_per_price", v))}
+                                    />
+                                    <span className="text-sm text-muted-foreground w-6 shrink-0">{unitLabel}</span>
+                                </div>
                                 <Button
                                     variant="ghost"
                                     size="icon"

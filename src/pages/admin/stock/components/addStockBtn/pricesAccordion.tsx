@@ -1,7 +1,7 @@
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import ProductPricesViewerContainer from '../../../../../components/admin/pricesManagement.tsx/ProductPricesViewerContainer';
 
-const PricesAccordion = ({ productPresentationId, finalCost, bulkQuantityEquivalence }: {
+const PricesAccordion = ({ productPresentationId, finalCost, bulkQuantityEquivalence, sellUnit, presentationName }: {
     productPresentationId: number | null;
     finalCost?: {
         final_cost_total: number | null;
@@ -9,6 +9,8 @@ const PricesAccordion = ({ productPresentationId, finalCost, bulkQuantityEquival
         final_cost_per_bulk: number | null;
     };
     bulkQuantityEquivalence?: number | null;
+    sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
+    presentationName?: string | null;
 }) => {
     return (
         <AccordionItem disabled={productPresentationId === null} value="prices"
@@ -26,6 +28,8 @@ const PricesAccordion = ({ productPresentationId, finalCost, bulkQuantityEquival
                         final_cost_per_bulk: finalCost?.final_cost_per_bulk || null,
                     }}
                     bulkQuantityEquivalence={bulkQuantityEquivalence}
+                    sellUnit={sellUnit}
+                    presentationName={presentationName}
                 />
             </AccordionContent>
         </AccordionItem>

@@ -24,9 +24,11 @@ type Props = {
     };
     productPresentationId: number;
     bulkQuantityEquivalence?: number | null;
+    sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
+    presentationName?: string | null;
 };
 
-export default function ProductPricesViewer({ productPrices, finalCost, stores, productPresentationId, bulkQuantityEquivalence }: Props) {
+export default function ProductPricesViewer({ productPrices, finalCost, stores, productPresentationId, bulkQuantityEquivalence, sellUnit, presentationName }: Props) {
 
     const getStoreName = (locationId: number | null) => {
         if (!locationId) return "Universal (todas)";
@@ -50,6 +52,8 @@ export default function ProductPricesViewer({ productPrices, finalCost, stores, 
                             }}
                             needsCostFetch={finalCost.final_cost_total === null && finalCost.final_cost_per_unit === null && finalCost.final_cost_per_bulk === null}
                             bulkQuantityEquivalence={bulkQuantityEquivalence}
+                            sellUnit={sellUnit}
+                            presentationName={presentationName}
                         />
                     </div>
                 </CardContent>
@@ -83,6 +87,8 @@ export default function ProductPricesViewer({ productPrices, finalCost, stores, 
                         }}
                         needsCostFetch={finalCost.final_cost_total === null && finalCost.final_cost_per_unit === null && finalCost.final_cost_per_bulk === null}
                         bulkQuantityEquivalence={bulkQuantityEquivalence}
+                        sellUnit={sellUnit}
+                        presentationName={presentationName}
                     />
                     {/* <Button variant="outline" size="sm" onClick={() => window.print()}>
                         Imprimir precios
