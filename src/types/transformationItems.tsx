@@ -13,14 +13,16 @@ export type TransformationItems = {
     stock_id: number | null;
 
     is_origin: boolean;
-    quantity: number | null;
 
+    quantity_in_base_units: number | null;
+
+    quantity: number | null;
+    max_quantity: number | null;
 
     bulk_quantity_equivalence: number | null;
     final_cost_per_unit: number | null;
 
 
-    max_quantity: number | null;
     location_id: number | null;
     // lot_container_id: number | null;
     // lot_container_quantity: number | null;

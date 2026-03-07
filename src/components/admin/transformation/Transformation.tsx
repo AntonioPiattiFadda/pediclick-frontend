@@ -53,6 +53,7 @@ const generateNewFromItem = (
     stock_id: null,
     is_origin: true,
     quantity: null,
+    quantity_in_base_units: null,
     max_quantity: null,
     product_presentation: initialPresentation ?? null,
     final_cost_per_unit: null,
@@ -70,6 +71,7 @@ const generateNewToItem = (newTransformationId: number, percentage = 0): ToItem 
     stock_id: null,
     is_origin: false,
     quantity: null,
+    quantity_in_base_units: null,
     max_quantity: null,
     product: null,
     product_presentation: null,
@@ -90,7 +92,7 @@ const recalcToItemCosts = (
     transformationCost: number
 ): ToItem[] => {
     const newFromTotalCost = fromItems.reduce(
-        (acc, item) => acc + ((item.final_cost_per_unit || 0) * (item.quantity || 0)), 0
+        (acc, item) => acc + ((item.final_cost_per_unit || 0) * (item.quantity_in_base_units ?? ((item.quantity || 0) * (item.bulk_quantity_equivalence || 1)))), 0
     )
     const newTotalToCost = newFromTotalCost + transformationCost
     return toItems.map(item => ({
@@ -132,9 +134,9 @@ export function Transformation({
 
     // Derived costs — computed from state, not stored
     const fromTotalCost = fromTransformationItems.reduce(
-        (acc, item) => acc + ((item.final_cost_per_unit || 0) * (item.bulk_quantity_equivalence || 1) * (item.quantity || 0)), 0
+        (acc, item) => acc + ((item.final_cost_per_unit || 0) * (item.quantity_in_base_units ?? ((item.quantity || 0) * (item.bulk_quantity_equivalence || 1)))), 0
     )
-    const fromTotalQty = fromTransformationItems.reduce((acc, item) => acc + (item.quantity || 0), 0)
+    const fromTotalQty = fromTransformationItems.reduce((acc, item) => acc + (item.quantity_in_base_units ?? (item.quantity || 0)), 0)
     const totalToCost = fromTotalCost + transformation.transformation_cost
 
     // Percentage validation
@@ -207,7 +209,9 @@ export function Transformation({
                                     lot.stock?.some((s) => Number(s.location_id) === Number(selectedLocation?.location_id))
                                 ) || []
                                 console.log(`Location lots for item ${index}:`, locationLots) // Debug log
-                                const itemCost = (td.final_cost_per_unit || 0) * (td.quantity || 0)
+                                const itemCost = (td.final_cost_per_unit || 0) * (td.quantity_in_base_units ?? ((td.quantity || 0) * (td.bulk_quantity_equivalence || 1)))
+
+                                const maxQtyInBulkEqu = td.max_quantity ? td.max_quantity / (td.bulk_quantity_equivalence || 1) : 0
 
                                 return (
                                     <div key={td.transformation_item_id} className="grid grid-cols-6 gap-2">
@@ -314,13 +318,17 @@ export function Transformation({
                                                     value={td.quantity ?? ''}
                                                     onChange={(e) => {
                                                         const newValue = Number((e.target as HTMLInputElement).value)
-                                                        if (newValue > (td.max_quantity || 0)) {
-                                                            toast.error(`La cantidad no puede ser mayor a la cantidad máxima disponible: ${td.max_quantity}`)
+                                                        if (newValue > (maxQtyInBulkEqu)) {
+                                                            toast.error(`La cantidad no puede ser mayor a la cantidad máxima disponible: ${maxQtyInBulkEqu}`)
                                                             return
                                                         }
                                                         const updatedDetails = fromTransformationItems.map(item =>
                                                             item.transformation_item_id === td.transformation_item_id
-                                                                ? { ...item, quantity: newValue }
+                                                                ? {
+                                                                    ...item,
+                                                                    quantity: newValue,
+                                                                    quantity_in_base_units: newValue * (item.bulk_quantity_equivalence || 1),
+                                                                }
                                                                 : item
                                                         )
                                                         setFromTransformationItems(updatedDetails)
@@ -338,13 +346,22 @@ export function Transformation({
                                                         })
                                                     }}
                                                 />
-                                                <InputGroupAddon align="inline-end">/ {td.max_quantity}</InputGroupAddon>
+                                                <InputGroupAddon align="inline-end">
+                                                    {td.max_quantity != null && (
+                                                        <span className="text-xs text-gray-500">
+                                                            {maxQtyInBulkEqu} {td.product_presentation?.sell_unit === 'BY_UNIT' ? 'Un' : 'Kg'}
+                                                        </span>
+                                                    )}
+                                                </InputGroupAddon>
                                             </InputGroup>
                                         </div>
 
                                         {/* Item cost display (read-only) */}
                                         <div className="col-span-6 flex justify-between text-xs text-gray-500 bg-gray-50 rounded px-2 py-1">
                                             <span>Costo/u: ${(td.final_cost_per_unit || 0).toFixed(2)}</span>
+                                            {td.quantity_in_base_units != null && (
+                                                <span>Qty base: {td.quantity_in_base_units}</span>
+                                            )}
                                             <span>Total: ${itemCost.toFixed(2)}</span>
                                         </div>
 
