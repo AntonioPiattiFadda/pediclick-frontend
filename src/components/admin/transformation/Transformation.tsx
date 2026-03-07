@@ -82,6 +82,15 @@ const generateNewToItem = (newTransformationId: number, percentage = 0): ToItem 
 })
 
 /**
+ * Single source of truth for item cost:
+ * cost = final_cost_per_unit (per base unit) × quantity_in_base_units
+ */
+const computeItemCost = (item: TransformationItems): number => {
+    const qtyBase = item.quantity_in_base_units ?? ((item.quantity || 0) * (item.bulk_quantity_equivalence || 1))
+    return (item.final_cost_per_unit || 0) * qtyBase
+}
+
+/**
  * Recomputes all TO item costs based on their current percentages and
  * the new totalToCost (= fromTotalCost + transformationCost).
  * Called on every change that affects costs.
@@ -91,9 +100,7 @@ const recalcToItemCosts = (
     fromItems: TransformationItems[],
     transformationCost: number
 ): ToItem[] => {
-    const newFromTotalCost = fromItems.reduce(
-        (acc, item) => acc + ((item.final_cost_per_unit || 0) * (item.quantity_in_base_units ?? ((item.quantity || 0) * (item.bulk_quantity_equivalence || 1)))), 0
-    )
+    const newFromTotalCost = fromItems.reduce((acc, item) => acc + computeItemCost(item), 0)
     const newTotalToCost = newFromTotalCost + transformationCost
     return toItems.map(item => ({
         ...item,
@@ -133,10 +140,9 @@ export function Transformation({
     const showToTrash = toTransformationItems.length > 1
 
     // Derived costs — computed from state, not stored
-    const fromTotalCost = fromTransformationItems.reduce(
-        (acc, item) => acc + ((item.final_cost_per_unit || 0) * (item.quantity_in_base_units ?? ((item.quantity || 0) * (item.bulk_quantity_equivalence || 1)))), 0
-    )
-    const fromTotalQty = fromTransformationItems.reduce((acc, item) => acc + (item.quantity_in_base_units ?? (item.quantity || 0)), 0)
+    const fromTotalCost = fromTransformationItems.reduce((acc, item) => acc + computeItemCost(item), 0)
+
+
     const totalToCost = fromTotalCost + transformation.transformation_cost
 
     // Percentage validation
@@ -194,12 +200,11 @@ export function Transformation({
                         )}
 
                         {/* FROM column */}
-                        <div className="flex flex-col gap-2 max-h-[80vh] overflow-y-auto p-4">
+                        <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto p-4">
                             <div className="flex justify-between items-center">
                                 <span className="font-medium">Desde:</span>
                                 <div className="flex flex-col items-end text-sm text-gray-600">
                                     <span>Costo Total: ${fromTotalCost.toFixed(2)}</span>
-                                    <span>Cantidad Total: {fromTotalQty}</span>
                                 </div>
                             </div>
 
@@ -209,7 +214,7 @@ export function Transformation({
                                     lot.stock?.some((s) => Number(s.location_id) === Number(selectedLocation?.location_id))
                                 ) || []
                                 console.log(`Location lots for item ${index}:`, locationLots) // Debug log
-                                const itemCost = (td.final_cost_per_unit || 0) * (td.quantity_in_base_units ?? ((td.quantity || 0) * (td.bulk_quantity_equivalence || 1)))
+                                const itemCost = computeItemCost(td)
 
                                 const maxQtyInBulkEqu = td.max_quantity ? td.max_quantity / (td.bulk_quantity_equivalence || 1) : 0
 
@@ -241,7 +246,6 @@ export function Transformation({
                                                 value={td.product_presentation}
                                                 onChange={(presentation) => {
                                                     console.log("Selected presentation:", presentation) // Debug log
-                                                    const bulkEq = presentation?.bulk_quantity_equivalence || 1
                                                     const updatedDetails = fromTransformationItems.map(item =>
                                                         item.transformation_item_id === td.transformation_item_id
                                                             ? {
@@ -249,8 +253,9 @@ export function Transformation({
                                                                 product_presentation_id: presentation?.product_presentation_id ?? null,
                                                                 product_presentation: presentation,
                                                                 bulk_quantity_equivalence: presentation?.bulk_quantity_equivalence ?? null,
-                                                                final_cost_per_unit: (item.lot?.final_cost_per_unit || 0) * bulkEq,
+                                                                // final_cost_per_unit stays from the lot (per base unit — unchanged by presentation)
                                                                 quantity: null,
+                                                                quantity_in_base_units: null,
                                                             }
                                                             : item
                                                     )
@@ -358,10 +363,12 @@ export function Transformation({
 
                                         {/* Item cost display (read-only) */}
                                         <div className="col-span-6 flex justify-between text-xs text-gray-500 bg-gray-50 rounded px-2 py-1">
-                                            <span>Costo/u: ${(td.final_cost_per_unit || 0).toFixed(2)}</span>
-                                            {td.quantity_in_base_units != null && (
+                                            <span>
+                                                Costo/{td.product_presentation?.product_presentation_name ?? 'u'}: ${((td.final_cost_per_unit || 0) * (td.bulk_quantity_equivalence || 1)).toFixed(2)}
+                                            </span>
+                                            {/* {td.quantity_in_base_units != null && (
                                                 <span>Qty base: {td.quantity_in_base_units}</span>
-                                            )}
+                                            )} */}
                                             <span>Total: ${itemCost.toFixed(2)}</span>
                                         </div>
 
@@ -418,20 +425,19 @@ export function Transformation({
                         </div>
 
                         {/* TO column */}
-                        <div className="flex flex-col gap-2 max-h-[80vh] overflow-y-auto p-4">
+                        <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto p-4">
                             <div className="flex justify-between items-center">
                                 <span className="font-medium">Hacia:</span>
-                                <span className="text-sm text-gray-600">Costo Total: ${totalToCost.toFixed(2)}</span>
+                                <div className="flex flex-col items-end text-sm text-gray-600">
+                                    <span>Costo Total: ${totalToCost.toFixed(2)}</span>
+                                    <span className={percentageExceeds100 ? "text-red-500 font-medium" : ""}>
+                                        Porcentaje total sumado de items:  {percentageExceeds100 ? "⚠ " : ""}{toPercentageSum.toFixed(1)}%
+                                    </span>
+                                </div>
                             </div>
 
-                            {percentageExceeds100 && (
-                                <p className="text-xs text-red-500 font-medium">
-                                    ⚠ La suma de porcentajes supera el 100% ({toPercentageSum.toFixed(1)}%)
-                                </p>
-                            )}
-
                             {toTransformationItems.map((td, index) => (
-                                <div key={td.transformation_item_id} className="grid grid-cols-6 gap-2">
+                                <div key={td.transformation_item_id} className="grid grid-cols-6 gap-2 py-4 border-b border-gray-400">
                                     <div className="col-span-3 flex flex-col gap-1">
                                         <Label>Producto Nro: {index + 1}</Label>
                                         <ProductSelector
