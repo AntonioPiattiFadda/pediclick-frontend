@@ -22,7 +22,8 @@ export const getAllProductsInStock = async () => {
     product_presentation_name,
     bulk_quantity_equivalence,
     sell_unit,
-    auto_stock_calc
+    auto_stock_calc,
+    product_id
   ),
   lots!inner(
     lot_id,
@@ -81,7 +82,8 @@ export const getAllAvailableProducts = async () => {
         product_presentation_name,
         bulk_quantity_equivalence,
         sell_unit,
-        auto_stock_calc
+        auto_stock_calc,
+        product_id
       ),
       lots (
         lot_id,
@@ -130,7 +132,11 @@ export const getAllSoldProducts = async () => {
     product_presentations (
       product_presentation_id,
       product_presentation_name,
-      bulk_quantity_equivalence
+      bulk_quantity_equivalence,
+      product_id,
+      sell_unit,
+      auto_stock_calc,
+      sell_unit
     ),
     lots!inner(
       lot_id,

@@ -24,12 +24,13 @@ import { SidebarMenuButton } from "@/components/ui/sidebar"
 import { Textarea } from "@/components/ui/textarea"
 import type { Location } from "@/types/locations"
 import type { Lot } from "@/types/lots"
+import type { ProductPresentation } from "@/types/productPresentation"
 import type { Product } from "@/types/products"
 import type { Transformation } from "@/types/transformation"
 import type { TransformationItems } from "@/types/transformationItems"
 import { formatDate } from "@/utils"
 import { getLotData } from "@/utils/stock"
-import { PlusCircle, Trash } from "lucide-react"
+import { ArrowLeftRight, PlusCircle, Trash } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { LocationSelectorRoot, SelectLocation } from "../selectors/locationSelector"
@@ -39,22 +40,22 @@ import ProductSelector from "../selectors/productSelector"
 // UI-only type: extends TransformationItems with a percentage field for TO items
 type ToItem = TransformationItems & { percentage: number }
 
-const generateNewFromItem = (newTransformationId: number): TransformationItems => ({
+const generateNewFromItem = (
+    newTransformationId: number,
+    initialPresentation?: Pick<ProductPresentation, 'product_presentation_id' | 'product_presentation_name' | 'bulk_quantity_equivalence' | 'sell_unit' | 'auto_stock_calc' | 'lots' | 'product_id'>
+): TransformationItems => ({
     transformation_item_id: Math.random(),
     transformation_id: newTransformationId,
-    bulk_quantity_equivalence: null,
-    product_id: null,
-    product_presentation_id: null,
+    bulk_quantity_equivalence: initialPresentation?.bulk_quantity_equivalence ?? null,
+    product_id: initialPresentation?.product_id ?? null,
+    product_presentation_id: initialPresentation?.product_presentation_id ?? null,
     lot_id: null,
     stock_id: null,
     is_origin: true,
     quantity: null,
     max_quantity: null,
-    product: null,
-    product_presentation: null,
+    product_presentation: initialPresentation ?? null,
     final_cost_per_unit: null,
-    final_cost_per_bulk: null,
-    final_cost_total: null,
     location_id: null,
     lot: null,
 })
@@ -73,8 +74,6 @@ const generateNewToItem = (newTransformationId: number, percentage = 0): ToItem 
     product: null,
     product_presentation: null,
     final_cost_per_unit: null,
-    final_cost_per_bulk: null,
-    final_cost_total: null,
     location_id: null,
     lot: null,
     percentage,
@@ -102,18 +101,21 @@ const recalcToItemCosts = (
 
 export function Transformation({
     isShortCut,
-    disabled = false
+    disabled = false,
+    initialPresentation,
 }: {
     isShortCut?: boolean
     disabled?: boolean
+    initialPresentation?: Pick<ProductPresentation, 'product_presentation_id' | 'product_presentation_name' | 'bulk_quantity_equivalence' | 'sell_unit' | 'auto_stock_calc' | 'lots' | 'product_id'>
 }) {
     const [selectedLocation, setSelectedLocation] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | null>(null)
 
     const newTransformationId = Math.floor(Math.random() * 1000000)
 
     const [fromTransformationItems, setFromTransformationItems] = useState<TransformationItems[]>([
-        generateNewFromItem(newTransformationId)
+        generateNewFromItem(newTransformationId, initialPresentation)
     ])
+    console.log("From items:", fromTransformationItems) // Debug log
 
     const [transformation, setTransformation] = useState<Omit<Transformation, 'created_at'>>({
         transformation_id: newTransformationId,
@@ -130,7 +132,7 @@ export function Transformation({
 
     // Derived costs — computed from state, not stored
     const fromTotalCost = fromTransformationItems.reduce(
-        (acc, item) => acc + ((item.final_cost_per_unit || 0) * (item.quantity || 0)), 0
+        (acc, item) => acc + ((item.final_cost_per_unit || 0) * (item.bulk_quantity_equivalence || 1) * (item.quantity || 0)), 0
     )
     const fromTotalQty = fromTransformationItems.reduce((acc, item) => acc + (item.quantity || 0), 0)
     const totalToCost = fromTotalCost + transformation.transformation_cost
@@ -157,7 +159,7 @@ export function Transformation({
                             disabled={disabled}
                             variant="outline"
                         >
-                            <PlusCircle className="w-5 h-5" />
+                            <ArrowLeftRight className="w-4 h-4" />
                         </Button>
                     )}
                 </DialogTrigger>
@@ -200,9 +202,11 @@ export function Transformation({
                             </div>
 
                             {fromTransformationItems.map((td, index) => {
+                                console.log(`Rendering FROM item ${index}:`, td) // Debug log
                                 const locationLots = td.product_presentation?.lots?.filter((lot: Lot) =>
                                     lot.stock?.some((s) => Number(s.location_id) === Number(selectedLocation?.location_id))
                                 ) || []
+                                console.log(`Location lots for item ${index}:`, locationLots) // Debug log
                                 const itemCost = (td.final_cost_per_unit || 0) * (td.quantity || 0)
 
                                 return (
@@ -232,6 +236,7 @@ export function Transformation({
                                                 productId={td.product_id}
                                                 value={td.product_presentation}
                                                 onChange={(presentation) => {
+                                                    console.log("Selected presentation:", presentation) // Debug log
                                                     const bulkEq = presentation?.bulk_quantity_equivalence || 1
                                                     const updatedDetails = fromTransformationItems.map(item =>
                                                         item.transformation_item_id === td.transformation_item_id

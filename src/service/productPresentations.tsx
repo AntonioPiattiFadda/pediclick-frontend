@@ -21,8 +21,6 @@ export const getProductPresentations = async (
   locationId: number | null = null,
 ) => {
 
-  console.log("Fetching presentations with lots?", isFetchWithLots, "with lot containers location?", isFetchedWithLotContainersLocation, "locationId:", locationId);
-
   if (!productId) {
     return [];
   }
@@ -34,6 +32,7 @@ export const getProductPresentations = async (
     product_presentation_name,
     short_code,
     sell_type,
+    sell_unit,
     bulk_quantity_equivalence,
     prices(price_id, location_id, price, qty_per_price, logic_type, observations, valid_until, disabled_prices(location_id), enabled_prices_clients(client_id))
   `;
@@ -59,8 +58,6 @@ export const getProductPresentations = async (
         created_at,
         is_sold_out,
         final_cost_per_unit,
-        final_cost_per_bulk,
-        final_cost_total,
         stock!inner(*,
           lot_containers_stock(*)
         )
@@ -84,8 +81,6 @@ export const getProductPresentations = async (
       created_at,
       is_sold_out,
       final_cost_per_unit,
-      final_cost_per_bulk,
-      final_cost_total,
       stock(*)
     `)
     .eq("product_id", productId);

@@ -3,7 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import ProductPricesViewer from "./ProductPricesViewer";
 import { getLocations } from "@/service/locations";
 
-const ProductPricesViewerContainer = ({ productPresentationId, finalCost, bulkQuantityEquivalence, sellUnit, presentationName }: {
+const ProductPricesViewerContainer = ({
+    productPresentationId,
+    finalCost,
+    bulkQuantityEquivalence,
+    sellUnit,
+    presentationName
+}: {
     productPresentationId: number;
     finalCost: {
         final_cost_total: number | null;

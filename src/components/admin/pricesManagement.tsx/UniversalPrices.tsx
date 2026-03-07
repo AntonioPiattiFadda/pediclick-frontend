@@ -232,7 +232,7 @@ const UniversalPrices = ({
                     return (
                         <div key={index} className="flex flex-col gap-1" onBlur={saveOnRowBlur}>
                             <div className="grid grid-cols-[auto_auto_auto_40px] gap-2 items-center">
-                                {finalCost?.final_cost_total && (
+                                {finalCost?.final_cost_per_unit && (
                                     <div className="relative">
                                         <Percent className="absolute w-3 h-3 left-2 top-1/2 -translate-y-1/2 opacity-50" />
                                         <Input

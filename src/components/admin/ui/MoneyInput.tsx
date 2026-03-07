@@ -80,7 +80,7 @@ export function MoneyInput({
         <div className="flex flex-col gap-2">
             {label && <Label htmlFor={id}>{label}</Label>}
 
-            <InputGroup className="relative">
+            <InputGroup className="relative focus-within:ring-1 focus-within:ring-ring">
                 <span className="absolute z-10 top-[50%] left-2 translate-y-[-50%]">{formattedValue}</span>
                 <InputGroupInput
                     key={resetKey}

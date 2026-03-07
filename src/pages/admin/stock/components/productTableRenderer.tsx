@@ -20,6 +20,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import ManageProductPrices from '@/components/admin/pricesManagement.tsx/ManageProductPricesTabs'
 import { ProductEditSheet } from '@/components/admin/stock/productEditSheet'
 import { ProductPresentationEditSheet } from '@/components/admin/stock/productPresentationEditSheet'
+import { Transformation } from '@/components/admin/transformation/Transformation'
 import { DeleteTableElementPopUp } from '../../../../components/admin/deleteTableElementPopUp'
 import LotsAndStockProductPresentationTableCell from './LotsAndStockProductPresentationTableCell'
 import { Label } from '@/components/ui/label'
@@ -57,7 +58,8 @@ const ProductActionsCell = ({ product }: { product: Product }) => {
 };
 
 
-const PresentationActionsCell = ({ presentation }: { presentation: ProductPresentation }) => {
+const PresentationActionsCell = ({ presentation }: { presentation: Pick<ProductPresentation, 'product_presentation_id' | 'product_presentation_name' | 'bulk_quantity_equivalence' | 'sell_unit' | 'auto_stock_calc' | 'lots' | 'product_id'> }) => {
+    console.log('Rendering PresentationActionsCell for presentation', presentation);
     const queryClient = useQueryClient();
     return (
         <div className='flex gap-2 items-center'>
@@ -70,9 +72,10 @@ const PresentationActionsCell = ({ presentation }: { presentation: ProductPresen
                 presentationName={presentation.product_presentation_name ?? null}
             />
             <ProductPresentationEditSheet
-                presentation={presentation}
+                product_presentation_id={presentation.product_presentation_id}
                 onUpdated={() => queryClient.invalidateQueries({ queryKey: ['products'] })}
             />
+            <Transformation initialPresentation={presentation} />
             <DeleteTableElementPopUp
                 elementId={presentation.product_presentation_id || ''}
                 queryKey={['products']}

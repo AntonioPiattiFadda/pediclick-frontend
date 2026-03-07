@@ -267,7 +267,7 @@ const StorePricesTab = ({
                             Universal
                         </Badge>
                         <div className="grid grid-cols-[1fr_1fr_1fr_40px] gap-2 items-center">
-                            {finalCost?.final_cost_total && (
+                            {finalCost?.final_cost_per_unit && (
                                 <div className="relative">
                                     <Percent className="absolute w-3 h-3 left-2 top-1/2 -translate-y-1/2 opacity-40" />
                                     <Input className="pl-5" value={price.profit_percentage} disabled />

@@ -27,10 +27,17 @@ import toast from "react-hot-toast";
 interface ProductEditSheetProps {
     product: Product;
     onUpdated: (updated: Product) => void;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
-export function ProductEditSheet({ product, onUpdated }: ProductEditSheetProps) {
-    const [open, setOpen] = useState(false);
+export function ProductEditSheet({ product, onUpdated, open: openProp, onOpenChange }: ProductEditSheetProps) {
+    const [internalOpen, setInternalOpen] = useState(false);
+    const open = openProp !== undefined ? openProp : internalOpen;
+    const setOpen = (val: boolean) => {
+        setInternalOpen(val);
+        onOpenChange?.(val);
+    };
     const [isSaving, setIsSaving] = useState(false);
 
 

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import type { ProductPresentation } from "@/types/productPresentation";
 import type { SellType, SellUnit } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
@@ -21,7 +20,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 interface ProductPresentationEditSheetProps {
-    presentation: ProductPresentation;
+    product_presentation_id: number | null;
     onUpdated: () => void;
 }
 
@@ -34,21 +33,21 @@ const emptyForm = {
     auto_stock_calc: true,
 };
 
-export function ProductPresentationEditSheet({ presentation, onUpdated }: ProductPresentationEditSheetProps) {
+export function ProductPresentationEditSheet({ product_presentation_id, onUpdated }: ProductPresentationEditSheetProps) {
     const [open, setOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const uid = presentation.product_presentation_id ?? "new";
+    const uid = product_presentation_id ?? "new";
     const queryClient = useQueryClient();
 
     const [formData, setFormData] = useState(emptyForm);
 
     const { data, isLoading } = useQuery({
-        queryKey: ["product_presentation", presentation.product_presentation_id],
+        queryKey: ["product_presentation", product_presentation_id],
         queryFn: async () => {
-            const { presentation: fetched } = await getProductPresentation(presentation.product_presentation_id);
+            const { presentation: fetched } = await getProductPresentation(product_presentation_id);
             return fetched;
         },
-        enabled: open && !!presentation.product_presentation_id,
+        enabled: open && !!product_presentation_id,
     });
 
     useEffect(() => {
@@ -64,12 +63,12 @@ export function ProductPresentationEditSheet({ presentation, onUpdated }: Produc
     }, [data]);
 
     const handleSave = async () => {
-        if (!presentation.product_presentation_id) return;
+        if (!product_presentation_id) return;
         try {
             setIsSaving(true);
-            await updateProductPresentation(presentation.product_presentation_id, formData);
+            await updateProductPresentation(product_presentation_id, formData);
 
-            await queryClient.invalidateQueries({ queryKey: ["product_presentation", presentation.product_presentation_id] });
+            await queryClient.invalidateQueries({ queryKey: ["product_presentation", product_presentation_id] });
             onUpdated();
 
             toast.success("Presentación actualizada correctamente.");

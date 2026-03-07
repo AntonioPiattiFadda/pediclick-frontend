@@ -26,6 +26,7 @@ import { PlusCircle, X } from "lucide-react";
 import {
     createContext,
     useContext,
+    useEffect,
     useMemo,
     useState,
     type ReactNode,
@@ -99,7 +100,18 @@ const ProductPresentationSelectorRoot = ({
         enabled: !!productId,
     });
 
-    const [shortCode, setShortCode] = useState<number | null>(value?.short_code || null);
+    const [shortCode, setShortCode] = useState<number | null>(value?.short_code ?? null);
+
+    useEffect(() => {
+        if (value === null) setShortCode(null);
+    }, [value]);
+
+    useEffect(() => {
+        if (!presentations || value !== null) return;
+        if (shortCode === null) return;
+        const matched = presentations.find((p) => p.short_code === shortCode);
+        if (matched) onChange(matched);
+    }, [presentations]);
 
     if (isError) {
         return <div>Error loading product presentations: {error instanceof Error ? error.message : 'Unknown error'}</div>;

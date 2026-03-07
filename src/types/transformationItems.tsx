@@ -17,10 +17,8 @@ export type TransformationItems = {
 
 
     bulk_quantity_equivalence: number | null;
-
     final_cost_per_unit: number | null;
-    final_cost_per_bulk: number | null;
-    final_cost_total: number | null;
+
 
     max_quantity: number | null;
     location_id: number | null;
@@ -33,8 +31,6 @@ export type TransformationItems = {
     lot: {
         lot_id: number | null,
         final_cost_per_unit: number | null,
-        final_cost_per_bulk: number | null,
-        final_cost_total: number | null,
         stock_id: number | null,
         max_quantity: number | null,
         lot: Lot | undefined | null,

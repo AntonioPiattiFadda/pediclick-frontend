@@ -165,6 +165,7 @@ const ProductSelector = ({
 
   const handleSelectProduct = (newProduct: Product) => {
     onChange(newProduct);
+    setShortCode(newProduct.short_code ?? null);
     setIsOpen(false);
     setInputValue("");
   };
@@ -317,11 +318,7 @@ const ProductSelector = ({
                     className="relative px-3 py-2 cursor-pointer select-none transition-colors duration-200 hover:bg-muted focus:bg-muted text-popover-foreground"
                     role="option"
                     aria-selected={value === option}
-                    onClick={() => {
-                      onChange(option);
-                      setIsOpen(false);
-                      setInputValue("");
-                    }}
+                    onClick={() => handleSelectProduct(option)}
                   >
                     <span className="block truncate">{`${option.short_code ?? ''} ${option.short_code ? '-' : ''} ${option.product_name}`}</span>
                     {value === option && (
