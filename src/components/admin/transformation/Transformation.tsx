@@ -8,8 +8,8 @@ import {
     DialogTitle,
     DialogTrigger
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
+import { MoneyInput } from "@/components/admin/ui/MoneyInput"
 import { Label } from "@/components/ui/label"
 import {
     Select,
@@ -30,12 +30,15 @@ import type { Transformation } from "@/types/transformation"
 import type { TransformationItems } from "@/types/transformationItems"
 import { formatDate } from "@/utils"
 import { getLotData } from "@/utils/stock"
+import { useMutation } from "@tanstack/react-query"
 import { ArrowLeftRight, PlusCircle, Trash } from "lucide-react"
 import { useState } from "react"
-import { toast } from "sonner"
+import { createTransformation } from "@/service/transformations"
 import { LocationSelectorRoot, SelectLocation } from "../selectors/locationSelector"
 import { ProductPresentationSelectorRoot, SelectProductPresentation } from "../selectors/productPresentationSelector"
 import ProductSelector from "../selectors/productSelector"
+import { Input } from "@/components/ui/input"
+import toast from "react-hot-toast"
 
 // UI-only type: extends TransformationItems with a percentage field for TO items
 type ToItem = TransformationItems & { percentage: number }
@@ -130,7 +133,8 @@ export function Transformation({
         transformation_id: newTransformationId,
         transformation_cost: 0,
         notes: "",
-    } as Transformation)
+        transformation_type: 'TRANSFORMATION',
+    })
 
     const [toTransformationItems, setToTransformationItems] = useState<ToItem[]>([
         generateNewToItem(newTransformationId, 100)
@@ -152,6 +156,39 @@ export function Transformation({
     const handleResetTransformationItems = () => {
         setFromTransformationItems([generateNewFromItem(newTransformationId)])
         setToTransformationItems([generateNewToItem(newTransformationId, 100)])
+    }
+
+    const transformationMutation = useMutation({
+        mutationFn: () => createTransformation(transformation, fromTransformationItems, toTransformationItems),
+        onSuccess: () => {
+            toast.success("Transformación creada correctamente")
+            handleResetTransformationItems()
+        },
+        onError: (error: { message: string }) => {
+            toast.error(error.message || "Error al crear la transformación")
+        },
+    })
+
+    const handleSubmit = () => {
+        const missingFromFields = fromTransformationItems.some(
+            item => !item.product_id || !item.product_presentation_id || !item.lot_id || !item.quantity
+        )
+        if (missingFromFields) {
+            toast.error("Completá todos los campos de los ítems de origen")
+            return
+        }
+        const missingToFields = toTransformationItems.some(
+            item => !item.product_id || !item.product_presentation_id || !item.quantity
+        )
+        if (missingToFields) {
+            toast.error("Completá todos los campos de los ítems de destino")
+            return
+        }
+        if (percentageExceeds100) {
+            toast.error("La suma de porcentajes no puede superar el 100%")
+            return
+        }
+        transformationMutation.mutate()
     }
 
     return (
@@ -194,7 +231,7 @@ export function Transformation({
 
                     <div className="relative grid grid-cols-[1fr_auto_1fr] gap-2 border border-gray-200 rounded-lg">
                         {!selectedLocation && (
-                            <div className="absolute inset-0 bg-white bg-opacity-75 z-10 flex items-center justify-center rounded-lg">
+                            <div className="absolute inset-0 bg-white bg-opacity-75 z-10 flex items-center justify-center rounded-lg z-50">
                                 <span className="text-gray-500">Selecciona una ubicación para continuar</span>
                             </div>
                         )}
@@ -406,13 +443,14 @@ export function Transformation({
 
                         {/* Middle column */}
                         <div className="p-4 border-r border-l border-gray-200 flex flex-col gap-2">
-                            <Label>Costo de transformación</Label>
-                            <Input
+                            <MoneyInput
+                                label="Costo de transformación"
+                                disabled={!selectedLocation}
                                 value={transformation.transformation_cost}
-                                onChange={(e) => {
-                                    const newCost = Number((e.target as HTMLInputElement).value)
-                                    setTransformation(prev => ({ ...prev, transformation_cost: newCost }))
-                                    setToTransformationItems(prev => recalcToItemCosts(prev, fromTransformationItems, newCost))
+                                onChange={(newCost) => {
+                                    const cost = newCost ?? 0
+                                    setTransformation(prev => ({ ...prev, transformation_cost: cost }))
+                                    setToTransformationItems(prev => recalcToItemCosts(prev, fromTransformationItems, cost))
                                 }}
                             />
                             <Label>Notas</Label>
@@ -509,28 +547,23 @@ export function Transformation({
                                     </div>
 
                                     {/* Cost input */}
-                                    <div className="col-span-3 flex flex-col gap-1">
-                                        <Label>Costo</Label>
-                                        <InputGroup>
-                                            <InputGroupAddon>$</InputGroupAddon>
-                                            <InputGroupInput
-                                                disabled={!selectedLocation}
-                                                type="number"
-                                                min={0}
-                                                value={td.final_cost_total ?? 0}
-                                                onChange={(e) => {
-                                                    const newCost = Number((e.target as HTMLInputElement).value)
-                                                    const newPct = totalToCost > 0 ? (newCost / totalToCost) * 100 : 0
-                                                    setToTransformationItems(prev =>
-                                                        prev.map(item =>
-                                                            item.transformation_item_id === td.transformation_item_id
-                                                                ? { ...item, final_cost_total: newCost, percentage: newPct }
-                                                                : item
-                                                        )
+                                    <div className="col-span-3">
+                                        <MoneyInput
+                                            label="Costo"
+                                            disabled={!selectedLocation}
+                                            value={td.final_cost_per_unit ?? null}
+                                            onChange={(newCost) => {
+                                                const cost = newCost ?? 0
+                                                const newPct = totalToCost > 0 ? (cost / totalToCost) * 100 : 0
+                                                setToTransformationItems(prev =>
+                                                    prev.map(item =>
+                                                        item.transformation_item_id === td.transformation_item_id
+                                                            ? { ...item, final_cost_per_unit: cost, percentage: newPct }
+                                                            : item
                                                     )
-                                                }}
-                                            />
-                                        </InputGroup>
+                                                )
+                                            }}
+                                        />
                                     </div>
 
                                     <div className="flex flex-col gap-1 col-span-6">
@@ -583,7 +616,13 @@ export function Transformation({
                     </div>
 
                     <DialogFooter>
-                        <Button type="submit">Transformar</Button>
+                        <Button
+                            type="button"
+                            disabled={transformationMutation.isLoading}
+                            onClick={handleSubmit}
+                        >
+                            {transformationMutation.isLoading ? "Transformando..." : "Transformar"}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </form>
