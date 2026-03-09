@@ -23,7 +23,7 @@ import { LocationSelectorRoot, SelectLocation } from "../selectors/locationSelec
 import toast from "react-hot-toast"
 import { TransformationFromItems } from "./TransformationFromItems"
 import { TransformationToItems } from "./TransformationToItems"
-import { generateNewFromItem, generateNewToItem, recalcToItemCosts, type ToItem } from "@/utils/transformationUtils"
+import { generateNewFromItem, generateNewToItem, distributeEquallyToItems, computeItemCost, type ToItem } from "@/utils/transformationUtils"
 import type { TransformationItems } from "@/types/transformationItems"
 
 export function Transformation({
@@ -166,7 +166,8 @@ export function Transformation({
                                 onChange={(newCost) => {
                                     const cost = newCost ?? 0
                                     setTransformation(prev => ({ ...prev, transformation_cost: cost }))
-                                    setToTransformationItems(prev => recalcToItemCosts(prev, fromTransformationItems, cost))
+                                    const newTotalToCost = fromTransformationItems.reduce((acc, item) => acc + computeItemCost(item), 0) + cost
+                                    setToTransformationItems(prev => distributeEquallyToItems(prev, newTotalToCost))
                                 }}
                             />
                             <Label>Notas</Label>

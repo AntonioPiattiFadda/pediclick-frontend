@@ -89,7 +89,12 @@ export function TransformationFromItems({
                                 productId={td.product_id}
                                 value={td.product_presentation}
                                 onChange={(presentation) => {
-                                    console.log("Selected presentation:", presentation) // Debug log
+                                    const firstLot = presentation?.lots?.filter((lot: Lot) =>
+                                        lot.stock?.some((s) => Number(s.location_id) === Number(selectedLocation?.location_id))
+                                    )?.[0]
+                                    const lotData = firstLot
+                                        ? getLotData(presentation?.lots || [], firstLot.lot_id, Number(selectedLocation?.location_id))
+                                        : null
                                     const updatedDetails = fromTransformationItems.map(item =>
                                         item.transformation_item_id === td.transformation_item_id
                                             ? {
@@ -99,6 +104,12 @@ export function TransformationFromItems({
                                                 bulk_quantity_equivalence: presentation?.bulk_quantity_equivalence ?? null,
                                                 quantity: null,
                                                 quantity_in_base_units: null,
+                                                lot_id: lotData ? firstLot!.lot_id : null,
+                                                stock_id: lotData?.stock_id || null,
+                                                max_quantity: lotData?.max_quantity || null,
+                                                final_cost_total: lotData?.final_cost_total || 0,
+                                                final_cost_per_bulk: lotData?.final_cost_per_bulk || 0,
+                                                final_cost_per_unit: lotData?.final_cost_per_unit || 0,
                                             }
                                             : item
                                     )
@@ -143,7 +154,7 @@ export function TransformationFromItems({
                                 }}
                             >
                                 <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Selecciona el lote" />
+                                    <SelectValue placeholder={locationLots.length === 0 ? "Sin stock" : "Selecciona el lote"} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
@@ -166,6 +177,14 @@ export function TransformationFromItems({
                                     placeholder="Cantidad"
                                     value={td.quantity === null || td.quantity === undefined ? '' : String(td.quantity)}
                                     onChange={(e) => {
+                                        if (!td.lot_id) {
+                                            toast.error(
+                                                locationLots.length === 0
+                                                    ? "No hay lotes de esta presentación asignados a este local"
+                                                    : "Seleccioná un lote antes de ingresar la cantidad"
+                                            )
+                                            return
+                                        }
                                         const newValue = Number((e.target as HTMLInputElement).value) || null
                                         const numValue = newValue ?? 0
                                         if (numValue > maxQtyInBulkEqu) {

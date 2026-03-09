@@ -89,5 +89,6 @@ export const recalcToItemCosts = (
     return toItems.map(item => ({
         ...item,
         final_cost_total: parseFloat((newTotalToCost * (item.percentage / 100)).toFixed(2)),
+        final_cost_per_unit: parseFloat((newTotalToCost * (item.percentage / 100)).toFixed(2)),
     }))
 }
