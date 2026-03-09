@@ -9,6 +9,8 @@ import { MoneyInput } from "@/components/admin/ui/MoneyInput"
 import { ProductPresentationSelectorRoot, SelectProductPresentation } from "../selectors/productPresentationSelector"
 import ProductSelector from "../selectors/productSelector"
 import { generateNewToItem, type ToItem } from "@/utils/transformationUtils"
+import { formatCurrency } from "@/utils/prices"
+import { useState } from "react"
 
 interface TransformationToItemsProps {
     toTransformationItems: ToItem[]
@@ -25,6 +27,8 @@ export function TransformationToItems({
     totalToCost,
     newTransformationId,
 }: TransformationToItemsProps) {
+    const [percentageInputs, setPercentageInputs] = useState<Record<number, string>>({})
+
     const showToTrash = toTransformationItems.length > 1
     const toPercentageSum = toTransformationItems.reduce((acc, item) => acc + item.percentage, 0)
     const percentageExceeds100 = toPercentageSum > 100
@@ -34,7 +38,7 @@ export function TransformationToItems({
             <div className="flex justify-between items-center">
                 <span className="font-medium">Hacia:</span>
                 <div className="flex flex-col items-end text-sm text-gray-600">
-                    <span>Costo Total: ${totalToCost.toFixed(2)}</span>
+                    <span>Costo Total: {formatCurrency(totalToCost)}</span>
                     <span className={percentageExceeds100 ? "text-red-500 font-medium" : ""}>
                         Porcentaje total sumado de items: {percentageExceeds100 ? "⚠ " : ""}{toPercentageSum.toFixed(1)}%
                     </span>
@@ -94,16 +98,18 @@ export function TransformationToItems({
                         <InputGroup>
                             <InputGroupInput
                                 disabled={!selectedLocation}
-                                type="number"
-                                min={0}
-                                max={100}
-                                value={td.percentage}
+                                value={percentageInputs[td.transformation_item_id] ?? (td.percentage === 0 ? '' : String(td.percentage))}
                                 onChange={(e) => {
-                                    const newPct = Number((e.target as HTMLInputElement).value)
+                                    const raw = (e.target as HTMLInputElement).value
+                                    // Allow digits, comma and dot, max 2 decimals
+                                    if (!/^(\d{0,3}([.,]\d{0,2})?)?$/.test(raw)) return
+                                    setPercentageInputs(prev => ({ ...prev, [td.transformation_item_id]: raw }))
+                                    const numPct = parseFloat(raw.replace(',', '.')) || 0
+                                    const newCost = parseFloat((totalToCost * (numPct / 100)).toFixed(2))
                                     setToTransformationItems(prev =>
                                         prev.map(item =>
                                             item.transformation_item_id === td.transformation_item_id
-                                                ? { ...item, percentage: newPct, final_cost_total: totalToCost * (newPct / 100) }
+                                                ? { ...item, percentage: numPct, final_cost_total: newCost, final_cost_per_unit: newCost }
                                                 : item
                                         )
                                     )
@@ -121,7 +127,7 @@ export function TransformationToItems({
                             value={td.final_cost_per_unit ?? null}
                             onChange={(newCost) => {
                                 const cost = newCost ?? 0
-                                const newPct = totalToCost > 0 ? (cost / totalToCost) * 100 : 0
+                                const newPct = parseFloat((totalToCost > 0 ? (cost / totalToCost) * 100 : 0).toFixed(2))
                                 setToTransformationItems(prev =>
                                     prev.map(item =>
                                         item.transformation_item_id === td.transformation_item_id
@@ -138,13 +144,13 @@ export function TransformationToItems({
                         <Input
                             disabled={!selectedLocation}
                             placeholder="Cantidad"
-                            type="number"
-                            value={td.quantity ?? ''}
+                            value={td.quantity === null || td.quantity === undefined ? '' : String(td.quantity)}
                             onChange={(e) => {
+                                const newValue = Number((e.target as HTMLInputElement).value) || null
                                 setToTransformationItems(prev =>
                                     prev.map(item =>
                                         item.transformation_item_id === td.transformation_item_id
-                                            ? { ...item, quantity: Number((e.target as HTMLInputElement).value) }
+                                            ? { ...item, quantity: newValue ?? 0 }
                                             : item
                                     )
                                 )

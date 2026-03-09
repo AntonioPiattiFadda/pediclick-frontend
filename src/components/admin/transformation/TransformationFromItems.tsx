@@ -21,6 +21,7 @@ import toast from "react-hot-toast"
 import { ProductPresentationSelectorRoot, SelectProductPresentation } from "../selectors/productPresentationSelector"
 import ProductSelector from "../selectors/productSelector"
 import { computeItemCost, generateNewFromItem, recalcToItemCosts, type ToItem } from "@/utils/transformationUtils"
+import { formatCurrency } from "@/utils/prices"
 
 interface TransformationFromItemsProps {
     fromTransformationItems: TransformationItems[]
@@ -47,7 +48,7 @@ export function TransformationFromItems({
             <div className="flex justify-between items-center">
                 <span className="font-medium">Desde:</span>
                 <div className="flex flex-col items-end text-sm text-gray-600">
-                    <span>Costo Total: ${fromTotalCost.toFixed(2)}</span>
+                    <span>Costo Total: {formatCurrency(fromTotalCost)}</span>
                 </div>
             </div>
 
@@ -160,11 +161,11 @@ export function TransformationFromItems({
                                 <InputGroupInput
                                     disabled={!selectedLocation}
                                     placeholder="Cantidad"
-                                    type="number"
-                                    value={td.quantity ?? ''}
+                                    value={td.quantity === null || td.quantity === undefined ? '' : String(td.quantity)}
                                     onChange={(e) => {
-                                        const newValue = Number((e.target as HTMLInputElement).value)
-                                        if (newValue > maxQtyInBulkEqu) {
+                                        const newValue = Number((e.target as HTMLInputElement).value) || null
+                                        const numValue = newValue ?? 0
+                                        if (numValue > maxQtyInBulkEqu) {
                                             toast.error(`La cantidad no puede ser mayor a la cantidad máxima disponible: ${maxQtyInBulkEqu}`)
                                             return
                                         }
@@ -173,7 +174,7 @@ export function TransformationFromItems({
                                                 ? {
                                                     ...item,
                                                     quantity: newValue,
-                                                    quantity_in_base_units: newValue * (item.bulk_quantity_equivalence || 1),
+                                                    quantity_in_base_units: numValue * (item.bulk_quantity_equivalence || 1),
                                                 }
                                                 : item
                                         )
@@ -183,7 +184,7 @@ export function TransformationFromItems({
                                             const withQty = prev.map((item, i) => {
                                                 if (i === index) {
                                                     const toBulkEq = item.bulk_quantity_equivalence || 1
-                                                    return { ...item, quantity: (newValue * fromBulkEq) / toBulkEq }
+                                                    return { ...item, quantity: (numValue * fromBulkEq) / toBulkEq }
                                                 }
                                                 return item
                                             })
@@ -204,9 +205,9 @@ export function TransformationFromItems({
                         {/* Item cost display (read-only) */}
                         <div className="col-span-6 flex justify-between text-xs text-gray-500 bg-gray-50 rounded px-2 py-1">
                             <span>
-                                Costo/{td.product_presentation?.product_presentation_name ?? 'u'}: ${((td.final_cost_per_unit || 0) * (td.bulk_quantity_equivalence || 1)).toFixed(2)}
+                                Costo/{td.product_presentation?.product_presentation_name ?? 'u'}: {formatCurrency((td.final_cost_per_unit || 0) * (td.bulk_quantity_equivalence || 1))}
                             </span>
-                            <span>Total: ${itemCost.toFixed(2)}</span>
+                            <span>Total: {formatCurrency(itemCost)}</span>
                         </div>
 
                         {showFromTrash && (
