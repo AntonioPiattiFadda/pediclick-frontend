@@ -184,6 +184,7 @@ export function Transformation({
                             selectedLocation={selectedLocation}
                             totalToCost={totalToCost}
                             newTransformationId={newTransformationId}
+                            fromTransformationItems={fromTransformationItems}
                         />
                     </div>
 

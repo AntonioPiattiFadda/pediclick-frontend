@@ -55,6 +55,26 @@ export const computeItemCost = (item: TransformationItems): number => {
 }
 
 /**
+ * Distributes totalToCost equally among all TO items.
+ * Called whenever the FROM total cost changes.
+ */
+export const distributeEquallyToItems = (
+    toItems: ToItem[],
+    totalToCost: number
+): ToItem[] => {
+    const n = toItems.length
+    if (n === 0) return toItems
+    const costPerItem = parseFloat((totalToCost / n).toFixed(2))
+    const pctPerItem = parseFloat((100 / n).toFixed(2))
+    return toItems.map(item => ({
+        ...item,
+        percentage: pctPerItem,
+        final_cost_total: costPerItem,
+        final_cost_per_unit: costPerItem,
+    }))
+}
+
+/**
  * Recomputes all TO item costs based on their current percentages and
  * the new totalToCost (= fromTotalCost + transformationCost).
  * Called on every change that affects costs.

@@ -20,7 +20,7 @@ import { PlusCircle, Trash } from "lucide-react"
 import toast from "react-hot-toast"
 import { ProductPresentationSelectorRoot, SelectProductPresentation } from "../selectors/productPresentationSelector"
 import ProductSelector from "../selectors/productSelector"
-import { computeItemCost, generateNewFromItem, recalcToItemCosts, type ToItem } from "@/utils/transformationUtils"
+import { computeItemCost, distributeEquallyToItems, generateNewFromItem, type ToItem } from "@/utils/transformationUtils"
 import { formatCurrency } from "@/utils/prices"
 
 interface TransformationFromItemsProps {
@@ -75,7 +75,8 @@ export function TransformationFromItems({
                                             : item
                                     )
                                     setFromTransformationItems(updatedDetails)
-                                    setToTransformationItems(prev => recalcToItemCosts(prev, updatedDetails, transformationCost))
+                                    const newTotalToCost = updatedDetails.reduce((acc, item) => acc + computeItemCost(item), 0) + transformationCost
+                                    setToTransformationItems(prev => distributeEquallyToItems(prev, newTotalToCost))
                                 }}
                             />
                         </div>
@@ -102,7 +103,8 @@ export function TransformationFromItems({
                                             : item
                                     )
                                     setFromTransformationItems(updatedDetails)
-                                    setToTransformationItems(prev => recalcToItemCosts(prev, updatedDetails, transformationCost))
+                                    const newTotalToCost = updatedDetails.reduce((acc, item) => acc + computeItemCost(item), 0) + transformationCost
+                                    setToTransformationItems(prev => distributeEquallyToItems(prev, newTotalToCost))
                                 }}
                                 isFetchWithLots={true}
                             >
@@ -131,11 +133,12 @@ export function TransformationFromItems({
                                             : item
                                     )
                                     setFromTransformationItems(updatedDetails)
+                                    const newTotalToCost = updatedDetails.reduce((acc, item) => acc + computeItemCost(item), 0) + transformationCost
                                     setToTransformationItems(prev => {
                                         const withLot = prev.map((item, i) =>
                                             i === index ? { ...item, lot: lotData || null } : item
                                         )
-                                        return recalcToItemCosts(withLot, updatedDetails, transformationCost)
+                                        return distributeEquallyToItems(withLot, newTotalToCost)
                                     })
                                 }}
                             >
@@ -179,6 +182,7 @@ export function TransformationFromItems({
                                                 : item
                                         )
                                         setFromTransformationItems(updatedDetails)
+                                        const newTotalToCost = updatedDetails.reduce((acc, item) => acc + computeItemCost(item), 0) + transformationCost
                                         const fromBulkEq = td.bulk_quantity_equivalence || 1
                                         setToTransformationItems(prev => {
                                             const withQty = prev.map((item, i) => {
@@ -188,7 +192,7 @@ export function TransformationFromItems({
                                                 }
                                                 return item
                                             })
-                                            return recalcToItemCosts(withQty, updatedDetails, transformationCost)
+                                            return distributeEquallyToItems(withQty, newTotalToCost)
                                         })
                                     }}
                                 />
@@ -220,7 +224,8 @@ export function TransformationFromItems({
                                         item => item.transformation_item_id !== td.transformation_item_id
                                     )
                                     setFromTransformationItems(updatedDetails)
-                                    setToTransformationItems(prev => recalcToItemCosts(prev, updatedDetails, transformationCost))
+                                    const newTotalToCost = updatedDetails.reduce((acc, item) => acc + computeItemCost(item), 0) + transformationCost
+                                    setToTransformationItems(prev => distributeEquallyToItems(prev, newTotalToCost))
                                 }}
                             >
                                 <Trash size={16} />
