@@ -218,18 +218,19 @@ const ProductSelector = ({
   return (
     <div className="relative w-full  inline-flex  border border-gray-200 rounded-md h-9 " ref={comboboxRef}>
 
-      <Input
-        className={`  border-none    h-9 w-14  truncate `}
-        value={shortCode ?? ""}
-        placeholder="Código"
-        type="number"
-        disabled={disabled}
-        onChange={(e) => {
-          const val = e.target.value;
-          setShortCode(Number(val));
-          // handleCodeMatch(Number(val));
-        }}
-      />
+      <div className="flex items-center border-r border-gray-200 shrink-0">
+        <span className="px-2 text-xs text-muted-foreground font-medium whitespace-nowrap select-none">Cód.</span>
+        <Input
+          className={`border-none h-9 w-14 truncate px-1`}
+          value={shortCode === null ? "" : String(shortCode)}
+          placeholder="---"
+          disabled={disabled}
+          onChange={(e) => {
+            const val = e.target.value;
+            setShortCode(Number(val) || null);
+          }}
+        />
+      </div>
       <button
         onClick={handleComboboxToggle}
         disabled={createProductMutation.isLoading || disabled}

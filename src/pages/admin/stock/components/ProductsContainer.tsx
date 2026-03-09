@@ -40,7 +40,7 @@ export const ProductsContainer = () => {
   const [locationFilter, setLocationFilter] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | 'NO_LOCATION' | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null);
-  const [stockTypeToShow, setStockTypeToShow] = useState<StockTypeToShow>('STOCK');
+  const [stockTypeToShow, setStockTypeToShow] = useState<StockTypeToShow>('ALL');
 
   const { locations } = UseLocationsContext();
 
@@ -347,8 +347,8 @@ export const ProductsContainer = () => {
                 setStockTypeToShow(value as StockTypeToShow)
               }} defaultValue="STOCK" className="flex flex-row gap-4 mt-2 " >
                 <div className="flex items-center gap-3">
-                  <RadioGroupItem value="SOLD" id="r3" />
-                  <Label className="w-20" htmlFor="r3">Vendido</Label>
+                  <RadioGroupItem value="ALL" id="r4" />
+                  <Label className="w-20" htmlFor="r4">Todos</Label>
                 </div>
                 <div className="flex items-center gap-3">
                   <RadioGroupItem value="STOCK" id="r1" />
@@ -359,8 +359,8 @@ export const ProductsContainer = () => {
                   <Label className="w-20" htmlFor="r2">Sin stock</Label>
                 </div>
                 <div className="flex items-center gap-3">
-                  <RadioGroupItem value="ALL" id="r4" />
-                  <Label className="w-20" htmlFor="r4">Todos</Label>
+                  <RadioGroupItem value="SOLD" id="r3" />
+                  <Label className="w-20" htmlFor="r3">Vendido</Label>
                 </div>
               </RadioGroup>
 

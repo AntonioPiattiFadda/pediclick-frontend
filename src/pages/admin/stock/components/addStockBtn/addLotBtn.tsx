@@ -525,16 +525,19 @@ export function AddLotBtn({
         </DialogHeader>
 
         {!isEditing && (
-          <ProductSelector
-            value={selectedProduct}
-            onChange={(value) => {
-              setSelectedProduct({ ...selectedProduct, ...value })
-              setStock([]);
+          <div className="flex flex-col gap-1">
+            <Label className="text-sm font-medium">Producto</Label>
+            <ProductSelector
+              value={selectedProduct}
+              onChange={(value) => {
+                setSelectedProduct({ ...selectedProduct, ...value })
+                setStock([]);
 
-            }
+              }
 
-            }
-          />
+              }
+            />
+          </div>
         )}
 
 
@@ -546,7 +549,8 @@ export function AddLotBtn({
                 onChangeSelectedProduct={(updated) => setSelectedProduct(updated)}
               /> */}
 
-              <div className="mt-2">
+              <div className="mt-2 flex flex-col gap-1">
+                <Label className="text-sm font-medium">Presentación del producto</Label>
                 <ProductPresentationSelectorRoot
                   locationId={null}
                   productId={selectedProduct.product_id!}

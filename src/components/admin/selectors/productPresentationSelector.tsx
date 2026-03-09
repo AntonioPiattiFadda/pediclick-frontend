@@ -184,17 +184,19 @@ const SelectProductPresentation = ({ children }: {
         <>
             <div className="flex w-full border border-gray-200 rounded-md ">
 
-                <Input
-                    className={`border border-gray-200 h-9 w-16 `}
-                    value={shortCode === null ? "" : String(shortCode)}
-                    placeholder="Cód.."
-                    onChange={(e) => {
-                        const value = e.target.value;
-                        onChangeCode(Number(value) || null);
-                        handleShortCodeMatch(Number(value) || null);
-                    }}
-
-                />
+                <div className="flex items-center border-r border-gray-200 shrink-0">
+                    <span className="px-2 text-xs text-muted-foreground font-medium whitespace-nowrap select-none">Cód.</span>
+                    <Input
+                        className={`border-none h-9 w-14 px-1`}
+                        value={shortCode === null ? "" : String(shortCode)}
+                        placeholder="---"
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            onChangeCode(Number(value) || null);
+                            handleShortCodeMatch(Number(value) || null);
+                        }}
+                    />
+                </div>
 
                 <Select
                     disabled={disabled}
