@@ -10,7 +10,7 @@ export type TransformationItems = {
     product_presentation_id: number | null;
     lot_id: number | null;
 
-    stock_id: number | null;
+    stock_id: string | null;
 
     is_origin: boolean;
 
@@ -33,7 +33,7 @@ export type TransformationItems = {
     lot: {
         lot_id: number | null,
         final_cost_per_unit: number | null,
-        stock_id: number | null,
+        stock_id: string | null,
         max_quantity: number | null,
         lot: Lot | undefined | null,
         provider_id: number | null,

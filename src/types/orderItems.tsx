@@ -11,7 +11,7 @@ export interface OrderItem {
   product_presentation_name: string;
   product_presentation_id: number;
   lot_id: number;
-  stock_id: number;
+  stock_id: string;
   location_id: number;
   quantity: number;
   qty_in_base_units: number;

@@ -72,7 +72,7 @@ export const ClientsTable = ({ clients, filter = "" }: ClientsTableProps) => {
                             <DeleteTableElementPopUp
                                 elementId={client.client_id || ""}
                                 elementName={client.full_name}
-                                deleteFn={deleteClient}
+                                deleteFn={(id) => deleteClient(String(id))}
                                 queryKey={["clients"]}
                                 successMsgDescription={`El cliente "${client.full_name}" ha sido eliminado.`}
                                 errorMsgDescription="No se pudo eliminar el cliente."

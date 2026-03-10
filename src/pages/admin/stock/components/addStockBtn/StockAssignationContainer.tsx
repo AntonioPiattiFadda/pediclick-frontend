@@ -149,7 +149,7 @@ export default function StockAssignationContainer({
             };
         } else {
             const newStockEntry: Stock = {
-                stock_id: Math.floor(Math.random() * 1000000),
+                stock_id: crypto.randomUUID(),
                 lot_id: Math.floor(Math.random() * 1000000),
                 is_new: true,
                 quantity: quantity,

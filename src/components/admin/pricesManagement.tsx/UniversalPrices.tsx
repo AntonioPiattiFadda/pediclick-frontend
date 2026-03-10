@@ -355,7 +355,7 @@ const UniversalPrices = ({
                                             className="text-xs border border-gray-300 rounded px-1 py-0.5 bg-white"
                                             onChange={(e) => {
                                                 if (!e.target.value) return;
-                                                addClientMutation.mutate({ priceId: price.price_id!, clientId: Number(e.target.value) });
+                                                addClientMutation.mutate({ priceId: price.price_id!, clientId: e.target.value });
                                                 e.target.value = "";
                                             }}
                                         >

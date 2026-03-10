@@ -19,7 +19,7 @@ export interface TransferOrderItem {
     lot_containers_movement_id: number | null;
     lot_id: number | null;
 
-    stock_id: number | null;
+    stock_id: string | null;
 
     is_new: boolean;
     is_transferred: boolean;

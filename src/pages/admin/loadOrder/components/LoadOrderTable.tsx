@@ -97,7 +97,7 @@ export const LoadOrderTable = ({ loadOrderData, expandedLots, toggleExpanded, lo
                               <TableBody>
                                 {hasStock ? (
                                   stocks
-                                    .sort((a, b) => (a?.stock_id ?? 0) - (b?.stock_id ?? 0))
+                                    .sort((a, b) => (a?.stock_id ?? '').localeCompare(b?.stock_id ?? ''))
                                     .map((stockItem: Stock) => {
                                       const { typeLabel, nameLabel } = formatStockLocation(stockItem);
 

@@ -21,7 +21,7 @@ export const getLotStocks = async (lotId: number) => {
   return { lotStock: adaptedLotStock, error };
 };
 
-export const correctStockOversell = async (stockId: number) => {
+export const correctStockOversell = async (stockId: string) => {
   const { data, error } = await supabase.rpc("correct_oversell_stock", {
     p_stock_id: stockId,
   });

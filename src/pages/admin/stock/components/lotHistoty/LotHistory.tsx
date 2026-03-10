@@ -42,7 +42,7 @@ type TimelineEvent = SaleEvent | TransformOriginEvent | TransformResultEvent | W
 type FilterType = "all" | "sale" | "transformation" | "waste";
 
 type OverSoldStock = {
-    stock_id: number;
+    stock_id: string;
     location_id: number | null;
     store_name: string | null;
     stock_room_name: string | null;

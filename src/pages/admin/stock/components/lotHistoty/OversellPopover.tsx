@@ -17,7 +17,7 @@ export function OverSellPopover({ stocks, lotId }: { stocks: any[]; lotId: numbe
     const totalOverSell = stocks.reduce((acc, s) => acc + s.over_sell_quantity, 0);
 
     const correctMutation = useMutation({
-        mutationFn: (stockId: number) => correctStockOversell(stockId),
+        mutationFn: (stockId: string) => correctStockOversell(stockId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["lot-stocks", lotId] });
             toast.success("Sobreventa corregida");

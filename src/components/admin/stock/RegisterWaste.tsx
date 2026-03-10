@@ -14,7 +14,7 @@ import toast from 'react-hot-toast';
 
 const RegisterWaste = ({ lotId, stockId, productPresentationId }: {
     lotId: number;
-    stockId: number;
+    stockId: string;
     productPresentationId: number;
 }) => {
     const queryClient = useQueryClient();

@@ -148,8 +148,26 @@ Actualizar todas las llamadas a Supabase `.eq('order_id', ...)`, `.eq('client_id
 **Servicios actualizados:**
 - `service/lotHistory.tsx` — `LotWasteRow.stock_movement_id: number` → `string`
 
-#### ⏳ Pendientes
-- `stock`
+#### ✅ `stock` — completado (2026-03-10)
+
+**Tipos actualizados:**
+- `types/stocks.tsx` — `stock_id: number` → `string`
+- `types/stockMovements.tsx` — `stock_id: number` → `string` (FK)
+- `types/orderItems.tsx` — `stock_id: number` → `string` (FK)
+- `types/transformationItems.tsx` — `stock_id: number | null` → `string | null` (FK, 2 ocurrencias)
+- `types/transferOrderItems.tsx` — `stock_id: number | null` → `string | null` (FK)
+
+**Servicios actualizados:**
+- `service/stockMovement.tsx` — param `stock_id: number` → `string`
+- `service/lotHistory.tsx` — `LotWasteRow.stock_id: number | null` → `string | null`
+- `service/stock.tsx` — `correctStockOversell(stockId: number)` → `string`
+
+**Componentes actualizados:**
+- `components/admin/stock/RegisterWaste.tsx` — prop `stockId: number` → `string`
+- `pages/admin/stock/components/lotHistoty/LotHistory.tsx` — local type `stock_id: number` → `string`
+- `pages/admin/transferOrder/components/TransferOrderTable.tsx` — sort numérico → `localeCompare`
+- `pages/admin/loadOrder/components/LoadOrderTable.tsx` — sort numérico → `localeCompare`
+- `pages/admin/stock/components/addStockBtn/StockAssignationContainer.tsx` — temp ID `Math.random()` → `crypto.randomUUID()`
 
 ## Archivo SQL
 

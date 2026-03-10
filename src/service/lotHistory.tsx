@@ -79,7 +79,7 @@ export type LotWasteRow = {
     stock_movement_id: string;
     created_at: string;
     lot_id: number;
-    stock_id: number | null;
+    stock_id: string | null;
     quantity: number | null;
     qty_in_base_units: number | null;
     from_location_id: number | null;

@@ -56,7 +56,7 @@ export const getSalesHistoryByProductOrLot = async (lotId: number) => {
 
 
 export const assignStock = async (fromStockData: {
-    stock_id: number;
+    stock_id: string;
 }, stockMovement: Omit<StockMovement, "stock_movement_id" | "should_notify_owner" | "lot_containers_to_move" | "created_at" | "created_by">) => {
 
     const userId = await getUserId();

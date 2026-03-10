@@ -98,7 +98,7 @@ export const TransferOrderTable = ({ loadOrderData, expandedLots, toggleExpanded
                               <TableBody>
                                 {hasStock ? (
                                   stocks
-                                    .sort((a, b) => (a?.stock_id ?? 0) - (b?.stock_id ?? 0))
+                                    .sort((a, b) => (a?.stock_id ?? '').localeCompare(b?.stock_id ?? ''))
                                     .map((stockItem: Stock) => {
                                       console.log("Stock Item:", stockItem);
                                       const { typeLabel, nameLabel } = formatStockLocation(stockItem);
