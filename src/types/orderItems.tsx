@@ -4,8 +4,8 @@ import type { ProductPresentation } from "./productPresentation";
 import type { Product } from "./products";
 
 export interface OrderItem {
-  order_item_id: number;
-  order_id: number;
+  order_item_id: string;
+  order_id: string;
   product_id: number;
   product_name: string;
   product_presentation_name: string;

@@ -26,8 +26,8 @@ export type PaymentType =
 
 
 export interface Payment {
-    payment_id?: number;
-    order_id: number; // referencia a la orden
+    payment_id?: string;
+    order_id: string; // referencia a la orden
     payment_method: PaymentMethod;
     amount: number;
     created_at?: string;
@@ -35,11 +35,11 @@ export interface Payment {
 
 
     // final_payment_method?: FinalPaymentMethod; // solo si es el pago final
-    client_id: number | null;
+    client_id: string | null;
     provider_id: number | null;
     payment_type: PaymentType;
     payment_direction: "IN" | "OUT";
-    terminal_session_id: number | null;
+    terminal_session_id: string | null;
 
     selected: boolean; // para UI
 }

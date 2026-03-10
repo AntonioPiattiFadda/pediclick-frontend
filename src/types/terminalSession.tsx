@@ -1,5 +1,5 @@
 export interface TerminalSession {
-    terminal_session_id: number;
+    terminal_session_id: string;
     organization_id: string;
     terminal_id: number;
     opened_by_user_id: string;

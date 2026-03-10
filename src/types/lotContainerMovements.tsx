@@ -14,8 +14,8 @@ export interface LotContainerMovement {
     from_provider_id: number | null;
     to_provider_id: number | null;
 
-    from_client_id: number | null;
-    to_client_id: number | null;
+    from_client_id: string | null;
+    to_client_id: string | null;
 
     lot_container_id: number;
 

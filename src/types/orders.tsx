@@ -8,10 +8,10 @@ export type OrderStatus = "NEW" | "PROCESSING" | "DELIVERED" | "COMPLETED" | "CA
 
 // FIXME Una cosa es el paymentStatus que tiene relacion con el pago y otra es el estado que tiene que ver con que se creo recien o esta reservada o esta enenvio, etc
 export interface OrderT {
-  order_id: number;
+  order_id: string;
   location_id: number;
   client_type: ClientType;
-  client_id?: number | null;
+  client_id?: string | null;
   provider_id?: number;
   order_number: string;
   order_type: OrderType;
@@ -31,7 +31,7 @@ export interface OrderT {
   notes?: string;
   delivery_date?: string; // ISO date string
   organization_id?: number;
-  terminal_session_id: number | null;
+  terminal_session_id: string | null;
 
   created_at: string;
   updated_at?: string;

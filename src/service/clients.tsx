@@ -31,7 +31,7 @@ export const createClient = async (clientData: Partial<Client>) => {
     return data;
 };
 
-export const deleteClient = async (id: string | number) => {
+export const deleteClient = async (id: string) => {
     const { error } = await supabase
         .from("clients")
         .update({ deleted_at: new Date().toISOString() })
@@ -45,7 +45,7 @@ export const deleteClient = async (id: string | number) => {
 };
 
 export const updateClient = async (
-    id: string | number,
+    id: string,
     updates: Partial<Client>
 ) => {
     const { data, error } = await supabase
@@ -63,7 +63,7 @@ export const updateClient = async (
 };
 
 
-export const getClient = async (clientId: number): Promise<{ client: Client | null, error: Error | null }> => {
+export const getClient = async (clientId: string): Promise<{ client: Client | null, error: Error | null }> => {
     const { data: client, error } = await supabase
         .from("clients")
         .select("*")

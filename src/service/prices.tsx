@@ -118,7 +118,7 @@ export const enablePrice = async (priceId: number, locationId: number): Promise<
   if (error) throw new Error(error.message);
 };
 
-export const addClientToPrice = async (priceId: number, clientId: number): Promise<EnabledPriceClient> => {
+export const addClientToPrice = async (priceId: number, clientId: string): Promise<EnabledPriceClient> => {
   const { data, error } = await supabase
     .from("enabled_prices_clients")
     .insert({ price_id: priceId, client_id: clientId })
@@ -130,7 +130,7 @@ export const addClientToPrice = async (priceId: number, clientId: number): Promi
   return data;
 };
 
-export const removeClientFromPrice = async (priceId: number, clientId: number): Promise<void> => {
+export const removeClientFromPrice = async (priceId: number, clientId: string): Promise<void> => {
   const { error } = await supabase
     .from("enabled_prices_clients")
     .delete()

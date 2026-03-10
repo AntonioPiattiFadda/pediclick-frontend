@@ -10,7 +10,7 @@ export type DisabledPrice = {
 export type EnabledPriceClient = {
   id?: number;
   price_id: number;
-  client_id: number;
+  client_id: string;
   created_at?: string;
 };
 
@@ -32,7 +32,7 @@ export type Price = {
   created_at?: string;
   updated_at?: string | null;
 
-  enabled_prices_clients?: { client_id: number }[]; // Only populated for SPECIAL prices; empty = all clients
+  enabled_prices_clients?: { client_id: string }[]; // Only populated for SPECIAL prices; empty = all clients
 
   is_new?: boolean; // Para identificar precios nuevos que aún no están en la base de datos
 };

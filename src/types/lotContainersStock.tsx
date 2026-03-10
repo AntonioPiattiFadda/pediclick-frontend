@@ -5,7 +5,7 @@ export type LotContainersStock = {
   lot_container_id: number | null;
   quantity: number | null;
   created_at: string | null;
-  client_id: number | null;
+  client_id: string | null;
   provider_id: number | null;
   updated_at?: string | null;
   deleted_at?: string | null;

@@ -1,7 +1,7 @@
 import type { Payment } from "@/types/payments";
 import { supabase } from ".";
 
-export async function registerClientPayment(payments: Partial<Payment>[], clientId: number) {
+export async function registerClientPayment(payments: Partial<Payment>[], clientId: string) {
 
     //FIXME no se esta calculando bien el total_price, el sold quantity para restar el stock. El stock sold no tiene productId ni store id,
     //FIXME La client transaction tampoco se esta actualizando bien

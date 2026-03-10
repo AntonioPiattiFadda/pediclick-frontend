@@ -1,7 +1,7 @@
 export interface SalesHistoryRow {
-    order_id: number;
+    order_id: string;
     order_date: string; // timestamptz
-    client_id: number;
+    client_id: string;
     lot_id: number;
     product_id: number;
     product_name: string;

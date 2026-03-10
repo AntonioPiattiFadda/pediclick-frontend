@@ -2,7 +2,7 @@ import { getClient } from "@/service/clients";
 import { useQuery } from "@tanstack/react-query";
 import ClientInformation from "./clientInformation";
 
-const ClientInformationContainer = ({ clientId, showHistoricalMvtsBtn = true }: { clientId: number, showHistoricalMvtsBtn?: boolean }) => {
+const ClientInformationContainer = ({ clientId, showHistoricalMvtsBtn = true }: { clientId: string, showHistoricalMvtsBtn?: boolean }) => {
 
     const { data: client, isLoading: isLoading, isError } = useQuery({
         queryKey: ["clients", clientId],

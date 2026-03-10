@@ -163,7 +163,7 @@ const StorePricesTab = ({
     });
 
     const addClientMutation = useMutation({
-        mutationFn: ({ priceId, clientId }: { priceId: number; clientId: number }) =>
+        mutationFn: ({ priceId, clientId }: { priceId: number; clientId: string }) =>
             addClientToPrice(priceId, clientId),
         onSuccess: (_, { priceId, clientId }) => {
             onChange(prev => prev.map(p =>
@@ -177,7 +177,7 @@ const StorePricesTab = ({
     });
 
     const removeClientMutation = useMutation({
-        mutationFn: ({ priceId, clientId }: { priceId: number; clientId: number }) =>
+        mutationFn: ({ priceId, clientId }: { priceId: number; clientId: string }) =>
             removeClientFromPrice(priceId, clientId),
         onSuccess: (_, { priceId, clientId }) => {
             onChange(prev => prev.map(p =>

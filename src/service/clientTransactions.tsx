@@ -1,9 +1,9 @@
 import type { ClientTransaction } from "@/types/clientTransactions";
 import { supabase } from ".";
 
-export async function getClientTransactions(clientId: number, page: number, pageSize: number): Promise<ClientTransaction[]> {
+export async function getClientTransactions(clientId: string, page: number, pageSize: number): Promise<ClientTransaction[]> {
 
-    if (clientId === undefined || clientId === null || clientId === 0) {
+    if (!clientId) {
         return [];
     }
     const { data, error } = await supabase

@@ -4,7 +4,7 @@ export type NotificationsType = {
     title: string;
     message: string;
     is_read: boolean;
-    order_id?: number;
+    order_id?: string;
     created_at?: string;
     updated_at?: string;
     deleted_at?: string;

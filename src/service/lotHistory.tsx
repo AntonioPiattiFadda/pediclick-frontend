@@ -5,7 +5,7 @@ import { supabase } from ".";
 // Direct query on order_items so we get product_presentation_name + qty_in_base_units
 
 export type LotSaleRow = {
-    order_item_id: number;
+    order_item_id: string;
     lot_id: number;
     product_presentation_id: number | null;
     quantity: number;
@@ -19,7 +19,7 @@ export type LotSaleRow = {
         sell_unit: SellUnit;
     } | null;
     orders: {
-        order_id: number;
+        order_id: string;
         order_number: number;
         order_status: string;
     } | null;
@@ -76,7 +76,7 @@ export const getLotTransformationsRpc = async (lotId: number): Promise<Partial<L
 // ─── Wastes ───────────────────────────────────────────────────────────────────
 
 export type LotWasteRow = {
-    stock_movement_id: number;
+    stock_movement_id: string;
     created_at: string;
     lot_id: number;
     stock_id: number | null;

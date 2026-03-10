@@ -23,7 +23,7 @@ const CLIENT_MOVEMENTS_PAGE_SIZE = 10;
 const ClientHistoricalMvts = ({
     selectedClientId,
 }: {
-    selectedClientId: number;
+    selectedClientId: string;
 }) => {
 
     const [pagination, setPagination] = useState({
