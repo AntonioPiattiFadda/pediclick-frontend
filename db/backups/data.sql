@@ -4,7 +4,7 @@ SET session_replication_role = replica;
 -- PostgreSQL database dump
 --
 
--- \restrict 4f50VyEdbIM71H7BXnkI7ywZcEZvCBbjJ7bCbhMRWGTpm7KHGPXl44eIdajXpHR
+-- \restrict sYmn36MLGocS95DOnVcoWXnO5yWoc5GHk0POeIr6Zcd58wAhlhGfSpxApaShjO4
 
 -- Dumped from database version 15.8
 -- Dumped by pg_dump version 17.6
@@ -2581,6 +2581,8 @@ COPY "auth"."audit_log_entries" ("instance_id", "id", "payload", "created_at", "
 00000000-0000-0000-0000-000000000000	7e349d28-993d-44fa-a391-70aedba4134e	{"action":"token_revoked","actor_id":"3a145754-a901-46e1-8ad2-480f8968d8be","actor_username":"antonio.piattifadda@gmail.com","actor_via_sso":false,"log_type":"token"}	2026-03-09 22:20:09.383574+00	
 00000000-0000-0000-0000-000000000000	44b370dc-145f-4e27-aeb4-2062f6faeaaa	{"action":"token_refreshed","actor_id":"3a145754-a901-46e1-8ad2-480f8968d8be","actor_username":"antonio.piattifadda@gmail.com","actor_via_sso":false,"log_type":"token"}	2026-03-09 22:25:57.613886+00	
 00000000-0000-0000-0000-000000000000	03b72726-a0ed-4cbd-9b54-f0f1798257de	{"action":"token_revoked","actor_id":"3a145754-a901-46e1-8ad2-480f8968d8be","actor_username":"antonio.piattifadda@gmail.com","actor_via_sso":false,"log_type":"token"}	2026-03-09 22:25:57.624198+00	
+00000000-0000-0000-0000-000000000000	71410d29-a029-4cbf-82f4-2488330f42ab	{"action":"token_refreshed","actor_id":"3a145754-a901-46e1-8ad2-480f8968d8be","actor_username":"antonio.piattifadda@gmail.com","actor_via_sso":false,"log_type":"token"}	2026-03-10 18:16:33.756971+00	
+00000000-0000-0000-0000-000000000000	417862bb-8e4b-4a70-b729-8948183cbda2	{"action":"token_revoked","actor_id":"3a145754-a901-46e1-8ad2-480f8968d8be","actor_username":"antonio.piattifadda@gmail.com","actor_via_sso":false,"log_type":"token"}	2026-03-10 18:16:33.780432+00	
 \.
 
 
@@ -2608,7 +2610,7 @@ COPY "auth"."users" ("instance_id", "id", "aud", "role", "email", "encrypted_pas
 00000000-0000-0000-0000-000000000000	f627db47-8f77-4d14-a1fe-1cef0e342216	authenticated	authenticated	piattistevenot@gmail.com	$2a$10$GrzBWDhQSeqxKuU34/SecOM9x5deGjVYGfiwgrrHzTPaVy1H6TRRe	2025-09-20 23:45:00.94391+00	\N		\N		\N			\N	2025-09-22 00:12:57.068962+00	{"provider": "email", "providers": ["email"]}	{"sub": "f627db47-8f77-4d14-a1fe-1cef0e342216", "email": "piattistevenot@gmail.com", "email_verified": true, "phone_verified": false}	\N	2025-09-20 23:45:00.931853+00	2025-10-08 20:24:58.583839+00	\N	\N			\N		0	\N		\N	f	\N	f
 00000000-0000-0000-0000-000000000000	21069996-8115-42fa-985c-aa69b483ecce	authenticated	authenticated	sergiovelezhernandez11@gmail.com	$2a$10$RQSz9I54xgaR6uSL9ECRw.7cQrDnsfd4smLlIuZeHELEvuJwqv2l6	2025-11-06 21:10:58.122361+00	\N		\N		\N			\N	2025-11-06 21:10:58.135533+00	{"provider": "email", "providers": ["email"]}	{"sub": "21069996-8115-42fa-985c-aa69b483ecce", "email": "sergiovelezhernandez11@gmail.com", "email_verified": true, "phone_verified": false}	\N	2025-11-06 21:10:58.085242+00	2025-12-15 22:28:59.521544+00	\N	\N			\N		0	\N		\N	f	\N	f
 00000000-0000-0000-0000-000000000000	de1a342e-869b-4411-a8e0-d79e5a8dae2a	authenticated	authenticated	eric.s3@hotmail.com	$2a$10$oXcKVGAVa8j4VjAXu5Xruuy6LmEG47q7hNwFOUx1xyAQNn8nCvqL6	2026-03-05 13:11:04.641668+00	\N		\N		\N			\N	2026-03-09 21:27:53.289429+00	{"provider": "email", "providers": ["email"]}	{"sub": "de1a342e-869b-4411-a8e0-d79e5a8dae2a", "email": "eric.s3@hotmail.com", "email_verified": true, "phone_verified": false}	\N	2026-03-05 13:11:04.493325+00	2026-03-09 21:27:53.339383+00	\N	\N			\N		0	\N		\N	f	\N	f
-00000000-0000-0000-0000-000000000000	3a145754-a901-46e1-8ad2-480f8968d8be	authenticated	authenticated	antonio.piattifadda@gmail.com	$2a$10$dwhvFUcoq4vtWVs4UCRynODS.6nShK.C5nOXk./A1FLijZzl6RI6C	2025-09-21 14:42:23.5572+00	\N		\N		\N			\N	2026-03-09 20:46:07.652111+00	{"provider": "email", "providers": ["email"]}	{"sub": "3a145754-a901-46e1-8ad2-480f8968d8be", "email": "antonio.piattifadda@gmail.com", "email_verified": true, "phone_verified": false}	\N	2025-09-21 14:42:23.511162+00	2026-03-09 22:25:57.635576+00	\N	\N			\N		0	\N		\N	f	\N	f
+00000000-0000-0000-0000-000000000000	3a145754-a901-46e1-8ad2-480f8968d8be	authenticated	authenticated	antonio.piattifadda@gmail.com	$2a$10$dwhvFUcoq4vtWVs4UCRynODS.6nShK.C5nOXk./A1FLijZzl6RI6C	2025-09-21 14:42:23.5572+00	\N		\N		\N			\N	2026-03-09 20:46:07.652111+00	{"provider": "email", "providers": ["email"]}	{"sub": "3a145754-a901-46e1-8ad2-480f8968d8be", "email": "antonio.piattifadda@gmail.com", "email_verified": true, "phone_verified": false}	\N	2025-09-21 14:42:23.511162+00	2026-03-10 18:16:33.823976+00	\N	\N			\N		0	\N		\N	f	\N	f
 \.
 
 
@@ -2667,7 +2669,7 @@ f029bd73-2739-49e5-b1f4-7db435b9c216	3a145754-a901-46e1-8ad2-480f8968d8be	2026-0
 a6568222-3460-42b5-b37c-99b1e3c84a07	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-03 15:09:38.246073+00	2026-03-03 17:50:11.631957+00	\N	aal1	\N	2026-03-03 17:50:11.631866	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) market-store/0.1.0 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	186.109.79.49	\N	\N	\N	\N	\N
 af39b9c8-b454-4ddf-820b-c66af3e10083	de1a342e-869b-4411-a8e0-d79e5a8dae2a	2026-03-09 20:18:50.72893+00	2026-03-09 20:18:50.72893+00	\N	aal1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) market-store/0.1.3 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	148.227.75.54	\N	\N	\N	\N	\N
 bd764fd9-bbc0-4ab4-b0bc-f0bff3bff01a	f627db47-8f77-4d14-a1fe-1cef0e342216	2025-09-21 00:23:53.800975+00	2025-10-08 20:24:58.598845+00	\N	aal1	\N	2025-10-08 20:24:58.598759	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) my-electron-vite-project/0.0.0 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	181.97.118.199	\N	\N	\N	\N	\N
-39611f6c-1908-468b-bfe7-ae5a1aaeea5e	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-26 20:06:04.44704+00	2026-03-09 21:31:08.485288+00	\N	aal1	\N	2026-03-09 21:31:08.485197	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36	186.109.79.49	\N	\N	\N	\N	\N
+39611f6c-1908-468b-bfe7-ae5a1aaeea5e	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-26 20:06:04.44704+00	2026-03-10 18:16:33.840566+00	\N	aal1	\N	2026-03-10 18:16:33.84044	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36	186.109.79.49	\N	\N	\N	\N	\N
 10b3c467-4db4-4b36-9c40-b4bf54ac8797	f627db47-8f77-4d14-a1fe-1cef0e342216	2025-09-20 23:45:00.948236+00	2025-09-20 23:45:00.948236+00	\N	aal1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36	190.229.197.158	\N	\N	\N	\N	\N
 34bb6132-d5a7-4be4-8808-48b79c07df0d	f627db47-8f77-4d14-a1fe-1cef0e342216	2025-09-21 00:19:01.932972+00	2025-09-21 00:19:01.932972+00	\N	aal1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) my-electron-vite-project/0.0.0 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	190.229.197.158	\N	\N	\N	\N	\N
 ef16ea1a-ad8b-468d-929e-c5275de7dae8	f627db47-8f77-4d14-a1fe-1cef0e342216	2025-09-21 00:20:14.198906+00	2025-09-21 00:20:14.198906+00	\N	aal1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) my-electron-vite-project/0.0.0 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	190.229.197.158	\N	\N	\N	\N	\N
@@ -2909,6 +2911,7 @@ COPY "auth"."refresh_tokens" ("instance_id", "id", "token", "user_id", "revoked"
 00000000-0000-0000-0000-000000000000	1440	qownk4xtsmxl	3a145754-a901-46e1-8ad2-480f8968d8be	t	2026-03-09 16:10:39.102388+00	2026-03-09 19:43:04.548453+00	\N	7e659df4-ff12-441a-b9e7-1fd3f2fbf08d
 00000000-0000-0000-0000-000000000000	1449	tjamykys3xdj	de1a342e-869b-4411-a8e0-d79e5a8dae2a	f	2026-03-09 20:03:22.940153+00	2026-03-09 20:03:22.940153+00	\N	87e3b28d-582c-4fde-8796-e818e35b6f71
 00000000-0000-0000-0000-000000000000	1456	3x7rvbsd2iag	3a145754-a901-46e1-8ad2-480f8968d8be	f	2026-03-09 20:32:33.028975+00	2026-03-09 20:32:33.028975+00	\N	ab6aa60f-b8ec-490a-8962-6df53441a41f
+00000000-0000-0000-0000-000000000000	1462	syq6rpjpfmoj	3a145754-a901-46e1-8ad2-480f8968d8be	f	2026-03-10 18:16:33.811614+00	2026-03-10 18:16:33.811614+00	e7eud5ougjzd	39611f6c-1908-468b-bfe7-ae5a1aaeea5e
 00000000-0000-0000-0000-000000000000	774	oieuhjpl34zr	21069996-8115-42fa-985c-aa69b483ecce	t	2025-12-01 22:31:47.26511+00	2025-12-01 23:51:48.017145+00	dnzycf3sheoe	f7da7ef3-32fb-41f3-843b-c2374e02f976
 00000000-0000-0000-0000-000000000000	780	a57ttusip2of	21069996-8115-42fa-985c-aa69b483ecce	t	2025-12-02 20:35:53.305527+00	2025-12-02 21:33:35.728807+00	aqm7gh6pzn3m	f7da7ef3-32fb-41f3-843b-c2374e02f976
 00000000-0000-0000-0000-000000000000	845	4gcfjkzuccqy	21069996-8115-42fa-985c-aa69b483ecce	t	2025-12-11 21:43:03.622354+00	2025-12-15 22:28:59.495703+00	ynntb7tra2qb	f7da7ef3-32fb-41f3-843b-c2374e02f976
@@ -2987,8 +2990,8 @@ COPY "auth"."refresh_tokens" ("instance_id", "id", "token", "user_id", "revoked"
 00000000-0000-0000-0000-000000000000	1429	j2snclkmwzbo	de1a342e-869b-4411-a8e0-d79e5a8dae2a	t	2026-03-08 18:09:02.047689+00	2026-03-09 19:38:22.823845+00	\N	0612ca60-249c-4841-9d1b-2282159f7a0d
 00000000-0000-0000-0000-000000000000	1446	oorghzrbedo5	3a145754-a901-46e1-8ad2-480f8968d8be	f	2026-03-09 19:44:59.437054+00	2026-03-09 19:44:59.437054+00	\N	a1572562-3820-4799-b2f9-ebbbc312cf95
 00000000-0000-0000-0000-000000000000	1453	qvi7vnw4whbs	de1a342e-869b-4411-a8e0-d79e5a8dae2a	f	2026-03-09 20:18:50.737246+00	2026-03-09 20:18:50.737246+00	\N	af39b9c8-b454-4ddf-820b-c66af3e10083
-00000000-0000-0000-0000-000000000000	1459	e7eud5ougjzd	3a145754-a901-46e1-8ad2-480f8968d8be	f	2026-03-09 21:31:08.478086+00	2026-03-09 21:31:08.478086+00	xsuged43dmbg	39611f6c-1908-468b-bfe7-ae5a1aaeea5e
 00000000-0000-0000-0000-000000000000	1406	hbthdha7w7jm	3a145754-a901-46e1-8ad2-480f8968d8be	t	2026-03-06 01:07:14.43134+00	2026-03-09 22:25:57.62612+00	pydrndsch34m	d3b8c337-e5bb-422b-82f6-cff2652bba31
+00000000-0000-0000-0000-000000000000	1459	e7eud5ougjzd	3a145754-a901-46e1-8ad2-480f8968d8be	t	2026-03-09 21:31:08.478086+00	2026-03-10 18:16:33.784938+00	xsuged43dmbg	39611f6c-1908-468b-bfe7-ae5a1aaeea5e
 00000000-0000-0000-0000-000000000000	880	y7q23ewatmle	21069996-8115-42fa-985c-aa69b483ecce	f	2025-12-15 22:28:59.510006+00	2025-12-15 22:28:59.510006+00	4gcfjkzuccqy	f7da7ef3-32fb-41f3-843b-c2374e02f976
 \.
 
@@ -3059,9 +3062,6 @@ DIETETICA	\N	\N	\N	2026-03-08 18:22:29.90743+00	2026-03-08 18:22:29.90743+00	\N	
 --
 
 COPY "public"."clients" ("client_id", "full_name", "email", "phone", "document_number", "address", "city", "province", "postal_code", "country", "has_credit", "credit_limit", "current_balance", "is_active", "created_at", "updated_at", "deleted_at", "last_transaction_date", "tax_condition", "billing_enabled", "available_credit", "tax_ident", "short_code", "organization_id") FROM stdin;
-2	Otro cliente			\N		\N	\N	\N	Argentina	f	0.00	1500.00	t	2026-02-07 13:57:58.530032	2026-02-07 13:57:58.530032	\N	2026-02-08 14:40:34.352116+00	FINAL_CONSUMER	t	1500.00		\N	41a9d74e-4349-445d-8e23-d236cb2fade6
-1	Mati			\N		\N	\N	\N	Argentina	f	1000.00	17098.00	t	2026-02-02 01:00:16.522036	2026-02-02 01:00:16.522036	\N	2026-02-22 19:30:01.324087+00	FINAL_CONSUMER	t	18098.00		\N	41a9d74e-4349-445d-8e23-d236cb2fade6
-3	Ferroviario			\N		\N	\N	\N	Argentina	f	200000.00	290.00	t	2026-02-22 15:43:16.213015	2026-02-22 15:43:16.213015	\N	2026-02-27 00:31:20.006028+00	VAT_REGISTERED_RESPONSIBLE	t	200290.00		\N	41a9d74e-4349-445d-8e23-d236cb2fade6
 \.
 
 
@@ -3111,88 +3111,6 @@ de1a342e-869b-4411-a8e0-d79e5a8dae2a	eric.s3@hotmail.com	\N	\N	\N	OWNER	f	2026-0
 --
 
 COPY "public"."terminal_sessions" ("terminal_session_id", "organization_id", "terminal_id", "opened_by_user_id", "opened_at", "closed_at", "opening_balance", "closing_balance", "status", "location_id") FROM stdin;
-61	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-21 17:38:22.874+00	2026-02-22 14:14:13.081+00	0	\N	FORCE_CLOSED	6
-2	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-08 14:54:02.833+00	2026-02-08 16:02:56.246+00	0	\N	CLOSED	6
-62	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-22 14:14:13.966+00	2026-02-22 14:27:37.07+00	0	\N	FORCE_CLOSED	6
-4	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-08 16:03:00.345+00	2026-02-08 16:10:47.541+00	0	12	CLOSED	6
-63	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-22 14:27:37.824+00	2026-02-22 14:38:05.853+00	0	\N	FORCE_CLOSED	6
-5	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-08 16:11:14.629+00	2026-02-08 16:40:37.853+00	0	\N	CLOSED	6
-64	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-22 14:38:06.658+00	2026-02-22 15:03:14.093+00	215	\N	FORCE_CLOSED	6
-7	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-08 16:42:48.035+00	2026-02-08 19:20:14.98+00	0	\N	CLOSED	6
-65	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-22 15:03:14.901+00	2026-02-22 15:36:25.187+00	0	\N	FORCE_CLOSED	6
-9	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-08 19:20:19.125+00	2026-02-11 19:05:09.202+00	0	\N	CLOSED	6
-11	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-11 19:05:12.233+00	2026-02-11 19:18:12.034+00	0	\N	CLOSED	6
-66	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-22 15:36:26.04+00	2026-02-22 15:39:55.618+00	0	\N	FORCE_CLOSED	6
-12	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-11 19:18:17.525+00	2026-02-11 20:13:55.078+00	0	\N	CLOSED	6
-13	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-11 20:13:59.225+00	2026-02-11 20:23:52.791+00	0	\N	CLOSED	6
-67	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-22 15:39:56.416+00	2026-02-22 19:19:30.134+00	500	\N	FORCE_CLOSED	6
-14	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-11 20:23:58.668+00	2026-02-12 11:57:50.348+00	0	\N	CLOSED	6
-68	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-22 19:19:33.811+00	2026-02-23 22:52:18.621+00	500	\N	FORCE_CLOSED	6
-15	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-12 11:57:56.116+00	2026-02-12 11:59:37.171+00	0	\N	CLOSED	6
-17	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-12 11:59:39.268+00	2026-02-12 19:15:10.386+00	0	\N	CLOSED	6
-69	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-23 22:52:19.371+00	2026-02-23 23:01:56.251+00	0	\N	FORCE_CLOSED	6
-18	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-12 19:15:14.36+00	2026-02-12 19:34:46.63+00	0	\N	CLOSED	6
-70	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-23 23:01:57.048+00	2026-02-24 17:54:46.239+00	0	\N	FORCE_CLOSED	6
-20	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-12 19:34:50.722+00	2026-02-12 19:49:20.661+00	0	\N	CLOSED	6
-21	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-12 19:50:50.348+00	2026-02-12 21:01:37.727+00	0	\N	CLOSED	6
-71	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-24 17:54:47.064+00	2026-02-25 13:24:51.69+00	500	\N	FORCE_CLOSED	6
-22	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-12 21:01:51.709+00	2026-02-12 21:05:02.933+00	0	\N	CLOSED	6
-72	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-25 13:24:52.508+00	2026-02-25 14:47:42.036+00	0	\N	FORCE_CLOSED	6
-24	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-12 21:05:07.195+00	2026-02-17 17:47:02.675+00	0	\N	CLOSED	6
-73	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-25 14:47:42.861+00	2026-02-25 17:09:07.119+00	0	\N	FORCE_CLOSED	6
-26	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-17 17:47:06.87+00	2026-02-17 17:51:55.967+00	0	\N	CLOSED	6
-27	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-17 17:51:58.914+00	2026-02-17 19:16:22.276+00	0	\N	CLOSED	6
-74	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-25 17:09:07.875+00	2026-02-25 20:03:35.882+00	500	\N	FORCE_CLOSED	6
-28	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-17 19:16:25.544+00	2026-02-18 21:09:59.554+00	0	\N	CLOSED	6
-75	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-25 20:03:36.724+00	2026-02-26 12:36:26.532+00	500	\N	FORCE_CLOSED	6
-30	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-18 21:10:03.282+00	2026-02-18 22:29:34.201+00	0	\N	CLOSED	6
-76	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-26 12:36:27.409+00	2026-02-26 14:30:24.111+00	250	\N	FORCE_CLOSED	6
-31	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-18 22:29:36.923+00	2026-02-18 22:39:17.382+00	0	\N	CLOSED	6
-33	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-18 22:39:19.782+00	2026-02-18 22:40:33.859+00	0	\N	CLOSED	6
-34	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-18 22:40:36.884+00	2026-02-18 22:44:13.118+00	0	\N	CLOSED	6
-35	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-18 22:44:17.561+00	2026-02-18 22:50:13.395+00	0	\N	CLOSED	6
-36	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-18 22:50:18.515+00	2026-02-18 22:51:56.358+00	0	\N	CLOSED	6
-37	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-18 22:52:02.149+00	2026-02-18 22:52:57.588+00	0	\N	CLOSED	6
-39	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-18 22:52:59.814+00	2026-02-19 11:59:16.001+00	0	\N	CLOSED	6
-40	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-19 12:53:30.268+00	2026-02-19 13:04:38.816+00	0	\N	CLOSED	6
-42	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-19 13:04:42.245+00	2026-02-19 13:20:44.175+00	0	\N	CLOSED	6
-43	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-19 13:20:50.825+00	2026-02-19 13:25:09.401+00	0	\N	CLOSED	6
-44	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-19 13:25:12.6+00	2026-02-19 13:29:28.291+00	0	\N	CLOSED	6
-45	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-19 13:29:33.534+00	2026-02-19 13:31:53.804+00	0	\N	CLOSED	6
-46	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-19 13:31:56.635+00	2026-02-19 13:33:24.345+00	0	\N	CLOSED	6
-47	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-19 13:33:29.768+00	2026-02-19 23:36:34.731+00	0	\N	CLOSED	6
-49	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-19 23:36:41.007+00	2026-02-20 00:12:08.463+00	0	\N	FORCE_CLOSED	6
-50	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-20 00:12:09.281+00	2026-02-20 00:14:33.67+00	0	\N	FORCE_CLOSED	6
-51	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-20 00:14:34.47+00	2026-02-20 00:14:44.841+00	0	\N	CLOSED	6
-52	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-20 00:15:20.692+00	2026-02-20 00:37:32.922+00	12	\N	FORCE_CLOSED	6
-53	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-20 00:37:33.696+00	2026-02-20 00:38:33.78+00	150000	\N	FORCE_CLOSED	6
-54	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-20 00:38:34.551+00	2026-02-20 11:21:15.656+00	0	\N	FORCE_CLOSED	6
-55	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-20 11:21:16.575+00	2026-02-20 11:21:58.356+00	12	\N	FORCE_CLOSED	6
-56	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-20 11:21:59.27+00	2026-02-20 15:30:46.905+00	0	\N	FORCE_CLOSED	6
-57	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-20 15:30:47.855+00	2026-02-20 22:34:29.544+00	20600	\N	FORCE_CLOSED	6
-58	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-20 22:34:30.393+00	2026-02-21 15:41:47.534+00	5000	\N	FORCE_CLOSED	6
-59	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-21 15:41:48.41+00	2026-02-21 17:23:46.625+00	0	\N	FORCE_CLOSED	6
-60	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-21 17:23:47.537+00	2026-02-21 17:38:22.012+00	500	\N	FORCE_CLOSED	6
-77	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-26 14:30:24.869+00	2026-02-26 17:29:13.527+00	100	\N	FORCE_CLOSED	6
-78	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-26 17:29:14.545+00	2026-02-26 19:56:13.489+00	0	32	CLOSED	6
-79	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-26 19:56:22.278+00	2026-02-26 19:59:20.429+00	0	0	CLOSED	6
-80	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-26 20:07:27.771+00	2026-02-27 00:13:24.924+00	0	\N	FORCE_CLOSED	6
-81	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-27 00:13:25.933+00	2026-02-27 12:45:42.892+00	0	\N	FORCE_CLOSED	6
-82	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-27 12:45:43.936+00	2026-02-27 13:49:53.826+00	0	\N	FORCE_CLOSED	6
-83	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-27 13:49:54.748+00	2026-02-28 02:05:02.209+00	0	\N	FORCE_CLOSED	6
-84	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-28 02:05:03.32+00	2026-03-03 15:09:41.144+00	0	\N	FORCE_CLOSED	6
-85	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-03 15:09:42.167+00	2026-03-04 11:50:44.295+00	0	\N	FORCE_CLOSED	6
-86	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-04 11:50:45.119+00	2026-03-05 13:15:25.5+00	0	\N	FORCE_CLOSED	6
-87	3e01b871-481d-4df5-8172-3b3593c9186c	1	de1a342e-869b-4411-a8e0-d79e5a8dae2a	2026-03-05 13:15:26.355+00	2026-03-06 00:10:52.241+00	10	\N	FORCE_CLOSED	6
-88	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-06 00:10:53.235+00	2026-03-06 12:09:54.755+00	0	\N	FORCE_CLOSED	6
-89	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-06 12:09:55.707+00	2026-03-06 12:10:40.554+00	0	\N	FORCE_CLOSED	6
-90	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-06 12:10:41.456+00	2026-03-08 17:58:17.673+00	0	\N	FORCE_CLOSED	6
-91	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-08 17:58:18.44+00	2026-03-09 19:53:00.034+00	500	\N	FORCE_CLOSED	6
-92	3e01b871-481d-4df5-8172-3b3593c9186c	2	de1a342e-869b-4411-a8e0-d79e5a8dae2a	2026-03-08 18:14:42.561+00	2026-03-09 20:03:30.669+00	10	\N	FORCE_CLOSED	8
-94	3e01b871-481d-4df5-8172-3b3593c9186c	2	de1a342e-869b-4411-a8e0-d79e5a8dae2a	2026-03-09 20:03:31.449+00	2026-03-09 20:20:19.846+00	0	\N	FORCE_CLOSED	8
-95	3e01b871-481d-4df5-8172-3b3593c9186c	2	de1a342e-869b-4411-a8e0-d79e5a8dae2a	2026-03-09 20:20:20.687+00	\N	0	\N	OPEN	8
-93	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-09 19:53:00.724+00	2026-03-09 21:27:58.222+00	0	\N	FORCE_CLOSED	6
-96	3e01b871-481d-4df5-8172-3b3593c9186c	1	de1a342e-869b-4411-a8e0-d79e5a8dae2a	2026-03-09 21:27:59.124+00	\N	0	\N	OPEN	6
 \.
 
 
@@ -3201,31 +3119,6 @@ COPY "public"."terminal_sessions" ("terminal_session_id", "organization_id", "te
 --
 
 COPY "public"."orders" ("order_id", "location_id", "client_id", "provider_id", "order_number", "subtotal", "discount", "tax", "total_amount", "currency", "notes", "delivery_date", "created_at", "updated_at", "deleted_at", "client_type", "payment_status", "order_status", "order_type", "organization_id", "terminal_session_id") FROM stdin;
-1	6	3	\N	152	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-02-26 17:30:12.746+00	2026-02-26 17:30:20.749191	\N	\N	PENDING	NEW	DELIVERY	41a9d74e-4349-445d-8e23-d236cb2fade6	78
-2	6	\N	\N	153	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-02-26 18:12:38.304+00	2026-02-26 18:12:39.799894	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	78
-3	6	\N	\N	154	302.00	0.00	0.00	302.00	ARS	\N	\N	2026-02-26 19:09:31.949+00	2026-02-26 19:10:15.798976	\N	\N	PAID	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	78
-4	6	\N	\N	155	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-02-26 19:11:07.999+00	2026-02-26 19:11:08.167178	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	78
-5	6	\N	\N	156	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-02-26 19:11:45.375+00	2026-02-26 19:11:45.625666	\N	\N	PENDING	NEW	DELIVERY	41a9d74e-4349-445d-8e23-d236cb2fade6	78
-6	6	\N	\N	157	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-02-26 19:23:21.795+00	2026-02-26 19:23:21.982189	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	78
-7	6	\N	\N	158	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-02-26 19:23:27.118+00	2026-02-26 19:24:18.750372	\N	\N	PENDING	CANCELLED	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	78
-8	6	\N	\N	159	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-02-26 19:29:19.17+00	2026-02-26 19:29:19.357062	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	78
-9	6	\N	\N	160	1.00	0.00	0.00	1.00	ARS	\N	\N	2026-02-26 20:07:30.361+00	2026-02-26 20:07:38.353862	\N	\N	PAID	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	80
-10	6	\N	\N	161	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-02-27 00:13:30.174+00	2026-02-27 00:13:29.738258	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	81
-11	6	1	\N	162	1.00	0.00	0.00	1.00	ARS	\N	\N	2026-02-27 00:15:35.303+00	2026-02-27 00:20:54.174684	\N	\N	PAID	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	81
-12	6	3	\N	163	369.00	0.00	0.00	369.00	ARS	\N	\N	2026-02-27 00:20:58.202+00	2026-02-27 00:31:20.006028	\N	\N	PAID	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	81
-13	6	\N	\N	164	1.00	0.00	0.00	1.00	ARS	\N	\N	2026-02-27 12:46:15.657+00	2026-02-27 12:46:25.293354	\N	\N	PAID	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	82
-14	6	\N	\N	165	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-02-27 12:48:06.264+00	2026-02-27 12:48:06.49905	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	82
-15	6	\N	\N	166	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-02-27 14:17:41.601+00	2026-02-27 14:17:41.882655	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	83
-16	6	\N	\N	167	4.00	0.00	0.00	4.00	ARS	\N	\N	2026-02-27 14:18:47.65+00	2026-02-27 14:26:59.227179	\N	\N	PAID	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	83
-17	6	\N	\N	168	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-02-27 14:27:01.04+00	2026-02-27 14:27:01.260103	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	83
-18	6	\N	\N	169	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-03 15:09:45.562+00	2026-03-03 15:09:46.523167	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	85
-19	6	\N	\N	170	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-04 11:50:47.576+00	2026-03-04 11:50:47.767508	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	86
-20	6	\N	\N	171	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-06 00:10:56.379+00	2026-03-06 00:10:56.758029	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	88
-21	6	\N	\N	172	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-06 12:09:59.104+00	2026-03-06 12:09:58.577029	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	89
-22	6	\N	\N	173	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-06 12:10:44.665+00	2026-03-06 12:10:44.121282	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	90
-23	8	\N	\N	1	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-08 18:14:46.916+00	2026-03-08 18:14:46.533163	\N	\N	PENDING	NEW	DIRECT_SALE	3e01b871-481d-4df5-8172-3b3593c9186c	92
-24	8	\N	\N	2	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-09 20:20:24.612+00	2026-03-09 20:20:24.495466	\N	\N	PENDING	NEW	DIRECT_SALE	3e01b871-481d-4df5-8172-3b3593c9186c	95
-25	6	\N	\N	174	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-09 21:28:01.541+00	2026-03-09 21:28:01.836899	\N	\N	PENDING	NEW	DIRECT_SALE	3e01b871-481d-4df5-8172-3b3593c9186c	96
 \.
 
 
@@ -3234,10 +3127,6 @@ COPY "public"."orders" ("order_id", "location_id", "client_id", "provider_id", "
 --
 
 COPY "public"."client_transactions" ("transaction_id", "client_id", "order_id", "transaction_type", "amount", "description", "created_at", "transaction_date", "payment_method", "payment_status", "balance_after_transaction") FROM stdin;
-1	1	11	PAYMENT	1.00	Pago de orden #11	2026-02-27 00:20:54.174684	2026-02-27 00:20:54.174684+00	CASH	PAID	17098.00
-2	3	12	PAYMENT	100.00	Pago de orden #12	2026-02-27 00:31:20.006028	2026-02-27 00:31:20.006028+00	CASH	PAID	300.00
-3	3	12	PAYMENT	259.00	Pago de orden #12	2026-02-27 00:31:20.006028	2026-02-27 00:31:20.006028+00	DEBIT_CARD	PAID	300.00
-4	3	12	PAYMENT	10.00	Consumo a crédito - orden #12	2026-02-27 00:31:20.006028	2026-02-27 00:31:20.006028+00	ON_CREDIT	PENDING	290.00
 \.
 
 
@@ -3404,11 +3293,6 @@ COPY "public"."dum" ("id", "name") FROM stdin;
 --
 
 COPY "public"."enabled_prices_clients" ("id", "price_id", "client_id", "created_at") FROM stdin;
-9	60	1	2026-02-23 23:01:45.242789+00
-10	7	1	2026-02-24 18:54:55.982651+00
-13	168	2	2026-03-04 19:59:45.783172+00
-14	173	3	2026-03-05 20:26:24.267498+00
-15	174	1	2026-03-05 20:26:34.435338+00
 \.
 
 
@@ -3453,10 +3337,6 @@ COPY "public"."lots" ("lot_id", "provider_id", "expiration_date", "expiration_da
 --
 
 COPY "public"."stock" ("stock_id", "created_at", "updated_at", "lot_id", "quantity", "min_notification", "max_notification", "transformed_from_product_id", "transformed_to_product_id", "stock_type", "product_id", "reserved_for_transferring_quantity", "reserved_for_selling_quantity", "location_id", "is_closed", "over_sell_quantity", "product_presentation_id") FROM stdin;
-1	2026-03-06 01:09:29.243049+00	2026-03-06 01:09:29.243049+00	1	0.000	\N	\N	\N	\N	NOT_ASSIGNED	2	\N	\N	\N	f	\N	\N
-2	2026-03-07 15:09:12.190842+00	2026-03-07 15:09:12.190842+00	1	1600.000	0.000	0.000	\N	\N	\N	2	\N	\N	6	f	0	\N
-4	2026-03-08 18:22:09.853294+00	2026-03-08 18:22:09.853294+00	3	25.000	\N	\N	\N	\N	NOT_ASSIGNED	22	\N	\N	\N	f	\N	\N
-5	2026-03-08 18:31:28.002632+00	2026-03-08 18:31:28.002632+00	3	25.000	0.000	0.000	\N	\N	\N	22	\N	\N	8	f	0	\N
 \.
 
 
@@ -3490,7 +3370,6 @@ COPY "public"."lot_traces" ("lot_trace_id", "lot_from_id", "lot_to_id", "created
 --
 
 COPY "public"."notifications" ("notification_id", "created_at", "status", "title", "message", "order_id", "updated_at", "deleted_at", "canceled_by", "location_id", "organization_id") FROM stdin;
-1	2026-02-26 19:24:18.377866+00	PENDING	Orden cancelada	La orden 158 ha sido cancelada.	7	\N	\N	3a145754-a901-46e1-8ad2-480f8968d8be	6	41a9d74e-4349-445d-8e23-d236cb2fade6
 \.
 
 
@@ -3507,14 +3386,6 @@ COPY "public"."order_items" ("order_item_id", "order_id", "product_id", "quantit
 --
 
 COPY "public"."payments" ("payment_id", "created_at", "order_id", "amount", "payment_method", "payment_type", "payment_direction", "client_id", "provider_id", "terminal_session_id") FROM stdin;
-1	2026-02-26 19:10:15.798976+00	3	302	CASH	ORDER	IN	\N	\N	78
-2	2026-02-26 20:07:38.353862+00	9	1	CASH	ORDER	IN	\N	\N	80
-3	2026-02-27 00:20:54.174684+00	11	1	CASH	ORDER	IN	\N	\N	81
-4	2026-02-27 00:31:20.006028+00	12	100	CASH	ORDER	IN	\N	\N	81
-5	2026-02-27 00:31:20.006028+00	12	259	DEBIT_CARD	ORDER	IN	\N	\N	81
-6	2026-02-27 00:31:20.006028+00	12	10	ON_CREDIT	ORDER	IN	\N	\N	81
-7	2026-02-27 12:46:25.293354+00	13	1	BANK_TRANSFER	ORDER	IN	\N	\N	82
-8	2026-02-27 14:26:59.227179+00	16	4	CASH	ORDER	IN	\N	\N	83
 \.
 
 
@@ -3531,8 +3402,6 @@ COPY "public"."purchasing_agents" ("purchasing_agent_id", "created_at", "purchas
 --
 
 COPY "public"."stock_movements" ("stock_movement_id", "created_at", "lot_id", "movement_type", "quantity", "to_location_id", "should_notify_owner", "from_location_id", "price", "created_by", "stock_id", "product_presentation_id", "qty_in_base_units") FROM stdin;
-1	2026-03-07 15:09:12.190842+00	1	TRANSFER	1600	6	\N	\N	\N	3a145754-a901-46e1-8ad2-480f8968d8be	1	2	\N
-2	2026-03-08 18:31:28.002632+00	3	TRANSFER	25	8	\N	\N	\N	de1a342e-869b-4411-a8e0-d79e5a8dae2a	4	40	\N
 \.
 
 
@@ -3655,7 +3524,7 @@ COPY "storage"."vector_indexes" ("id", "name", "bucket_id", "data_type", "dimens
 -- Name: refresh_tokens_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: supabase_auth_admin
 --
 
-SELECT pg_catalog.setval('"auth"."refresh_tokens_id_seq"', 1461, true);
+SELECT pg_catalog.setval('"auth"."refresh_tokens_id_seq"', 1462, true);
 
 
 --
@@ -3670,20 +3539,6 @@ SELECT pg_catalog.setval('"public"."brands_brand_id_seq"', 8, true);
 --
 
 SELECT pg_catalog.setval('"public"."categories_category_id_seq"', 18, true);
-
-
---
--- Name: client_transactions_transaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."client_transactions_transaction_id_seq"', 4, true);
-
-
---
--- Name: clients_client_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."clients_client_id_seq"', 3, true);
 
 
 --
@@ -3757,27 +3612,6 @@ SELECT pg_catalog.setval('"public"."notifications_notification_id_seq"', 1, true
 
 
 --
--- Name: order_items_order_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."order_items_order_item_id_seq"', 1, false);
-
-
---
--- Name: order_payments_order_payment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."order_payments_order_payment_id_seq"', 8, true);
-
-
---
--- Name: orders_order_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."orders_order_id_seq"', 25, true);
-
-
---
 -- Name: presentations_presentation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -3788,7 +3622,7 @@ SELECT pg_catalog.setval('"public"."presentations_presentation_id_seq"', 42, tru
 -- Name: product_lots_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"public"."product_lots_id_seq"', 3, true);
+SELECT pg_catalog.setval('"public"."product_lots_id_seq"', 4, true);
 
 
 --
@@ -3827,20 +3661,6 @@ SELECT pg_catalog.setval('"public"."purchasing_agent_purchasing_agent_id_seq"', 
 
 
 --
--- Name: stock_movements_stock_movement_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."stock_movements_stock_movement_id_seq"', 2, true);
-
-
---
--- Name: stock_stock_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."stock_stock_id_seq"', 5, true);
-
-
---
 -- Name: store_order_sequences_store_order_sequence_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -3852,13 +3672,6 @@ SELECT pg_catalog.setval('"public"."store_order_sequences_store_order_sequence_i
 --
 
 SELECT pg_catalog.setval('"public"."sub_categories_category_id_seq"', 15, true);
-
-
---
--- Name: terminal_sessions_terminal_session_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('"public"."terminal_sessions_terminal_session_id_seq"', 96, true);
 
 
 --
@@ -3900,6 +3713,6 @@ SELECT pg_catalog.setval('"public"."trasnformations_transformation_id_seq"', 2, 
 -- PostgreSQL database dump complete
 --
 
--- \unrestrict 4f50VyEdbIM71H7BXnkI7ywZcEZvCBbjJ7bCbhMRWGTpm7KHGPXl44eIdajXpHR
+-- \unrestrict sYmn36MLGocS95DOnVcoWXnO5yWoc5GHk0POeIr6Zcd58wAhlhGfSpxApaShjO4
 
 RESET ALL;
