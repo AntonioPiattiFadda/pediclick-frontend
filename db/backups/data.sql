@@ -4,7 +4,7 @@ SET session_replication_role = replica;
 -- PostgreSQL database dump
 --
 
--- \restrict JmEm1FCNVoSszLH4NjYupsBX6DALgFpWYAl8fgzxryw2Co6FyMOyKI8ZXXgdsiD
+-- \restrict kho6I3wew84QtyebnD80EX8K8MWIpjmQMmK3bk2KjHht2C8pYypsvGNZpEAEaxt
 
 -- Dumped from database version 15.8
 -- Dumped by pg_dump version 17.6
@@ -2610,6 +2610,8 @@ COPY "auth"."audit_log_entries" ("instance_id", "id", "payload", "created_at", "
 00000000-0000-0000-0000-000000000000	6f2aec91-9491-4c86-a19a-652b2628e645	{"action":"token_revoked","actor_id":"3a145754-a901-46e1-8ad2-480f8968d8be","actor_username":"antonio.piattifadda@gmail.com","actor_via_sso":false,"log_type":"token"}	2026-03-11 17:38:11.161624+00	
 00000000-0000-0000-0000-000000000000	9ddf2fdd-9fcd-456c-8176-6fcc89201207	{"action":"token_refreshed","actor_id":"3a145754-a901-46e1-8ad2-480f8968d8be","actor_username":"antonio.piattifadda@gmail.com","actor_via_sso":false,"log_type":"token"}	2026-03-11 17:56:43.549603+00	
 00000000-0000-0000-0000-000000000000	144bcc07-7017-407c-88b1-2717f5f3f165	{"action":"token_revoked","actor_id":"3a145754-a901-46e1-8ad2-480f8968d8be","actor_username":"antonio.piattifadda@gmail.com","actor_via_sso":false,"log_type":"token"}	2026-03-11 17:56:43.569446+00	
+00000000-0000-0000-0000-000000000000	d6f9e4be-48d1-4dc1-b5a4-7381d48c57ce	{"action":"token_refreshed","actor_id":"3a145754-a901-46e1-8ad2-480f8968d8be","actor_username":"antonio.piattifadda@gmail.com","actor_via_sso":false,"log_type":"token"}	2026-03-11 18:55:05.38198+00	
+00000000-0000-0000-0000-000000000000	c0e0efd7-3cb5-4c41-aa71-9653d79f2fa5	{"action":"token_revoked","actor_id":"3a145754-a901-46e1-8ad2-480f8968d8be","actor_username":"antonio.piattifadda@gmail.com","actor_via_sso":false,"log_type":"token"}	2026-03-11 18:55:05.39149+00	
 \.
 
 
@@ -2637,7 +2639,7 @@ COPY "auth"."users" ("instance_id", "id", "aud", "role", "email", "encrypted_pas
 00000000-0000-0000-0000-000000000000	f627db47-8f77-4d14-a1fe-1cef0e342216	authenticated	authenticated	piattistevenot@gmail.com	$2a$10$GrzBWDhQSeqxKuU34/SecOM9x5deGjVYGfiwgrrHzTPaVy1H6TRRe	2025-09-20 23:45:00.94391+00	\N		\N		\N			\N	2025-09-22 00:12:57.068962+00	{"provider": "email", "providers": ["email"]}	{"sub": "f627db47-8f77-4d14-a1fe-1cef0e342216", "email": "piattistevenot@gmail.com", "email_verified": true, "phone_verified": false}	\N	2025-09-20 23:45:00.931853+00	2025-10-08 20:24:58.583839+00	\N	\N			\N		0	\N		\N	f	\N	f
 00000000-0000-0000-0000-000000000000	21069996-8115-42fa-985c-aa69b483ecce	authenticated	authenticated	sergiovelezhernandez11@gmail.com	$2a$10$RQSz9I54xgaR6uSL9ECRw.7cQrDnsfd4smLlIuZeHELEvuJwqv2l6	2025-11-06 21:10:58.122361+00	\N		\N		\N			\N	2025-11-06 21:10:58.135533+00	{"provider": "email", "providers": ["email"]}	{"sub": "21069996-8115-42fa-985c-aa69b483ecce", "email": "sergiovelezhernandez11@gmail.com", "email_verified": true, "phone_verified": false}	\N	2025-11-06 21:10:58.085242+00	2025-12-15 22:28:59.521544+00	\N	\N			\N		0	\N		\N	f	\N	f
 00000000-0000-0000-0000-000000000000	de1a342e-869b-4411-a8e0-d79e5a8dae2a	authenticated	authenticated	eric.s3@hotmail.com	$2a$10$oXcKVGAVa8j4VjAXu5Xruuy6LmEG47q7hNwFOUx1xyAQNn8nCvqL6	2026-03-05 13:11:04.641668+00	\N		\N		\N			\N	2026-03-09 21:27:53.289429+00	{"provider": "email", "providers": ["email"]}	{"sub": "de1a342e-869b-4411-a8e0-d79e5a8dae2a", "email": "eric.s3@hotmail.com", "email_verified": true, "phone_verified": false}	\N	2026-03-05 13:11:04.493325+00	2026-03-11 01:00:22.787498+00	\N	\N			\N		0	\N		\N	f	\N	f
-00000000-0000-0000-0000-000000000000	3a145754-a901-46e1-8ad2-480f8968d8be	authenticated	authenticated	antonio.piattifadda@gmail.com	$2a$10$dwhvFUcoq4vtWVs4UCRynODS.6nShK.C5nOXk./A1FLijZzl6RI6C	2025-09-21 14:42:23.5572+00	\N		\N		\N			\N	2026-03-11 13:32:24.782638+00	{"provider": "email", "providers": ["email"]}	{"sub": "3a145754-a901-46e1-8ad2-480f8968d8be", "email": "antonio.piattifadda@gmail.com", "email_verified": true, "phone_verified": false}	\N	2025-09-21 14:42:23.511162+00	2026-03-11 17:56:43.60129+00	\N	\N			\N		0	\N		\N	f	\N	f
+00000000-0000-0000-0000-000000000000	3a145754-a901-46e1-8ad2-480f8968d8be	authenticated	authenticated	antonio.piattifadda@gmail.com	$2a$10$dwhvFUcoq4vtWVs4UCRynODS.6nShK.C5nOXk./A1FLijZzl6RI6C	2025-09-21 14:42:23.5572+00	\N		\N		\N			\N	2026-03-11 13:32:24.782638+00	{"provider": "email", "providers": ["email"]}	{"sub": "3a145754-a901-46e1-8ad2-480f8968d8be", "email": "antonio.piattifadda@gmail.com", "email_verified": true, "phone_verified": false}	\N	2025-09-21 14:42:23.511162+00	2026-03-11 18:55:05.413911+00	\N	\N			\N		0	\N		\N	f	\N	f
 \.
 
 
@@ -2691,11 +2693,11 @@ e7cdfe8b-6036-4a41-8aad-da854b18f910	3a145754-a901-46e1-8ad2-480f8968d8be	2026-0
 8a64bfd9-0f92-4680-841b-a04104e722c8	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-27 22:19:57.390031+00	2026-02-27 22:19:57.390031+00	\N	aal1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) market-store/0.1.0 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	186.13.123.105	\N	\N	\N	\N	\N
 fd5074cc-f5a6-4054-a9a4-020e95cb6648	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-27 22:20:40.75861+00	2026-02-27 22:20:40.75861+00	\N	aal1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) market-store/0.1.0 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	186.13.123.105	\N	\N	\N	\N	\N
 f029bd73-2739-49e5-b1f4-7db435b9c216	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-09 15:54:50.252126+00	2026-03-09 15:54:50.252126+00	\N	aal1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) market-store/0.1.2 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	186.109.79.49	\N	\N	\N	\N	\N
-39611f6c-1908-468b-bfe7-ae5a1aaeea5e	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-26 20:06:04.44704+00	2026-03-11 17:56:43.615658+00	\N	aal1	\N	2026-03-11 17:56:43.615005	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36	181.2.251.149	\N	\N	\N	\N	\N
 0612ca60-249c-4841-9d1b-2282159f7a0d	de1a342e-869b-4411-a8e0-d79e5a8dae2a	2026-03-08 18:09:02.042217+00	2026-03-09 19:38:22.852001+00	\N	aal1	\N	2026-03-09 19:38:22.851904	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) market-store/0.1.0 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	148.227.75.54	\N	\N	\N	\N	\N
 2a132329-13c7-4a09-bd05-113d966a6be3	de1a342e-869b-4411-a8e0-d79e5a8dae2a	2026-03-09 19:49:31.194188+00	2026-03-09 19:49:31.194188+00	\N	aal1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) market-store/0.1.3 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	148.227.75.54	\N	\N	\N	\N	\N
 a6568222-3460-42b5-b37c-99b1e3c84a07	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-03 15:09:38.246073+00	2026-03-03 17:50:11.631957+00	\N	aal1	\N	2026-03-03 17:50:11.631866	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) market-store/0.1.0 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	186.109.79.49	\N	\N	\N	\N	\N
 af39b9c8-b454-4ddf-820b-c66af3e10083	de1a342e-869b-4411-a8e0-d79e5a8dae2a	2026-03-09 20:18:50.72893+00	2026-03-09 20:18:50.72893+00	\N	aal1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) market-store/0.1.3 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	148.227.75.54	\N	\N	\N	\N	\N
+39611f6c-1908-468b-bfe7-ae5a1aaeea5e	3a145754-a901-46e1-8ad2-480f8968d8be	2026-02-26 20:06:04.44704+00	2026-03-11 18:55:05.415862+00	\N	aal1	\N	2026-03-11 18:55:05.415766	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36	181.2.251.149	\N	\N	\N	\N	\N
 bd764fd9-bbc0-4ab4-b0bc-f0bff3bff01a	f627db47-8f77-4d14-a1fe-1cef0e342216	2025-09-21 00:23:53.800975+00	2025-10-08 20:24:58.598845+00	\N	aal1	\N	2025-10-08 20:24:58.598759	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) my-electron-vite-project/0.0.0 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	181.97.118.199	\N	\N	\N	\N	\N
 dc1f194f-45ad-4e7a-88f7-b00b1d922733	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-10 18:44:59.857348+00	2026-03-10 18:44:59.857348+00	\N	aal1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) market-store/0.1.5 Chrome/124.0.6367.243 Electron/30.5.1 Safari/537.36	186.109.79.49	\N	\N	\N	\N	\N
 10b3c467-4db4-4b36-9c40-b4bf54ac8797	f627db47-8f77-4d14-a1fe-1cef0e342216	2025-09-20 23:45:00.948236+00	2025-09-20 23:45:00.948236+00	\N	aal1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36	190.229.197.158	\N	\N	\N	\N	\N
@@ -2922,7 +2924,7 @@ COPY "auth"."refresh_tokens" ("instance_id", "id", "token", "user_id", "revoked"
 00000000-0000-0000-0000-000000000000	1461	wxs7da2v3sbe	3a145754-a901-46e1-8ad2-480f8968d8be	f	2026-03-09 22:25:57.631639+00	2026-03-09 22:25:57.631639+00	hbthdha7w7jm	d3b8c337-e5bb-422b-82f6-cff2652bba31
 00000000-0000-0000-0000-000000000000	1438	c3rnctr2fyzc	3a145754-a901-46e1-8ad2-480f8968d8be	t	2026-03-09 16:01:33.19799+00	2026-03-10 18:44:52.424985+00	\N	1f748896-f2ab-4921-8ce1-6da7807074eb
 00000000-0000-0000-0000-000000000000	1469	6c6hqtgju3jf	3a145754-a901-46e1-8ad2-480f8968d8be	t	2026-03-11 12:26:21.835353+00	2026-03-11 13:26:30.002985+00	4qsait7bktwu	39611f6c-1908-468b-bfe7-ae5a1aaeea5e
-00000000-0000-0000-0000-000000000000	1477	utpmdz62yl6q	3a145754-a901-46e1-8ad2-480f8968d8be	f	2026-03-11 17:56:43.589486+00	2026-03-11 17:56:43.589486+00	im2am6h7dn7p	39611f6c-1908-468b-bfe7-ae5a1aaeea5e
+00000000-0000-0000-0000-000000000000	1477	utpmdz62yl6q	3a145754-a901-46e1-8ad2-480f8968d8be	t	2026-03-11 17:56:43.589486+00	2026-03-11 18:55:05.393723+00	im2am6h7dn7p	39611f6c-1908-468b-bfe7-ae5a1aaeea5e
 00000000-0000-0000-0000-000000000000	1355	oskh6jxerizc	3a145754-a901-46e1-8ad2-480f8968d8be	t	2026-02-27 00:10:36.831595+00	2026-02-27 12:43:44.373289+00	\N	48679d7e-00c5-44c5-a1bd-dcb847917746
 00000000-0000-0000-0000-000000000000	713	2b5wyqsvjrxy	21069996-8115-42fa-985c-aa69b483ecce	t	2025-11-24 21:35:05.69994+00	2025-11-24 22:33:05.862414+00	2kx43dpknbho	f7da7ef3-32fb-41f3-843b-c2374e02f976
 00000000-0000-0000-0000-000000000000	1363	oawcyxjwimtd	3a145754-a901-46e1-8ad2-480f8968d8be	t	2026-02-27 17:26:21.226743+00	2026-02-27 19:28:25.950742+00	fjphhhqxqttf	39611f6c-1908-468b-bfe7-ae5a1aaeea5e
@@ -2955,6 +2957,7 @@ COPY "auth"."refresh_tokens" ("instance_id", "id", "token", "user_id", "revoked"
 00000000-0000-0000-0000-000000000000	780	a57ttusip2of	21069996-8115-42fa-985c-aa69b483ecce	t	2025-12-02 20:35:53.305527+00	2025-12-02 21:33:35.728807+00	aqm7gh6pzn3m	f7da7ef3-32fb-41f3-843b-c2374e02f976
 00000000-0000-0000-0000-000000000000	1472	hqyqbqlhjqas	3a145754-a901-46e1-8ad2-480f8968d8be	f	2026-03-11 13:32:24.797892+00	2026-03-11 13:32:24.797892+00	\N	2c29b35d-03e2-409a-9aa1-aed24b6b9b71
 00000000-0000-0000-0000-000000000000	1470	deq354vue6y7	3a145754-a901-46e1-8ad2-480f8968d8be	t	2026-03-11 13:26:30.012042+00	2026-03-11 14:27:47.532379+00	6c6hqtgju3jf	39611f6c-1908-468b-bfe7-ae5a1aaeea5e
+00000000-0000-0000-0000-000000000000	1478	mjasqoyv3jsn	3a145754-a901-46e1-8ad2-480f8968d8be	f	2026-03-11 18:55:05.407834+00	2026-03-11 18:55:05.407834+00	utpmdz62yl6q	39611f6c-1908-468b-bfe7-ae5a1aaeea5e
 00000000-0000-0000-0000-000000000000	845	4gcfjkzuccqy	21069996-8115-42fa-985c-aa69b483ecce	t	2025-12-11 21:43:03.622354+00	2025-12-15 22:28:59.495703+00	ynntb7tra2qb	f7da7ef3-32fb-41f3-843b-c2374e02f976
 00000000-0000-0000-0000-000000000000	794	naau6weysi5n	21069996-8115-42fa-985c-aa69b483ecce	t	2025-12-04 22:54:55.695737+00	2025-12-07 12:48:23.349023+00	g5btdakldxe5	f7da7ef3-32fb-41f3-843b-c2374e02f976
 00000000-0000-0000-0000-000000000000	691	7dneruie4htr	21069996-8115-42fa-985c-aa69b483ecce	t	2025-11-21 20:08:32.999261+00	2025-11-24 20:25:36.769349+00	nm4wsqmqamim	f7da7ef3-32fb-41f3-843b-c2374e02f976
@@ -3117,10 +3120,10 @@ COPY "public"."clients" ("client_id", "full_name", "email", "phone", "document_n
 -- Data for Name: locations; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "public"."locations" ("location_id", "created_at", "type", "address", "name", "deleted_at", "organization_id") FROM stdin;
-6	2026-02-01 22:18:07.23687+00	STORE	Ruta Km12	Ruta	\N	41a9d74e-4349-445d-8e23-d236cb2fade6
-7	2026-02-23 15:59:07.731426+00	STORE		Segunda localization	\N	41a9d74e-4349-445d-8e23-d236cb2fade6
-8	2026-03-08 18:14:32.096672+00	STORE	RUTA 5 KM 31	RUTA	\N	3e01b871-481d-4df5-8172-3b3593c9186c
+COPY "public"."locations" ("location_id", "created_at", "type", "address", "name", "deleted_at", "organization_id", "updated_at") FROM stdin;
+6	2026-02-01 22:18:07.23687+00	STORE	Ruta Km12	Ruta	\N	41a9d74e-4349-445d-8e23-d236cb2fade6	2026-03-11 19:12:14.282359+00
+7	2026-02-23 15:59:07.731426+00	STORE		Segunda localization	\N	41a9d74e-4349-445d-8e23-d236cb2fade6	2026-03-11 19:12:14.282359+00
+8	2026-03-08 18:14:32.096672+00	STORE	RUTA 5 KM 31	RUTA	\N	3e01b871-481d-4df5-8172-3b3593c9186c	2026-03-11 19:12:14.282359+00
 \.
 
 
@@ -3136,9 +3139,9 @@ COPY "public"."providers" ("provider_id", "created_at", "updated_At", "deleted_a
 -- Data for Name: terminals; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "public"."terminals" ("terminal_id", "organization_id", "name", "created_at", "deleted_at") FROM stdin;
-1	41a9d74e-4349-445d-8e23-d236cb2fade6	Computadora 1 ruta	2026-02-01 23:16:10.343473+00	\N
-2	3e01b871-481d-4df5-8172-3b3593c9186c	Caja Punto Verde	2026-03-08 18:05:56.72756+00	\N
+COPY "public"."terminals" ("terminal_id", "organization_id", "name", "created_at", "deleted_at", "updated_at") FROM stdin;
+1	41a9d74e-4349-445d-8e23-d236cb2fade6	Computadora 1 ruta	2026-02-01 23:16:10.343473+00	\N	2026-03-11 19:12:14.282359+00
+2	3e01b871-481d-4df5-8172-3b3593c9186c	Caja Punto Verde	2026-03-08 18:05:56.72756+00	\N	2026-03-11 19:12:14.282359+00
 \.
 
 
@@ -3158,10 +3161,10 @@ de1a342e-869b-4411-a8e0-d79e5a8dae2a	eric.s3@hotmail.com	\N	\N	\N	OWNER	f	2026-0
 -- Data for Name: terminal_sessions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "public"."terminal_sessions" ("terminal_session_id", "organization_id", "terminal_id", "opened_by_user_id", "opened_at", "closed_at", "opening_balance", "closing_balance", "status", "location_id") FROM stdin;
-ef85633b-ac81-459e-b0e4-778e6669b742	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-10 18:45:11.977+00	2026-03-11 01:00:41.568+00	500	\N	FORCE_CLOSED	6
-7b8f3ff0-f091-49d3-8111-2d4cdf471243	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-11 01:00:42.36+00	2026-03-11 13:34:24.099+00	500	\N	FORCE_CLOSED	6
-17fa9e71-af39-4e42-bbc9-ecceff6a494b	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-11 13:34:25.185+00	\N	500	\N	OPEN	6
+COPY "public"."terminal_sessions" ("terminal_session_id", "organization_id", "terminal_id", "opened_by_user_id", "opened_at", "closed_at", "opening_balance", "closing_balance", "status", "location_id", "updated_at", "deleted_at") FROM stdin;
+ef85633b-ac81-459e-b0e4-778e6669b742	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-10 18:45:11.977+00	2026-03-11 01:00:41.568+00	500	\N	FORCE_CLOSED	6	2026-03-11 19:12:14.282359+00	\N
+7b8f3ff0-f091-49d3-8111-2d4cdf471243	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-11 01:00:42.36+00	2026-03-11 13:34:24.099+00	500	\N	FORCE_CLOSED	6	2026-03-11 19:12:14.282359+00	\N
+17fa9e71-af39-4e42-bbc9-ecceff6a494b	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a145754-a901-46e1-8ad2-480f8968d8be	2026-03-11 13:34:25.185+00	\N	500	\N	OPEN	6	2026-03-11 19:12:14.282359+00	\N
 \.
 
 
@@ -3170,10 +3173,10 @@ ef85633b-ac81-459e-b0e4-778e6669b742	41a9d74e-4349-445d-8e23-d236cb2fade6	1	3a14
 --
 
 COPY "public"."orders" ("order_id", "location_id", "client_id", "provider_id", "order_number", "subtotal", "discount", "tax", "total_amount", "currency", "notes", "delivery_date", "created_at", "updated_at", "deleted_at", "client_type", "payment_status", "order_status", "order_type", "organization_id", "terminal_session_id") FROM stdin;
-f38259a8-e34f-44df-8e6e-c1f933dd92d7	6	\N	\N	175	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-10 18:45:15.276+00	2026-03-10 18:45:15.937363	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	ef85633b-ac81-459e-b0e4-778e6669b742
-78fb09ac-428a-45c0-8168-fff8d1361f51	6	\N	\N	176	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-10 18:47:23.436+00	2026-03-10 18:47:24.031223	\N	\N	PENDING	NEW	DELIVERY	41a9d74e-4349-445d-8e23-d236cb2fade6	ef85633b-ac81-459e-b0e4-778e6669b742
-74a4c15d-1ebc-4118-8f96-8a56db4988c3	6	\N	\N	177	50.00	0.00	0.00	50.00	ARS	\N	\N	2026-03-11 01:00:44.478+00	2026-03-11 01:02:43.777556	\N	\N	PAID	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	7b8f3ff0-f091-49d3-8111-2d4cdf471243
-64a76027-9987-478e-9603-6c9ca43e94f2	6	\N	\N	178	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-11 13:35:54.209+00	2026-03-11 13:35:55.733555	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	17fa9e71-af39-4e42-bbc9-ecceff6a494b
+f38259a8-e34f-44df-8e6e-c1f933dd92d7	6	\N	\N	175	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-10 18:45:15.276+00	2026-03-10 18:45:15.937363+00	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	ef85633b-ac81-459e-b0e4-778e6669b742
+78fb09ac-428a-45c0-8168-fff8d1361f51	6	\N	\N	176	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-10 18:47:23.436+00	2026-03-10 18:47:24.031223+00	\N	\N	PENDING	NEW	DELIVERY	41a9d74e-4349-445d-8e23-d236cb2fade6	ef85633b-ac81-459e-b0e4-778e6669b742
+74a4c15d-1ebc-4118-8f96-8a56db4988c3	6	\N	\N	177	50.00	0.00	0.00	50.00	ARS	\N	\N	2026-03-11 01:00:44.478+00	2026-03-11 01:02:43.777556+00	\N	\N	PAID	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	7b8f3ff0-f091-49d3-8111-2d4cdf471243
+64a76027-9987-478e-9603-6c9ca43e94f2	6	\N	\N	178	0.00	0.00	0.00	0.00	ARS	\N	\N	2026-03-11 13:35:54.209+00	2026-03-11 13:35:55.733555+00	\N	\N	PENDING	NEW	DIRECT_SALE	41a9d74e-4349-445d-8e23-d236cb2fade6	17fa9e71-af39-4e42-bbc9-ecceff6a494b
 \.
 
 
@@ -3181,7 +3184,7 @@ f38259a8-e34f-44df-8e6e-c1f933dd92d7	6	\N	\N	175	0.00	0.00	0.00	0.00	ARS	\N	\N	2
 -- Data for Name: client_transactions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "public"."client_transactions" ("transaction_id", "client_id", "order_id", "transaction_type", "amount", "description", "created_at", "transaction_date", "payment_method", "payment_status", "balance_after_transaction") FROM stdin;
+COPY "public"."client_transactions" ("transaction_id", "client_id", "order_id", "transaction_type", "amount", "description", "created_at", "transaction_date", "payment_method", "payment_status", "balance_after_transaction", "updated_at", "deleted_at") FROM stdin;
 \.
 
 
@@ -3299,15 +3302,18 @@ COPY "public"."product_presentations" ("product_presentation_id", "created_at", 
 -- Data for Name: prices; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "public"."prices" ("price_number", "valid_from", "valid_until", "created_at", "updated_at", "price_id", "price", "logic_type", "qty_per_price", "profit_percentage", "observations", "product_presentation_id", "location_id") FROM stdin;
-1	\N	\N	2026-03-11 17:05:19.009332+00	2026-03-11 17:05:19.009332+00	1	0	QUANTITY_DISCOUNT	1	0	\N	9	\N
-1	\N	\N	2026-03-11 17:05:21.781437+00	2026-03-11 17:05:21.781437+00	2	12	QUANTITY_DISCOUNT	1	0	\N	9	\N
-1	\N	\N	2026-03-11 17:05:45.103139+00	2026-03-11 17:05:45.103139+00	3	12	QUANTITY_DISCOUNT	1	0	\N	9	\N
-1	\N	\N	2026-03-11 17:29:36.98558+00	2026-03-11 17:29:36.98558+00	4	505.81	QUANTITY_DISCOUNT	1	1	\N	2	\N
-1	\N	\N	2026-03-11 17:36:00.178542+00	2026-03-11 17:36:00.178542+00	5	1760	QUANTITY_DISCOUNT	1	10	\N	2	\N
-1	\N	\N	2026-03-11 17:37:15.873373+00	2026-03-11 17:37:15.873373+00	6	1600	QUANTITY_DISCOUNT	1	0	\N	2	\N
-1	\N	\N	2026-03-11 18:01:07.689046+00	2026-03-11 18:01:07.689046+00	7	0	QUANTITY_DISCOUNT	1	0	\N	3	\N
-1	\N	\N	2026-03-11 18:06:17.092173+00	2026-03-11 18:06:17.092173+00	8	45	QUANTITY_DISCOUNT	1	0	\N	3	\N
+COPY "public"."prices" ("price_number", "valid_from", "valid_until", "created_at", "updated_at", "price_id", "price", "logic_type", "qty_per_price", "profit_percentage", "observations", "product_presentation_id", "location_id", "deleted_at") FROM stdin;
+1	\N	\N	2026-03-11 17:05:19.009332+00	2026-03-11 17:05:19.009332+00	1	0	QUANTITY_DISCOUNT	1	0	\N	9	\N	\N
+1	\N	\N	2026-03-11 17:05:21.781437+00	2026-03-11 17:05:21.781437+00	2	12	QUANTITY_DISCOUNT	1	0	\N	9	\N	\N
+1	\N	\N	2026-03-11 17:05:45.103139+00	2026-03-11 17:05:45.103139+00	3	12	QUANTITY_DISCOUNT	1	0	\N	9	\N	\N
+1	\N	\N	2026-03-11 17:29:36.98558+00	2026-03-11 17:29:36.98558+00	4	505.81	QUANTITY_DISCOUNT	1	1	\N	2	\N	\N
+1	\N	\N	2026-03-11 17:36:00.178542+00	2026-03-11 17:36:00.178542+00	5	1760	QUANTITY_DISCOUNT	1	10	\N	2	\N	\N
+1	\N	\N	2026-03-11 17:37:15.873373+00	2026-03-11 17:37:15.873373+00	6	1600	QUANTITY_DISCOUNT	1	0	\N	2	\N	\N
+1	\N	\N	2026-03-11 18:01:07.689046+00	2026-03-11 18:01:07.689046+00	7	0	QUANTITY_DISCOUNT	1	0	\N	3	\N	\N
+1	\N	\N	2026-03-11 18:06:17.092173+00	2026-03-11 18:06:17.092173+00	8	45	QUANTITY_DISCOUNT	1	0	\N	3	\N	\N
+1	\N	\N	2026-03-11 18:52:17.511258+00	2026-03-11 18:52:17.511258+00	9	123	QUANTITY_DISCOUNT	1	0	\N	15	\N	\N
+1	\N	\N	2026-03-11 19:06:56.740639+00	2026-03-11 19:06:56.740639+00	10	0	QUANTITY_DISCOUNT	1	0	\N	2	\N	\N
+2	\N	\N	2026-03-11 19:06:56.740639+00	2026-03-11 19:06:56.740639+00	11	0	SPECIAL	1	0	\N	2	\N	\N
 \.
 
 
@@ -3349,7 +3355,7 @@ COPY "public"."lot_containers" ("lot_container_id", "created_at", "lot_container
 -- Data for Name: lot_containers_movements; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "public"."lot_containers_movements" ("lot_container_movement_id", "created_at", "quantity", "from_location_id", "to_location_id", "from_provider_id", "to_provider_id", "from_client_id", "to_client_id", "lot_container_id", "status") FROM stdin;
+COPY "public"."lot_containers_movements" ("lot_container_movement_id", "created_at", "quantity", "from_location_id", "to_location_id", "from_provider_id", "to_provider_id", "from_client_id", "to_client_id", "lot_container_id", "status", "updated_at", "deleted_at") FROM stdin;
 \.
 
 
@@ -3357,12 +3363,12 @@ COPY "public"."lot_containers_movements" ("lot_container_movement_id", "created_
 -- Data for Name: lots; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "public"."lots" ("lot_id", "provider_id", "expiration_date", "expiration_date_notification", "created_at", "updated_at", "initial_stock_quantity", "is_sold_out", "is_expired", "load_order_id", "product_id", "purchase_cost_per_unit", "download_cost_per_unit", "final_cost_per_unit", "delivery_cost_per_unit", "productor_commission_type", "productor_commission_percentage", "productor_commission_unit_value", "purchasing_agent_id", "purchasing_agent_commision_type", "purchasing_agent_commision_percentage", "purchasing_agent_commision_unit_value", "is_finished", "extra_cost_per_unit") FROM stdin;
-1	\N	\N	f	2026-03-11 13:48:55.45011	2026-03-11 13:48:55.45011	100	f	f	\N	20	0	0	0	0	NONE	\N	\N	\N	NONE	\N	\N	\N	0
-2	\N	\N	f	2026-03-11 13:49:29.144625	2026-03-11 13:49:29.144625	50	\N	\N	\N	20	\N	\N	\N	\N	NONE	\N	\N	\N	NONE	\N	\N	\N	\N
-3	\N	\N	f	2026-03-11 18:01:25.128634	2026-03-11 18:01:25.128634	0	f	f	\N	20	\N	\N	\N	\N	NONE	\N	\N	\N	NONE	\N	\N	\N	\N
-4	\N	\N	f	2026-03-11 18:02:34.804889	2026-03-11 18:02:34.804889	1600	f	f	\N	2	0	0	0	0	NONE	\N	\N	\N	NONE	\N	\N	\N	0
-5	\N	\N	f	2026-03-11 18:02:46.511724	2026-03-11 18:02:46.511724	2080	f	f	\N	2	0	0	0	0	NONE	\N	\N	\N	NONE	\N	\N	\N	0
+COPY "public"."lots" ("lot_id", "provider_id", "expiration_date", "expiration_date_notification", "created_at", "updated_at", "initial_stock_quantity", "is_sold_out", "is_expired", "load_order_id", "product_id", "purchase_cost_per_unit", "download_cost_per_unit", "final_cost_per_unit", "delivery_cost_per_unit", "productor_commission_type", "productor_commission_percentage", "productor_commission_unit_value", "purchasing_agent_id", "purchasing_agent_commision_type", "purchasing_agent_commision_percentage", "purchasing_agent_commision_unit_value", "is_finished", "extra_cost_per_unit", "deleted_at") FROM stdin;
+1	\N	\N	f	2026-03-11 13:48:55.45011+00	2026-03-11 13:48:55.45011+00	100	f	f	\N	20	0	0	0	0	NONE	\N	\N	\N	NONE	\N	\N	\N	0	\N
+2	\N	\N	f	2026-03-11 13:49:29.144625+00	2026-03-11 13:49:29.144625+00	50	\N	\N	\N	20	\N	\N	\N	\N	NONE	\N	\N	\N	NONE	\N	\N	\N	\N	\N
+3	\N	\N	f	2026-03-11 18:01:25.128634+00	2026-03-11 18:01:25.128634+00	0	f	f	\N	20	\N	\N	\N	\N	NONE	\N	\N	\N	NONE	\N	\N	\N	\N	\N
+4	\N	\N	f	2026-03-11 18:02:34.804889+00	2026-03-11 18:02:34.804889+00	1600	f	f	\N	2	0	0	0	0	NONE	\N	\N	\N	NONE	\N	\N	\N	0	\N
+5	\N	\N	f	2026-03-11 18:02:46.511724+00	2026-03-11 18:02:46.511724+00	2080	f	f	\N	2	0	0	0	0	NONE	\N	\N	\N	NONE	\N	\N	\N	0	\N
 \.
 
 
@@ -3370,12 +3376,12 @@ COPY "public"."lots" ("lot_id", "provider_id", "expiration_date", "expiration_da
 -- Data for Name: stock; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "public"."stock" ("stock_id", "created_at", "updated_at", "lot_id", "quantity", "min_notification", "max_notification", "transformed_from_product_id", "transformed_to_product_id", "stock_type", "product_id", "reserved_for_transferring_quantity", "reserved_for_selling_quantity", "location_id", "is_closed", "over_sell_quantity", "product_presentation_id") FROM stdin;
-79cdadc0-309c-448c-9cae-88b74099e96b	2026-03-11 13:48:55.45011+00	2026-03-11 13:49:29.144625+00	1	50.000	\N	\N	\N	\N	\N	20	\N	\N	6	f	\N	\N
-1d21e7f2-d1ef-413b-8150-0b539ed9e4d1	2026-03-11 13:49:29.144625+00	2026-03-11 13:49:29.144625+00	2	50.000	0.000	0.000	\N	\N	STORE	20	\N	\N	6	f	\N	35
-4b432403-6de6-42e0-94ab-117c6a315e3a	2026-03-11 18:02:34.804889+00	2026-03-11 18:02:34.804889+00	4	1600.000	\N	\N	\N	\N	NOT_ASSIGNED	2	\N	\N	\N	f	\N	\N
-12e162e0-b05c-44e1-9076-57f10d8cd860	2026-03-11 18:02:46.511724+00	2026-03-11 18:02:46.511724+00	5	1600.000	\N	\N	\N	\N	\N	2	\N	\N	6	f	\N	\N
-a2df4220-df13-452d-a299-8babe23e2a1e	2026-03-11 18:02:46.511724+00	2026-03-11 18:02:46.511724+00	5	480.000	\N	\N	\N	\N	NOT_ASSIGNED	2	\N	\N	\N	f	\N	\N
+COPY "public"."stock" ("stock_id", "created_at", "updated_at", "lot_id", "quantity", "min_notification", "max_notification", "transformed_from_product_id", "transformed_to_product_id", "stock_type", "product_id", "reserved_for_transferring_quantity", "reserved_for_selling_quantity", "location_id", "is_closed", "over_sell_quantity", "product_presentation_id", "deleted_at") FROM stdin;
+79cdadc0-309c-448c-9cae-88b74099e96b	2026-03-11 13:48:55.45011+00	2026-03-11 13:49:29.144625+00	1	50.000	\N	\N	\N	\N	\N	20	\N	\N	6	f	\N	\N	\N
+1d21e7f2-d1ef-413b-8150-0b539ed9e4d1	2026-03-11 13:49:29.144625+00	2026-03-11 13:49:29.144625+00	2	50.000	0.000	0.000	\N	\N	STORE	20	\N	\N	6	f	\N	35	\N
+4b432403-6de6-42e0-94ab-117c6a315e3a	2026-03-11 18:02:34.804889+00	2026-03-11 18:02:34.804889+00	4	1600.000	\N	\N	\N	\N	NOT_ASSIGNED	2	\N	\N	\N	f	\N	\N	\N
+12e162e0-b05c-44e1-9076-57f10d8cd860	2026-03-11 18:02:46.511724+00	2026-03-11 18:02:46.511724+00	5	1600.000	\N	\N	\N	\N	\N	2	\N	\N	6	f	\N	\N	\N
+a2df4220-df13-452d-a299-8babe23e2a1e	2026-03-11 18:02:46.511724+00	2026-03-11 18:02:46.511724+00	5	480.000	\N	\N	\N	\N	NOT_ASSIGNED	2	\N	\N	\N	f	\N	\N	\N
 \.
 
 
@@ -3432,8 +3438,8 @@ COPY "public"."order_items" ("order_item_id", "order_id", "product_id", "quantit
 -- Data for Name: payments; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "public"."payments" ("payment_id", "created_at", "order_id", "amount", "payment_method", "payment_type", "payment_direction", "client_id", "provider_id", "terminal_session_id") FROM stdin;
-81e67728-bcd7-4017-aa36-c56721542fac	2026-03-11 01:02:43.777556+00	74a4c15d-1ebc-4118-8f96-8a56db4988c3	50	CASH	ORDER	IN	\N	\N	7b8f3ff0-f091-49d3-8111-2d4cdf471243
+COPY "public"."payments" ("payment_id", "created_at", "order_id", "amount", "payment_method", "payment_type", "payment_direction", "client_id", "provider_id", "terminal_session_id", "updated_at", "deleted_at") FROM stdin;
+81e67728-bcd7-4017-aa36-c56721542fac	2026-03-11 01:02:43.777556+00	74a4c15d-1ebc-4118-8f96-8a56db4988c3	50	CASH	ORDER	IN	\N	\N	7b8f3ff0-f091-49d3-8111-2d4cdf471243	2026-03-11 19:12:14.282359+00	\N
 \.
 
 
@@ -3441,7 +3447,7 @@ COPY "public"."payments" ("payment_id", "created_at", "order_id", "amount", "pay
 -- Data for Name: purchasing_agents; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "public"."purchasing_agents" ("purchasing_agent_id", "created_at", "purchasing_agent_name", "organization_id") FROM stdin;
+COPY "public"."purchasing_agents" ("purchasing_agent_id", "created_at", "purchasing_agent_name", "organization_id", "updated_at", "deleted_at") FROM stdin;
 \.
 
 
@@ -3449,7 +3455,7 @@ COPY "public"."purchasing_agents" ("purchasing_agent_id", "created_at", "purchas
 -- Data for Name: stock_movements; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "public"."stock_movements" ("stock_movement_id", "created_at", "lot_id", "movement_type", "quantity", "to_location_id", "should_notify_owner", "from_location_id", "price", "created_by", "stock_id", "product_presentation_id", "qty_in_base_units") FROM stdin;
+COPY "public"."stock_movements" ("stock_movement_id", "created_at", "lot_id", "movement_type", "quantity", "to_location_id", "should_notify_owner", "from_location_id", "price", "created_by", "stock_id", "product_presentation_id", "qty_in_base_units", "updated_at") FROM stdin;
 \.
 
 
@@ -3457,9 +3463,9 @@ COPY "public"."stock_movements" ("stock_movement_id", "created_at", "lot_id", "m
 -- Data for Name: store_order_sequences; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY "public"."store_order_sequences" ("store_order_sequence_id", "location_id", "last_number") FROM stdin;
-150	8	2
-149	6	178
+COPY "public"."store_order_sequences" ("store_order_sequence_id", "location_id", "last_number", "created_at", "updated_at") FROM stdin;
+150	8	2	2026-03-11 19:12:14.282359+00	2026-03-11 19:12:14.282359+00
+149	6	178	2026-03-11 19:12:14.282359+00	2026-03-11 19:12:14.282359+00
 \.
 
 
@@ -3574,7 +3580,7 @@ COPY "storage"."vector_indexes" ("id", "name", "bucket_id", "data_type", "dimens
 -- Name: refresh_tokens_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: supabase_auth_admin
 --
 
-SELECT pg_catalog.setval('"auth"."refresh_tokens_id_seq"', 1477, true);
+SELECT pg_catalog.setval('"auth"."refresh_tokens_id_seq"', 1478, true);
 
 
 --
@@ -3679,7 +3685,7 @@ SELECT pg_catalog.setval('"public"."product_lots_id_seq"', 5, true);
 -- Name: product_prices_product_price_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"public"."product_prices_product_price_id_seq"', 8, true);
+SELECT pg_catalog.setval('"public"."product_prices_product_price_id_seq"', 11, true);
 
 
 --
@@ -3763,6 +3769,6 @@ SELECT pg_catalog.setval('"public"."trasnformations_transformation_id_seq"', 11,
 -- PostgreSQL database dump complete
 --
 
--- \unrestrict JmEm1FCNVoSszLH4NjYupsBX6DALgFpWYAl8fgzxryw2Co6FyMOyKI8ZXXgdsiD
+-- \unrestrict kho6I3wew84QtyebnD80EX8K8MWIpjmQMmK3bk2KjHht2C8pYypsvGNZpEAEaxt
 
 RESET ALL;

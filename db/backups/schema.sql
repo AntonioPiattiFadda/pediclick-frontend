@@ -1251,8 +1251,8 @@ CREATE TABLE IF NOT EXISTS "public"."orders" (
     "notes" "text",
     "delivery_date" timestamp without time zone,
     "created_at" timestamp with time zone,
-    "updated_at" timestamp without time zone DEFAULT "now"(),
-    "deleted_at" timestamp without time zone,
+    "updated_at" timestamp with time zone DEFAULT "now"(),
+    "deleted_at" timestamp with time zone,
     "client_type" "public"."client_type",
     "payment_status" "public"."payment_status",
     "order_status" "public"."order_status" DEFAULT 'NEW'::"public"."order_status",
@@ -3145,16 +3145,29 @@ $$;
 ALTER FUNCTION "public"."update_lot_sold_out_status"("p_lot_id" bigint) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."update_prices"("p_prices" "jsonb") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."update_prices"("p_prices" "jsonb", "p_delete_ids" bigint[]) RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 declare
   v_results jsonb := '[]'::jsonb;
   rec record;
+  rec_container record;
   v_row jsonb;
 begin
-  for rec in select jsonb_array_elements(p_prices) as elem
+  ---------------------------------------------------------------------------
+  -- 0) DELETE
+  ---------------------------------------------------------------------------
+  if p_delete_ids is not null and array_length(p_delete_ids, 1) > 0 then
+    delete from prices
+    where price_id = any(p_delete_ids);
+  end if;
+
+  ---------------------------------------------------------------------------
+  -- 1) UPSERT
+  ---------------------------------------------------------------------------
+  for rec in
+    select jsonb_array_elements(p_prices) as elem
   loop
     if (rec.elem->>'price_id') is not null and (rec.elem->>'price_id') <> 'null' then
       update prices
@@ -3172,20 +3185,13 @@ begin
         updated_at              = now()
       where price_id = (rec.elem->>'price_id')::bigint
       returning row_to_json(prices.*)::jsonb into v_row;
+
+      v_results := v_results || jsonb_build_array(v_row);
     else
       insert into prices (
-        location_id,
-        product_presentation_id,
-        price_number,
-        price,
-        qty_per_price,
-        profit_percentage,
-        logic_type,
-        observations,
-        is_limited_offer,
-        is_active,
-        valid_from,
-        valid_until
+        location_id, product_presentation_id, price_number, price,
+        qty_per_price, profit_percentage, logic_type, observations,
+        valid_from, valid_until
       )
       values (
         (rec.elem->>'location_id')::bigint,
@@ -3196,106 +3202,13 @@ begin
         (rec.elem->>'profit_percentage')::numeric,
         (rec.elem->>'logic_type')::logic_type,
         nullif(rec.elem->>'observations',''),
-        (rec.elem->>'is_limited_offer')::boolean,
-        (rec.elem->>'is_active')::boolean,
         nullif(rec.elem->>'valid_from','')::timestamptz,
         nullif(rec.elem->>'valid_until','')::timestamptz
       )
       returning row_to_json(prices.*)::jsonb into v_row;
-    end if;
-    v_results := v_results || jsonb_build_array(v_row);
-  end loop;
-  return v_results;
-end;
-$$;
-
-
-ALTER FUNCTION "public"."update_prices"("p_prices" "jsonb") OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."update_prices"("p_prices" "jsonb", "p_delete_ids" bigint[]) RETURNS "jsonb"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
-    AS $$
-declare
-  v_results jsonb := '[]'::jsonb;
-  rec record;
-  rec_container record; -- 👈 agregado
-  v_row jsonb;
-begin
-  ---------------------------------------------------------------------------
-  -- 0) DELETE de precios que vienen en p_delete_ids
-  ---------------------------------------------------------------------------
-  if p_delete_ids is not null and array_length(p_delete_ids, 1) > 0 then
-    delete from prices
-    where price_id = any(p_delete_ids);
-  end if;
-
-  ---------------------------------------------------------------------------
-  -- 1) INSERT o UPDATE de precios que vienen en p_prices
-  ---------------------------------------------------------------------------
-  for rec in
-    select jsonb_array_elements(p_prices) as elem
-  loop
-    if (rec.elem->>'price_id') is not null and (rec.elem->>'price_id') <> 'null' then
-      ---------------------------------------------------------------------------
-      -- Caso 1: UPDATE
-      ---------------------------------------------------------------------------
-      update prices
-      set
-        location_id              = (rec.elem->>'location_id')::bigint,
-        product_presentation_id = (rec.elem->>'product_presentation_id')::bigint,
-        price_number          = (rec.elem->>'price_number')::int,
-        price                 = (rec.elem->>'price')::numeric,
-        qty_per_price         = (rec.elem->>'qty_per_price')::numeric,
-        profit_percentage     = (rec.elem->>'profit_percentage')::numeric,
-        logic_type            = (rec.elem->>'logic_type')::logic_type,
-        observations          = nullif(rec.elem->>'observations',''),
-        valid_from            = nullif(rec.elem->>'valid_from','')::timestamptz,
-        valid_until           = nullif(rec.elem->>'valid_until','')::timestamptz,
-        updated_at            = now()
-      where price_id = (rec.elem->>'price_id')::bigint
-      returning row_to_json(prices.*)::jsonb
-      into v_row;
-
-      v_results := v_results || jsonb_build_array(v_row);
-
-    else
-      ---------------------------------------------------------------------------
-      -- Caso 2: INSERT
-      ---------------------------------------------------------------------------
-      insert into prices (
-        location_id,
-        product_presentation_id,
-        price_number,
-        price,
-        qty_per_price,
-        profit_percentage,
-        logic_type,
-        observations,
-        valid_from,
-        valid_until
-      )
-      values (
-        (rec.elem->>'location_id')::bigint,
-        (rec.elem->>'product_presentation_id')::bigint,
-        (rec.elem->>'price_number')::int,
-        (rec.elem->>'price')::numeric,
-        (rec.elem->>'qty_per_price')::numeric,
-        (rec.elem->>'profit_percentage')::numeric,
-        (rec.elem->>'logic_type')::logic_type,
-        nullif(rec.elem->>'observations',''),
-        nullif(rec.elem->>'valid_from','')::timestamptz,
-        nullif(rec.elem->>'valid_until','')::timestamptz
-      )
-      returning row_to_json(prices.*)::jsonb
-      into v_row;
 
       v_results := v_results || jsonb_build_array(v_row);
     end if;
-
- 
-
   end loop;
 
   return v_results;
@@ -3682,11 +3595,13 @@ CREATE TABLE IF NOT EXISTS "public"."client_transactions" (
     "transaction_type" "public"."transaction_type" NOT NULL,
     "amount" numeric(12,2) NOT NULL,
     "description" "text",
-    "created_at" timestamp without time zone DEFAULT "now"(),
+    "created_at" timestamp with time zone DEFAULT "now"(),
     "transaction_date" timestamp with time zone,
     "payment_method" "public"."payment_method",
     "payment_status" "public"."payment_status",
     "balance_after_transaction" numeric,
+    "updated_at" timestamp with time zone DEFAULT "now"(),
+    "deleted_at" timestamp with time zone,
     CONSTRAINT "client_transactions_transaction_type_check" CHECK ((("transaction_type")::"text" = ANY (ARRAY[('INVOICE'::character varying)::"text", ('PAYMENT'::character varying)::"text", ('CREDIT_NOTE'::character varying)::"text", ('DEBIT_NOTE'::character varying)::"text", ('ADJUSTMENT'::character varying)::"text"])))
 );
 
@@ -3709,9 +3624,9 @@ CREATE TABLE IF NOT EXISTS "public"."clients" (
     "credit_limit" numeric(12,2) DEFAULT 0,
     "current_balance" numeric(12,2) DEFAULT 0,
     "is_active" boolean DEFAULT true,
-    "created_at" timestamp without time zone DEFAULT "now"(),
-    "updated_at" timestamp without time zone DEFAULT "now"(),
-    "deleted_at" timestamp without time zone,
+    "created_at" timestamp with time zone DEFAULT "now"(),
+    "updated_at" timestamp with time zone DEFAULT "now"(),
+    "deleted_at" timestamp with time zone,
     "last_transaction_date" timestamp with time zone,
     "tax_condition" "public"."tax_condition_type" DEFAULT 'FINAL_CONSUMER'::"public"."tax_condition_type" NOT NULL,
     "billing_enabled" boolean DEFAULT true NOT NULL,
@@ -3834,7 +3749,8 @@ CREATE TABLE IF NOT EXISTS "public"."locations" (
     "address" "text",
     "name" "text",
     "deleted_at" timestamp with time zone,
-    "organization_id" "uuid"
+    "organization_id" "uuid",
+    "updated_at" timestamp with time zone DEFAULT "now"()
 );
 
 
@@ -3892,7 +3808,9 @@ CREATE TABLE IF NOT EXISTS "public"."lot_containers_movements" (
     "from_client_id" "uuid",
     "to_client_id" "uuid",
     "lot_container_id" bigint,
-    "status" "public"."movement_status"
+    "status" "public"."movement_status",
+    "updated_at" timestamp with time zone DEFAULT "now"(),
+    "deleted_at" timestamp with time zone
 );
 
 
@@ -3956,8 +3874,8 @@ CREATE TABLE IF NOT EXISTS "public"."lots" (
     "provider_id" bigint,
     "expiration_date" "date",
     "expiration_date_notification" boolean DEFAULT false,
-    "created_at" timestamp without time zone DEFAULT "now"(),
-    "updated_at" timestamp without time zone DEFAULT "now"(),
+    "created_at" timestamp with time zone DEFAULT "now"(),
+    "updated_at" timestamp with time zone DEFAULT "now"(),
     "initial_stock_quantity" numeric,
     "is_sold_out" boolean,
     "is_expired" boolean,
@@ -3975,7 +3893,8 @@ CREATE TABLE IF NOT EXISTS "public"."lots" (
     "purchasing_agent_commision_percentage" numeric,
     "purchasing_agent_commision_unit_value" numeric,
     "is_finished" boolean,
-    "extra_cost_per_unit" numeric
+    "extra_cost_per_unit" numeric,
+    "deleted_at" timestamp with time zone
 );
 
 
@@ -4029,7 +3948,7 @@ CREATE TABLE IF NOT EXISTS "public"."order_items" (
     "quantity" numeric(12,3) NOT NULL,
     "price" numeric(12,2) NOT NULL,
     "total" numeric(12,2) NOT NULL,
-    "created_at" timestamp without time zone DEFAULT "now"(),
+    "created_at" timestamp with time zone DEFAULT "now"(),
     "subtotal" bigint,
     "discount" bigint,
     "tax" bigint,
@@ -4072,7 +3991,9 @@ CREATE TABLE IF NOT EXISTS "public"."payments" (
     "payment_direction" "public"."payment_direction",
     "client_id" "uuid",
     "provider_id" bigint,
-    "terminal_session_id" "uuid"
+    "terminal_session_id" "uuid",
+    "updated_at" timestamp with time zone DEFAULT "now"(),
+    "deleted_at" timestamp with time zone
 );
 
 
@@ -4122,7 +4043,8 @@ CREATE TABLE IF NOT EXISTS "public"."prices" (
     "profit_percentage" numeric,
     "observations" "text",
     "product_presentation_id" bigint,
-    "location_id" bigint
+    "location_id" bigint,
+    "deleted_at" timestamp with time zone
 );
 
 
@@ -4245,7 +4167,9 @@ CREATE TABLE IF NOT EXISTS "public"."purchasing_agents" (
     "purchasing_agent_id" bigint NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "purchasing_agent_name" "text",
-    "organization_id" "uuid"
+    "organization_id" "uuid",
+    "updated_at" timestamp with time zone DEFAULT "now"(),
+    "deleted_at" timestamp with time zone
 );
 
 
@@ -4280,7 +4204,8 @@ CREATE TABLE IF NOT EXISTS "public"."stock" (
     "location_id" bigint,
     "is_closed" boolean DEFAULT false,
     "over_sell_quantity" numeric,
-    "product_presentation_id" bigint
+    "product_presentation_id" bigint,
+    "deleted_at" timestamp with time zone
 );
 
 
@@ -4300,7 +4225,8 @@ CREATE TABLE IF NOT EXISTS "public"."stock_movements" (
     "created_by" "uuid",
     "stock_id" "uuid",
     "product_presentation_id" bigint,
-    "qty_in_base_units" numeric
+    "qty_in_base_units" numeric,
+    "updated_at" timestamp with time zone DEFAULT "now"()
 );
 
 
@@ -4310,7 +4236,9 @@ ALTER TABLE "public"."stock_movements" OWNER TO "postgres";
 CREATE TABLE IF NOT EXISTS "public"."store_order_sequences" (
     "store_order_sequence_id" bigint NOT NULL,
     "location_id" bigint,
-    "last_number" bigint
+    "last_number" bigint,
+    "created_at" timestamp with time zone DEFAULT "now"(),
+    "updated_at" timestamp with time zone DEFAULT "now"()
 );
 
 
@@ -4369,7 +4297,9 @@ CREATE TABLE IF NOT EXISTS "public"."terminal_sessions" (
     "opening_balance" numeric DEFAULT 0 NOT NULL,
     "closing_balance" numeric,
     "status" "text" DEFAULT 'OPEN'::"text" NOT NULL,
-    "location_id" bigint
+    "location_id" bigint,
+    "updated_at" timestamp with time zone DEFAULT "now"(),
+    "deleted_at" timestamp with time zone
 );
 
 
@@ -4381,7 +4311,8 @@ CREATE TABLE IF NOT EXISTS "public"."terminals" (
     "organization_id" "uuid" NOT NULL,
     "name" "text" NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "deleted_at" timestamp with time zone
+    "deleted_at" timestamp with time zone,
+    "updated_at" timestamp with time zone DEFAULT "now"()
 );
 
 
@@ -4850,6 +4781,54 @@ CREATE UNIQUE INDEX "unique_terminal_name_per_org" ON "public"."terminals" USING
 
 
 CREATE OR REPLACE TRIGGER "set_public_orders_updated_at" BEFORE UPDATE ON "public"."orders" FOR EACH ROW EXECUTE FUNCTION "public"."set_current_timestamp_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_updated_at" BEFORE UPDATE ON "public"."client_transactions" FOR EACH ROW EXECUTE FUNCTION "public"."set_current_timestamp_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_updated_at" BEFORE UPDATE ON "public"."locations" FOR EACH ROW EXECUTE FUNCTION "public"."set_current_timestamp_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_updated_at" BEFORE UPDATE ON "public"."lot_containers_movements" FOR EACH ROW EXECUTE FUNCTION "public"."set_current_timestamp_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_updated_at" BEFORE UPDATE ON "public"."lots" FOR EACH ROW EXECUTE FUNCTION "public"."set_current_timestamp_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_updated_at" BEFORE UPDATE ON "public"."payments" FOR EACH ROW EXECUTE FUNCTION "public"."set_current_timestamp_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_updated_at" BEFORE UPDATE ON "public"."prices" FOR EACH ROW EXECUTE FUNCTION "public"."set_current_timestamp_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_updated_at" BEFORE UPDATE ON "public"."purchasing_agents" FOR EACH ROW EXECUTE FUNCTION "public"."set_current_timestamp_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_updated_at" BEFORE UPDATE ON "public"."stock" FOR EACH ROW EXECUTE FUNCTION "public"."set_current_timestamp_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_updated_at" BEFORE UPDATE ON "public"."stock_movements" FOR EACH ROW EXECUTE FUNCTION "public"."set_current_timestamp_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_updated_at" BEFORE UPDATE ON "public"."store_order_sequences" FOR EACH ROW EXECUTE FUNCTION "public"."set_current_timestamp_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_updated_at" BEFORE UPDATE ON "public"."terminal_sessions" FOR EACH ROW EXECUTE FUNCTION "public"."set_current_timestamp_updated_at"();
+
+
+
+CREATE OR REPLACE TRIGGER "set_updated_at" BEFORE UPDATE ON "public"."terminals" FOR EACH ROW EXECUTE FUNCTION "public"."set_current_timestamp_updated_at"();
 
 
 
@@ -6692,12 +6671,6 @@ GRANT ALL ON FUNCTION "public"."update_lot_containers_movements"("p_transfer_ord
 GRANT ALL ON FUNCTION "public"."update_lot_sold_out_status"("p_lot_id" bigint) TO "anon";
 GRANT ALL ON FUNCTION "public"."update_lot_sold_out_status"("p_lot_id" bigint) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."update_lot_sold_out_status"("p_lot_id" bigint) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."update_prices"("p_prices" "jsonb") TO "anon";
-GRANT ALL ON FUNCTION "public"."update_prices"("p_prices" "jsonb") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."update_prices"("p_prices" "jsonb") TO "service_role";
 
 
 
