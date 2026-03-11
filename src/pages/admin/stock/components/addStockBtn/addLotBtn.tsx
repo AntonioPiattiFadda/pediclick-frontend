@@ -170,6 +170,8 @@ export function AddLotBtn({
 
   const [isEditing, setIsEditing] = useState(false);
 
+  const [pendingConfirm, setPendingConfirm] = useState(false);
+
   useEffect(() => {
     if (!loading) {
       handleClose();
@@ -177,24 +179,7 @@ export function AddLotBtn({
   }, [loading]);
 
 
-  const handleSubmit = async () => {
-    if (!isProductSelected) {
-      toast('Debes seleccionar un producto para agregar al remito');
-      return
-    };
-
-    if (!selectedProduct.product_id) {
-      toast('Debes seleccionar un producto para agregar');
-      return
-    }
-
-    if (!selectedProductPresentation?.product_presentation_id) {
-      toast('Debes seleccionar una presentacion para agregar');
-      return
-    }
-
-    // Quantities entered by the user are in presentation units (e.g. cajones).
-    // Multiply by bulk_quantity_equivalence to get base units before sending to the backend.
+  const doSubmit = () => {
     const equiv = selectedProductPresentation?.bulk_quantity_equivalence || 1;
 
     const adaptedStock = stock.map(s => ({
@@ -216,6 +201,36 @@ export function AddLotBtn({
     }
   };
 
+  const handleSubmit = async () => {
+    if (!isProductSelected) {
+      toast('Debes seleccionar un producto para agregar al remito');
+      return
+    };
+
+    if (!selectedProduct.product_id) {
+      toast('Debes seleccionar un producto para agregar');
+      return
+    }
+
+    if (!selectedProductPresentation?.product_presentation_id) {
+      toast('Debes seleccionar una presentacion para agregar');
+      return
+    }
+
+    if (!formData.initial_stock_quantity || formData.initial_stock_quantity <= 0) {
+      toast('Debes ingresar la cantidad de stock nuevo');
+      return;
+    }
+
+    const hasAssignedStock = stock.some(s => (s.quantity || 0) > 0);
+    if (!hasAssignedStock) {
+      setPendingConfirm(true);
+      return;
+    }
+
+    doSubmit();
+  };
+
   const handleClose = () => {
     setIsModalOpen(false);
     setIsEditing(false);
@@ -224,6 +239,7 @@ export function AddLotBtn({
     setSelectedProductPresentation(null);
     setStock([]);
     setLotContainersStock([]);
+    setPendingConfirm(false);
 
   };
 
@@ -629,8 +645,8 @@ export function AddLotBtn({
                       {/* Header */}
                       <div className="grid grid-cols-[120px_1fr_1fr_1fr] gap-3 w-full mb-1 px-1">
                         <div />
-                        <p className="text-xs font-medium text-muted-foreground text-center">Por unidad / Kg</p>
                         <p className="text-xs font-medium text-muted-foreground text-center">Por bulto</p>
+                        <p className="text-xs font-medium text-muted-foreground text-center">Por unidad / Kg</p>
                         <p className="text-xs font-medium text-muted-foreground text-center">Total</p>
                       </div>
 
@@ -638,12 +654,12 @@ export function AddLotBtn({
                       <div className="grid grid-cols-[120px_1fr_1fr_1fr] gap-3 w-full items-end">
                         <p className="text-sm font-medium pb-2 text-right pr-2">Compra</p>
                         <MoneyInput
-                          value={formData.purchase_cost_per_unit || undefined}
-                          onChange={(v) => handleUpdateLotField("purchase_cost_per_unit", Number(v))}
-                        />
-                        <MoneyInput
                           value={formData.purchase_cost_per_bulk || undefined}
                           onChange={(v) => handleUpdateLotField("purchase_cost_per_bulk", Number(v))}
+                        />
+                        <MoneyInput
+                          value={formData.purchase_cost_per_unit || undefined}
+                          onChange={(v) => handleUpdateLotField("purchase_cost_per_unit", Number(v))}
                         />
                         <MoneyInput
                           value={formData.purchase_cost_total || undefined}
@@ -655,12 +671,12 @@ export function AddLotBtn({
                       <div className="grid grid-cols-[120px_1fr_1fr_1fr] gap-3 w-full items-end mt-2">
                         <p className="text-sm font-medium pb-2 text-right pr-2">Envío</p>
                         <MoneyInput
-                          value={formData.delivery_cost_per_unit || undefined}
-                          onChange={(v) => handleUpdateLotField("delivery_cost_per_unit", v ?? 0)}
-                        />
-                        <MoneyInput
                           value={formData.delivery_cost_per_bulk || undefined}
                           onChange={(v) => handleUpdateLotField("delivery_cost_per_bulk", v ?? 0)}
+                        />
+                        <MoneyInput
+                          value={formData.delivery_cost_per_unit || undefined}
+                          onChange={(v) => handleUpdateLotField("delivery_cost_per_unit", v ?? 0)}
                         />
                         <MoneyInput
                           value={formData.delivery_cost_total || undefined}
@@ -672,12 +688,12 @@ export function AddLotBtn({
                       <div className="grid grid-cols-[120px_1fr_1fr_1fr] gap-3 w-full items-end mt-2">
                         <p className="text-sm font-medium pb-2 text-right pr-2">Descarga</p>
                         <MoneyInput
-                          value={formData.download_cost_per_unit || undefined}
-                          onChange={(v) => handleUpdateLotField("download_cost_per_unit", v ?? 0)}
-                        />
-                        <MoneyInput
                           value={formData.download_cost_per_bulk || undefined}
                           onChange={(v) => handleUpdateLotField("download_cost_per_bulk", v ?? 0)}
+                        />
+                        <MoneyInput
+                          value={formData.download_cost_per_unit || undefined}
+                          onChange={(v) => handleUpdateLotField("download_cost_per_unit", v ?? 0)}
                         />
                         <MoneyInput
                           value={formData.download_total_cost || undefined}
@@ -701,12 +717,12 @@ export function AddLotBtn({
                         <p className="text-sm font-semibold pb-2 text-right pr-2">Total final</p>
                         <MoneyInput
                           disabled
-                          value={formData.final_cost_per_unit || undefined}
+                          value={formData.final_cost_per_bulk || undefined}
                           onChange={() => {}}
                         />
                         <MoneyInput
                           disabled
-                          value={formData.final_cost_per_bulk || undefined}
+                          value={formData.final_cost_per_unit || undefined}
                           onChange={() => {}}
                         />
                         <MoneyInput
@@ -907,6 +923,12 @@ export function AddLotBtn({
 
           {Object.keys(selectedProduct).length > 0 && (
             <>
+              {pendingConfirm && (
+                <span className="mr-auto text-sm text-amber-600 font-medium">
+                  ⚠️ El stock no fue asignado a ninguna ubicación. ¿Deseás continuar de todas formas?
+                </span>
+              )}
+
               <DialogClose asChild>
                 <Button disabled={loading} variant={"outline"} onClick={() => {
                   setSelectedProduct({} as Product);
@@ -917,18 +939,20 @@ export function AddLotBtn({
                 </Button>
               </DialogClose>
 
-              {/* {isEditing ? (
-                <Button variant={"outline"} onClick={() => setIsEditing(false)}>
-                Cancelar
+              {pendingConfirm ? (
+                <>
+                  <Button variant="outline" onClick={() => setPendingConfirm(false)}>
+                    Volver
+                  </Button>
+                  <Button disabled={loading} variant="destructive" onClick={doSubmit}>
+                    {loading ? "Agregando..." : "Continuar sin asignar"}
+                  </Button>
+                </>
+              ) : (
+                <Button disabled={loading} onClick={handleSubmit}>
+                  {loading ? "Agregando..." : "Agregar"}
                 </Button>
-                ) : (
-                  <Button onClick={() => setIsEditing(true)}>Modificar</Button>
-                  )} */}
-
-
-              <Button disabled={loading} onClick={handleSubmit}>{
-                loading ? "Agregando..." : "Agregar"}</Button>
-
+              )}
             </>
           )}
 

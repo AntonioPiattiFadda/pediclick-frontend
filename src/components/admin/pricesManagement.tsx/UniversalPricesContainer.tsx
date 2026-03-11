@@ -42,6 +42,7 @@ const UniversalPricesContainer = ({ productPresentationId, finalCost, bulkQuanti
 
     return (
         <UniversalPrices
+            key={productPresentationId}
             productPresentationId={productPresentationId}
             finalCost={finalCost}
             disabled={false}
