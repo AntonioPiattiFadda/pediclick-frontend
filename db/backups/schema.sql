@@ -338,11 +338,6 @@ begin
         delivery_cost_per_unit,
         extra_cost_per_unit,
         final_cost_per_unit,
-        -- ❌ eliminados: purchase_cost_total, purchase_cost_per_bulk
-        -- ❌ eliminados: download_total_cost,  download_cost_per_bulk
-        -- ❌ eliminados: delivery_cost_total,  delivery_cost_per_bulk
-        -- ❌ eliminados: final_cost_total,     final_cost_per_bulk
-        -- ❌ eliminado:  extra_cost_total (renombrado a extra_cost_per_unit)
         is_sold_out,
         is_expired,
         created_at
@@ -399,16 +394,19 @@ begin
 
     ---------------------------------------------------------------------------
     -- INSERT lot_containers_stock
+    -- FIX: replace CREATE TEMP TABLE ... ON COMMIT DROP with CTE
+    --      (compatible with PgBouncer transaction pooling mode)
+    -- FIX: client_id cast from ::bigint -> ::uuid (uuid after migration)
     ---------------------------------------------------------------------------
-    create temp table tmp_lc on commit drop as
-    select
+    with tmp_lc as (
+      select
         (lc->>'lot_container_id')::bigint      as lot_container_id,
         nullif(lc->>'location_id', '')::bigint as location_id,
         (lc->>'quantity')::numeric             as quantity,
-        nullif(lc->>'client_id', '')::bigint   as client_id,
+        nullif(lc->>'client_id', '')::uuid     as client_id,
         nullif(lc->>'provider_id', '')::bigint as provider_id
-    from jsonb_array_elements(v_lc_checked) lc;
-
+      from jsonb_array_elements(v_lc_checked) lc
+    )
     insert into lot_containers_stock (
         organization_id, stock_id, lot_container_id,
         quantity, created_at, location_id, client_id, provider_id
@@ -428,8 +426,6 @@ begin
         lc.client_id,
         lc.provider_id
     from tmp_lc lc;
-
-    drop table tmp_lc;
 
     return jsonb_build_object('lot_id', v_lot_id);
 
@@ -560,111 +556,109 @@ $$;
 ALTER FUNCTION "public"."apply_client_credit_adjustment"("p_client_id" "uuid", "p_amount" numeric, "p_credit_direction" "text") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."apply_transformation_stock"("p_is_origin" boolean, "p_origin_stock_id" bigint, "p_stock_id" bigint, "p_quantity" numeric, "p_location_id" bigint, "p_lot" "jsonb") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."apply_transformation_stock"("p_is_origin" boolean, "p_origin_stock_id" "uuid", "p_stock_id" "uuid", "p_quantity" numeric, "p_location_id" bigint, "p_lot" "jsonb") RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 declare
-    v_origin_lot_id     bigint;
-    v_existing_lot_id   bigint;
-    v_existing_stock_id bigint;
-    v_new_lot_id        bigint;
-    v_new_stock_id      bigint;
+  v_origin_lot_id     bigint;
+  v_existing_lot_id   bigint;
+  v_existing_stock_id uuid;
+  v_new_lot_id        bigint;
+  v_new_stock_id      uuid;
 begin
-    select lot_id into v_origin_lot_id
-    from stock
-    where stock_id = p_origin_stock_id;
+  select lot_id into v_origin_lot_id
+  from stock
+  where stock_id = p_origin_stock_id;
 
-    if v_origin_lot_id is null then
-        raise exception 'Origin lot not found for stock_id %', p_origin_stock_id;
-    end if;
+  if v_origin_lot_id is null then
+      raise exception 'Origin lot not found for stock_id %', p_origin_stock_id;
+  end if;
 
-    -------------------------------------------------------------------
-    -- 🟥 ORIGEN: restar stock y retornar
-    -------------------------------------------------------------------
-    if p_is_origin is true then
-        update stock
-        set quantity = quantity - p_quantity
-        where stock_id = p_origin_stock_id;
+  -------------------------------------------------------------------
+  -- ORIGEN: restar stock y retornar
+  -------------------------------------------------------------------
+  if p_is_origin is true then
+      update stock
+      set quantity = quantity - p_quantity
+      where stock_id = p_origin_stock_id;
 
-        return jsonb_build_object(
-            'lot_id',           v_origin_lot_id,
-            'stock_id',         p_origin_stock_id,
-            'quantity_applied', -p_quantity
-        );
-    end if;
+      return jsonb_build_object(
+          'lot_id',           v_origin_lot_id,
+          'stock_id',         p_origin_stock_id,
+          'quantity_applied', -p_quantity
+      );
+  end if;
 
-    -------------------------------------------------------------------
-    -- 🔍 DESTINO: buscar lote ya existente desde este origen
-    -------------------------------------------------------------------
-    select l.lot_id, s.stock_id
-    into v_existing_lot_id, v_existing_stock_id
-    from lot_traces t
-    join lots  l on l.lot_id = t.lot_to_id
-    join stock s on s.lot_id = l.lot_id
-    where t.lot_from_id = v_origin_lot_id
-      and l.product_id  = (p_lot->>'product_id')::bigint
-      and s.location_id = p_location_id
-    limit 1;
+  -------------------------------------------------------------------
+  -- DESTINO: buscar lote ya existente desde este origen
+  -------------------------------------------------------------------
+  select l.lot_id, s.stock_id
+  into v_existing_lot_id, v_existing_stock_id
+  from lot_traces t
+  join lots  l on l.lot_id = t.lot_to_id
+  join stock s on s.lot_id = l.lot_id
+  where t.lot_from_id = v_origin_lot_id
+    and l.product_id  = (p_lot->>'product_id')::bigint
+    and s.location_id = p_location_id
+  limit 1;
 
-    -------------------------------------------------------------------
-    -- 🟢 Reusar lote existente
-    -------------------------------------------------------------------
-    if v_existing_stock_id is not null then
-        update stock
-        set quantity = quantity + p_quantity
-        where stock_id = v_existing_stock_id;
+  -------------------------------------------------------------------
+  -- Reusar lote existente
+  -------------------------------------------------------------------
+  if v_existing_stock_id is not null then
+      update stock
+      set quantity = quantity + p_quantity
+      where stock_id = v_existing_stock_id;
 
-        return jsonb_build_object(
-            'lot_id',           v_existing_lot_id,
-            'stock_id',         v_existing_stock_id,
-            'quantity_applied', p_quantity,
-            'reused_lot',       true
-        );
-    end if;
+      return jsonb_build_object(
+          'lot_id',           v_existing_lot_id,
+          'stock_id',         v_existing_stock_id,
+          'quantity_applied', p_quantity,
+          'reused_lot',       true
+      );
+  end if;
 
-    -------------------------------------------------------------------
-    -- 🆕 Crear lote nuevo
-    -- Solo se guarda final_cost_per_unit (dato atómico).
-    -- final_cost_total = final_cost_per_unit × initial_stock_quantity → on the fly
-    -- ❌ final_cost_per_bulk eliminado
-    -- ❌ final_cost_total eliminado
-    -------------------------------------------------------------------
-    insert into lots (
-        product_id,
-        provider_id,
-        expiration_date,
-        expiration_date_notification,
-        initial_stock_quantity,
-        final_cost_per_unit
-    )
-    values (
-        (p_lot->>'product_id')::bigint,
-        (p_lot->>'provider_id')::bigint,
-        (p_lot->>'expiration_date')::timestamptz,
-        (p_lot->>'expiration_date_notification')::boolean,
-        p_quantity,
-        (p_lot->>'final_cost_per_unit')::numeric
-    )
-    returning lot_id into v_new_lot_id;
+  -------------------------------------------------------------------
+  -- Crear lote nuevo
+  -- Solo se guarda final_cost_per_unit (dato atómico).
+  -- final_cost_total = final_cost_per_unit × initial_stock_quantity → on the fly
+  -------------------------------------------------------------------
+  insert into lots (
+      product_id,
+      provider_id,
+      expiration_date,
+      expiration_date_notification,
+      initial_stock_quantity,
+      final_cost_per_unit
+  )
+  values (
+      (p_lot->>'product_id')::bigint,
+      (p_lot->>'provider_id')::bigint,
+      (p_lot->>'expiration_date')::timestamptz,
+      (p_lot->>'expiration_date_notification')::boolean,
+      p_quantity,
+      (p_lot->>'final_cost_per_unit')::numeric
+  )
+  returning lot_id into v_new_lot_id;
 
-    insert into stock (lot_id, quantity, stock_type, product_id, location_id)
-    values (v_new_lot_id, p_quantity, 'STORE', (p_lot->>'product_id')::bigint, p_location_id)
-    returning stock_id into v_new_stock_id;
+  insert into stock (lot_id, quantity, stock_type, product_id, location_id)
+  values (v_new_lot_id, p_quantity, 'STORE', (p_lot->>'product_id')::bigint, p_location_id)
+  returning stock_id into v_new_stock_id;
 
-    perform public.create_lot_trace(v_origin_lot_id, v_new_lot_id);
+  perform public.create_lot_trace(v_origin_lot_id, v_new_lot_id);
 
-    return jsonb_build_object(
-        'lot_id',           v_new_lot_id,
-        'stock_id',         v_new_stock_id,
-        'quantity_applied', p_quantity,
-        'reused_lot',       false
-    );
+  return jsonb_build_object(
+      'lot_id',           v_new_lot_id,
+      'stock_id',         v_new_stock_id,
+      'quantity_applied', p_quantity,
+      'reused_lot',       false
+  );
 end;
 $$;
 
 
-ALTER FUNCTION "public"."apply_transformation_stock"("p_is_origin" boolean, "p_origin_stock_id" bigint, "p_stock_id" bigint, "p_quantity" numeric, "p_location_id" bigint, "p_lot" "jsonb") OWNER TO "postgres";
+ALTER FUNCTION "public"."apply_transformation_stock"("p_is_origin" boolean, "p_origin_stock_id" "uuid", "p_stock_id" "uuid", "p_quantity" numeric, "p_location_id" bigint, "p_lot" "jsonb") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."assign_stock_to_location"("p_from_stock_data" "jsonb", "p_stock_movement" "jsonb") RETURNS "jsonb"
@@ -672,13 +666,13 @@ CREATE OR REPLACE FUNCTION "public"."assign_stock_to_location"("p_from_stock_dat
     SET "search_path" TO 'public'
     AS $$
 declare
-  v_from_stock_id bigint := (p_from_stock_data->>'stock_id')::bigint;
+  v_from_stock_id uuid := (p_from_stock_data->>'stock_id')::uuid;
 
   v_product_id bigint;
   v_stock record;
   v_to_stock record;
 
-  v_stock_movement_id bigint;
+  v_stock_movement_id uuid;
   v_quantity numeric := (p_stock_movement->>'quantity')::numeric;
   v_to_location_id bigint := (p_stock_movement->>'to_location_id')::bigint;
   v_product_presentation_id bigint := (p_stock_movement->>'product_presentation_id')::bigint;
@@ -689,7 +683,7 @@ declare
 begin
 
   ---------------------------------------------------------------------------
-  -- 1️⃣ Obtener bulk_quantity_equivalence de la presentación
+  -- 1. Obtener bulk_quantity_equivalence de la presentación
   ---------------------------------------------------------------------------
   select bulk_quantity_equivalence
   into v_bulk_qty_eq
@@ -703,7 +697,7 @@ begin
   v_quantity_base_units := v_quantity * v_bulk_qty_eq;
 
   ---------------------------------------------------------------------------
-  -- 2️⃣ Obtener stock origen
+  -- 2. Obtener stock origen
   ---------------------------------------------------------------------------
   select *
   into v_stock
@@ -718,7 +712,7 @@ begin
   v_product_id := v_stock.product_id;
 
   ---------------------------------------------------------------------------
-  -- 3️⃣ Insertar movimiento
+  -- 3. Insertar movimiento
   ---------------------------------------------------------------------------
   insert into stock_movements (
     lot_id,
@@ -745,12 +739,16 @@ begin
   returning stock_movement_id into v_stock_movement_id;
 
   ---------------------------------------------------------------------------
-  -- 4️⃣ Restar stock origen
+  -- 4. Restar stock origen
   ---------------------------------------------------------------------------
   perform subtract_stock_quantity(v_from_stock_id, v_quantity_base_units);
 
   ---------------------------------------------------------------------------
-  -- 5️⃣ Sumar o compensar stock destino (OVERSALE SAFE)
+  -- 5. Sumar o compensar stock destino (OVERSALE SAFE)
+  -- ⚠️ KNOWN RISK: If two concurrent transfers go A→B and B→A simultaneously,
+  -- a deadlock is possible because this function locks source stock then destination stock.
+  -- TODO: Acquire both locks in stock_id ASC order to eliminate the risk.
+  -- For now, PostgreSQL's deadlock detector will resolve these cases via rollback+retry.
   ---------------------------------------------------------------------------
   select *
   into v_to_stock
@@ -794,23 +792,24 @@ $$;
 ALTER FUNCTION "public"."assign_stock_to_location"("p_from_stock_data" "jsonb", "p_stock_movement" "jsonb") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."cancel_order"("p_order" "jsonb", "p_order_items" "jsonb", "p_notification" "jsonb") RETURNS TABLE("order_id" bigint)
+CREATE OR REPLACE FUNCTION "public"."cancel_order"("p_order" "jsonb", "p_order_items" "jsonb", "p_notification" "jsonb") RETURNS TABLE("order_id" "uuid")
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 declare
-  v_order_id bigint;
-  v_item jsonb;
-  v_order_lot_id bigint;
-  v_stock_id bigint;
+  v_order_id          uuid;
+  v_item              jsonb;
+  v_order_lot_id      bigint;
+  v_stock_id          uuid;
   v_qty_in_base_units numeric;
+  v_lot_is_closed     boolean;
 begin
-  v_order_id := (p_order->>'order_id')::bigint;
+  v_order_id := (p_order->>'order_id')::uuid;
 
   update public.orders o
   set
     client_type   = (p_order->>'client_type')::client_type,
-    client_id     = nullif(p_order->>'client_id','')::bigint,
+    client_id     = nullif(p_order->>'client_id','')::uuid,
     provider_id   = nullif(p_order->>'provider_id','')::bigint,
     order_type    = (p_order->>'order_type')::order_type,
     order_status  = 'CANCELLED'::order_status,
@@ -831,7 +830,7 @@ begin
   for v_item in select * from jsonb_array_elements(p_order_items)
   loop
     v_order_lot_id      := (v_item->>'lot_id')::bigint;
-    v_stock_id          := (v_item->>'stock_id')::bigint;
+    v_stock_id          := (v_item->>'stock_id')::uuid;
     v_qty_in_base_units := coalesce(
       (v_item->>'qty_in_base_units')::numeric,
       (v_item->>'quantity')::numeric
@@ -857,13 +856,28 @@ begin
     );
 
     if v_stock_id is not null and v_qty_in_base_units > 0 then
-      update stock s
-      set quantity = s.quantity + v_qty_in_base_units,
-          updated_at = now()
-      where s.stock_id = v_stock_id;
 
+      -- NOTE: The README spec refers to "is_closed" — in the current schema, the equivalent
+      -- column is "is_sold_out". There is no separate "is_closed" column on lots.
+      -- We skip stock restoration if the lot is already marked as sold out / closed.
       if v_order_lot_id is not null then
-        perform update_lot_sold_out_status(v_order_lot_id);
+        select is_sold_out
+        into v_lot_is_closed
+        from lots
+        where lot_id = v_order_lot_id;
+      else
+        v_lot_is_closed := false;
+      end if;
+
+      if not coalesce(v_lot_is_closed, false) then
+        update stock s
+        set quantity = s.quantity + v_qty_in_base_units,
+            updated_at = now()
+        where s.stock_id = v_stock_id;
+
+        if v_order_lot_id is not null then
+          perform update_lot_sold_out_status(v_order_lot_id);
+        end if;
       end if;
     end if;
   end loop;
@@ -894,7 +908,7 @@ CREATE OR REPLACE FUNCTION "public"."compensate_over_sell_lots"("p_lot" "jsonb",
     SET "search_path" TO 'public'
     AS $$
 declare
-  v_last_stock_id bigint;
+  v_last_stock_id uuid;
   v_last_lot_id bigint;
   v_over_sell_qty numeric;
 
@@ -910,14 +924,13 @@ declare
 
 begin
   --------------------------------------------------------------------
-  -- 1️⃣ Location principal del stock entrante
+  -- 1. Location principal del stock entrante
   --------------------------------------------------------------------
   v_location_id :=
     nullif(p_stocks->0->>'location_id','')::bigint;
 
   --------------------------------------------------------------------
-  -- 2️⃣ Traer último oversell real
-  --    ❌ eliminado p_product_presentation_id del call
+  -- 2. Traer último oversell real
   --------------------------------------------------------------------
   select
     stock_id,
@@ -929,12 +942,11 @@ begin
     v_over_sell_qty
   from public.get_last_over_sell_stock(
     (p_lot->>'product_id')::bigint,
-    -- ❌ eliminado: (p_lot->>'product_presentation_id')::bigint,
     v_location_id
   );
 
   --------------------------------------------------------------------
-  -- 3️⃣ Si NO hay oversell → seguir normal
+  -- 3. Si NO hay oversell → seguir normal
   --------------------------------------------------------------------
   if v_last_stock_id is null then
     return jsonb_build_object(
@@ -946,12 +958,14 @@ begin
   end if;
 
   --------------------------------------------------------------------
-  -- 4️⃣ Compensar oversell contra stocks entrantes
+  -- 4. Compensar oversell contra stocks entrantes
+  --    FIX: usar COALESCE en todos los campos quantity del JSONB
+  --    para evitar explosión silenciosa cuando quantity = null
   --------------------------------------------------------------------
   for v_stock in
     select * from jsonb_array_elements(p_stocks)
   loop
-    v_original_quantity := (v_stock->>'quantity')::numeric;
+    v_original_quantity := coalesce((v_stock->>'quantity')::numeric, 0);
     v_new_quantity := v_original_quantity;
     v_compensated_this := 0;
 
@@ -970,7 +984,7 @@ begin
   end loop;
 
   --------------------------------------------------------------------
-  -- 4.5️⃣ Persistir compensación en BD
+  -- 4.5 Persistir compensación en BD
   --------------------------------------------------------------------
   if v_compensated_total > 0 then
     update stock
@@ -990,12 +1004,12 @@ begin
   end if;
 
   --------------------------------------------------------------------
-  -- 5️⃣ Si todo el stock entrante fue absorbido → cortar
+  -- 5. Si todo el stock entrante fue absorbido → cortar
   --------------------------------------------------------------------
   if not exists (
     select 1
     from jsonb_array_elements(v_stock_arr) s
-    where (s->>'quantity')::numeric > 0
+    where coalesce((s->>'quantity')::numeric, 0) > 0
   ) then
     return jsonb_build_object(
       'lot', p_lot,
@@ -1006,7 +1020,7 @@ begin
   end if;
 
   --------------------------------------------------------------------
-  -- 6️⃣ Recalcular quantity real del nuevo lote
+  -- 6. Recalcular quantity real del nuevo lote
   --------------------------------------------------------------------
   return jsonb_build_object(
     'lot',
@@ -1015,7 +1029,7 @@ begin
         '{initial_stock_quantity}',
         to_jsonb(
           (
-            select sum((s->>'quantity')::numeric)
+            select sum(coalesce((s->>'quantity')::numeric, 0))
             from jsonb_array_elements(v_stock_arr) s
           )
         )
@@ -1246,12 +1260,12 @@ CREATE TABLE IF NOT EXISTS "public"."orders" (
 ALTER TABLE "public"."orders" OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."create_simple_order"("p_organization_id" "uuid", "p_location_id" bigint, "p_client_id" bigint) RETURNS "public"."orders"
+CREATE OR REPLACE FUNCTION "public"."create_simple_order"("p_organization_id" "uuid", "p_location_id" bigint, "p_client_id" "uuid") RETURNS "public"."orders"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 declare
-  v_order orders;
+  v_order       orders;
   v_order_number bigint;
 begin
   -- Generar número correlativo para la tienda
@@ -1279,15 +1293,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."create_simple_order"("p_organization_id" "uuid", "p_location_id" bigint, "p_client_id" bigint) OWNER TO "postgres";
+ALTER FUNCTION "public"."create_simple_order"("p_organization_id" "uuid", "p_location_id" bigint, "p_client_id" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."create_stock_movement_waste"("p_lot_id" bigint, "p_stock_id" bigint, "p_movement_type" "public"."movement_type", "p_quantity" numeric, "p_qty_in_base_units" numeric, "p_product_presentation_id" bigint, "p_from_location_id" bigint, "p_to_location_id" bigint, "p_should_notify_owner" boolean, "p_created_by" "uuid") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."create_stock_movement_waste"("p_lot_id" bigint, "p_stock_id" "uuid", "p_movement_type" "public"."movement_type", "p_quantity" numeric, "p_qty_in_base_units" numeric, "p_product_presentation_id" bigint, "p_from_location_id" bigint, "p_to_location_id" bigint, "p_should_notify_owner" boolean, "p_created_by" "uuid") RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 declare
-  v_stock_movement_id bigint;
+  v_stock_movement_id uuid;
 begin
   -- 1. Reducir stock en base units
   perform public.update_stock_waste(p_stock_id, p_qty_in_base_units);
@@ -1314,7 +1328,7 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."create_stock_movement_waste"("p_lot_id" bigint, "p_stock_id" bigint, "p_movement_type" "public"."movement_type", "p_quantity" numeric, "p_qty_in_base_units" numeric, "p_product_presentation_id" bigint, "p_from_location_id" bigint, "p_to_location_id" bigint, "p_should_notify_owner" boolean, "p_created_by" "uuid") OWNER TO "postgres";
+ALTER FUNCTION "public"."create_stock_movement_waste"("p_lot_id" bigint, "p_stock_id" "uuid", "p_movement_type" "public"."movement_type", "p_quantity" numeric, "p_qty_in_base_units" numeric, "p_product_presentation_id" bigint, "p_from_location_id" bigint, "p_to_location_id" bigint, "p_should_notify_owner" boolean, "p_created_by" "uuid") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."create_transformation"("p_transformation_data" "jsonb", "p_transformation_items" "jsonb") RETURNS "jsonb"
@@ -1365,20 +1379,22 @@ $$;
 ALTER FUNCTION "public"."current_organization_id"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."delete_delivery_order_item"("p_order_item_id" bigint, "p_stock_id" bigint) RETURNS "void"
+CREATE OR REPLACE FUNCTION "public"."delete_delivery_order_item"("p_order_item_id" "uuid", "p_stock_id" "uuid") RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 declare
-  v_quantity numeric;
+  v_qty_in_base_units  numeric;
   v_over_sell_quantity numeric;
-  v_total_reserved numeric;
+  v_total_reserved     numeric;
 begin
   ------------------------------------------------------------------
-  -- 📋 Obtener cantidades del order_item
+  -- Obtener cantidades del order_item
+  -- FIX: usar qty_in_base_units en lugar de quantity para calcular
+  --      v_total_reserved (consistencia de unidades)
   ------------------------------------------------------------------
-  select quantity, over_sell_quantity
-  into v_quantity, v_over_sell_quantity
+  select qty_in_base_units, over_sell_quantity
+  into v_qty_in_base_units, v_over_sell_quantity
   from order_items
   where order_item_id = p_order_item_id;
 
@@ -1386,10 +1402,10 @@ begin
     raise exception 'Order item % no encontrado', p_order_item_id;
   end if;
 
-  v_total_reserved := v_quantity + v_over_sell_quantity;
+  v_total_reserved := coalesce(v_qty_in_base_units, 0) + coalesce(v_over_sell_quantity, 0);
 
   ------------------------------------------------------------------
-  -- ❌ Actualizar status a CANCELLED
+  -- Actualizar status a CANCELLED
   ------------------------------------------------------------------
   update order_items
   set status = 'CANCELLED',
@@ -1397,7 +1413,8 @@ begin
   where order_item_id = p_order_item_id;
 
   ------------------------------------------------------------------
-  -- 🔓 Descontar reserved_for_selling_quantity  ------------------------------------------------------------------
+  -- Descontar reserved_for_selling_quantity
+  ------------------------------------------------------------------
   update stock
   set reserved_for_selling_quantity = coalesce(reserved_for_selling_quantity, 0) - v_total_reserved,
       updated_at = now()
@@ -1406,10 +1423,10 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."delete_delivery_order_item"("p_order_item_id" bigint, "p_stock_id" bigint) OWNER TO "postgres";
+ALTER FUNCTION "public"."delete_delivery_order_item"("p_order_item_id" "uuid", "p_stock_id" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."deliver_order"("p_order_id" bigint) RETURNS "void"
+CREATE OR REPLACE FUNCTION "public"."deliver_order"("p_order_id" "uuid") RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
@@ -1417,13 +1434,16 @@ declare
   v_items jsonb;
 begin
   ------------------------------------------------------------------
-  -- 📦 Obtener todos los order_items PENDING
+  -- Obtener todos los order_items PENDING
   ------------------------------------------------------------------
   select jsonb_agg(
     jsonb_build_object(
-      'order_item_id', oi.order_item_id,
-      'stock_id', oi.stock_id,
-      'quantity', oi.quantity,
+      'order_item_id',    oi.order_item_id,
+      'stock_id',         oi.stock_id,
+      -- FIX: incluir qty_in_base_units explícitamente para que
+      -- process_delivered_items_stock no use el fallback a quantity
+      'qty_in_base_units', oi.qty_in_base_units,
+      'quantity',         oi.quantity,
       'over_sell_quantity', oi.over_sell_quantity
     )
   )
@@ -1433,7 +1453,7 @@ begin
     and oi.status = 'PENDING';
 
   ------------------------------------------------------------------
-  -- ✅ Actualizar order_items a COMPLETED
+  -- Actualizar order_items a COMPLETED
   ------------------------------------------------------------------
   update order_items
   set status = 'COMPLETED',
@@ -1442,7 +1462,7 @@ begin
     and status = 'PENDING';
 
   ------------------------------------------------------------------
-  -- 🚚 Actualizar orden a DELIVERED
+  -- Actualizar orden a DELIVERED
   ------------------------------------------------------------------
   update orders
   set order_status = 'DELIVERED',
@@ -1450,36 +1470,35 @@ begin
   where order_id = p_order_id;
 
   ------------------------------------------------------------------
-  -- 📊 Procesar stock para cada item
+  -- FIX: Procesar stock siempre (aunque v_items sea null)
+  -- Si todos los items estaban en otro status, v_items = null →
+  -- antes se salteaba el bloque y la orden quedaba DELIVERED sin
+  -- procesar stock. Ahora se llama igualmente con array vacío.
   ------------------------------------------------------------------
-  if v_items is not null then
-    perform process_delivered_items_stock(v_items);
-  end if;
+  perform process_delivered_items_stock(coalesce(v_items, '[]'::jsonb));
 end;
 $$;
 
 
-ALTER FUNCTION "public"."deliver_order"("p_order_id" bigint) OWNER TO "postgres";
+ALTER FUNCTION "public"."deliver_order"("p_order_id" "uuid") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."generate_order_number"("p_location_id" bigint) RETURNS bigint
-    LANGUAGE "plpgsql"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
     AS $$
 declare
   v_next_number bigint;
 begin
-  -- Insertar fila si no existe para ese store
-  insert into store_order_sequences (store_id, last_number)
+  insert into store_order_sequences (location_id, last_number)
   values (p_location_id, 0)
-  on conflict (store_id) do nothing;
+  on conflict (location_id) do nothing;
 
-  -- Incrementar y devolver
   update store_order_sequences
   set last_number = last_number + 1
-  where store_id = p_location_id
+  where location_id = p_location_id
   returning last_number into v_next_number;
 
-  -- Si es la primera vez → devolverá 1
   return v_next_number;
 end;
 $$;
@@ -1531,7 +1550,7 @@ $$;
 ALTER FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_last_over_sell_stock"() RETURNS 
+CREATE OR REPLACE FUNCTION "public"."get_last_over_sell_stock"("p_product_id" bigint, "p_location_id" bigint) RETURNS TABLE("stock_id" "uuid", "lot_id" bigint, "over_sell_quantity" numeric)
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
@@ -1544,7 +1563,6 @@ begin
   from stock s
   join lots l on l.lot_id = s.lot_id
   where l.product_id = p_product_id
-    -- ❌ eliminado: and l.product_presentation_id = p_product_presentation_id
     and s.location_id = p_location_id
     and coalesce(s.over_sell_quantity, 0) > 0
   order by l.created_at desc
@@ -1553,81 +1571,7 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."get_last_over_sell_stock"() OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."get_lot_ancestors"("p_lot_id" bigint) RETURNS TABLE("lot_from_id" bigint, "lot_to_id" bigint, "level" integer)
-    LANGUAGE "sql"
-    AS $$
-with recursive parents as (
-    select
-        lt.lot_from_id,
-        lt.lot_to_id,
-        1 as level
-    from lot_traces lt
-    where lt.lot_to_id = p_lot_id
-
-    union all
-
-    select
-        lt.lot_from_id,
-        lt.lot_to_id,
-        p.level + 1
-    from lot_traces lt
-    join parents p
-      on lt.lot_to_id = p.lot_from_id
-)
-select * from parents;
-$$;
-
-
-ALTER FUNCTION "public"."get_lot_ancestors"("p_lot_id" bigint) OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."get_lot_descendants"("p_lot_id" bigint) RETURNS TABLE("root_lot" bigint, "lot_from_id" bigint, "lot_to_id" bigint, "level" integer)
-    LANGUAGE "sql"
-    AS $$
-with recursive tree as (
-    select
-        lt.lot_from_id as root_lot,
-        lt.lot_from_id,
-        lt.lot_to_id,
-        1 as level
-    from lot_traces lt
-    where lt.lot_from_id = p_lot_id
-
-    union all
-
-    select
-        t.root_lot,
-        lt.lot_from_id,
-        lt.lot_to_id,
-        t.level + 1
-    from lot_traces lt
-    join tree t
-      on lt.lot_from_id = t.lot_to_id
-)
-select * from tree;
-$$;
-
-
-ALTER FUNCTION "public"."get_lot_descendants"("p_lot_id" bigint) OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."get_lot_lineage"("p_lot_id" bigint) RETURNS TABLE("lot_from_id" bigint, "lot_to_id" bigint, "direction" "text", "level" integer)
-    LANGUAGE "sql"
-    AS $$
-select lot_from_id, lot_to_id, 'down' as direction, level
-from public.get_lot_descendants(p_lot_id)
-
-union all
-
-select lot_from_id, lot_to_id, 'up' as direction, level
-from public.get_lot_ancestors(p_lot_id);
-$$;
-
-
-ALTER FUNCTION "public"."get_lot_lineage"("p_lot_id" bigint) OWNER TO "postgres";
+ALTER FUNCTION "public"."get_last_over_sell_stock"("p_product_id" bigint, "p_location_id" bigint) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_lot_sales"("p_lot_id" bigint) RETURNS TABLE("order_id" bigint, "order_number" bigint, "order_date" timestamp with time zone, "order_status" "text", "client_id" bigint, "order_item_id" bigint, "lot_id" bigint, "product_id" bigint, "product_name" "text", "quantity" numeric, "price" numeric, "total" numeric)
@@ -1663,74 +1607,37 @@ $$;
 ALTER FUNCTION "public"."get_lot_sales"("p_lot_id" bigint) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_lot_transformations"("p_lot_id" bigint) RETURNS TABLE("transformation_id" bigint, "transformation_date" timestamp with time zone, "transformation_cost" numeric, "notes" "text", "transformation_item_id" bigint, "is_origin" boolean, "ti_lot_id" bigint, "product_id" bigint, "product_name" "text", "quantity" numeric, "final_cost_total" numeric)
+CREATE OR REPLACE FUNCTION "public"."get_lot_transformations"("p_lot_id" bigint) RETURNS TABLE("transformation_id" bigint, "transformation_date" timestamp with time zone, "transformation_cost" numeric, "notes" "text", "transformation_item_id" bigint, "is_origin" boolean, "ti_lot_id" bigint, "product_id" bigint, "product_name" "text", "quantity" numeric)
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 BEGIN
-    RETURN QUERY
-    SELECT
-        t.transformation_id,
-        t.created_at            AS transformation_date,
-        t.transformation_cost,
-        t.notes,
-        ti.transformation_item_id,
-        ti.is_origin,
-        ti.lot_id               AS ti_lot_id,
-        ti.product_id,
-        p.product_name,
-        ti.quantity,
-        ti.final_cost_total
-    FROM transformation_items ti
-    JOIN transformations t ON t.transformation_id = ti.transformation_id
-    JOIN products        p ON p.product_id        = ti.product_id
-    WHERE ti.transformation_id IN (
-        SELECT ti2.transformation_id
-        FROM transformation_items ti2
-        WHERE ti2.lot_id = p_lot_id
-    )
-    ORDER BY t.created_at;
+  RETURN QUERY
+  SELECT
+    t.transformation_id,
+    t.created_at,
+    t.transformation_cost,
+    t.notes,
+    ti.transformation_item_id,
+    ti.is_origin,
+    ti.lot_id AS ti_lot_id,
+    ti.product_id,
+    p.product_name,
+    ti.quantity
+  FROM transformation_items ti
+  JOIN transformations t ON t.transformation_id = ti.transformation_id
+  JOIN products p ON p.product_id = ti.product_id
+  WHERE ti.transformation_id IN (
+    SELECT ti2.transformation_id
+    FROM transformation_items ti2
+    WHERE ti2.lot_id = p_lot_id
+  )
+  ORDER BY t.created_at;
 END;
 $$;
 
 
 ALTER FUNCTION "public"."get_lot_transformations"("p_lot_id" bigint) OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."get_lot_universe"("p_lot_id" bigint) RETURNS TABLE("lot_id" bigint)
-    LANGUAGE "sql"
-    AS $$
-with recursive down_tree as (
-    select lt.lot_to_id as lot_id
-    from lot_traces lt
-    where lt.lot_from_id = p_lot_id
-
-    union all
-
-    select lt.lot_to_id
-    from lot_traces lt
-    join down_tree d on lt.lot_from_id = d.lot_id
-),
-up_tree as (
-    select lt.lot_from_id as lot_id
-    from lot_traces lt
-    where lt.lot_to_id = p_lot_id
-
-    union all
-
-    select lt.lot_from_id
-    from lot_traces lt
-    join up_tree u on lt.lot_to_id = u.lot_id
-)
-select p_lot_id as lot_id
-union
-select lot_id from down_tree
-union
-select lot_id from up_tree;
-$$;
-
-
-ALTER FUNCTION "public"."get_lot_universe"("p_lot_id" bigint) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."get_lot_wastes"("p_lot_id" bigint) RETURNS TABLE("stock_movement_id" bigint, "waste_date" timestamp with time zone, "lot_id" bigint, "stock_id" bigint, "quantity" numeric, "from_location_id" bigint, "created_by" "uuid")
@@ -1949,9 +1856,9 @@ CREATE OR REPLACE FUNCTION "public"."process_delivered_items_stock"("p_items" "j
     AS $$
 declare
   v_item jsonb;
-  v_order_item_id bigint;
-  v_stock_id bigint;
-  v_qty_in_base_units numeric;      -- ✅ unidad base
+  v_order_item_id uuid;
+  v_stock_id      uuid;
+  v_qty_in_base_units numeric;
   v_over_sell_quantity numeric;
   v_total_reserved numeric;
   v_current_quantity numeric;
@@ -1959,25 +1866,27 @@ declare
 begin
   for v_item in select * from jsonb_array_elements(p_items)
   loop
-    v_order_item_id     := (v_item->>'order_item_id')::bigint;
-    v_stock_id          := (v_item->>'stock_id')::bigint;
-    -- ✅ usar qty_in_base_units para descontar; fallback a quantity si no existe
+    v_order_item_id     := (v_item->>'order_item_id')::uuid;
+    v_stock_id          := (v_item->>'stock_id')::uuid;
+    -- usar qty_in_base_units para descontar; fallback a quantity si no existe
     v_qty_in_base_units := coalesce(
       (v_item->>'qty_in_base_units')::numeric,
       (v_item->>'quantity')::numeric
     );
-    v_over_sell_quantity := (v_item->>'over_sell_quantity')::numeric;
-    v_total_reserved     := v_qty_in_base_units + v_over_sell_quantity;  -- ✅ unidad base
+    v_over_sell_quantity := coalesce((v_item->>'over_sell_quantity')::numeric, 0);
+    v_total_reserved     := v_qty_in_base_units + v_over_sell_quantity;
 
     ------------------------------------------------------------------
-    -- 📊 Obtener quantity actual del stock
+    -- FIX: Obtener quantity actual del stock con FOR UPDATE
+    --      para prevenir desincronización en retry parcial
     ------------------------------------------------------------------
     select quantity into v_current_quantity
     from stock
-    where stock_id = v_stock_id;
+    where stock_id = v_stock_id
+    for update;
 
     ------------------------------------------------------------------
-    -- 🔓 Descontar reserved_for_selling_quantity
+    -- Descontar reserved_for_selling_quantity
     ------------------------------------------------------------------
     update stock
     set reserved_for_selling_quantity = coalesce(reserved_for_selling_quantity, 0) - v_total_reserved,
@@ -1985,11 +1894,11 @@ begin
     where stock_id = v_stock_id;
 
     ------------------------------------------------------------------
-    -- 📦 Descontar de quantity usando qty_in_base_units
+    -- Descontar de quantity usando qty_in_base_units
     ------------------------------------------------------------------
     if v_current_quantity >= v_total_reserved then
       update stock
-      set quantity = quantity - v_total_reserved,   -- ✅ unidad base
+      set quantity = quantity - v_total_reserved,
           updated_at = now()
       where stock_id = v_stock_id;
     else
@@ -2010,12 +1919,12 @@ $$;
 ALTER FUNCTION "public"."process_delivered_items_stock"("p_items" "jsonb") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."register_client_payments"("p_client_id" bigint, "p_payments" "jsonb") RETURNS "void"
+CREATE OR REPLACE FUNCTION "public"."register_client_payments"("p_client_id" "uuid", "p_payments" "jsonb") RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 declare
-  v_payment jsonb;
+  v_payment     jsonb;
   v_new_balance numeric;
 begin
   -- Validación básica
@@ -2027,7 +1936,7 @@ begin
     select * from jsonb_array_elements(p_payments)
   loop
     ------------------------------------------------------------------
-    -- 1️⃣ Registrar el pago
+    -- 1. Registrar el pago
     ------------------------------------------------------------------
     insert into payments(
       client_id,
@@ -2045,12 +1954,12 @@ begin
       now(),
       (v_payment->>'payment_direction')::payment_direction,
       (v_payment->>'payment_type')::payment_type,
-      (v_payment->>'terminal_session_id')::bigint
+      (v_payment->>'terminal_session_id')::uuid
 
     );
 
     ------------------------------------------------------------------
-    -- 🔴 ON_CREDIT → aumenta deuda
+    -- ON_CREDIT → aumenta deuda
     ------------------------------------------------------------------
     if (v_payment->>'payment_method')::payment_method = 'ON_CREDIT' then
 
@@ -2086,7 +1995,7 @@ begin
       );
 
     ------------------------------------------------------------------
-    -- 🟢 OVERPAYMENT → saldo a favor
+    -- OVERPAYMENT → saldo a favor
     ------------------------------------------------------------------
     elsif (v_payment->>'payment_method')::payment_method = 'OVERPAYMENT' then
 
@@ -2122,7 +2031,7 @@ begin
       );
 
     ------------------------------------------------------------------
-    -- ⚪ Pagos normales (CASH / CARD / etc.)
+    -- Pagos normales (CASH / CARD / etc.)
     ------------------------------------------------------------------
     else
 
@@ -2158,15 +2067,15 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."register_client_payments"("p_client_id" bigint, "p_payments" "jsonb") OWNER TO "postgres";
+ALTER FUNCTION "public"."register_client_payments"("p_client_id" "uuid", "p_payments" "jsonb") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."register_order"("p_order" "jsonb", "p_order_items" "jsonb", "p_order_payments" "jsonb") RETURNS TABLE("order_id" bigint)
+CREATE OR REPLACE FUNCTION "public"."register_order"("p_order" "jsonb", "p_order_items" "jsonb", "p_order_payments" "jsonb") RETURNS TABLE("order_id" "uuid")
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 declare
-  v_order_id bigint;
+  v_order_id uuid;
 begin
   -- 1) HEADER
   v_order_id := public.register_order_header(p_order);
@@ -2232,22 +2141,23 @@ $$;
 ALTER FUNCTION "public"."register_order_header"("p_order" "jsonb") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."register_order_items"("p_order_id" bigint, "p_items" "jsonb") RETURNS "void"
+CREATE OR REPLACE FUNCTION "public"."register_order_items"("p_order_id" "uuid", "p_items" "jsonb") RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 declare
-  v_item jsonb;
-  v_quantity numeric;
-  v_qty_in_base_units numeric;
+  v_item               jsonb;
+  v_quantity           numeric;
+  v_qty_in_base_units  numeric;
   v_over_sell_quantity numeric;
-  v_location_id bigint;
-  v_new_qty numeric;
-  v_status movement_status;
-  v_lot_id bigint;
-  v_stock_id bigint;
-  v_order_item_id bigint;
-  v_order_type order_type;
+  v_location_id        bigint;
+  v_new_qty            numeric;
+  v_current_qty        numeric;
+  v_status             movement_status;
+  v_lot_id             bigint;
+  v_stock_id           uuid;
+  v_order_item_id      uuid;
+  v_order_type         order_type;
 begin
   select o.location_id, o.order_type
   into v_location_id, v_order_type
@@ -2261,7 +2171,7 @@ begin
     v_over_sell_quantity := coalesce((v_item->>'over_sell_quantity')::numeric, 0);
     v_status             := (v_item->>'status')::movement_status;
     v_lot_id             := (v_item->>'lot_id')::bigint;
-    v_stock_id           := (v_item->>'stock_id')::bigint;
+    v_stock_id           := (v_item->>'stock_id')::uuid;
 
     insert into order_items (
       order_id,
@@ -2321,7 +2231,7 @@ begin
 
     if v_stock_id is null then
       if v_over_sell_quantity > 0 then
-        select (r->>'lot_id')::bigint, (r->>'stock_id')::bigint
+        select (r->>'lot_id')::bigint, (r->>'stock_id')::uuid
         into v_lot_id, v_stock_id
         from resolve_oversell_stock(
           (v_item->>'product_id')::bigint,
@@ -2336,12 +2246,25 @@ begin
     end if;
 
     if v_qty_in_base_units > 0 then
+      -- FIX: SELECT FOR UPDATE before UPDATE to prevent race condition
+      select quantity
+      into v_current_qty
+      from stock s
+      where s.stock_id = v_stock_id
+      for update;
+
+      if v_current_qty < v_qty_in_base_units then
+        raise exception 'Stock insuficiente en stock_id=%. Disponible: %, Requerido: %',
+          v_stock_id, v_current_qty, v_qty_in_base_units;
+      end if;
+
       update stock s
       set quantity = s.quantity - v_qty_in_base_units,
           updated_at = now()
       where s.stock_id = v_stock_id
       returning s.quantity into v_new_qty;
 
+      -- Defensive check after update
       if v_new_qty < 0 then
         raise exception 'Stock insuficiente en stock_id=%', v_stock_id;
       end if;
@@ -2363,19 +2286,19 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."register_order_items"("p_order_id" bigint, "p_items" "jsonb") OWNER TO "postgres";
+ALTER FUNCTION "public"."register_order_items"("p_order_id" "uuid", "p_items" "jsonb") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."register_order_payments"("p_order_id" bigint, "p_payments" "jsonb") RETURNS "void"
+CREATE OR REPLACE FUNCTION "public"."register_order_payments"("p_order_id" "uuid", "p_payments" "jsonb") RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 
 declare
-  v_payment jsonb;
-  v_client_id bigint;
-  v_terminal_session_id bigint;
-  v_new_balance numeric;
+  v_payment             jsonb;
+  v_client_id           uuid;
+  v_terminal_session_id uuid;
+  v_new_balance         numeric;
 begin
   select client_id, terminal_session_id
   into v_client_id, v_terminal_session_id
@@ -2407,7 +2330,7 @@ begin
     if v_client_id is not null then
 
       ------------------------------------------------------------------
-      -- 🔴 ON_CREDIT → aumenta deuda
+      -- ON_CREDIT → aumenta deuda
       ------------------------------------------------------------------
      if (v_payment->>'payment_method')::payment_method = 'ON_CREDIT' then
 
@@ -2443,7 +2366,7 @@ begin
   );
 
       ------------------------------------------------------------------
-      -- 🟢 OVERPAYMENT → reduce deuda / saldo a favor
+      -- OVERPAYMENT → reduce deuda / saldo a favor
       ------------------------------------------------------------------
      elsif (v_payment->>'payment_method')::payment_method = 'OVERPAYMENT' then
 
@@ -2480,7 +2403,7 @@ begin
 
 
       ------------------------------------------------------------------
-      -- ⚪ Pagos normales (CASH / CARD / etc.)
+      -- Pagos normales (CASH / CARD / etc.)
       ------------------------------------------------------------------
       else
 
@@ -2517,176 +2440,25 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."register_order_payments"("p_order_id" bigint, "p_payments" "jsonb") OWNER TO "postgres";
+ALTER FUNCTION "public"."register_order_payments"("p_order_id" "uuid", "p_payments" "jsonb") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."register_payments"("p_order_id" bigint, "p_payments" "jsonb") RETURNS "void"
+CREATE OR REPLACE FUNCTION "public"."reserve_stock_for_delivery"("p_order_item_id" "uuid", "p_product_id" bigint, "p_location_id" bigint, "p_stock_id" "uuid", "p_qty_in_base_units" numeric, "p_over_sell_quantity" numeric) RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 declare
-  v_payment jsonb;
-  v_client_id bigint;
-  v_new_balance numeric;
-begin
-  select client_id
-  into v_client_id
-  from orders
-  where order_id = p_order_id;
-
-  for v_payment in
-    select * from jsonb_array_elements(p_payments)
-  loop
-    -- 1️⃣ Registrar el pago
-    insert into payments(
-      order_id,
-      payment_method,
-      amount,
-      created_at,
-      payment_direction,
-      payment_type
-    )
-    values (
-      p_order_id,
-      (v_payment->>'payment_method')::payment_method,
-      abs((v_payment->>'amount')::numeric),
-      now(),
-      (v_payment->>'payment_direction')::payment_direction,
-       (v_payment->>'payment_type')::payment_type
-    );
-
-    if v_client_id is not null then
-
-      ------------------------------------------------------------------
-      -- 🔴 ON_CREDIT → aumenta deuda
-      ------------------------------------------------------------------
-     if (v_payment->>'payment_method')::payment_method = 'ON_CREDIT' then
-
-  v_new_balance := apply_client_credit_adjustment(
-    v_client_id,
-    abs((v_payment->>'amount')::numeric),
-    'NEGATIVE'
-  );
-
-  insert into client_transactions(
-    client_id,
-    order_id,
-    amount,
-    description,
-    transaction_type,
-    transaction_date,
-    payment_method,
-    payment_status,
-    balance_after_transaction,
-    created_at
-  )
-  values (
-    v_client_id,
-    p_order_id,
-    abs((v_payment->>'amount')::numeric),
-    concat('Consumo a crédito - orden #', p_order_id),
-    'PAYMENT',
-    now(),
-    'ON_CREDIT',
-    'PENDING',
-    v_new_balance,
-    now()
-  );
-
-      ------------------------------------------------------------------
-      -- 🟢 OVERPAYMENT → reduce deuda / saldo a favor
-      ------------------------------------------------------------------
-     elsif (v_payment->>'payment_method')::payment_method = 'OVERPAYMENT' then
-
-  v_new_balance := apply_client_credit_adjustment(
-    v_client_id,
-    abs((v_payment->>'amount')::numeric),
-    'POSITIVE'
-  );
-
-  insert into client_transactions(
-    client_id,
-    order_id,
-    amount,
-    description,
-    transaction_type,
-    transaction_date,
-    payment_method,
-    payment_status,
-    balance_after_transaction,
-    created_at
-  )
-  values (
-    v_client_id,
-    p_order_id,
-    abs((v_payment->>'amount')::numeric),
-    concat('Saldo a favor - orden #', p_order_id),
-    'PAYMENT',
-    now(),
-    'OVERPAYMENT',
-    'PAID',
-    v_new_balance,
-    now()
-  );
-
-
-      ------------------------------------------------------------------
-      -- ⚪ Pagos normales (CASH / CARD / etc.)
-      ------------------------------------------------------------------
-      else
-
-        insert into client_transactions(
-          client_id,
-          order_id,
-          amount,
-          description,
-          transaction_type,
-          transaction_date,
-          payment_method,
-          payment_status,
-          balance_after_transaction,
-          created_at
-        )
-        select
-          v_client_id,
-          p_order_id,
-          abs((v_payment->>'amount')::numeric),
-          concat('Pago de orden #', p_order_id),
-          'PAYMENT',
-          now(),
-          (v_payment->>'payment_method')::payment_method,
-          'PAID',
-          current_balance,
-          now()
-        from clients
-        where client_id = v_client_id;
-
-      end if;
-    end if;
-  end loop;
-end;
-$$;
-
-
-ALTER FUNCTION "public"."register_payments"("p_order_id" bigint, "p_payments" "jsonb") OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."reserve_stock_for_delivery"("p_order_item_id" bigint, "p_product_id" bigint, "p_location_id" bigint, "p_stock_id" bigint, "p_qty_in_base_units" numeric, "p_over_sell_quantity" numeric) RETURNS "void"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
-    AS $$
-declare
-  v_stock_id bigint;
-  v_lot_id bigint;
+  v_stock_id uuid;
+  v_lot_id   bigint;
   v_total_to_reserve numeric;
+  v_available_qty    numeric;
 begin
   ------------------------------------------------------------------
-  -- 🔍 Obtener o crear stock (sin product_presentation_id)
+  -- Obtener o crear stock (sin product_presentation_id)
   ------------------------------------------------------------------
   if p_stock_id is null then
     v_stock_id := get_or_create_stock_with_location_pi_and_pi(
       p_product_id,
-      -- ❌ eliminado: p_product_presentation_id,
       p_location_id
     );
   else
@@ -2694,12 +2466,30 @@ begin
   end if;
 
   ------------------------------------------------------------------
-  -- 🔢 Calcular total a reservar en unidad base
+  -- Calcular total a reservar en unidad base
   ------------------------------------------------------------------
-  v_total_to_reserve := p_qty_in_base_units + p_over_sell_quantity;  -- ✅ unidad base
+  v_total_to_reserve := p_qty_in_base_units + p_over_sell_quantity;
 
   ------------------------------------------------------------------
-  -- 🔒 Actualizar reserved_for_selling_quantity
+  -- FIX: Validar que el stock disponible >= total a reservar
+  --      (solo para la parte normal, no el oversell)
+  -- FOR UPDATE lock previene TOCTOU: dos reservas concurrentes
+  -- leyendo el mismo disponible y ambas pasando la validación
+  ------------------------------------------------------------------
+  select coalesce(quantity, 0) - coalesce(reserved_for_selling_quantity, 0)
+  into v_available_qty
+  from stock
+  where stock_id = v_stock_id
+  FOR UPDATE;  -- lock row to prevent TOCTOU race condition
+
+  if v_available_qty is not null and p_qty_in_base_units > 0 and v_available_qty < p_qty_in_base_units then
+    raise exception
+      'Stock insuficiente para reservar en stock_id=%. Disponible: %, Requerido: %',
+      v_stock_id, v_available_qty, p_qty_in_base_units;
+  end if;
+
+  ------------------------------------------------------------------
+  -- Actualizar reserved_for_selling_quantity
   ------------------------------------------------------------------
   update stock s
   set reserved_for_selling_quantity = coalesce(s.reserved_for_selling_quantity, 0) + v_total_to_reserve,
@@ -2708,7 +2498,7 @@ begin
   returning s.lot_id into v_lot_id;
 
   ------------------------------------------------------------------
-  -- ✅ Actualizar order_item con stock_id y lot_id
+  -- Actualizar order_item con stock_id y lot_id
   ------------------------------------------------------------------
   update order_items
   set stock_id = v_stock_id,
@@ -2718,7 +2508,7 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."reserve_stock_for_delivery"("p_order_item_id" bigint, "p_product_id" bigint, "p_location_id" bigint, "p_stock_id" bigint, "p_qty_in_base_units" numeric, "p_over_sell_quantity" numeric) OWNER TO "postgres";
+ALTER FUNCTION "public"."reserve_stock_for_delivery"("p_order_item_id" "uuid", "p_product_id" bigint, "p_location_id" bigint, "p_stock_id" "uuid", "p_qty_in_base_units" numeric, "p_over_sell_quantity" numeric) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."resolve_oversell_stock"("p_product_id" bigint, "p_location_id" bigint, "p_over_sell_quantity" numeric) RETURNS "jsonb"
@@ -2818,16 +2608,16 @@ $$;
 ALTER FUNCTION "public"."set_current_timestamp_updated_at"() OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."stock_from_transfer_item"("p_stock_id" bigint, "p_quantity" numeric) RETURNS "void"
+CREATE OR REPLACE FUNCTION "public"."stock_from_transfer_item"("p_stock_id" "uuid", "p_quantity" numeric) RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 begin
   ---------------------------------------------------------------------
-  -- ❗ Restar directamente la cantidad transferida:
+  -- Restar directamente la cantidad transferida:
   --    - quantity
   --    - reserved_for_transfering_quantity
-  -- ✔ Valores negativos permitidos (sin greatest())
+  -- Valores negativos permitidos (sin greatest())
   ---------------------------------------------------------------------
 
   update public.stock
@@ -2840,7 +2630,7 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."stock_from_transfer_item"("p_stock_id" bigint, "p_quantity" numeric) OWNER TO "postgres";
+ALTER FUNCTION "public"."stock_from_transfer_item"("p_stock_id" "uuid", "p_quantity" numeric) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."stock_to_transfer_item"("p_stock_type" "public"."stock_type", "p_location_id" bigint, "p_quantity" numeric, "p_product_id" bigint, "p_lot_id" bigint) RETURNS "void"
@@ -2848,21 +2638,21 @@ CREATE OR REPLACE FUNCTION "public"."stock_to_transfer_item"("p_stock_type" "pub
     SET "search_path" TO 'public'
     AS $$
 declare
-  v_stock_id bigint;
+  v_stock_id uuid;
 begin
   ---------------------------------------------------------------------
-  -- 🛑 Validación obligatoria
+  -- Validación obligatoria
   ---------------------------------------------------------------------
   if p_location_id is null then
     raise exception
-      '❌ stock_to_transfer_item: p_location_id cannot be NULL (product_id=%, lot_id=%)',
+      'stock_to_transfer_item: p_location_id cannot be NULL (product_id=%, lot_id=%)',
       p_product_id,
       p_lot_id
-      using errcode = '23502'; -- not_null_violation
+      using errcode = '23502';
   end if;
 
   ---------------------------------------------------------------------
-  -- 1️⃣ Buscar stock destino según (location_id, lot)
+  -- 1. Buscar stock destino según (location_id, lot)
   ---------------------------------------------------------------------
   select stock_id
   into v_stock_id
@@ -2872,14 +2662,14 @@ begin
   limit 1;
 
   ---------------------------------------------------------------------
-  -- 2️⃣ Si el stock destino existe → actualizar cantidades
+  -- 2. Si el stock destino existe → actualizar cantidades
   ---------------------------------------------------------------------
   if v_stock_id is not null then
     update public.stock
     set
       quantity = coalesce(quantity, 0) + coalesce(p_quantity, 0),
 
-      -- 🔥 restar reservas existentes
+      -- restar reservas existentes
       reserved_for_transferring_quantity =
         coalesce(reserved_for_transferring_quantity, 0) - coalesce(p_quantity, 0),
 
@@ -2890,7 +2680,7 @@ begin
   end if;
 
   ---------------------------------------------------------------------
-  -- 3️⃣ Si NO existe → crear stock destino
+  -- 3. Si NO existe → crear stock destino
   ---------------------------------------------------------------------
   insert into public.stock (
     location_id,
@@ -2907,7 +2697,7 @@ begin
     p_lot_id,
     coalesce(p_quantity, 0),
 
-    -- 🔥 Nuevo stock → no tiene reservas previas
+    -- Nuevo stock → no tiene reservas previas
     0,
 
     now(),
@@ -3109,17 +2899,20 @@ CREATE OR REPLACE FUNCTION "public"."transformation_items"("p_transformation_id"
     AS $$
 declare
     rec               jsonb;
-    v_origin_stock_id bigint;
+    v_origin_stock_id uuid;
     v_stock_result    jsonb;
     v_final_lot_id    bigint;
-    v_final_stock_id  bigint;
+    v_final_stock_id  uuid;
     v_detail_id       bigint;
     v_results         jsonb := '[]'::jsonb;
+
+    v_origin_quantity   numeric;
+    v_dest_total        numeric;
 begin
     -------------------------------------------------------------------
-    -- 1️⃣ Detectar el stock ORIGEN
+    -- 1. Detectar el stock ORIGEN
     -------------------------------------------------------------------
-    select (item->>'stock_id')::bigint
+    select (item->>'stock_id')::uuid
     into v_origin_stock_id
     from jsonb_array_elements(p_items) item
     where (item->>'is_origin')::boolean = true
@@ -3130,14 +2923,34 @@ begin
     end if;
 
     -------------------------------------------------------------------
-    -- 2️⃣ Procesar cada item
+    -- FIX: Validar suma(quantity destino) <= quantity origen
+    --      antes de procesar cualquier item
+    -------------------------------------------------------------------
+    select quantity
+    into v_origin_quantity
+    from stock
+    where stock_id = v_origin_stock_id;
+
+    select coalesce(sum((item->>'quantity')::numeric), 0)
+    into v_dest_total
+    from jsonb_array_elements(p_items) item
+    where (item->>'is_origin')::boolean = false;
+
+    if v_dest_total > v_origin_quantity then
+        raise exception
+          'Suma de cantidades destino (%) supera la cantidad origen (%) en stock_id=%',
+          v_dest_total, v_origin_quantity, v_origin_stock_id;
+    end if;
+
+    -------------------------------------------------------------------
+    -- 2. Procesar cada item
     -------------------------------------------------------------------
     for rec in select * from jsonb_array_elements(p_items)
     loop
         v_stock_result := public.apply_transformation_stock(
             (rec->>'is_origin')::boolean,
             v_origin_stock_id,
-            (rec->>'stock_id')::bigint,
+            (rec->>'stock_id')::uuid,
             (rec->>'quantity')::numeric,
             (rec->>'location_id')::bigint,
             rec->'lot'
@@ -3149,7 +2962,7 @@ begin
             from stock where stock_id = v_origin_stock_id;
         else
             v_final_lot_id   := (v_stock_result->>'lot_id')::bigint;
-            v_final_stock_id := (v_stock_result->>'stock_id')::bigint;
+            v_final_stock_id := (v_stock_result->>'stock_id')::uuid;
         end if;
 
         insert into transformation_items (
@@ -3162,8 +2975,6 @@ begin
             quantity,
             bulk_quantity_equivalence,
             final_cost_per_unit
-            -- ❌ final_cost_per_bulk eliminado (= final_cost_per_unit × bulk_quantity_equivalence)
-            -- ❌ final_cost_total eliminado (= final_cost_per_unit × quantity)
         )
         values (
             p_transformation_id,
@@ -3320,7 +3131,11 @@ begin
         updated_at = now()
     where lot_id = p_lot_id;
   else
-    RAISE NOTICE 'ℹ️ Lote % todavía tiene stock (%). No se marca sold out.', p_lot_id, v_total;
+    -- FIX: revertir is_sold_out cuando hay stock disponible
+    update lots
+    set is_sold_out = false,
+        updated_at = now()
+    where lot_id = p_lot_id;
   end if;
 end;
 $$;
@@ -3338,50 +3153,32 @@ declare
   rec record;
   v_row jsonb;
 begin
-  -- Iteramos sobre cada elemento del array
-  for rec in
-    select jsonb_array_elements(p_prices) as elem
+  for rec in select jsonb_array_elements(p_prices) as elem
   loop
     if (rec.elem->>'price_id') is not null and (rec.elem->>'price_id') <> 'null' then
-      ---------------------------------------------------------------------------
-      -- Caso 1: UPDATE de un registro existente
-      ---------------------------------------------------------------------------
       update prices
       set
-        lot_id             = (rec.elem->>'lot_id')::bigint,
-        stock_id           = (rec.elem->>'stock_id')::bigint,
-        store_id           = (rec.elem->>'store_id')::bigint,
-        price_number       = (rec.elem->>'price_number')::int,
-        price         = (rec.elem->>'price')::numeric,
-        qty_per_price    = (rec.elem->>'qty_per_price')::numeric,
-        profit_percentage  = (rec.elem->>'profit_percentage')::numeric,
-        price_type         = (rec.elem->>'price_type')::price_type,
-        logic_type         = (rec.elem->>'logic_type')::logic_type,
-        observations       = nullif(rec.elem->>'observations',''),
-        is_limited_offer   = (rec.elem->>'is_limited_offer')::boolean,
-        is_active          = (rec.elem->>'is_active')::boolean,
-        valid_from         = nullif(rec.elem->>'valid_from','')::timestamptz,
-        valid_until        = nullif(rec.elem->>'valid_until','')::timestamptz,
-        updated_at         = now()
+        location_id             = (rec.elem->>'location_id')::bigint,
+        product_presentation_id = (rec.elem->>'product_presentation_id')::bigint,
+        price_number            = (rec.elem->>'price_number')::int,
+        price                   = (rec.elem->>'price')::numeric,
+        qty_per_price           = (rec.elem->>'qty_per_price')::numeric,
+        profit_percentage       = (rec.elem->>'profit_percentage')::numeric,
+        logic_type              = (rec.elem->>'logic_type')::logic_type,
+        observations            = nullif(rec.elem->>'observations',''),
+        valid_from              = nullif(rec.elem->>'valid_from','')::timestamptz,
+        valid_until             = nullif(rec.elem->>'valid_until','')::timestamptz,
+        updated_at              = now()
       where price_id = (rec.elem->>'price_id')::bigint
-      returning row_to_json(prices.*)::jsonb
-      into v_row;
-
-      v_results := v_results || jsonb_build_array(v_row);
-
+      returning row_to_json(prices.*)::jsonb into v_row;
     else
-      ---------------------------------------------------------------------------
-      -- Caso 2: INSERT de un nuevo registro
-      ---------------------------------------------------------------------------
       insert into prices (
-        lot_id,
-        stock_id,
-        store_id,
+        location_id,
+        product_presentation_id,
         price_number,
         price,
         qty_per_price,
         profit_percentage,
-        price_type,
         logic_type,
         observations,
         is_limited_offer,
@@ -3390,14 +3187,12 @@ begin
         valid_until
       )
       values (
-        (rec.elem->>'lot_id')::bigint,
-        (rec.elem->>'stock_id')::bigint,
-        (rec.elem->>'store_id')::bigint,
+        (rec.elem->>'location_id')::bigint,
+        (rec.elem->>'product_presentation_id')::bigint,
         (rec.elem->>'price_number')::int,
         (rec.elem->>'price')::numeric,
         (rec.elem->>'qty_per_price')::numeric,
         (rec.elem->>'profit_percentage')::numeric,
-        (rec.elem->>'price_type')::price_type,
         (rec.elem->>'logic_type')::logic_type,
         nullif(rec.elem->>'observations',''),
         (rec.elem->>'is_limited_offer')::boolean,
@@ -3405,13 +3200,10 @@ begin
         nullif(rec.elem->>'valid_from','')::timestamptz,
         nullif(rec.elem->>'valid_until','')::timestamptz
       )
-      returning row_to_json(prices.*)::jsonb
-      into v_row;
-
-      v_results := v_results || jsonb_build_array(v_row);
+      returning row_to_json(prices.*)::jsonb into v_row;
     end if;
+    v_results := v_results || jsonb_build_array(v_row);
   end loop;
-
   return v_results;
 end;
 $$;
@@ -3513,7 +3305,7 @@ $$;
 ALTER FUNCTION "public"."update_prices"("p_prices" "jsonb", "p_delete_ids" bigint[]) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."update_stock_from_transfer_item"("p_stock_id" bigint, "p_new_qty" numeric, "p_prev_qty" numeric DEFAULT 0) RETURNS "void"
+CREATE OR REPLACE FUNCTION "public"."update_stock_from_transfer_item"("p_stock_id" "uuid", "p_new_qty" numeric, "p_prev_qty" numeric DEFAULT 0) RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
@@ -3528,7 +3320,7 @@ begin
 
   -- Update reserved quantity for transfers
   update public.stock
-  set 
+  set
     reserved_for_transferring_quantity = coalesce(reserved_for_transferring_quantity, 0) + v_delta,
     updated_at = now()
   where stock_id = p_stock_id;
@@ -3537,7 +3329,7 @@ end;
 $$;
 
 
-ALTER FUNCTION "public"."update_stock_from_transfer_item"("p_stock_id" bigint, "p_new_qty" numeric, "p_prev_qty" numeric) OWNER TO "postgres";
+ALTER FUNCTION "public"."update_stock_from_transfer_item"("p_stock_id" "uuid", "p_new_qty" numeric, "p_prev_qty" numeric) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."update_stock_waste"("p_stock_id" "uuid", "p_qty_in_base_units" numeric) RETURNS "void"
@@ -3615,11 +3407,11 @@ declare
   original_item jsonb;
   v_item_id bigint;
   v_prev_qty numeric;
-    v_prev_stock_id bigint;
+  v_prev_stock_id uuid;
 begin
   for item in select * from jsonb_array_elements(p_items)
   loop
-    original_item := item;  
+    original_item := item;
     v_item_id := nullif(original_item->>'transfer_order_item_id', '')::bigint;
 
    -------------------------------------------------------------------
@@ -3674,7 +3466,7 @@ begin
         nullif(original_item->>'quantity','')::numeric,
         (original_item->>'status')::movement_status,
         coalesce((original_item->>'is_transferred')::boolean, false),
-        nullif(original_item->>'stock_id','')::bigint,
+        nullif(original_item->>'stock_id','')::uuid,
         now(),
         now()
       )
@@ -3682,7 +3474,7 @@ begin
       into item;
 
       perform public.update_stock_from_transfer_item(
-        (item->>'stock_id')::bigint,
+        (item->>'stock_id')::uuid,
         (original_item->>'quantity')::numeric,
         0
       );
@@ -3709,14 +3501,14 @@ begin
         quantity = nullif(original_item->>'quantity','')::numeric,
         status = (original_item->>'status')::movement_status,
         is_transferred = coalesce((original_item->>'is_transferred')::boolean, false),
-        stock_id = nullif(original_item->>'stock_id','')::bigint,
+        stock_id = nullif(original_item->>'stock_id','')::uuid,
         updated_at = now()
       where transfer_order_item_id = v_item_id
       returning to_jsonb(public.transfer_order_items.*)
       into item;
 
       perform public.update_stock_from_transfer_item(
-        (item->>'stock_id')::bigint,
+        (item->>'stock_id')::uuid,
         (original_item->>'quantity')::numeric,
         v_prev_qty
       );
@@ -5813,9 +5605,9 @@ GRANT ALL ON FUNCTION "public"."apply_client_credit_adjustment"("p_client_id" "u
 
 
 
-GRANT ALL ON FUNCTION "public"."apply_transformation_stock"("p_is_origin" boolean, "p_origin_stock_id" bigint, "p_stock_id" bigint, "p_quantity" numeric, "p_location_id" bigint, "p_lot" "jsonb") TO "anon";
-GRANT ALL ON FUNCTION "public"."apply_transformation_stock"("p_is_origin" boolean, "p_origin_stock_id" bigint, "p_stock_id" bigint, "p_quantity" numeric, "p_location_id" bigint, "p_lot" "jsonb") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."apply_transformation_stock"("p_is_origin" boolean, "p_origin_stock_id" bigint, "p_stock_id" bigint, "p_quantity" numeric, "p_location_id" bigint, "p_lot" "jsonb") TO "service_role";
+GRANT ALL ON FUNCTION "public"."apply_transformation_stock"("p_is_origin" boolean, "p_origin_stock_id" "uuid", "p_stock_id" "uuid", "p_quantity" numeric, "p_location_id" bigint, "p_lot" "jsonb") TO "anon";
+GRANT ALL ON FUNCTION "public"."apply_transformation_stock"("p_is_origin" boolean, "p_origin_stock_id" "uuid", "p_stock_id" "uuid", "p_quantity" numeric, "p_location_id" bigint, "p_lot" "jsonb") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."apply_transformation_stock"("p_is_origin" boolean, "p_origin_stock_id" "uuid", "p_stock_id" "uuid", "p_quantity" numeric, "p_location_id" bigint, "p_lot" "jsonb") TO "service_role";
 
 
 
@@ -5861,15 +5653,15 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public".
 
 
 
-GRANT ALL ON FUNCTION "public"."create_simple_order"("p_organization_id" "uuid", "p_location_id" bigint, "p_client_id" bigint) TO "anon";
-GRANT ALL ON FUNCTION "public"."create_simple_order"("p_organization_id" "uuid", "p_location_id" bigint, "p_client_id" bigint) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."create_simple_order"("p_organization_id" "uuid", "p_location_id" bigint, "p_client_id" bigint) TO "service_role";
+GRANT ALL ON FUNCTION "public"."create_simple_order"("p_organization_id" "uuid", "p_location_id" bigint, "p_client_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."create_simple_order"("p_organization_id" "uuid", "p_location_id" bigint, "p_client_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."create_simple_order"("p_organization_id" "uuid", "p_location_id" bigint, "p_client_id" "uuid") TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."create_stock_movement_waste"("p_lot_id" bigint, "p_stock_id" bigint, "p_movement_type" "public"."movement_type", "p_quantity" numeric, "p_qty_in_base_units" numeric, "p_product_presentation_id" bigint, "p_from_location_id" bigint, "p_to_location_id" bigint, "p_should_notify_owner" boolean, "p_created_by" "uuid") TO "anon";
-GRANT ALL ON FUNCTION "public"."create_stock_movement_waste"("p_lot_id" bigint, "p_stock_id" bigint, "p_movement_type" "public"."movement_type", "p_quantity" numeric, "p_qty_in_base_units" numeric, "p_product_presentation_id" bigint, "p_from_location_id" bigint, "p_to_location_id" bigint, "p_should_notify_owner" boolean, "p_created_by" "uuid") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."create_stock_movement_waste"("p_lot_id" bigint, "p_stock_id" bigint, "p_movement_type" "public"."movement_type", "p_quantity" numeric, "p_qty_in_base_units" numeric, "p_product_presentation_id" bigint, "p_from_location_id" bigint, "p_to_location_id" bigint, "p_should_notify_owner" boolean, "p_created_by" "uuid") TO "service_role";
+GRANT ALL ON FUNCTION "public"."create_stock_movement_waste"("p_lot_id" bigint, "p_stock_id" "uuid", "p_movement_type" "public"."movement_type", "p_quantity" numeric, "p_qty_in_base_units" numeric, "p_product_presentation_id" bigint, "p_from_location_id" bigint, "p_to_location_id" bigint, "p_should_notify_owner" boolean, "p_created_by" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."create_stock_movement_waste"("p_lot_id" bigint, "p_stock_id" "uuid", "p_movement_type" "public"."movement_type", "p_quantity" numeric, "p_qty_in_base_units" numeric, "p_product_presentation_id" bigint, "p_from_location_id" bigint, "p_to_location_id" bigint, "p_should_notify_owner" boolean, "p_created_by" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."create_stock_movement_waste"("p_lot_id" bigint, "p_stock_id" "uuid", "p_movement_type" "public"."movement_type", "p_quantity" numeric, "p_qty_in_base_units" numeric, "p_product_presentation_id" bigint, "p_from_location_id" bigint, "p_to_location_id" bigint, "p_should_notify_owner" boolean, "p_created_by" "uuid") TO "service_role";
 
 
 
@@ -5885,15 +5677,15 @@ GRANT ALL ON FUNCTION "public"."current_organization_id"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."delete_delivery_order_item"("p_order_item_id" bigint, "p_stock_id" bigint) TO "anon";
-GRANT ALL ON FUNCTION "public"."delete_delivery_order_item"("p_order_item_id" bigint, "p_stock_id" bigint) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."delete_delivery_order_item"("p_order_item_id" bigint, "p_stock_id" bigint) TO "service_role";
+GRANT ALL ON FUNCTION "public"."delete_delivery_order_item"("p_order_item_id" "uuid", "p_stock_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."delete_delivery_order_item"("p_order_item_id" "uuid", "p_stock_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."delete_delivery_order_item"("p_order_item_id" "uuid", "p_stock_id" "uuid") TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."deliver_order"("p_order_id" bigint) TO "anon";
-GRANT ALL ON FUNCTION "public"."deliver_order"("p_order_id" bigint) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."deliver_order"("p_order_id" bigint) TO "service_role";
+GRANT ALL ON FUNCTION "public"."deliver_order"("p_order_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."deliver_order"("p_order_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."deliver_order"("p_order_id" "uuid") TO "service_role";
 
 
 
@@ -5909,27 +5701,9 @@ GRANT ALL ON FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" 
 
 
 
-GRANT ALL ON FUNCTION "public"."get_last_over_sell_stock"() TO "anon";
-GRANT ALL ON FUNCTION "public"."get_last_over_sell_stock"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_last_over_sell_stock"() TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."get_lot_ancestors"("p_lot_id" bigint) TO "anon";
-GRANT ALL ON FUNCTION "public"."get_lot_ancestors"("p_lot_id" bigint) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_lot_ancestors"("p_lot_id" bigint) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."get_lot_descendants"("p_lot_id" bigint) TO "anon";
-GRANT ALL ON FUNCTION "public"."get_lot_descendants"("p_lot_id" bigint) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_lot_descendants"("p_lot_id" bigint) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."get_lot_lineage"("p_lot_id" bigint) TO "anon";
-GRANT ALL ON FUNCTION "public"."get_lot_lineage"("p_lot_id" bigint) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_lot_lineage"("p_lot_id" bigint) TO "service_role";
+GRANT ALL ON FUNCTION "public"."get_last_over_sell_stock"("p_product_id" bigint, "p_location_id" bigint) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_last_over_sell_stock"("p_product_id" bigint, "p_location_id" bigint) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_last_over_sell_stock"("p_product_id" bigint, "p_location_id" bigint) TO "service_role";
 
 
 
@@ -5942,12 +5716,6 @@ GRANT ALL ON FUNCTION "public"."get_lot_sales"("p_lot_id" bigint) TO "service_ro
 GRANT ALL ON FUNCTION "public"."get_lot_transformations"("p_lot_id" bigint) TO "anon";
 GRANT ALL ON FUNCTION "public"."get_lot_transformations"("p_lot_id" bigint) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_lot_transformations"("p_lot_id" bigint) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."get_lot_universe"("p_lot_id" bigint) TO "anon";
-GRANT ALL ON FUNCTION "public"."get_lot_universe"("p_lot_id" bigint) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_lot_universe"("p_lot_id" bigint) TO "service_role";
 
 
 
@@ -5987,9 +5755,9 @@ GRANT ALL ON FUNCTION "public"."process_delivered_items_stock"("p_items" "jsonb"
 
 
 
-GRANT ALL ON FUNCTION "public"."register_client_payments"("p_client_id" bigint, "p_payments" "jsonb") TO "anon";
-GRANT ALL ON FUNCTION "public"."register_client_payments"("p_client_id" bigint, "p_payments" "jsonb") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."register_client_payments"("p_client_id" bigint, "p_payments" "jsonb") TO "service_role";
+GRANT ALL ON FUNCTION "public"."register_client_payments"("p_client_id" "uuid", "p_payments" "jsonb") TO "anon";
+GRANT ALL ON FUNCTION "public"."register_client_payments"("p_client_id" "uuid", "p_payments" "jsonb") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."register_client_payments"("p_client_id" "uuid", "p_payments" "jsonb") TO "service_role";
 
 
 
@@ -6005,27 +5773,21 @@ GRANT ALL ON FUNCTION "public"."register_order_header"("p_order" "jsonb") TO "se
 
 
 
-GRANT ALL ON FUNCTION "public"."register_order_items"("p_order_id" bigint, "p_items" "jsonb") TO "anon";
-GRANT ALL ON FUNCTION "public"."register_order_items"("p_order_id" bigint, "p_items" "jsonb") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."register_order_items"("p_order_id" bigint, "p_items" "jsonb") TO "service_role";
+GRANT ALL ON FUNCTION "public"."register_order_items"("p_order_id" "uuid", "p_items" "jsonb") TO "anon";
+GRANT ALL ON FUNCTION "public"."register_order_items"("p_order_id" "uuid", "p_items" "jsonb") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."register_order_items"("p_order_id" "uuid", "p_items" "jsonb") TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."register_order_payments"("p_order_id" bigint, "p_payments" "jsonb") TO "anon";
-GRANT ALL ON FUNCTION "public"."register_order_payments"("p_order_id" bigint, "p_payments" "jsonb") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."register_order_payments"("p_order_id" bigint, "p_payments" "jsonb") TO "service_role";
+GRANT ALL ON FUNCTION "public"."register_order_payments"("p_order_id" "uuid", "p_payments" "jsonb") TO "anon";
+GRANT ALL ON FUNCTION "public"."register_order_payments"("p_order_id" "uuid", "p_payments" "jsonb") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."register_order_payments"("p_order_id" "uuid", "p_payments" "jsonb") TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."register_payments"("p_order_id" bigint, "p_payments" "jsonb") TO "anon";
-GRANT ALL ON FUNCTION "public"."register_payments"("p_order_id" bigint, "p_payments" "jsonb") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."register_payments"("p_order_id" bigint, "p_payments" "jsonb") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."reserve_stock_for_delivery"("p_order_item_id" bigint, "p_product_id" bigint, "p_location_id" bigint, "p_stock_id" bigint, "p_qty_in_base_units" numeric, "p_over_sell_quantity" numeric) TO "anon";
-GRANT ALL ON FUNCTION "public"."reserve_stock_for_delivery"("p_order_item_id" bigint, "p_product_id" bigint, "p_location_id" bigint, "p_stock_id" bigint, "p_qty_in_base_units" numeric, "p_over_sell_quantity" numeric) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."reserve_stock_for_delivery"("p_order_item_id" bigint, "p_product_id" bigint, "p_location_id" bigint, "p_stock_id" bigint, "p_qty_in_base_units" numeric, "p_over_sell_quantity" numeric) TO "service_role";
+GRANT ALL ON FUNCTION "public"."reserve_stock_for_delivery"("p_order_item_id" "uuid", "p_product_id" bigint, "p_location_id" bigint, "p_stock_id" "uuid", "p_qty_in_base_units" numeric, "p_over_sell_quantity" numeric) TO "anon";
+GRANT ALL ON FUNCTION "public"."reserve_stock_for_delivery"("p_order_item_id" "uuid", "p_product_id" bigint, "p_location_id" bigint, "p_stock_id" "uuid", "p_qty_in_base_units" numeric, "p_over_sell_quantity" numeric) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."reserve_stock_for_delivery"("p_order_item_id" "uuid", "p_product_id" bigint, "p_location_id" bigint, "p_stock_id" "uuid", "p_qty_in_base_units" numeric, "p_over_sell_quantity" numeric) TO "service_role";
 
 
 
@@ -6041,9 +5803,9 @@ GRANT ALL ON FUNCTION "public"."set_current_timestamp_updated_at"() TO "service_
 
 
 
-GRANT ALL ON FUNCTION "public"."stock_from_transfer_item"("p_stock_id" bigint, "p_quantity" numeric) TO "anon";
-GRANT ALL ON FUNCTION "public"."stock_from_transfer_item"("p_stock_id" bigint, "p_quantity" numeric) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."stock_from_transfer_item"("p_stock_id" bigint, "p_quantity" numeric) TO "service_role";
+GRANT ALL ON FUNCTION "public"."stock_from_transfer_item"("p_stock_id" "uuid", "p_quantity" numeric) TO "anon";
+GRANT ALL ON FUNCTION "public"."stock_from_transfer_item"("p_stock_id" "uuid", "p_quantity" numeric) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."stock_from_transfer_item"("p_stock_id" "uuid", "p_quantity" numeric) TO "service_role";
 
 
 
@@ -6113,9 +5875,9 @@ GRANT ALL ON FUNCTION "public"."update_prices"("p_prices" "jsonb", "p_delete_ids
 
 
 
-GRANT ALL ON FUNCTION "public"."update_stock_from_transfer_item"("p_stock_id" bigint, "p_new_qty" numeric, "p_prev_qty" numeric) TO "anon";
-GRANT ALL ON FUNCTION "public"."update_stock_from_transfer_item"("p_stock_id" bigint, "p_new_qty" numeric, "p_prev_qty" numeric) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."update_stock_from_transfer_item"("p_stock_id" bigint, "p_new_qty" numeric, "p_prev_qty" numeric) TO "service_role";
+GRANT ALL ON FUNCTION "public"."update_stock_from_transfer_item"("p_stock_id" "uuid", "p_new_qty" numeric, "p_prev_qty" numeric) TO "anon";
+GRANT ALL ON FUNCTION "public"."update_stock_from_transfer_item"("p_stock_id" "uuid", "p_new_qty" numeric, "p_prev_qty" numeric) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."update_stock_from_transfer_item"("p_stock_id" "uuid", "p_new_qty" numeric, "p_prev_qty" numeric) TO "service_role";
 
 
 
