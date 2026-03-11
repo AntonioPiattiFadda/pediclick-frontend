@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea"
 import type { Location } from "@/types/locations"
 import type { ProductPresentation } from "@/types/productPresentation"
 import type { Transformation } from "@/types/transformation"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { ArrowLeftRight } from "lucide-react"
 import { useState } from "react"
 import { createTransformation } from "@/service/transformations"
@@ -35,6 +35,8 @@ export function Transformation({
     disabled?: boolean
     initialPresentation?: Pick<ProductPresentation, 'product_presentation_id' | 'product_presentation_name' | 'bulk_quantity_equivalence' | 'sell_unit' | 'auto_stock_calc' | 'lots' | 'product_id'>
 }) {
+    const [open, setOpen] = useState(false)
+    const queryClient = useQueryClient()
     const [selectedLocation, setSelectedLocation] = useState<Pick<Location, 'location_id' | 'name' | 'type'> | null>(null)
 
     const newTransformationId = Math.floor(Math.random() * 1000000)
@@ -79,6 +81,10 @@ export function Transformation({
         onSuccess: () => {
             toast.success("Transformación creada correctamente")
             handleResetTransformationItems()
+            setOpen(false)
+            queryClient.invalidateQueries({ queryKey: ["products"] })
+            queryClient.invalidateQueries({ queryKey: ["sold-stock-products"] })
+            queryClient.invalidateQueries({ queryKey: ["all-products"] })
         },
         onError: (error: { message: string }) => {
             toast.error(error.message || "Error al crear la transformación")
@@ -108,7 +114,7 @@ export function Transformation({
     }
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <form>
                 <DialogTrigger asChild>
                     {isShortCut ? (

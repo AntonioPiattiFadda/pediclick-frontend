@@ -197,10 +197,13 @@ export function TransformationToItems({
                             disabled={!selectedLocation}
                             placeholder="Cantidad"
                             type="number"
+                            step="any"
                             min={0}
                             value={td.quantity === null || td.quantity === undefined ? '' : String(td.quantity)}
                             onChange={(e) => {
-                                const newValue = Number((e.target as HTMLInputElement).value) || null
+                                const rawValue = (e.target as HTMLInputElement).value
+                                const parsed = parseFloat(rawValue)
+                                const newValue = isNaN(parsed) ? null : parsed
                                 setToTransformationItems(prev =>
                                     prev.map(item =>
                                         item.transformation_item_id === td.transformation_item_id
