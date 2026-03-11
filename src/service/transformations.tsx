@@ -3,11 +3,8 @@ import { supabase } from ".";
 import { getOrganizationId } from "./profiles";
 import type { Transformation } from "@/types/transformation";
 
-export async function createTransformation(transformation: Omit<Transformation, 'created_at'>, fromTransformationItems: TransformationItems[], toTransformationItems: TransformationItems[]) {
+export async function createTransformation(transformation: Omit<Transformation, 'created_at'>, fromTransformationItems: TransformationItems[], toTransformationItems: TransformationItems[], locationId: number) {
     const organizationId = await getOrganizationId();
-
-    const location = localStorage.getItem("selectedStore");
-    const locationId = location ? Number(JSON.parse(location)) : 0;
 
     const adaptedFromTransformationItems: Omit<TransformationItems, 'product' | 'product_presentation'>[] = fromTransformationItems.map((it) => ({
         transformation_item_id: it.transformation_item_id,
@@ -21,8 +18,8 @@ export async function createTransformation(transformation: Omit<Transformation, 
         quantity_in_base_units: it.quantity_in_base_units,
         max_quantity: it.max_quantity,
         bulk_quantity_equivalence: it.bulk_quantity_equivalence,
-        final_cost_per_unit: it.final_cost_per_unit,
-        location_id: it.location_id,
+        final_cost_per_unit: it.final_cost_per_unit || null,
+        location_id: locationId,
         lot: null,
     }));
 
@@ -35,10 +32,10 @@ export async function createTransformation(transformation: Omit<Transformation, 
         stock_id: it.stock_id,
         is_origin: it.is_origin,
         quantity: it.quantity,
-        quantity_in_base_units: it.quantity_in_base_units,
+        quantity_in_base_units: (it?.quantity || 0) * (it.bulk_quantity_equivalence || 1),
         max_quantity: it.max_quantity,
         bulk_quantity_equivalence: it.bulk_quantity_equivalence,
-        final_cost_per_unit: it.final_cost_per_unit,
+        final_cost_per_unit: it?.final_cost_per_unit || null,
         location_id: locationId,
         lot: {
             product_id: it.product_id,
@@ -51,18 +48,22 @@ export async function createTransformation(transformation: Omit<Transformation, 
         },
     }));
 
-    const adaptedTranformationData = {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const adaptedTransformationData = {
         ...transformation,
-        organization_id: organizationId,
+        created_by: user?.id,
     };
 
-    console.log("Adapted Transformation Data:", adaptedTranformationData);
-    console.log("Adapted Transformation Items:", [...adaptedToTransformationItems]);
-
-    const { data, error } = await supabase.rpc('create_transformation', {
-        p_transformation_data: adaptedTranformationData,
+    const reqBody = {
+        p_transformation_data: adaptedTransformationData,
         p_transformation_items: [...adaptedFromTransformationItems, ...adaptedToTransformationItems],
-    });
+        p_organization_id: organizationId,
+    }
+
+    console.log("Request Body for create_transformation:", reqBody);
+
+    const { data, error } = await supabase.rpc('create_transformation', reqBody);
 
     console.log("Data:", data);
     console.log("Error:", error);

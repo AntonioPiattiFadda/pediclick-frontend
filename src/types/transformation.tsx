@@ -6,4 +6,5 @@ export type Transformation = {
     notes: string;
     created_at: string;
     transformation_type: TransformationType;
+    created_by: string;
 };

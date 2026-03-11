@@ -173,6 +173,9 @@ export function TransformationFromItems({
                             <Label>Cantidad</Label>
                             <InputGroup>
                                 <InputGroupInput
+                                    type="number"
+                                    step="any"
+                                    min={0}
                                     disabled={!selectedLocation}
                                     placeholder="Cantidad"
                                     value={td.quantity === null || td.quantity === undefined ? '' : String(td.quantity)}
@@ -185,7 +188,9 @@ export function TransformationFromItems({
                                             )
                                             return
                                         }
-                                        const newValue = Number((e.target as HTMLInputElement).value) || null
+                                        const rawValue = (e.target as HTMLInputElement).value
+                                        const parsed = parseFloat(rawValue)
+                                        const newValue = isNaN(parsed) ? null : parsed
                                         const numValue = newValue ?? 0
                                         if (numValue > maxQtyInBulkEqu) {
                                             toast.error(`La cantidad no puede ser mayor a la cantidad máxima disponible: ${maxQtyInBulkEqu}`)

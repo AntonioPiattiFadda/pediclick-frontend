@@ -48,11 +48,15 @@ export function Transformation({
         transformation_cost: 0,
         notes: "",
         transformation_type: 'TRANSFORMATION',
+        created_by: "",
     })
 
     const [toTransformationItems, setToTransformationItems] = useState<ToItem[]>([
         generateNewToItem(newTransformationId, 100)
     ])
+
+    console.log("fromTransformationItems:", fromTransformationItems)
+    console.log("toTransformationItems:", toTransformationItems)
 
     // Derived costs — computed from state, not stored
     const fromTotalCost = fromTransformationItems.reduce((acc, item) => {
@@ -71,7 +75,7 @@ export function Transformation({
     }
 
     const transformationMutation = useMutation({
-        mutationFn: () => createTransformation(transformation, fromTransformationItems, toTransformationItems),
+        mutationFn: () => createTransformation(transformation, fromTransformationItems, toTransformationItems, selectedLocation?.location_id || 0),
         onSuccess: () => {
             toast.success("Transformación creada correctamente")
             handleResetTransformationItems()
