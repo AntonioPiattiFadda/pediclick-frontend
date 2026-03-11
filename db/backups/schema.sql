@@ -6228,6 +6228,12 @@ CREATE POLICY "website_preferences_update" ON "public"."website_preferences" FOR
 
 
 
+CREATE PUBLICATION "powersync" WITH (publish = 'insert, update, delete, truncate');
+
+
+ALTER PUBLICATION "powersync" OWNER TO "postgres";
+
+
 
 
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
@@ -6237,7 +6243,107 @@ ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
 
 
 
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."brands";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."categories";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."client_transactions";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."clients";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."disabled_prices";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."enabled_prices_clients";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."iva";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."load_orders";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."locations";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."lot_containers";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."lot_containers_stock";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."lots";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."order_items";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."orders";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."payments";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."prices";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."product_presentations";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."products";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."providers";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."stock";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."stock_movements";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."store_order_sequences";
+
+
+
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."store_order_sequences";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."sub_categories";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."terminal_sessions";
+
+
+
+ALTER PUBLICATION "powersync" ADD TABLE ONLY "public"."terminals";
 
 
 
