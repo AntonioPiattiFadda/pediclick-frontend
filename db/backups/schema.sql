@@ -3746,15 +3746,6 @@ ALTER TABLE "public"."disabled_prices" ALTER COLUMN "id" ADD GENERATED ALWAYS AS
 
 
 
-CREATE TABLE IF NOT EXISTS "public"."dum" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "name" "text"
-);
-
-
-ALTER TABLE "public"."dum" OWNER TO "postgres";
-
-
 CREATE TABLE IF NOT EXISTS "public"."enabled_prices_clients" (
     "id" bigint NOT NULL,
     "price_id" bigint NOT NULL,
@@ -4253,7 +4244,7 @@ CREATE TABLE IF NOT EXISTS "public"."purchasing_agents" (
     "purchasing_agent_id" bigint NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "purchasing_agent_name" "text",
-    "business_owner_id" "uuid"
+    "organization_id" "uuid"
 );
 
 
@@ -4345,7 +4336,7 @@ CREATE TABLE IF NOT EXISTS "public"."sub_categories" (
     "updated_at" timestamp with time zone DEFAULT "now"(),
     "deleted_at" timestamp with time zone,
     "sub_category_id" bigint NOT NULL,
-    "business_owner_id" "uuid" NOT NULL
+    "organization_id" "uuid"
 );
 
 
@@ -4597,11 +4588,6 @@ ALTER TABLE ONLY "public"."disabled_prices"
 
 ALTER TABLE ONLY "public"."disabled_prices"
     ADD CONSTRAINT "disabled_prices_price_id_location_id_key" UNIQUE ("price_id", "location_id");
-
-
-
-ALTER TABLE ONLY "public"."dum"
-    ADD CONSTRAINT "dum_pkey" PRIMARY KEY ("id");
 
 
 
@@ -5206,7 +5192,7 @@ ALTER TABLE ONLY "public"."providers"
 
 
 ALTER TABLE ONLY "public"."purchasing_agents"
-    ADD CONSTRAINT "purchasing_agent_business_owner_id_fkey" FOREIGN KEY ("business_owner_id") REFERENCES "public"."users"("id");
+    ADD CONSTRAINT "purchasing_agents_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("organization_id");
 
 
 
@@ -5266,7 +5252,7 @@ ALTER TABLE ONLY "public"."store_order_sequences"
 
 
 ALTER TABLE ONLY "public"."sub_categories"
-    ADD CONSTRAINT "sub_categories_business_owner_id_fkey" FOREIGN KEY ("business_owner_id") REFERENCES "public"."users"("id");
+    ADD CONSTRAINT "sub_categories_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("organization_id");
 
 
 
@@ -5395,26 +5381,870 @@ ALTER TABLE ONLY "public"."website_preferences"
 
 
 
-CREATE POLICY "Role-based select access" ON "public"."users" FOR SELECT TO "authenticated" USING (("role" = ANY (ARRAY['SUPERADMIN'::"public"."user_role_enum", 'OWNER'::"public"."user_role_enum", 'MANAGER'::"public"."user_role_enum"])));
+ALTER TABLE "public"."brands" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "brands_delete" ON "public"."brands" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
 
 
 
-CREATE POLICY "dueño o empleado puede CRUD purchasing_agents" ON "public"."purchasing_agents" USING (((EXISTS ( SELECT 1
-   FROM "public"."users" "u"
-  WHERE (("u"."id" = "auth"."uid"()) AND ("u"."role" = 'OWNER'::"public"."user_role_enum") AND ("purchasing_agents"."business_owner_id" = "auth"."uid"())))) OR (EXISTS ( SELECT 1
-   FROM "public"."users" "u"
-  WHERE (("u"."id" = "auth"."uid"()) AND ("u"."role" <> 'OWNER'::"public"."user_role_enum") AND ("purchasing_agents"."business_owner_id" = "u"."business_owner_id")))))) WITH CHECK (((EXISTS ( SELECT 1
-   FROM "public"."users" "u"
-  WHERE (("u"."id" = "auth"."uid"()) AND ("u"."role" = 'OWNER'::"public"."user_role_enum") AND ("purchasing_agents"."business_owner_id" = "auth"."uid"())))) OR (EXISTS ( SELECT 1
-   FROM "public"."users" "u"
-  WHERE (("u"."id" = "auth"."uid"()) AND ("u"."role" <> 'OWNER'::"public"."user_role_enum") AND ("purchasing_agents"."business_owner_id" = "u"."business_owner_id"))))));
+CREATE POLICY "brands_insert" ON "public"."brands" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "brands_select" ON "public"."brands" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "brands_update" ON "public"."brands" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."categories" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "categories_delete" ON "public"."categories" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "categories_insert" ON "public"."categories" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "categories_select" ON "public"."categories" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "categories_update" ON "public"."categories" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."client_transactions" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "client_transactions_delete" ON "public"."client_transactions" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "client_transactions"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "client_transactions_insert" ON "public"."client_transactions" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "client_transactions"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "client_transactions_select" ON "public"."client_transactions" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "client_transactions"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "client_transactions_update" ON "public"."client_transactions" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "client_transactions"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "client_transactions"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+ALTER TABLE "public"."clients" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "clients_delete" ON "public"."clients" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "clients_insert" ON "public"."clients" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "clients_select" ON "public"."clients" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "clients_update" ON "public"."clients" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."disabled_prices" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "disabled_prices_delete" ON "public"."disabled_prices" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM ("public"."prices" "p"
+     JOIN "public"."locations" "loc" ON (("loc"."location_id" = "p"."location_id")))
+  WHERE (("p"."price_id" = "disabled_prices"."price_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "disabled_prices_insert" ON "public"."disabled_prices" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM ("public"."prices" "p"
+     JOIN "public"."locations" "loc" ON (("loc"."location_id" = "p"."location_id")))
+  WHERE (("p"."price_id" = "disabled_prices"."price_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "disabled_prices_select" ON "public"."disabled_prices" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM ("public"."prices" "p"
+     JOIN "public"."locations" "loc" ON (("loc"."location_id" = "p"."location_id")))
+  WHERE (("p"."price_id" = "disabled_prices"."price_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "disabled_prices_update" ON "public"."disabled_prices" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM ("public"."prices" "p"
+     JOIN "public"."locations" "loc" ON (("loc"."location_id" = "p"."location_id")))
+  WHERE (("p"."price_id" = "disabled_prices"."price_id") AND ("loc"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM ("public"."prices" "p"
+     JOIN "public"."locations" "loc" ON (("loc"."location_id" = "p"."location_id")))
+  WHERE (("p"."price_id" = "disabled_prices"."price_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+ALTER TABLE "public"."enabled_prices_clients" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "enabled_prices_clients_delete" ON "public"."enabled_prices_clients" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "enabled_prices_clients"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "enabled_prices_clients_insert" ON "public"."enabled_prices_clients" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "enabled_prices_clients"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "enabled_prices_clients_select" ON "public"."enabled_prices_clients" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "enabled_prices_clients"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "enabled_prices_clients_update" ON "public"."enabled_prices_clients" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "enabled_prices_clients"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "enabled_prices_clients"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+ALTER TABLE "public"."iva" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "iva_delete" ON "public"."iva" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "iva_insert" ON "public"."iva" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "iva_select" ON "public"."iva" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "iva_update" ON "public"."iva" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."load_orders" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "load_orders_delete" ON "public"."load_orders" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "load_orders_insert" ON "public"."load_orders" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "load_orders_select" ON "public"."load_orders" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "load_orders_update" ON "public"."load_orders" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."locations" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "locations_delete" ON "public"."locations" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "locations_insert" ON "public"."locations" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "locations_select" ON "public"."locations" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "locations_update" ON "public"."locations" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."lot_containers" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "lot_containers_delete" ON "public"."lot_containers" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "lot_containers_insert" ON "public"."lot_containers" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."lot_containers_movements" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "lot_containers_movements_delete" ON "public"."lot_containers_movements" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."lot_containers" "lc"
+  WHERE (("lc"."lot_container_id" = "lot_containers_movements"."lot_container_id") AND ("lc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "lot_containers_movements_insert" ON "public"."lot_containers_movements" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."lot_containers" "lc"
+  WHERE (("lc"."lot_container_id" = "lot_containers_movements"."lot_container_id") AND ("lc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "lot_containers_movements_select" ON "public"."lot_containers_movements" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."lot_containers" "lc"
+  WHERE (("lc"."lot_container_id" = "lot_containers_movements"."lot_container_id") AND ("lc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "lot_containers_movements_update" ON "public"."lot_containers_movements" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."lot_containers" "lc"
+  WHERE (("lc"."lot_container_id" = "lot_containers_movements"."lot_container_id") AND ("lc"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."lot_containers" "lc"
+  WHERE (("lc"."lot_container_id" = "lot_containers_movements"."lot_container_id") AND ("lc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "lot_containers_select" ON "public"."lot_containers" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."lot_containers_stock" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "lot_containers_stock_delete" ON "public"."lot_containers_stock" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "lot_containers_stock_insert" ON "public"."lot_containers_stock" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "lot_containers_stock_select" ON "public"."lot_containers_stock" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "lot_containers_stock_update" ON "public"."lot_containers_stock" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "lot_containers_update" ON "public"."lot_containers" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."lot_traces" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "lot_traces_delete" ON "public"."lot_traces" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM ("public"."lots" "l"
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("l"."lot_id" = "lot_traces"."lot_from_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "lot_traces_insert" ON "public"."lot_traces" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM ("public"."lots" "l"
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("l"."lot_id" = "lot_traces"."lot_from_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "lot_traces_select" ON "public"."lot_traces" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM ("public"."lots" "l"
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("l"."lot_id" = "lot_traces"."lot_from_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "lot_traces_update" ON "public"."lot_traces" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM ("public"."lots" "l"
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("l"."lot_id" = "lot_traces"."lot_from_id") AND ("p"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM ("public"."lots" "l"
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("l"."lot_id" = "lot_traces"."lot_from_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+ALTER TABLE "public"."lots" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "lots_delete" ON "public"."lots" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."products" "p"
+  WHERE (("p"."product_id" = "lots"."product_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "lots_insert" ON "public"."lots" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."products" "p"
+  WHERE (("p"."product_id" = "lots"."product_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "lots_select" ON "public"."lots" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."products" "p"
+  WHERE (("p"."product_id" = "lots"."product_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "lots_update" ON "public"."lots" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."products" "p"
+  WHERE (("p"."product_id" = "lots"."product_id") AND ("p"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."products" "p"
+  WHERE (("p"."product_id" = "lots"."product_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+ALTER TABLE "public"."notifications" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "notifications_delete" ON "public"."notifications" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "notifications_insert" ON "public"."notifications" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "notifications_select" ON "public"."notifications" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "notifications_update" ON "public"."notifications" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."order_items" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "order_items_delete" ON "public"."order_items" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."orders" "o"
+  WHERE (("o"."order_id" = "order_items"."order_id") AND ("o"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "order_items_insert" ON "public"."order_items" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."orders" "o"
+  WHERE (("o"."order_id" = "order_items"."order_id") AND ("o"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "order_items_select" ON "public"."order_items" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."orders" "o"
+  WHERE (("o"."order_id" = "order_items"."order_id") AND ("o"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "order_items_update" ON "public"."order_items" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."orders" "o"
+  WHERE (("o"."order_id" = "order_items"."order_id") AND ("o"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."orders" "o"
+  WHERE (("o"."order_id" = "order_items"."order_id") AND ("o"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+ALTER TABLE "public"."orders" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "orders_delete" ON "public"."orders" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "orders_insert" ON "public"."orders" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "orders_select" ON "public"."orders" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "orders_update" ON "public"."orders" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."organizations" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "organizations_delete" ON "public"."organizations" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "organizations_insert" ON "public"."organizations" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "organizations_select" ON "public"."organizations" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "organizations_update" ON "public"."organizations" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."payments" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "payments_delete" ON "public"."payments" FOR DELETE TO "authenticated" USING (((EXISTS ( SELECT 1
+   FROM "public"."orders" "o"
+  WHERE (("o"."order_id" = "payments"."order_id") AND ("o"."organization_id" = "public"."current_organization_id"())))) OR (EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "payments"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"()))))));
+
+
+
+CREATE POLICY "payments_insert" ON "public"."payments" FOR INSERT TO "authenticated" WITH CHECK (((EXISTS ( SELECT 1
+   FROM "public"."orders" "o"
+  WHERE (("o"."order_id" = "payments"."order_id") AND ("o"."organization_id" = "public"."current_organization_id"())))) OR (EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "payments"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"()))))));
+
+
+
+CREATE POLICY "payments_select" ON "public"."payments" FOR SELECT TO "authenticated" USING (((EXISTS ( SELECT 1
+   FROM "public"."orders" "o"
+  WHERE (("o"."order_id" = "payments"."order_id") AND ("o"."organization_id" = "public"."current_organization_id"())))) OR (EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "payments"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"()))))));
+
+
+
+CREATE POLICY "payments_update" ON "public"."payments" FOR UPDATE TO "authenticated" USING (((EXISTS ( SELECT 1
+   FROM "public"."orders" "o"
+  WHERE (("o"."order_id" = "payments"."order_id") AND ("o"."organization_id" = "public"."current_organization_id"())))) OR (EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "payments"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"())))))) WITH CHECK (((EXISTS ( SELECT 1
+   FROM "public"."orders" "o"
+  WHERE (("o"."order_id" = "payments"."order_id") AND ("o"."organization_id" = "public"."current_organization_id"())))) OR (EXISTS ( SELECT 1
+   FROM "public"."clients" "c"
+  WHERE (("c"."client_id" = "payments"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"()))))));
+
+
+
+ALTER TABLE "public"."prices" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "prices_delete" ON "public"."prices" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."locations" "loc"
+  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "prices_insert" ON "public"."prices" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."locations" "loc"
+  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "prices_select" ON "public"."prices" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."locations" "loc"
+  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "prices_update" ON "public"."prices" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."locations" "loc"
+  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."locations" "loc"
+  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+ALTER TABLE "public"."product_presentations" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "product_presentations_delete" ON "public"."product_presentations" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "product_presentations_insert" ON "public"."product_presentations" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "product_presentations_select" ON "public"."product_presentations" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "product_presentations_update" ON "public"."product_presentations" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."products" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "products_delete" ON "public"."products" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "products_insert" ON "public"."products" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "products_select" ON "public"."products" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "products_update" ON "public"."products" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."providers" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "providers_delete" ON "public"."providers" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "providers_insert" ON "public"."providers" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "providers_select" ON "public"."providers" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "providers_update" ON "public"."providers" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."public_images" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "public_images_select" ON "public"."public_images" FOR SELECT TO "authenticated" USING (true);
+
+
+
+ALTER TABLE "public"."purchasing_agents" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "purchasing_agents_delete" ON "public"."purchasing_agents" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "purchasing_agents_insert" ON "public"."purchasing_agents" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "purchasing_agents_select" ON "public"."purchasing_agents" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "purchasing_agents_update" ON "public"."purchasing_agents" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."stock" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "stock_delete" ON "public"."stock" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM ("public"."lots" "l"
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("l"."lot_id" = "stock"."lot_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "stock_insert" ON "public"."stock" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM ("public"."lots" "l"
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("l"."lot_id" = "stock"."lot_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+ALTER TABLE "public"."stock_movements" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "stock_movements_delete" ON "public"."stock_movements" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM (("public"."stock" "s"
+     JOIN "public"."lots" "l" ON (("l"."lot_id" = "s"."lot_id")))
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("s"."stock_id" = "stock_movements"."stock_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "stock_movements_insert" ON "public"."stock_movements" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM (("public"."stock" "s"
+     JOIN "public"."lots" "l" ON (("l"."lot_id" = "s"."lot_id")))
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("s"."stock_id" = "stock_movements"."stock_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "stock_movements_select" ON "public"."stock_movements" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM (("public"."stock" "s"
+     JOIN "public"."lots" "l" ON (("l"."lot_id" = "s"."lot_id")))
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("s"."stock_id" = "stock_movements"."stock_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "stock_movements_update" ON "public"."stock_movements" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM (("public"."stock" "s"
+     JOIN "public"."lots" "l" ON (("l"."lot_id" = "s"."lot_id")))
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("s"."stock_id" = "stock_movements"."stock_id") AND ("p"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM (("public"."stock" "s"
+     JOIN "public"."lots" "l" ON (("l"."lot_id" = "s"."lot_id")))
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("s"."stock_id" = "stock_movements"."stock_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "stock_select" ON "public"."stock" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM ("public"."lots" "l"
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("l"."lot_id" = "stock"."lot_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "stock_update" ON "public"."stock" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM ("public"."lots" "l"
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("l"."lot_id" = "stock"."lot_id") AND ("p"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM ("public"."lots" "l"
+     JOIN "public"."products" "p" ON (("p"."product_id" = "l"."product_id")))
+  WHERE (("l"."lot_id" = "stock"."lot_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+ALTER TABLE "public"."store_order_sequences" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "store_order_sequences_delete" ON "public"."store_order_sequences" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."locations" "loc"
+  WHERE (("loc"."location_id" = "store_order_sequences"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "store_order_sequences_insert" ON "public"."store_order_sequences" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."locations" "loc"
+  WHERE (("loc"."location_id" = "store_order_sequences"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "store_order_sequences_select" ON "public"."store_order_sequences" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."locations" "loc"
+  WHERE (("loc"."location_id" = "store_order_sequences"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "store_order_sequences_update" ON "public"."store_order_sequences" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."locations" "loc"
+  WHERE (("loc"."location_id" = "store_order_sequences"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."locations" "loc"
+  WHERE (("loc"."location_id" = "store_order_sequences"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+ALTER TABLE "public"."sub_categories" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "sub_categories_delete" ON "public"."sub_categories" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "sub_categories_insert" ON "public"."sub_categories" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "sub_categories_select" ON "public"."sub_categories" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "sub_categories_update" ON "public"."sub_categories" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."terminal_sessions" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "terminal_sessions_delete" ON "public"."terminal_sessions" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "terminal_sessions_insert" ON "public"."terminal_sessions" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "terminal_sessions_select" ON "public"."terminal_sessions" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "terminal_sessions_update" ON "public"."terminal_sessions" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."terminals" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "terminals_delete" ON "public"."terminals" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "terminals_insert" ON "public"."terminals" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "terminals_select" ON "public"."terminals" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "terminals_update" ON "public"."terminals" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."transfer_order_items" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "transfer_order_items_delete" ON "public"."transfer_order_items" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."transfer_orders" "t"
+  WHERE (("t"."transfer_order_id" = "transfer_order_items"."transfer_order_id") AND ("t"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "transfer_order_items_insert" ON "public"."transfer_order_items" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."transfer_orders" "t"
+  WHERE (("t"."transfer_order_id" = "transfer_order_items"."transfer_order_id") AND ("t"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "transfer_order_items_select" ON "public"."transfer_order_items" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."transfer_orders" "t"
+  WHERE (("t"."transfer_order_id" = "transfer_order_items"."transfer_order_id") AND ("t"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "transfer_order_items_update" ON "public"."transfer_order_items" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."transfer_orders" "t"
+  WHERE (("t"."transfer_order_id" = "transfer_order_items"."transfer_order_id") AND ("t"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."transfer_orders" "t"
+  WHERE (("t"."transfer_order_id" = "transfer_order_items"."transfer_order_id") AND ("t"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+ALTER TABLE "public"."transfer_orders" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "transfer_orders_delete" ON "public"."transfer_orders" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "transfer_orders_insert" ON "public"."transfer_orders" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "transfer_orders_select" ON "public"."transfer_orders" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "transfer_orders_update" ON "public"."transfer_orders" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
 
 
 
 ALTER TABLE "public"."transformation_items" ENABLE ROW LEVEL SECURITY;
 
 
+CREATE POLICY "transformation_items_delete" ON "public"."transformation_items" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."transformations" "t"
+  WHERE (("t"."transformation_id" = "transformation_items"."transformation_id") AND ("t"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "transformation_items_insert" ON "public"."transformation_items" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."transformations" "t"
+  WHERE (("t"."transformation_id" = "transformation_items"."transformation_id") AND ("t"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "transformation_items_select" ON "public"."transformation_items" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."transformations" "t"
+  WHERE (("t"."transformation_id" = "transformation_items"."transformation_id") AND ("t"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+CREATE POLICY "transformation_items_update" ON "public"."transformation_items" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+   FROM "public"."transformations" "t"
+  WHERE (("t"."transformation_id" = "transformation_items"."transformation_id") AND ("t"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+   FROM "public"."transformations" "t"
+  WHERE (("t"."transformation_id" = "transformation_items"."transformation_id") AND ("t"."organization_id" = "public"."current_organization_id"())))));
+
+
+
 ALTER TABLE "public"."transformations" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "transformations_delete" ON "public"."transformations" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "transformations_insert" ON "public"."transformations" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "transformations_select" ON "public"."transformations" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "transformations_update" ON "public"."transformations" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."users" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "users_delete" ON "public"."users" FOR DELETE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "users_insert" ON "public"."users" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "users_select" ON "public"."users" FOR SELECT TO "authenticated" USING (("organization_id" = "public"."current_organization_id"()));
+
+
+
+CREATE POLICY "users_update" ON "public"."users" FOR UPDATE TO "authenticated" USING (("organization_id" = "public"."current_organization_id"())) WITH CHECK (("organization_id" = "public"."current_organization_id"()));
+
+
+
+ALTER TABLE "public"."website_preferences" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "website_preferences_delete" ON "public"."website_preferences" FOR DELETE TO "authenticated" USING (("id" = "auth"."uid"()));
+
+
+
+CREATE POLICY "website_preferences_insert" ON "public"."website_preferences" FOR INSERT TO "authenticated" WITH CHECK (("id" = "auth"."uid"()));
+
+
+
+CREATE POLICY "website_preferences_select" ON "public"."website_preferences" FOR SELECT TO "authenticated" USING (("id" = "auth"."uid"()));
+
+
+
+CREATE POLICY "website_preferences_update" ON "public"."website_preferences" FOR UPDATE TO "authenticated" USING (("id" = "auth"."uid"())) WITH CHECK (("id" = "auth"."uid"()));
+
 
 
 
@@ -5971,12 +6801,6 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public".
 GRANT ALL ON SEQUENCE "public"."disabled_prices_id_seq" TO "anon";
 GRANT ALL ON SEQUENCE "public"."disabled_prices_id_seq" TO "authenticated";
 GRANT ALL ON SEQUENCE "public"."disabled_prices_id_seq" TO "service_role";
-
-
-
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."dum" TO "anon";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."dum" TO "authenticated";
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."dum" TO "service_role";
 
 
 
