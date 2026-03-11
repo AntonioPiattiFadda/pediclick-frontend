@@ -614,7 +614,7 @@ begin
     );
   end if;
 
-  -- Crear lote nuevo (initial_stock_quantity en base units)
+  -- Crear lote nuevo
   insert into lots (
     product_id,
     provider_id,
@@ -629,14 +629,30 @@ begin
     nullif(p_lot->>'provider_id', '')::bigint,
     nullif(p_lot->>'expiration_date', '')::timestamptz,
     coalesce((p_lot->>'expiration_date_notification')::boolean, false),
-    p_quantity,  -- base units
+    p_quantity,
     nullif(p_lot->>'final_cost_per_unit', '')::numeric,
     now()
   )
   returning lot_id into v_new_lot_id;
 
-  insert into stock (lot_id, quantity, stock_type, product_id, location_id, created_at)
-  values (v_new_lot_id, p_quantity, 'STORE', (p_lot->>'product_id')::bigint, p_location_id, now())
+  insert into stock (
+    lot_id,
+    quantity,
+    stock_type,
+    product_id,
+    location_id,
+    product_presentation_id,
+    created_at
+  )
+  values (
+    v_new_lot_id,
+    p_quantity,
+    'STORE',
+    (p_lot->>'product_id')::bigint,
+    p_location_id,
+    nullif(p_lot->>'product_presentation_id', '')::bigint,
+    now()
+  )
   returning stock_id into v_new_stock_id;
 
   perform public.create_lot_trace(v_origin_lot_id, v_new_lot_id);
@@ -647,6 +663,10 @@ begin
     'quantity_applied', p_quantity,
     'reused_lot',       false
   );
+
+exception
+  when others then
+    raise exception 'apply_transformation_stock failed: %', sqlerrm;
 end;
 $$;
 
