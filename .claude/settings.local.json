@@ -4,5 +4,9 @@
       "Bash(git commit:*)",
       "Bash(npm run lint:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ],
+  "enableAllProjectMcpServers": true
 }
