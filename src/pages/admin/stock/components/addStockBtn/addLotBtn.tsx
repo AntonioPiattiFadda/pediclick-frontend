@@ -28,6 +28,7 @@ import { ProductEditSheet } from "../../../../../components/admin/stock/productE
 import { MoneyInput } from "../../../../../components/admin/ui/MoneyInput";
 import ManageProductPrices from "../../../../../components/admin/pricesManagement.tsx/ManageProductPricesTabs";
 import StockAssignationContainer from "./StockAssignationContainer";
+import { calcFromBulk, calcFromUnit, calcFromTotal, ZERO_GROUP } from "./costCalculations";
 
 // const formDev = {
 //   lot_number: null,
@@ -244,259 +245,123 @@ export function AddLotBtn({
   };
 
   const handleUpdateLotField = (field: string, rawValue: number | string) => {
-    // determinamos si el campo debe tratarse como numérico
     const isNumericField = [
       "initial_stock_quantity",
       "extra_cost_total",
+      "purchase_cost_per_bulk",
       "purchase_cost_per_unit",
       "purchase_cost_total",
-      "download_total_cost",
+      "download_cost_per_bulk",
       "download_cost_per_unit",
-      "delivery_cost_total",
+      "download_total_cost",
       "delivery_cost_per_bulk",
       "delivery_cost_per_unit",
+      "delivery_cost_total",
       "productor_commission_percentage",
       "productor_commission_unit_value",
     ].includes(field);
 
-    // si es numérico, convertimos; si no, dejamos el valor tal cual
     const value = isNumericField ? (Number(rawValue) || 0) : rawValue;
     const round2 = (n: number) => Math.round(n * 100) / 100;
+    const equiv = selectedProductPresentation?.bulk_quantity_equivalence ?? 0;
 
-    // valores actuales (default 0 si son null/undefined)
-    const currentInitialStock = formData.initial_stock_quantity ?? 0;
+    const stock = field === "initial_stock_quantity"
+      ? (value as number)
+      : (formData.initial_stock_quantity ?? 0);
 
-
-    const bulkQuantityEquivalence = selectedProductPresentation?.bulk_quantity_equivalence ?? 0;
-
-    const currentTotalCost = formData.purchase_cost_total ?? 0;
-    const currentCostPerUnit = formData.purchase_cost_per_unit ?? 0;
-    const currentCostPerBulk = formData.purchase_cost_per_bulk ?? 0;
-
-    const currentDownloadTotalCost = formData.download_total_cost ?? 0;
-    const currentDownloadCostPerUnit = formData.download_cost_per_unit ?? 0;
-    const currentDownloadCostPerBulk = formData.download_cost_per_bulk ?? 0;
-
-
-    const currentDeliveryCostTotal = formData.delivery_cost_total ?? 0;
-    const currentDeliveryCostPerBulk = formData.delivery_cost_per_bulk ?? 0;
-    const currentDeliveryCostPerUnit = formData.delivery_cost_per_unit ?? 0;
-
-    const currentExtraCostTotal = formData.extra_cost_total ?? 0;
-    let newExtraCostTotal = currentExtraCostTotal;
-
-
-    let newInitialStock = currentInitialStock;
-
-
-    let newTotalCost = currentTotalCost;
-    let newCostPerUnit = currentCostPerUnit;
-    let newCostPerBulk = currentCostPerBulk;
-
-    let newDownloadTotalCost = currentDownloadTotalCost;
-    let newDownloadCostPerUnit = currentDownloadCostPerUnit;
-    let newDownloadCostPerBulk = currentDownloadCostPerBulk;
-
-    let newDeliveryCostTotal = currentDeliveryCostTotal;
-    let newDeliveryCostPerBulk = currentDeliveryCostPerBulk;
-    let newDeliveryCostPerUnit = currentDeliveryCostPerUnit;
-
-    const validStock =
-      currentInitialStock !== null && currentInitialStock > 0;
-    const validBulkEquiv =
-      bulkQuantityEquivalence !== null && bulkQuantityEquivalence > 0;
+    let purchase = {
+      per_bulk: formData.purchase_cost_per_bulk ?? 0,
+      per_unit: formData.purchase_cost_per_unit ?? 0,
+      total:    formData.purchase_cost_total    ?? 0,
+    };
+    let download = {
+      per_bulk: formData.download_cost_per_bulk ?? 0,
+      per_unit: formData.download_cost_per_unit ?? 0,
+      total:    formData.download_total_cost    ?? 0,
+    };
+    let delivery = {
+      per_bulk: formData.delivery_cost_per_bulk ?? 0,
+      per_unit: formData.delivery_cost_per_unit ?? 0,
+      total:    formData.delivery_cost_total    ?? 0,
+    };
+    let extraTotal = formData.extra_cost_total ?? 0;
 
     switch (field) {
+      // ── Stock ───────────────────────────────────────────────────────
       case "initial_stock_quantity":
-        newInitialStock = value as number;
-        setLotContainersStock((prev) => {
-          const lotCOntainerStockWithQuantityZero = prev.map((lcs) => {
-            return {
-              ...lcs,
-              quantity: 0,
-            }
-          })
-          return lotCOntainerStockWithQuantityZero;
-        });
-
-        // if (newInitialStock <= 0) {
-        //   // si borra el stock → todo a 0
-        //   newTotalCost = 0;
-        //   newCostPerUnit = 0;
-        //   newDownloadTotalCost = 0;
-        //   newDownloadCostPerUnit = 0;
-        // } else {
-        //   // --- Compra ---
-        //   if (currentCostPerUnit > 0) {
-        //     newTotalCost = newInitialStock * currentCostPerUnit;
-        //   } else if (currentTotalCost > 0) {
-        //     newCostPerUnit = currentTotalCost / newInitialStock;
-        //   }
-
-        //   // --- Descarga ---
-        //   if (currentDownloadCostPerUnit > 0) {
-        //     newDownloadTotalCost = newInitialStock * currentDownloadCostPerUnit;
-        //   } else if (currentDownloadTotalCost > 0) {
-        //     newDownloadCostPerUnit = currentDownloadTotalCost / newInitialStock;
-        //   }
-        // }
-        break;
-
-      case "purchase_cost_per_unit": {
-        newCostPerUnit = value as number;
-
-        if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
-
-        newCostPerBulk = round2(value as number * bulkQuantityEquivalence);
-        newTotalCost = round2(newCostPerBulk * currentInitialStock);
-        break;
-      }
-      case "purchase_cost_per_bulk": {
-        newCostPerBulk = value as number;
-        if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
-
-        newCostPerUnit = round2(value as number / bulkQuantityEquivalence);
-        newTotalCost = round2(value as number * currentInitialStock);
-        break;
-      }
-      case "purchase_cost_total": {
-        newTotalCost = value as number;
-        if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
-
-        newCostPerBulk = round2(value as number / currentInitialStock);
-        newCostPerUnit = round2(newCostPerBulk / bulkQuantityEquivalence);
-        break;
-      }
-        newTotalCost = value as number;
-
-        if (newTotalCost <= 0) {
-          // si borra costo total → costo unitario a 0
-          newCostPerUnit = 0;
-        } else if (currentInitialStock > 0) {
-          newCostPerUnit = round2(newTotalCost / currentInitialStock);
+        setLotContainersStock(prev => prev.map(lcs => ({ ...lcs, quantity: 0 })));
+        if ((value as number) === 0) {
+          purchase = download = delivery = { ...ZERO_GROUP };
+        } else {
+          purchase = calcFromBulk(purchase.per_bulk, value as number, equiv);
+          download = calcFromBulk(download.per_bulk, value as number, equiv);
+          delivery = calcFromBulk(delivery.per_bulk, value as number, equiv);
         }
         break;
 
-      case "download_cost_per_unit": {
-        newDownloadCostPerUnit = value as number;
-        if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
+      // ── Compra ──────────────────────────────────────────────────────
+      case "purchase_cost_per_bulk": purchase = calcFromBulk (value as number, stock, equiv); break;
+      case "purchase_cost_per_unit": purchase = calcFromUnit (value as number, stock, equiv); break;
+      case "purchase_cost_total":    purchase = calcFromTotal(value as number, stock, equiv); break;
 
-        newDownloadCostPerBulk = round2(value as number * bulkQuantityEquivalence);
-        newDownloadTotalCost = round2(newDownloadCostPerBulk * currentInitialStock);
-        break;
-      }
+      // ── Descarga ────────────────────────────────────────────────────
+      case "download_cost_per_bulk": download = calcFromBulk (value as number, stock, equiv); break;
+      case "download_cost_per_unit": download = calcFromUnit (value as number, stock, equiv); break;
+      case "download_total_cost":    download = calcFromTotal(value as number, stock, equiv); break;
 
-      case "download_cost_per_bulk": {
-        newDownloadCostPerBulk = value as number;
-        if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
+      // ── Envío ───────────────────────────────────────────────────────
+      case "delivery_cost_per_bulk": delivery = calcFromBulk (value as number, stock, equiv); break;
+      case "delivery_cost_per_unit": delivery = calcFromUnit (value as number, stock, equiv); break;
+      case "delivery_cost_total":    delivery = calcFromTotal(value as number, stock, equiv); break;
 
-        newDownloadCostPerUnit = round2(value as number / bulkQuantityEquivalence);
-        newDownloadTotalCost = round2(value as number * currentInitialStock);
-        break;
-      }
-      case "download_total_cost": {
-        newDownloadTotalCost = value as number;
-        if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
-        newDownloadCostPerBulk = round2(value as number / currentInitialStock);
-        newDownloadCostPerUnit = round2(newDownloadCostPerBulk / bulkQuantityEquivalence);
+      // ── Extra ───────────────────────────────────────────────────────
+      case "extra_cost_total": extraTotal = value as number; break;
 
-        break;
-      }
-      case "extra_cost_total": {
-        newExtraCostTotal = value as number;
-        break;
-      }
-
+      // ── Campos string ───────────────────────────────────────────────
       case "productor_commission_type":
-        // este campo es string, no numérico
         setFormData(prev => ({
           ...prev,
           productor_commission_type: value as Lot["productor_commission_type"],
           productor_commission_percentage: null,
           productor_commission_unit_value: null,
         }));
-        return; // salimos para no aplicar los cálculos numéricos
-
-      case "delivery_cost_per_unit": {
-        newDeliveryCostPerUnit = value as number;
-        if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
-
-        newDeliveryCostPerBulk = round2(value as number * bulkQuantityEquivalence);
-        newDeliveryCostTotal = round2(newDeliveryCostPerBulk * currentInitialStock);
-        break;
-      }
-
-      case "delivery_cost_per_bulk": {
-        newDeliveryCostPerBulk = value as number;
-        if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
-
-        newDeliveryCostPerUnit = round2(value as number / bulkQuantityEquivalence);
-        newDeliveryCostTotal = round2(value as number * currentInitialStock);
-        break;
-      }
-
-      case "delivery_cost_total": {
-        newDeliveryCostTotal = value as number;
-        if (!validStock || !validBulkEquiv || !value || value as number <= 0) break;
-
-        newDeliveryCostPerBulk = round2(value as number / currentInitialStock);
-        newDeliveryCostPerUnit = round2(newDeliveryCostPerBulk / bulkQuantityEquivalence);
-        break;
-      }
-
+        return;
 
       case "purchasing_agent_commision_type":
-        // este campo es string, no numérico
         setFormData(prev => ({
           ...prev,
           purchasing_agent_commision_type: value as Lot["purchasing_agent_commision_type"],
           purchasing_agent_commision_percentage: null,
           purchasing_agent_commision_unit_value: null,
         }));
-        return; // salimos para no aplicar los cálculos numéricos
-
+        return;
     }
 
-    // initial_stock_quantity is in presentation units (e.g. cajones).
-    // extra_cost distributes per bulk first, then per unit = per_bulk / bulk_equiv.
-    const extraPerBulk = round2(newExtraCostTotal / (newInitialStock || 1));
-    const extraPerUnit = round2(extraPerBulk / (bulkQuantityEquivalence || 1));
+    const extraPerBulk = round2(extraTotal / (stock || 1));
+    const extraPerUnit = round2(extraPerBulk / (equiv || 1));
 
-    let final_cost_total: number | null = round2(newTotalCost + newDownloadTotalCost + newDeliveryCostTotal + newExtraCostTotal);
-    let final_cost_per_unit: number | null = round2(newCostPerUnit + newDownloadCostPerUnit + newDeliveryCostPerUnit + extraPerUnit);
-    let final_cost_per_bulk: number | null = round2(newCostPerBulk + newDownloadCostPerBulk + newDeliveryCostPerBulk + extraPerBulk);
-
-    if (!bulkQuantityEquivalence) {
-      final_cost_per_bulk = null;
-      final_cost_total = null;
-      final_cost_per_unit = null;
-    }
-
-    // actualizamos el formData con los nuevos valores calculados
     setFormData(prev => ({
       ...prev,
-      initial_stock_quantity: newInitialStock,
+      initial_stock_quantity: stock,
 
+      purchase_cost_per_bulk: purchase.per_bulk,
+      purchase_cost_per_unit: purchase.per_unit,
+      purchase_cost_total:    purchase.total,
 
-      purchase_cost_total: round2(newTotalCost),
-      purchase_cost_per_unit: round2(newCostPerUnit),
-      purchase_cost_per_bulk: round2(newCostPerBulk),
+      download_cost_per_bulk: download.per_bulk,
+      download_cost_per_unit: download.per_unit,
+      download_total_cost:    download.total,
 
+      delivery_cost_per_bulk: delivery.per_bulk,
+      delivery_cost_per_unit: delivery.per_unit,
+      delivery_cost_total:    delivery.total,
 
-      download_total_cost: round2(newDownloadTotalCost),
-      download_cost_per_bulk: round2(newDownloadCostPerBulk),
-      download_cost_per_unit: round2(newDownloadCostPerUnit),
+      extra_cost_total:    round2(extraTotal),
+      extra_cost_per_unit: extraPerUnit,
 
-      delivery_cost_total: round2(newDeliveryCostTotal),
-      delivery_cost_per_bulk: round2(newDeliveryCostPerBulk),
-      delivery_cost_per_unit: round2(newDeliveryCostPerUnit),
-
-      final_cost_total: final_cost_total !== null ? round2(final_cost_total) : null,
-      final_cost_per_unit: final_cost_per_unit !== null ? round2(final_cost_per_unit) : null,
-      final_cost_per_bulk: final_cost_per_bulk !== null ? round2(final_cost_per_bulk) : null,
-
-      extra_cost_total: round2(newExtraCostTotal),
-      extra_cost_per_unit: round2(extraPerUnit),
+      final_cost_total:    equiv ? round2(purchase.total    + download.total    + delivery.total    + extraTotal)   : null,
+      final_cost_per_bulk: equiv ? round2(purchase.per_bulk + download.per_bulk + delivery.per_bulk + extraPerBulk) : null,
+      final_cost_per_unit: equiv ? round2(purchase.per_unit + download.per_unit + delivery.per_unit + extraPerUnit) : null,
     }));
   };
 
