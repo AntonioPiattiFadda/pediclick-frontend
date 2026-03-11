@@ -54,6 +54,21 @@ export const getLastLotCosts = async (productPresentationId: number) => {
   return data as { final_cost_per_unit: number | null } | null;
 };
 
+export const updateLotCosts = async (lotId: number, lot: Partial<Lot>) => {
+  const { data, error } = await supabase
+    .from("lots")
+    .update(lot)
+    .eq("lot_id", lotId)
+    .select();
+
+  if (error) {
+    console.error("Error updating lot costs:", error);
+    throw error;
+  }
+
+  return data;
+};
+
 export const closeLot = async (lotId: number) => {
 
   const { data, error } = await supabase

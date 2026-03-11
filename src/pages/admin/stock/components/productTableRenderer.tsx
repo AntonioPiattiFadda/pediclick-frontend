@@ -229,7 +229,9 @@ const lotColumns = [
         header: "Stock",
         cell: info => {
             const lots: Lot[] = info.getValue() as Lot[];
-            const productPresentationId = info.row.original.product_presentation_id;
+            const presentation = info.row.original;
+            const productPresentationId = presentation.product_presentation_id;
+            const productName: string = (info.row as any).parentOriginal?.product_name ?? '';
             console.log('Rendering stock cell for lots', productPresentationId);
 
             const hasNoStock = lots.every(lot => {
@@ -246,8 +248,11 @@ const lotColumns = [
                 })
             };
             return <div className='min-w-[270px] '>
-                <LotsAndStockProductPresentationTableCell lots={lots as (Lot & { product_presentation_id: number })[]}
+                <LotsAndStockProductPresentationTableCell
+                    lots={lots as (Lot & { product_presentation_id: number })[]}
                     productPresentationId={productPresentationId}
+                    productName={productName}
+                    productPresentation={presentation}
                 />
             </div>
 
@@ -418,7 +423,7 @@ export function ProductTableRenderer({
                                                         {lotColumns.map((col: any, j) => (
                                                             <TableCell key={j}>
                                                                 {typeof col.cell === "function"
-                                                                    ? col.cell({ getValue: () => presentation[col.accessorKey as keyof ProductPresentation], row: { original: presentation } })
+                                                                    ? col.cell({ getValue: () => presentation[col.accessorKey as keyof ProductPresentation], row: { original: presentation, parentOriginal: row.original } })
                                                                     : presentation[col.accessorKey as keyof ProductPresentation]}
                                                             </TableCell>
                                                         ))}

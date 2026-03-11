@@ -1,12 +1,14 @@
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import type { Lot } from '@/types/lots';
+import type { ProductPresentation } from '@/types/productPresentation';
 import type { Stock } from '@/types/stocks';
 import { useState } from 'react';
 import StockCardContainer from './StockCardContainer';
 import { formatDate } from '@/utils';
 import LotHistory from './lotHistoty/LotHistory';
 import { StockData } from './StockData';
+import { EditLotCostsBtn } from './addStockBtn/EditLotCostsBtn';
 
 const StockCardComponent = ({ stock, productPresentationId }: {
     stock?: Stock[];
@@ -19,7 +21,17 @@ const StockCardComponent = ({ stock, productPresentationId }: {
     }))
 };
 
-const LotsAndStockProductPresentationTableCell = ({ lots, productPresentationId }: { lots: (Lot & { product_presentation_id: number })[], productPresentationId: number | null }) => {
+const LotsAndStockProductPresentationTableCell = ({
+    lots,
+    productPresentationId,
+    productName,
+    productPresentation,
+}: {
+    lots: (Lot & { product_presentation_id: number })[];
+    productPresentationId: number | null;
+    productName?: string;
+    productPresentation?: Pick<ProductPresentation, 'product_presentation_id' | 'product_presentation_name' | 'bulk_quantity_equivalence' | 'sell_unit'>;
+}) => {
 
     const [showDetails, setShowDetails] = useState(false);
 
@@ -83,6 +95,13 @@ const LotsAndStockProductPresentationTableCell = ({ lots, productPresentationId 
                             {formatDate(lot.created_at)}
                         </span>
                         <LotHistory lotId={lot.lot_id || null} />
+                        {productPresentation && productName && (
+                            <EditLotCostsBtn
+                                lot={lot}
+                                productName={productName}
+                                productPresentation={productPresentation}
+                            />
+                        )}
                     </div>
                     <StockCardComponent stock={lot.stock} productPresentationId={productPresentationId} />
                 </div>
