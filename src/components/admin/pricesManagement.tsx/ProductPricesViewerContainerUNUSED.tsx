@@ -1,0 +1,75 @@
+// UNUSED — replaced by ManageProductPrices mode="inline" in addLotBtn.tsx
+// Kept for reference. Safe to delete.
+
+// import { getAllProductPresentationPrices } from "@/service/prices";
+// import { useQuery } from "@tanstack/react-query";
+// import ProductPricesViewer from "./ProductPricesViewerUNUSED";
+// import { getLocations } from "@/service/locations";
+
+// const ProductPricesViewerContainer = ({
+//     productPresentationId,
+//     finalCost,
+//     bulkQuantityEquivalence,
+//     sellUnit,
+//     presentationName
+// }: {
+//     productPresentationId: number;
+//     finalCost: {
+//         final_cost_total: number | null;
+//         final_cost_per_unit: number | null;
+//         final_cost_per_bulk: number | null;
+//     };
+//     bulkQuantityEquivalence?: number | null;
+//     sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
+//     presentationName?: string | null;
+// }) => {
+//     const {
+//         data: stores = [],
+//         isLoading,
+//         isError,
+//     } = useQuery({
+//         queryKey: ["locations"],
+//         queryFn: async () => {
+//             const response = await getLocations();
+//             return response.locations?.filter(loc => loc.type === "STORE") || [];
+//         },
+//     });
+
+//     const {
+//         data: productPresentationPrices = [],
+//         isLoading: isPresentationPricesLoading,
+//         isError: isPresentationPricesError,
+//     } = useQuery({
+//         queryKey: ["prices", productPresentationId],
+//         queryFn: async () => {
+//             const response = await getAllProductPresentationPrices(productPresentationId);
+//             return response.productPresentationPrices;
+//         },
+//     });
+
+//     if (isLoading || isPresentationPricesLoading) {
+//         return <div>Loading...</div>;
+//     }
+
+//     if (isError || isPresentationPricesError) {
+//         return <div>Error loading stores.</div>;
+//     }
+
+//     return (
+//         <ProductPricesViewer
+//             productPresentationId={productPresentationId}
+//             stores={stores}
+//             productPrices={productPresentationPrices}
+//             finalCost={{
+//                 final_cost_total: finalCost?.final_cost_total || null,
+//                 final_cost_per_unit: finalCost?.final_cost_per_unit || null,
+//                 final_cost_per_bulk: finalCost?.final_cost_per_bulk || null,
+//             }}
+//             bulkQuantityEquivalence={bulkQuantityEquivalence}
+//             sellUnit={sellUnit}
+//             presentationName={presentationName}
+//         />
+//     )
+// }
+
+// export default ProductPricesViewerContainer

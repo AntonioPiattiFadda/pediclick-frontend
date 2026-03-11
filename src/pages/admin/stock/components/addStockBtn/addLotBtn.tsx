@@ -1,5 +1,5 @@
 import { adaptProductForDb } from "@/adapters/products";
-import { Accordion } from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -27,7 +27,7 @@ import { CreateProductPresentation, ProductPresentationSelectorRoot, SelectProdu
 import ProductSelector from "../../../../../components/admin/selectors/productSelector";
 import { ProductEditSheet } from "../../../../../components/admin/stock/productEditSheet";
 import { MoneyInput } from "../../../../../components/admin/ui/MoneyInput";
-import PricesAccordion from "./pricesAccordion";
+import ManageProductPrices from "../../../../../components/admin/pricesManagement.tsx/ManageProductPricesTabs";
 import StockAssignationContainer from "./StockAssignationContainer";
 
 // const formDev = {
@@ -569,17 +569,28 @@ export function AddLotBtn({
               </div>
 
 
-              <PricesAccordion
-                productPresentationId={selectedProductPresentation?.product_presentation_id ?? null}
-                finalCost={{
-                  final_cost_total: formData?.final_cost_total || null,
-                  final_cost_per_unit: formData?.final_cost_per_unit || null,
-                  final_cost_per_bulk: formData?.final_cost_per_bulk || null,
-                }}
-                bulkQuantityEquivalence={selectedProductPresentation?.bulk_quantity_equivalence ?? null}
-                sellUnit={selectedProductPresentation?.sell_unit ?? null}
-                presentationName={selectedProductPresentation?.product_presentation_name ?? null}
-              />
+              <AccordionItem
+                disabled={selectedProductPresentation?.product_presentation_id === undefined}
+                value="prices"
+                className={`${selectedProductPresentation?.product_presentation_id === undefined ? 'opacity-50 pointer-events-none' : ''}`}
+              >
+                <AccordionTrigger className="text-sm font-medium">Precios</AccordionTrigger>
+                <AccordionContent>
+                  <ManageProductPrices
+                    mode="inline"
+                    productPresentationId={selectedProductPresentation?.product_presentation_id ?? null}
+                    finalCost={{
+                      final_cost_total: formData?.final_cost_total || null,
+                      final_cost_per_unit: formData?.final_cost_per_unit || null,
+                      final_cost_per_bulk: formData?.final_cost_per_bulk || null,
+                    }}
+                    needsCostFetch={!formData?.final_cost_total && !formData?.final_cost_per_unit && !formData?.final_cost_per_bulk}
+                    bulkQuantityEquivalence={selectedProductPresentation?.bulk_quantity_equivalence ?? null}
+                    sellUnit={selectedProductPresentation?.sell_unit ?? null}
+                    presentationName={selectedProductPresentation?.product_presentation_name ?? null}
+                  />
+                </AccordionContent>
+              </AccordionItem>
 
 
 

@@ -25,6 +25,7 @@ interface PricesDialogProps {
     bulkQuantityEquivalence?: number | null;
     sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
     presentationName?: string | null;
+    mode?: 'sheet' | 'inline';
 }
 
 export default function ManageProductPrices({
@@ -35,6 +36,7 @@ export default function ManageProductPrices({
     bulkQuantityEquivalence = null,
     sellUnit = null,
     presentationName = null,
+    mode = 'sheet',
 }: PricesDialogProps) {
 
     console.log("Final cost received in ManageProductPrices:", finalCost, sellUnit, bulkQuantityEquivalence, presentationName);
@@ -84,6 +86,7 @@ export default function ManageProductPrices({
     if (!productPresentationId) return null;
 
     if (isStoreLoading) {
+        if (mode === 'inline') return <div>Cargando tiendas...</div>;
         return (
             <Sheet open={false}>
                 <SheetTrigger asChild>
@@ -91,6 +94,54 @@ export default function ManageProductPrices({
                 </SheetTrigger>
             </Sheet>
         );
+    }
+
+    const pricesContent = (
+        <Card className="p-0 border-none shadow-none mt-2">
+            <CardHeader className="p-0 flex flex-row justify-between">
+                <CardTitle>Costos (Último lote registrado con costos):</CardTitle>
+                {isCostLoading && shouldFetch ? <div>Cargando costos...</div> : <CostBadges finalCost={resolvedCost} />}
+            </CardHeader>
+
+            <Badge variant="secondary" className="text-xs">
+                Los precios marcados como "universales" se aplican a todas las tiendas.
+                Si elegís una tienda específica, el precio solo afectará a esa tienda.
+            </Badge>
+
+            <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
+                <TabsList className="w-full mb-4">
+                    <TabsTrigger value="all-stores">Universal</TabsTrigger>
+                    {stores.map((store: Location) => (
+                        <TabsTrigger key={store.location_id} value={store.location_id.toString()}>
+                            {store.name}
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
+
+                <UniversalPricesContainer
+                    productPresentationId={productPresentationId}
+                    finalCost={resolvedCost}
+                    bulkQuantityEquivalence={bulkQuantityEquivalence}
+                    sellUnit={sellUnit}
+                />
+
+                {stores.map((store: Location) => (
+                    <StorePricesTabContainer
+                        key={store.location_id}
+                        productPresentationId={productPresentationId}
+                        store={store}
+                        finalCost={resolvedCost}
+                        disabled={disabled}
+                        bulkQuantityEquivalence={bulkQuantityEquivalence}
+                        sellUnit={sellUnit}
+                    />
+                ))}
+            </Tabs>
+        </Card>
+    );
+
+    if (mode === 'inline') {
+        return pricesContent;
     }
 
     return (
@@ -112,49 +163,7 @@ export default function ManageProductPrices({
                         {sellUnit}, {bulkQuantityEquivalence}, {presentationName}
                     </SheetDescription>
                 </SheetHeader>
-
-                <Card className="p-0 border-none shadow-none mt-2">
-                    <CardHeader className="p-0 flex flex-row justify-between">
-                        <CardTitle>Costos (Último lote registrado con costos):</CardTitle>
-                        {isCostLoading && shouldFetch ? <div>Cargando costos...</div> : <CostBadges finalCost={resolvedCost} />}
-                    </CardHeader>
-
-                    <Badge variant="secondary" className="text-xs">
-                        Los precios marcados como "universales" se aplican a todas las tiendas.
-                        Si elegís una tienda específica, el precio solo afectará a esa tienda.
-                    </Badge>
-
-                    <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-                        <TabsList className="w-full mb-4">
-                            <TabsTrigger value="all-stores">Universal</TabsTrigger>
-                            {stores.map((store: Location) => (
-                                <TabsTrigger key={store.location_id} value={store.location_id.toString()}>
-                                    {store.name}
-                                </TabsTrigger>
-                            ))}
-                        </TabsList>
-
-                        <UniversalPricesContainer
-                            productPresentationId={productPresentationId}
-                            finalCost={resolvedCost}
-                            bulkQuantityEquivalence={bulkQuantityEquivalence}
-                            sellUnit={sellUnit}
-                        />
-
-                        {stores.map((store: Location) => (
-                            <StorePricesTabContainer
-                                key={store.location_id}
-                                productPresentationId={productPresentationId}
-                                store={store}
-                                finalCost={resolvedCost}
-                                disabled={disabled}
-                                bulkQuantityEquivalence={bulkQuantityEquivalence}
-                                sellUnit={sellUnit}
-                            />
-                        ))}
-                    </Tabs>
-                </Card>
-
+                {pricesContent}
                 <SheetFooter className="mt-6" />
             </SheetContent>
         </Sheet>
