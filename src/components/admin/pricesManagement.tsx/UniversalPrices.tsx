@@ -51,7 +51,7 @@ function QtyInput({ value, disabled, onChange }: {
 }
 
 const UniversalPrices = ({
-    productPresentationId, finalCost, disabled, productPrices, bulkQuantityEquivalence, sellUnit
+    productPresentationId, finalCost, disabled, productPrices, bulkQuantityEquivalence, sellUnit, stacked
 }: {
     productPresentationId: number;
     finalCost: {
@@ -63,6 +63,7 @@ const UniversalPrices = ({
     productPrices: Price[];
     bulkQuantityEquivalence?: number | null;
     sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
+    stacked?: boolean;
 }) => {
     const queryClient = useQueryClient();
 
@@ -403,7 +404,7 @@ const UniversalPrices = ({
 
     return (
         <TabsContent value="all-stores">
-            <div className="grid grid-cols-3 gap-4">
+            <div className={stacked ? "flex flex-col gap-4" : "grid grid-cols-3 gap-4"}>
                 <div>
                     <h3 className="font-semibold mb-2">Por cantidad</h3>
                     {renderCategory(value, "QUANTITY_DISCOUNT")}

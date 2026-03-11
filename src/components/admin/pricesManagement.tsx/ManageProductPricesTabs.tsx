@@ -21,7 +21,6 @@ interface PricesDialogProps {
         final_cost_per_unit: number | null;
         final_cost_per_bulk: number | null;
     };
-    needsCostFetch: boolean;
     bulkQuantityEquivalence?: number | null;
     sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
     presentationName?: string | null;
@@ -32,14 +31,11 @@ export default function ManageProductPrices({
     productPresentationId,
     disabled = false,
     finalCost,
-    needsCostFetch = false,
     bulkQuantityEquivalence = null,
     sellUnit = null,
     presentationName = null,
     mode = 'sheet',
 }: PricesDialogProps) {
-
-    console.log("Final cost received in ManageProductPrices:", finalCost, sellUnit, bulkQuantityEquivalence, presentationName);
 
     const queryClient = useQueryClient();
     const [open, setOpen] = useState(false);
@@ -51,29 +47,27 @@ export default function ManageProductPrices({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentTab]);
 
-    console.log("Needs cost fetch:", needsCostFetch);
-
-    const allCostsNull = !finalCost?.final_cost_total && !finalCost?.final_cost_per_unit && !finalCost?.final_cost_per_bulk;
-    const shouldFetch = needsCostFetch || allCostsNull;
-
-    const { data: fetchedCosts, isLoading: isCostLoading, refetch: refetchCosts, isSuccess: isCostSuccess } = useQuery({
+    // Sheet mode: fetch last lot costs from DB when opened
+    const { data: fetchedCosts, isLoading: isCostLoading, refetch: refetchCosts } = useQuery({
         queryKey: ["last_lot_costs", productPresentationId],
         queryFn: () => getLastLotCosts(productPresentationId!),
         enabled: false,
     });
 
     useEffect(() => {
-        if (open && shouldFetch && productPresentationId) {
-            refetchCosts();
-        }
+        if (mode === 'sheet' && open && productPresentationId) refetchCosts();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open]);
+    }, [open, productPresentationId]);
 
-    const resolvedCost = {
-        final_cost_total: (shouldFetch ? null : finalCost?.final_cost_total) ?? null,
-        final_cost_per_unit: (shouldFetch && fetchedCosts ? fetchedCosts.final_cost_per_unit : finalCost?.final_cost_per_unit) ?? null,
-        final_cost_per_bulk: (shouldFetch ? null : finalCost?.final_cost_per_bulk) ?? null,
-    };
+    // inline: use finalCost from props (what the user is entering in the form)
+    // sheet: use fetched DB costs (fall back to props while loading)
+    const resolvedCost = mode === 'inline'
+        ? finalCost
+        : {
+            final_cost_total: null,
+            final_cost_per_unit: fetchedCosts?.final_cost_per_unit ?? finalCost?.final_cost_per_unit ?? null,
+            final_cost_per_bulk: null,
+        };
 
     const { data: stores = [], isLoading: isStoreLoading } = useQuery({
         queryKey: ["stores"],
@@ -98,14 +92,17 @@ export default function ManageProductPrices({
 
     const pricesContent = (
         <Card className="p-0 border-none shadow-none mt-2">
-            <CardHeader className="p-0 flex flex-row justify-between">
-                <CardTitle>Costos (Último lote registrado con costos):</CardTitle>
-                {isCostLoading && shouldFetch ? <div>Cargando costos...</div> : <CostBadges finalCost={resolvedCost} />}
-            </CardHeader>
+            {mode !== 'inline' && (
+                <CardHeader className="p-0 flex flex-row justify-between">
+                    <CardTitle className="text-sm">
+                        Costos (Último lote registrado)
+                    </CardTitle>
+                    {isCostLoading ? <div className="text-xs text-muted-foreground">Cargando costos...</div> : <CostBadges finalCost={resolvedCost} />}
+                </CardHeader>
+            )}
 
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs w-full">
                 Los precios marcados como "universales" se aplican a todas las tiendas.
-                Si elegís una tienda específica, el precio solo afectará a esa tienda.
             </Badge>
 
             <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
@@ -123,6 +120,7 @@ export default function ManageProductPrices({
                     finalCost={resolvedCost}
                     bulkQuantityEquivalence={bulkQuantityEquivalence}
                     sellUnit={sellUnit}
+                    stacked={mode === 'inline'}
                 />
 
                 {stores.map((store: Location) => (
@@ -134,6 +132,7 @@ export default function ManageProductPrices({
                         disabled={disabled}
                         bulkQuantityEquivalence={bulkQuantityEquivalence}
                         sellUnit={sellUnit}
+                        stacked={mode === 'inline'}
                     />
                 ))}
             </Tabs>
@@ -154,13 +153,6 @@ export default function ManageProductPrices({
                     <SheetTitle>Modificar precios{presentationName ? ` — ${presentationName}` : ''}</SheetTitle>
                     <SheetDescription>
                         Esta edición afectará a todos los lotes de este producto, incluidos los creados anteriormente.
-                    </SheetDescription>
-                    <SheetDescription>
-                        {isCostSuccess && ('Costos del ultimo lote registrado')}
-                        {finalCost?.final_cost_per_bulk && ('Costos del lote que estamos agregando')}
-                    </SheetDescription>
-                    <SheetDescription>
-                        {sellUnit}, {bulkQuantityEquivalence}, {presentationName}
                     </SheetDescription>
                 </SheetHeader>
                 {pricesContent}

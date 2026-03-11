@@ -52,7 +52,7 @@ function QtyInput({ value, disabled, onChange }: {
 
 const StorePricesTab = ({
     productPresentationId, store, finalCost,
-    disabled, localPrices, universalPrices, disabledPrices, bulkQuantityEquivalence, sellUnit
+    disabled, localPrices, universalPrices, disabledPrices, bulkQuantityEquivalence, sellUnit, stacked
 }: {
     productPresentationId: number;
     store: Location;
@@ -67,6 +67,7 @@ const StorePricesTab = ({
     disabledPrices: DisabledPrice[];
     bulkQuantityEquivalence?: number | null;
     sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
+    stacked?: boolean;
 }) => {
     const locationId = store.location_id;
     const queryClient = useQueryClient();
@@ -538,7 +539,7 @@ const StorePricesTab = ({
 
     return (
         <TabsContent value={store.location_id.toString()}>
-            <div className="grid grid-cols-3 gap-4">
+            <div className={stacked ? "flex flex-col gap-4" : "grid grid-cols-3 gap-4"}>
                 <div>
                     <h3 className="font-semibold mb-2">Por cantidad</h3>
                     {renderCategory("QUANTITY_DISCOUNT")}

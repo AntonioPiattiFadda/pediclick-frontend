@@ -147,12 +147,18 @@ export const createPrices = async (priceData: Price[], pricesToDelete: number[])
       .delete()
       .in("price_id", pricesToDelete);
 
+    console.log("clientsError:", clientsError);
+
+
     if (clientsError) throw new Error(clientsError.message);
 
     const { error: disabledError } = await supabase
       .from("disabled_prices")
       .delete()
       .in("price_id", pricesToDelete);
+
+    console.log("disabledError:", disabledError);
+
 
     if (disabledError) throw new Error(disabledError.message);
   }
@@ -161,6 +167,8 @@ export const createPrices = async (priceData: Price[], pricesToDelete: number[])
     "update_prices",
     { p_prices: priceData, p_delete_ids: pricesToDelete }
   );
+
+  console.log("RPC response data:", data, error);
 
   if (error) throw new Error(error.message);
 

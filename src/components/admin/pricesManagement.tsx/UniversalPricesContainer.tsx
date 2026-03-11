@@ -4,7 +4,7 @@ import { getProductPrices } from '@/service/prices';
 import { useQuery } from '@tanstack/react-query';
 import UniversalPrices from './UniversalPrices';
 
-const UniversalPricesContainer = ({ productPresentationId, finalCost, bulkQuantityEquivalence, sellUnit }: {
+const UniversalPricesContainer = ({ productPresentationId, finalCost, bulkQuantityEquivalence, sellUnit, stacked }: {
     productPresentationId: number;
     finalCost: {
         final_cost_total: number | null;
@@ -13,6 +13,7 @@ const UniversalPricesContainer = ({ productPresentationId, finalCost, bulkQuanti
     };
     bulkQuantityEquivalence?: number | null;
     sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
+    stacked?: boolean;
 }) => {
 
     const locationId = null;
@@ -47,6 +48,7 @@ const UniversalPricesContainer = ({ productPresentationId, finalCost, bulkQuanti
             productPrices={productPrices}
             bulkQuantityEquivalence={bulkQuantityEquivalence}
             sellUnit={sellUnit}
+            stacked={stacked}
         />
     )
 }
