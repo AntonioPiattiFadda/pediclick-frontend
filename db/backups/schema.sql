@@ -568,31 +568,27 @@ declare
   v_new_stock_id      uuid;
 begin
   select lot_id into v_origin_lot_id
-  from stock
-  where stock_id = p_origin_stock_id;
+  from stock where stock_id = p_origin_stock_id;
 
   if v_origin_lot_id is null then
-      raise exception 'Origin lot not found for stock_id %', p_origin_stock_id;
+    raise exception 'Origin lot not found for stock_id %', p_origin_stock_id;
   end if;
 
-  -------------------------------------------------------------------
-  -- ORIGEN: restar stock y retornar
-  -------------------------------------------------------------------
+  -- ORIGEN: restar en base units
   if p_is_origin is true then
-      update stock
-      set quantity = quantity - p_quantity
-      where stock_id = p_origin_stock_id;
+    update stock
+    set quantity   = quantity - p_quantity,
+        updated_at = now()
+    where stock_id = p_origin_stock_id;
 
-      return jsonb_build_object(
-          'lot_id',           v_origin_lot_id,
-          'stock_id',         p_origin_stock_id,
-          'quantity_applied', -p_quantity
-      );
+    return jsonb_build_object(
+      'lot_id',           v_origin_lot_id,
+      'stock_id',         p_origin_stock_id,
+      'quantity_applied', -p_quantity
+    );
   end if;
 
-  -------------------------------------------------------------------
-  -- DESTINO: buscar lote ya existente desde este origen
-  -------------------------------------------------------------------
+  -- DESTINO: buscar lote existente via lot_traces
   select l.lot_id, s.stock_id
   into v_existing_lot_id, v_existing_stock_id
   from lot_traces t
@@ -603,56 +599,53 @@ begin
     and s.location_id = p_location_id
   limit 1;
 
-  -------------------------------------------------------------------
   -- Reusar lote existente
-  -------------------------------------------------------------------
   if v_existing_stock_id is not null then
-      update stock
-      set quantity = quantity + p_quantity
-      where stock_id = v_existing_stock_id;
+    update stock
+    set quantity   = quantity + p_quantity,
+        updated_at = now()
+    where stock_id = v_existing_stock_id;
 
-      return jsonb_build_object(
-          'lot_id',           v_existing_lot_id,
-          'stock_id',         v_existing_stock_id,
-          'quantity_applied', p_quantity,
-          'reused_lot',       true
-      );
+    return jsonb_build_object(
+      'lot_id',           v_existing_lot_id,
+      'stock_id',         v_existing_stock_id,
+      'quantity_applied', p_quantity,
+      'reused_lot',       true
+    );
   end if;
 
-  -------------------------------------------------------------------
-  -- Crear lote nuevo
-  -- Solo se guarda final_cost_per_unit (dato atómico).
-  -- final_cost_total = final_cost_per_unit × initial_stock_quantity → on the fly
-  -------------------------------------------------------------------
+  -- Crear lote nuevo (initial_stock_quantity en base units)
   insert into lots (
-      product_id,
-      provider_id,
-      expiration_date,
-      expiration_date_notification,
-      initial_stock_quantity,
-      final_cost_per_unit
+    product_id,
+    provider_id,
+    expiration_date,
+    expiration_date_notification,
+    initial_stock_quantity,
+    final_cost_per_unit,
+    created_at
   )
   values (
-      (p_lot->>'product_id')::bigint,
-      (p_lot->>'provider_id')::bigint,
-      (p_lot->>'expiration_date')::timestamptz,
-      (p_lot->>'expiration_date_notification')::boolean,
-      p_quantity,
-      (p_lot->>'final_cost_per_unit')::numeric
+    (p_lot->>'product_id')::bigint,
+    nullif(p_lot->>'provider_id', '')::bigint,
+    nullif(p_lot->>'expiration_date', '')::timestamptz,
+    coalesce((p_lot->>'expiration_date_notification')::boolean, false),
+    p_quantity,  -- base units
+    nullif(p_lot->>'final_cost_per_unit', '')::numeric,
+    now()
   )
   returning lot_id into v_new_lot_id;
 
-  insert into stock (lot_id, quantity, stock_type, product_id, location_id)
-  values (v_new_lot_id, p_quantity, 'STORE', (p_lot->>'product_id')::bigint, p_location_id)
+  insert into stock (lot_id, quantity, stock_type, product_id, location_id, created_at)
+  values (v_new_lot_id, p_quantity, 'STORE', (p_lot->>'product_id')::bigint, p_location_id, now())
   returning stock_id into v_new_stock_id;
 
   perform public.create_lot_trace(v_origin_lot_id, v_new_lot_id);
 
   return jsonb_build_object(
-      'lot_id',           v_new_lot_id,
-      'stock_id',         v_new_stock_id,
-      'quantity_applied', p_quantity,
-      'reused_lot',       false
+    'lot_id',           v_new_lot_id,
+    'stock_id',         v_new_stock_id,
+    'quantity_applied', p_quantity,
+    'reused_lot',       false
   );
 end;
 $$;
@@ -1167,16 +1160,8 @@ CREATE OR REPLACE FUNCTION "public"."create_lot_trace"("p_lot_from_id" bigint, "
     SET "search_path" TO 'public'
     AS $$
 begin
-    insert into lot_traces (
-        lot_from_id,
-        lot_to_id,
-        created_at
-    )
-    values (
-        p_lot_from_id,
-        p_lot_to_id,
-        now()
-    );
+  insert into lot_traces (lot_from_id, lot_to_id, created_at)
+  values (p_lot_from_id, p_lot_to_id, now());
 end;
 $$;
 
@@ -1331,39 +1316,60 @@ $$;
 ALTER FUNCTION "public"."create_stock_movement_waste"("p_lot_id" bigint, "p_stock_id" "uuid", "p_movement_type" "public"."movement_type", "p_quantity" numeric, "p_qty_in_base_units" numeric, "p_product_presentation_id" bigint, "p_from_location_id" bigint, "p_to_location_id" bigint, "p_should_notify_owner" boolean, "p_created_by" "uuid") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."create_transformation"("p_transformation_data" "jsonb", "p_transformation_items" "jsonb") RETURNS "jsonb"
+CREATE OR REPLACE FUNCTION "public"."create_transformation"("p_transformation_data" "jsonb", "p_transformation_items" "jsonb", "p_organization_id" "uuid") RETURNS "jsonb"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 declare
-    v_transformation_id bigint;
-    v_items jsonb;
+  v_transformation_id   bigint;
+  v_items               jsonb;
+  v_transformation_type transformation_type;
+  v_origin_product_id   bigint;
+  v_dest_product_ids    bigint[];
 begin
-    ------------------------------------------------------
-    -- 1) Crear header
-    ------------------------------------------------------
-    v_transformation_id := public.transformation_header(p_transformation_data);
+  select (item->>'product_id')::bigint
+  into v_origin_product_id
+  from jsonb_array_elements(p_transformation_items) item
+  where (item->>'is_origin')::boolean = true
+  limit 1;
 
-    ------------------------------------------------------
-    -- 2) Procesar TODOS los transformation_items
-    ------------------------------------------------------
-    v_items := public.transformation_items(
-        v_transformation_id,
-        p_transformation_items
-    );
+  select array_agg(distinct (item->>'product_id')::bigint)
+  into v_dest_product_ids
+  from jsonb_array_elements(p_transformation_items) item
+  where (item->>'is_origin')::boolean = false;
 
-    ------------------------------------------------------
-    -- 3) Respuesta final
-    ------------------------------------------------------
-    return jsonb_build_object(
-        'transformation_id', v_transformation_id,
-        'items', v_items
-    );
+  if v_dest_product_ids = array[v_origin_product_id] then
+    v_transformation_type := 'FRACTION';
+  else
+    v_transformation_type := 'TRANSFORMATION';
+  end if;
+
+  insert into transformations (
+    transformation_cost, notes, created_at,
+    organization_id, created_by, transformation_type
+  )
+  values (
+    (p_transformation_data->>'transformation_cost')::numeric,
+    p_transformation_data->>'notes',
+    coalesce((p_transformation_data->>'created_at')::timestamptz, now()),
+    p_organization_id,
+    (p_transformation_data->>'created_by')::uuid,
+    v_transformation_type
+  )
+  returning transformation_id into v_transformation_id;
+
+  v_items := public.process_transformation_items(v_transformation_id, p_transformation_items);
+
+  return jsonb_build_object(
+    'transformation_id',   v_transformation_id,
+    'transformation_type', v_transformation_type,
+    'items',               v_items
+  );
 end;
 $$;
 
 
-ALTER FUNCTION "public"."create_transformation"("p_transformation_data" "jsonb", "p_transformation_items" "jsonb") OWNER TO "postgres";
+ALTER FUNCTION "public"."create_transformation"("p_transformation_data" "jsonb", "p_transformation_items" "jsonb", "p_organization_id" "uuid") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."current_organization_id"() RETURNS "uuid"
@@ -1919,6 +1925,110 @@ $$;
 ALTER FUNCTION "public"."process_delivered_items_stock"("p_items" "jsonb") OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."process_transformation_items"("p_transformation_id" bigint, "p_items" "jsonb") RETURNS "jsonb"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+declare
+  rec               jsonb;
+  v_origin_stock_id uuid;
+  v_stock_result    jsonb;
+  v_final_lot_id    bigint;
+  v_final_stock_id  uuid;
+  v_detail_id       bigint;
+  v_results         jsonb := '[]'::jsonb;
+  v_origin_quantity numeric;
+  v_dest_total      numeric;
+begin
+  select (item->>'stock_id')::uuid
+  into v_origin_stock_id
+  from jsonb_array_elements(p_items) item
+  where (item->>'is_origin')::boolean = true
+  limit 1;
+
+  if v_origin_stock_id is null then
+    raise exception 'No origin stock found in transformation items';
+  end if;
+
+  -- Validar contra stock en base units
+  select quantity into v_origin_quantity
+  from stock where stock_id = v_origin_stock_id;
+
+  select coalesce(sum((item->>'quantity_in_base_units')::numeric), 0)
+  into v_dest_total
+  from jsonb_array_elements(p_items) item
+  where (item->>'is_origin')::boolean = false;
+
+  if v_dest_total > v_origin_quantity then
+    raise exception
+      'Suma de cantidades destino (%) supera la cantidad origen (%) en stock_id=%',
+      v_dest_total, v_origin_quantity, v_origin_stock_id;
+  end if;
+
+  for rec in select * from jsonb_array_elements(p_items)
+  loop
+    v_stock_result := public.apply_transformation_stock(
+      (rec->>'is_origin')::boolean,
+      v_origin_stock_id,
+      (rec->>'stock_id')::uuid,
+      -- origen resta en base units, destino suma en base units
+      case
+        when (rec->>'is_origin')::boolean = true
+        then (rec->>'quantity_in_base_units')::numeric
+        else (rec->>'quantity_in_base_units')::numeric
+      end,
+      (rec->>'location_id')::bigint,
+      rec->'lot'
+    );
+
+    if (rec->>'is_origin')::boolean = true then
+      v_final_stock_id := v_origin_stock_id;
+      select lot_id into v_final_lot_id from stock where stock_id = v_origin_stock_id;
+    else
+      v_final_lot_id   := (v_stock_result->>'lot_id')::bigint;
+      v_final_stock_id := (v_stock_result->>'stock_id')::uuid;
+    end if;
+
+    insert into transformation_items (
+      transformation_id, product_id, product_presentation_id,
+      lot_id, stock_id, is_origin, quantity, qty_in_base_units,
+      bulk_quantity_equivalence, final_cost_per_unit, location_id
+    )
+    values (
+      p_transformation_id,
+      (rec->>'product_id')::bigint,
+      (rec->>'product_presentation_id')::bigint,
+      v_final_lot_id,
+      v_final_stock_id,
+      (rec->>'is_origin')::boolean,
+      (rec->>'quantity')::numeric,
+      (rec->>'quantity_in_base_units')::numeric,
+      (rec->>'bulk_quantity_equivalence')::numeric,
+      (rec->>'final_cost_per_unit')::numeric,
+      (rec->>'location_id')::bigint
+    )
+    returning transformation_item_id into v_detail_id;
+
+    v_results := v_results || jsonb_build_object(
+      'transformation_item_id',  v_detail_id,
+      'product_id',              rec->>'product_id',
+      'product_presentation_id', rec->>'product_presentation_id',
+      'lot_id',                  v_final_lot_id,
+      'stock_id',                v_final_stock_id,
+      'quantity',                rec->>'quantity',
+      'qty_in_base_units',       rec->>'quantity_in_base_units',
+      'is_origin',               rec->>'is_origin'
+    );
+  end loop;
+
+  return v_results;
+end;
+$$;
+
+
+ALTER FUNCTION "public"."process_transformation_items"("p_transformation_id" bigint, "p_items" "jsonb") OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."register_client_payments"("p_client_id" "uuid", "p_payments" "jsonb") RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
@@ -2095,16 +2205,16 @@ $$;
 ALTER FUNCTION "public"."register_order"("p_order" "jsonb", "p_order_items" "jsonb", "p_order_payments" "jsonb") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."register_order_header"("p_order" "jsonb") RETURNS bigint
+CREATE OR REPLACE FUNCTION "public"."register_order_header"("p_order" "jsonb") RETURNS "uuid"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
     AS $$
 declare
-  v_order_id bigint;
-  v_client_id bigint;
+  v_order_id    uuid;
+  v_client_id   uuid;
   v_location_id bigint;
 begin
-  v_order_id := (p_order->>'order_id')::bigint;
+  v_order_id    := (p_order->>'order_id')::uuid;
   v_location_id := (p_order->>'location_id')::bigint;
 
   update orders
@@ -2112,7 +2222,7 @@ begin
     organization_id = nullif(p_order->>'organization_id','')::uuid,
     location_id       = v_location_id,
     client_type       = (p_order->>'client_type')::client_type,
-    client_id         = nullif(p_order->>'client_id','')::bigint,
+    client_id         = nullif(p_order->>'client_id','')::uuid,
     provider_id       = nullif(p_order->>'provider_id','')::bigint,
     order_number      = (p_order->>'order_number')::bigint,
     order_type        = (p_order->>'order_type')::order_type,
@@ -2854,158 +2964,6 @@ $$;
 
 
 ALTER FUNCTION "public"."transfer_order_with_items"("p_transfer_order" "jsonb", "p_transfer_order_items" "jsonb") OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."transformation_header"("p_transformation_data" "jsonb") RETURNS bigint
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
-    AS $$
-declare
-    v_transformation_id bigint;
-begin
-    -------------------------------------------------------------------
-    -- INSERT Siempre: nunca viene transformation_id desde el cliente
-    -------------------------------------------------------------------
-    insert into transformations (
-        transformation_cost,
-        notes,
-        created_at
-    )
-    values (
-        (p_transformation_data->>'transformation_cost')::numeric,
-        p_transformation_data->>'notes',
-        coalesce(
-            (p_transformation_data->>'created_at')::timestamptz,
-            now()
-        )
-    )
-    returning transformation_id
-    into v_transformation_id;
-
-    -------------------------------------------------------------------
-    -- Devolver ID para las funciones siguientes
-    -------------------------------------------------------------------
-    return v_transformation_id;
-end;
-$$;
-
-
-ALTER FUNCTION "public"."transformation_header"("p_transformation_data" "jsonb") OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "public"."transformation_items"("p_transformation_id" bigint, "p_items" "jsonb") RETURNS "jsonb"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
-    AS $$
-declare
-    rec               jsonb;
-    v_origin_stock_id uuid;
-    v_stock_result    jsonb;
-    v_final_lot_id    bigint;
-    v_final_stock_id  uuid;
-    v_detail_id       bigint;
-    v_results         jsonb := '[]'::jsonb;
-
-    v_origin_quantity   numeric;
-    v_dest_total        numeric;
-begin
-    -------------------------------------------------------------------
-    -- 1. Detectar el stock ORIGEN
-    -------------------------------------------------------------------
-    select (item->>'stock_id')::uuid
-    into v_origin_stock_id
-    from jsonb_array_elements(p_items) item
-    where (item->>'is_origin')::boolean = true
-    limit 1;
-
-    if v_origin_stock_id is null then
-        raise exception 'No origin stock found in transformation items';
-    end if;
-
-    -------------------------------------------------------------------
-    -- FIX: Validar suma(quantity destino) <= quantity origen
-    --      antes de procesar cualquier item
-    -------------------------------------------------------------------
-    select quantity
-    into v_origin_quantity
-    from stock
-    where stock_id = v_origin_stock_id;
-
-    select coalesce(sum((item->>'quantity')::numeric), 0)
-    into v_dest_total
-    from jsonb_array_elements(p_items) item
-    where (item->>'is_origin')::boolean = false;
-
-    if v_dest_total > v_origin_quantity then
-        raise exception
-          'Suma de cantidades destino (%) supera la cantidad origen (%) en stock_id=%',
-          v_dest_total, v_origin_quantity, v_origin_stock_id;
-    end if;
-
-    -------------------------------------------------------------------
-    -- 2. Procesar cada item
-    -------------------------------------------------------------------
-    for rec in select * from jsonb_array_elements(p_items)
-    loop
-        v_stock_result := public.apply_transformation_stock(
-            (rec->>'is_origin')::boolean,
-            v_origin_stock_id,
-            (rec->>'stock_id')::uuid,
-            (rec->>'quantity')::numeric,
-            (rec->>'location_id')::bigint,
-            rec->'lot'
-        );
-
-        if (rec->>'is_origin')::boolean = true then
-            v_final_stock_id := v_origin_stock_id;
-            select lot_id into v_final_lot_id
-            from stock where stock_id = v_origin_stock_id;
-        else
-            v_final_lot_id   := (v_stock_result->>'lot_id')::bigint;
-            v_final_stock_id := (v_stock_result->>'stock_id')::uuid;
-        end if;
-
-        insert into transformation_items (
-            transformation_id,
-            product_id,
-            product_presentation_id,
-            lot_id,
-            stock_id,
-            is_origin,
-            quantity,
-            bulk_quantity_equivalence,
-            final_cost_per_unit
-        )
-        values (
-            p_transformation_id,
-            (rec->>'product_id')::bigint,
-            (rec->>'product_presentation_id')::bigint,
-            v_final_lot_id,
-            v_final_stock_id,
-            (rec->>'is_origin')::boolean,
-            (rec->>'quantity')::numeric,
-            (rec->>'bulk_quantity_equivalence')::numeric,
-            (rec->>'final_cost_per_unit')::numeric
-        )
-        returning transformation_item_id into v_detail_id;
-
-        v_results := v_results || jsonb_build_object(
-            'transformation_item_id',  v_detail_id,
-            'product_id',              rec->>'product_id',
-            'product_presentation_id', rec->>'product_presentation_id',
-            'lot_id',                  v_final_lot_id,
-            'stock_id',                v_final_stock_id,
-            'quantity',                rec->>'quantity',
-            'is_origin',               rec->>'is_origin'
-        );
-    end loop;
-
-    return v_results;
-end;
-$$;
-
-
-ALTER FUNCTION "public"."transformation_items"("p_transformation_id" bigint, "p_items" "jsonb") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."update_lot_containers_movements"("p_transfer_order_item_id" bigint, "p_movements" "jsonb") RETURNS "jsonb"
@@ -4469,7 +4427,8 @@ CREATE TABLE IF NOT EXISTS "public"."transformation_items" (
     "bulk_quantity_equivalence" numeric,
     "final_cost_per_unit" numeric,
     "location_id" bigint,
-    "transformation_id" bigint
+    "transformation_id" bigint,
+    "qty_in_base_units" numeric
 );
 
 
@@ -6495,9 +6454,9 @@ GRANT ALL ON FUNCTION "public"."create_stock_movement_waste"("p_lot_id" bigint, 
 
 
 
-GRANT ALL ON FUNCTION "public"."create_transformation"("p_transformation_data" "jsonb", "p_transformation_items" "jsonb") TO "anon";
-GRANT ALL ON FUNCTION "public"."create_transformation"("p_transformation_data" "jsonb", "p_transformation_items" "jsonb") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."create_transformation"("p_transformation_data" "jsonb", "p_transformation_items" "jsonb") TO "service_role";
+GRANT ALL ON FUNCTION "public"."create_transformation"("p_transformation_data" "jsonb", "p_transformation_items" "jsonb", "p_organization_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."create_transformation"("p_transformation_data" "jsonb", "p_transformation_items" "jsonb", "p_organization_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."create_transformation"("p_transformation_data" "jsonb", "p_transformation_items" "jsonb", "p_organization_id" "uuid") TO "service_role";
 
 
 
@@ -6585,6 +6544,12 @@ GRANT ALL ON FUNCTION "public"."process_delivered_items_stock"("p_items" "jsonb"
 
 
 
+GRANT ALL ON FUNCTION "public"."process_transformation_items"("p_transformation_id" bigint, "p_items" "jsonb") TO "anon";
+GRANT ALL ON FUNCTION "public"."process_transformation_items"("p_transformation_id" bigint, "p_items" "jsonb") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."process_transformation_items"("p_transformation_id" bigint, "p_items" "jsonb") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."register_client_payments"("p_client_id" "uuid", "p_payments" "jsonb") TO "anon";
 GRANT ALL ON FUNCTION "public"."register_client_payments"("p_client_id" "uuid", "p_payments" "jsonb") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."register_client_payments"("p_client_id" "uuid", "p_payments" "jsonb") TO "service_role";
@@ -6666,18 +6631,6 @@ GRANT ALL ON FUNCTION "public"."transfer_order_items"("p_transfer_order_id" bigi
 GRANT ALL ON FUNCTION "public"."transfer_order_with_items"("p_transfer_order" "jsonb", "p_transfer_order_items" "jsonb") TO "anon";
 GRANT ALL ON FUNCTION "public"."transfer_order_with_items"("p_transfer_order" "jsonb", "p_transfer_order_items" "jsonb") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."transfer_order_with_items"("p_transfer_order" "jsonb", "p_transfer_order_items" "jsonb") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."transformation_header"("p_transformation_data" "jsonb") TO "anon";
-GRANT ALL ON FUNCTION "public"."transformation_header"("p_transformation_data" "jsonb") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."transformation_header"("p_transformation_data" "jsonb") TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."transformation_items"("p_transformation_id" bigint, "p_items" "jsonb") TO "anon";
-GRANT ALL ON FUNCTION "public"."transformation_items"("p_transformation_id" bigint, "p_items" "jsonb") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."transformation_items"("p_transformation_id" bigint, "p_items" "jsonb") TO "service_role";
 
 
 
