@@ -430,3 +430,18 @@ export const getProductCount = async () => {
 
   return products.length;
 };
+
+export const getNextProductShortCode = async (): Promise<number> => {
+  const organizationId = await getOrganizationId();
+
+  const { data, error } = await supabase.rpc('get_next_product_short_code', {
+    p_organization_id: organizationId,
+  });
+
+  if (error) {
+    console.error("getNextProductShortCode RPC error", error);
+    throw new Error(error.message);
+  }
+
+  return data as number;
+};

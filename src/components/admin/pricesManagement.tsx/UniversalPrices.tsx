@@ -75,7 +75,10 @@ const UniversalPrices = ({
 
     // Sync with server data only when there are no pending local edits
     useEffect(() => {
-        if (!hasPendingRef.current) onChange(productPrices);
+        if (!hasPendingRef.current) {
+            valueRef.current = productPrices;
+            onChange(productPrices);
+        }
     }, [productPrices]);
 
     // Save on unmount (safety net for sheet close)
@@ -100,20 +103,11 @@ const UniversalPrices = ({
         mutationFn: async ({ prices, toDelete }: { prices: Price[]; toDelete: number[] }) => {
             return await createPrices(prices, toDelete);
         },
-        onError: (error: { message: string }) => {
-            toast.error(error.message || "Error al guardar precios");
-        },
-    });
-
-    const addPriceMutation = useMutation({
-        mutationFn: async (newPrice: Price) => {
-            return await createPrices(pricesAdapter([newPrice], null), []);
-        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId, null] });
         },
         onError: (error: { message: string }) => {
-            toast.error(error.message || "Error al agregar precio");
+            toast.error(error.message || "Error al guardar precios");
         },
     });
 
@@ -373,7 +367,7 @@ const UniversalPrices = ({
                 })}
                 <Button
                     variant="outline"
-                    disabled={disabled || addPriceMutation.isLoading}
+                    disabled={disabled}
                     onClick={() => {
                         const maxQty = value
                             .filter((p) => p.logic_type === logic_type)
@@ -392,8 +386,7 @@ const UniversalPrices = ({
                             valid_from: null,
                             valid_until: null,
                         };
-                        onChange([...value, newPrice]);
-                        addPriceMutation.mutate(newPrice);
+                        markAndSet([...value, newPrice]);
                     }}
                 >
                     <Plus className="w-4 h-4" /> Agregar precio

@@ -591,7 +591,7 @@ export function AddLotBtn({
                       ? "Ingresá la cantidad de stock nuevo para continuar"
                       : null;
                 return msg ? (
-                  <div className="absolute inset-0 z-50 bg-background/75 backdrop-blur-[2px] flex items-center justify-center rounded-lg pointer-events-none">
+                  <div className="absolute inset-0 z-20 bg-background/75 backdrop-blur-[2px] flex items-center justify-center rounded-lg pointer-events-none">
                     <p className="text-muted-foreground text-sm font-medium px-4 text-center">{msg}</p>
                   </div>
                 ) : null;
@@ -626,105 +626,94 @@ export function AddLotBtn({
 
                     <Card className="border-none p-2 shadow-none bg-transparent">
 
+                      {/* Header */}
+                      <div className="grid grid-cols-[120px_1fr_1fr_1fr] gap-3 w-full mb-1 px-1">
+                        <div />
+                        <p className="text-xs font-medium text-muted-foreground text-center">Por unidad / Kg</p>
+                        <p className="text-xs font-medium text-muted-foreground text-center">Por bulto</p>
+                        <p className="text-xs font-medium text-muted-foreground text-center">Total</p>
+                      </div>
 
-                      <div className="grid grid-cols-3 gap-4 w-full">
+                      {/* Compra */}
+                      <div className="grid grid-cols-[120px_1fr_1fr_1fr] gap-3 w-full items-end">
+                        <p className="text-sm font-medium pb-2 text-right pr-2">Compra</p>
                         <MoneyInput
-                          label="Costo neto total"
-                          value={formData.purchase_cost_total || undefined}
-                          placeholder="Costo neto total"
-                          onChange={(v) => handleUpdateLotField("purchase_cost_total", Number(v))}
-                        />
-
-                        <MoneyInput
-                          label="Costo neto por bulto"
-                          placeholder="Costo neto por bulto"
-                          // disabled={!isEditing}
-                          value={formData.purchase_cost_per_bulk || undefined}
-                          onChange={(v) => handleUpdateLotField("purchase_cost_per_bulk", Number(v))}
-                        />
-
-                        <MoneyInput
-                          label="Costo neto por unidad/Kg"
-                          placeholder="Costo neto por unidad/Kg"
-                          // disabled={!isEditing}
                           value={formData.purchase_cost_per_unit || undefined}
                           onChange={(v) => handleUpdateLotField("purchase_cost_per_unit", Number(v))}
                         />
-
+                        <MoneyInput
+                          value={formData.purchase_cost_per_bulk || undefined}
+                          onChange={(v) => handleUpdateLotField("purchase_cost_per_bulk", Number(v))}
+                        />
+                        <MoneyInput
+                          value={formData.purchase_cost_total || undefined}
+                          onChange={(v) => handleUpdateLotField("purchase_cost_total", Number(v))}
+                        />
                       </div>
 
-                      <div className="grid grid-cols-3 gap-4 w-full">
-
-
+                      {/* Envío */}
+                      <div className="grid grid-cols-[120px_1fr_1fr_1fr] gap-3 w-full items-end mt-2">
+                        <p className="text-sm font-medium pb-2 text-right pr-2">Envío</p>
                         <MoneyInput
-                          label="Costo de envío total"
-                          value={formData.delivery_cost_total || undefined}
-                          onChange={(v) =>
-                            handleUpdateLotField("delivery_cost_total", v ?? 0)
-                          }
-                        />
-
-
-                        <MoneyInput
-                          label="Costo de envío por bulto"
-                          value={formData.delivery_cost_per_bulk || undefined}
-                          onChange={(v) =>
-                            handleUpdateLotField("delivery_cost_per_bulk", v ?? 0)
-                          }
-                        />
-
-                        <MoneyInput
-                          label="Costo de envío por unidad / Kg"
                           value={formData.delivery_cost_per_unit || undefined}
-                          onChange={(v) =>
-                            handleUpdateLotField("delivery_cost_per_unit", v ?? 0)
-                          }
+                          onChange={(v) => handleUpdateLotField("delivery_cost_per_unit", v ?? 0)}
                         />
-
-
+                        <MoneyInput
+                          value={formData.delivery_cost_per_bulk || undefined}
+                          onChange={(v) => handleUpdateLotField("delivery_cost_per_bulk", v ?? 0)}
+                        />
+                        <MoneyInput
+                          value={formData.delivery_cost_total || undefined}
+                          onChange={(v) => handleUpdateLotField("delivery_cost_total", v ?? 0)}
+                        />
                       </div>
 
-                      <div className="grid grid-cols-3 gap-4 w-full">
-
+                      {/* Descarga */}
+                      <div className="grid grid-cols-[120px_1fr_1fr_1fr] gap-3 w-full items-end mt-2">
+                        <p className="text-sm font-medium pb-2 text-right pr-2">Descarga</p>
                         <MoneyInput
-                          label="Costo total de descarga"
-                          value={formData.download_total_cost || undefined}
-                          onChange={(v) =>
-                            handleUpdateLotField("download_total_cost", v ?? 0)
-                          }
-                        />
-
-
-                        <MoneyInput
-                          label="Costo total de descarga por bulto"
-                          value={formData.download_cost_per_bulk || undefined}
-                          onChange={(v) =>
-                            handleUpdateLotField("download_cost_per_bulk", v ?? 0)
-                          }
-                        />
-
-                        <MoneyInput
-                          label="Costo de descarga por unidad/Kg"
                           value={formData.download_cost_per_unit || undefined}
-                          onChange={(v) =>
-                            handleUpdateLotField("download_cost_per_unit", v ?? 0)
-                          }
+                          onChange={(v) => handleUpdateLotField("download_cost_per_unit", v ?? 0)}
                         />
-
-
+                        <MoneyInput
+                          value={formData.download_cost_per_bulk || undefined}
+                          onChange={(v) => handleUpdateLotField("download_cost_per_bulk", v ?? 0)}
+                        />
+                        <MoneyInput
+                          value={formData.download_total_cost || undefined}
+                          onChange={(v) => handleUpdateLotField("download_total_cost", v ?? 0)}
+                        />
                       </div>
 
-
-                      <div className="grid grid-cols-3 gap-4 w-full">
+                      {/* Extra */}
+                      <div className="grid grid-cols-[120px_1fr_1fr_1fr] gap-3 w-full items-end mt-2">
+                        <p className="text-sm font-medium pb-2 text-right pr-2">Extra</p>
+                        <div />
+                        <div />
                         <MoneyInput
-                          label="Costo extra total"
                           value={formData.extra_cost_total || undefined}
-                          onChange={(v) =>
-                            handleUpdateLotField("extra_cost_total", v ?? 0)
-                          }
+                          onChange={(v) => handleUpdateLotField("extra_cost_total", v ?? 0)}
                         />
+                      </div>
 
-
+                      {/* Final (calculado) */}
+                      <div className="grid grid-cols-[120px_1fr_1fr_1fr] gap-3 w-full items-end mt-2 pt-2 border-t">
+                        <p className="text-sm font-semibold pb-2 text-right pr-2">Total final</p>
+                        <MoneyInput
+                          disabled
+                          value={formData.final_cost_per_unit || undefined}
+                          onChange={() => {}}
+                        />
+                        <MoneyInput
+                          disabled
+                          value={formData.final_cost_per_bulk || undefined}
+                          onChange={() => {}}
+                        />
+                        <MoneyInput
+                          disabled
+                          value={formData.final_cost_total || undefined}
+                          onChange={() => {}}
+                        />
                       </div>
 
 

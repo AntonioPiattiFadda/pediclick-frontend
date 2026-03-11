@@ -66,7 +66,6 @@ const PresentationActionsCell = ({ presentation }: { presentation: Pick<ProductP
             <ManageProductPrices
                 productPresentationId={presentation.product_presentation_id}
                 finalCost={{ final_cost_total: null, final_cost_per_unit: null, final_cost_per_bulk: null }}
-                needsCostFetch={true}
                 bulkQuantityEquivalence={presentation.bulk_quantity_equivalence ?? null}
                 sellUnit={presentation.sell_unit ?? null}
                 presentationName={presentation.product_presentation_name ?? null}

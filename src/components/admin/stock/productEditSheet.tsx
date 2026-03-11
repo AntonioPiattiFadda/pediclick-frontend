@@ -39,6 +39,7 @@ export function ProductEditSheet({ product, onUpdated, open: openProp, onOpenCha
         onOpenChange?.(val);
     };
     const [isSaving, setIsSaving] = useState(false);
+    const [shortCodeStatus, setShortCodeStatus] = useState<"idle" | "loading" | "available" | "unavailable" | "error">("idle");
 
 
     const [formData, setFormData] = useState<Partial<Product>>({
@@ -120,6 +121,7 @@ export function ProductEditSheet({ product, onUpdated, open: openProp, onOpenCha
                                     short_code: value,
                                 }))
                             }
+                            onStatusChange={setShortCodeStatus}
                         />
                         {/* <div className="flex flex-col gap-2">
                             <Label htmlFor="short_code">Código corto</Label>
@@ -255,7 +257,7 @@ export function ProductEditSheet({ product, onUpdated, open: openProp, onOpenCha
                     <SheetClose asChild>
                         <Button variant="outline" disabled={isSaving}>Cancelar</Button>
                     </SheetClose>
-                    <Button onClick={handleSave} disabled={isSaving || !canEdit}>
+                    <Button onClick={handleSave} disabled={isSaving || !canEdit || (shortCodeStatus !== "idle" && shortCodeStatus !== "available")}>
                         {isSaving ? "Guardando..." : "Guardar cambios"}
                     </Button>
                 </SheetFooter>

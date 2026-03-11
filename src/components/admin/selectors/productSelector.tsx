@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { adaptProductForDb } from "@/adapters/products";
-import { createProduct, getProductsByName } from "@/service/products";
+import { createProduct, getNextProductShortCode, getProductsByName } from "@/service/products";
 import type { Product } from "@/types/products";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 import {
@@ -16,6 +16,7 @@ import {
 import { emptyProduct } from "../emptyFormData";
 import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
+import ShortCodeSelector from "../stock/shortCodeSelector";
 
 const PRODUCT_CHARACTER_LIMIT = 60;
 
@@ -37,8 +38,24 @@ const ProductSelector = ({
   const [options, setOptions] = useState<Product[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newShortCode, setNewShortCode] = useState<number | null>(null);
+  const [shortCodeStatus, setShortCodeStatus] = useState<"idle" | "loading" | "available" | "unavailable" | "error">("idle");
   const comboboxRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const { data: suggestedShortCode, isLoading: isLoadingSuggestion } = useQuery({
+    queryKey: ["nextProductShortCode"],
+    queryFn: getNextProductShortCode,
+    enabled: isCreating,
+    staleTime: 0,
+  });
+
+  useEffect(() => {
+    if (isCreating && suggestedShortCode !== undefined) {
+      setNewShortCode(suggestedShortCode);
+    }
+  }, [isCreating, suggestedShortCode]);
 
 
   const fetchProducts = useCallback(
@@ -168,6 +185,9 @@ const ProductSelector = ({
     setShortCode(newProduct.short_code ?? null);
     setIsOpen(false);
     setInputValue("");
+    setIsCreating(false);
+    setNewShortCode(null);
+    setShortCodeStatus("idle");
   };
 
   const createProductMutation = useMutation({
@@ -194,16 +214,28 @@ const ProductSelector = ({
     },
   });
 
-  const handleCreateProduct = (productName: string) => {
+  const handleCreateProduct = (productName: string, shortCodeValue?: number) => {
     const completedInformation = adaptProductForDb({
       ...emptyProduct,
       lot_control: true,
       product_name: productName,
+      short_code: shortCodeValue ?? null,
     });
 
     createProductMutation.mutate({
       completedInformation,
     });
+  };
+
+  const handleOpenCreating = () => {
+    setIsCreating(true);
+    setNewShortCode(suggestedShortCode ?? null);
+  };
+
+  const handleCancelCreating = () => {
+    setIsCreating(false);
+    setNewShortCode(null);
+    setShortCodeStatus("idle");
   };
 
   const isSearchValueNumeric = /^\d+$/.test(inputValue.trim());
@@ -246,7 +278,7 @@ const ProductSelector = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-card border-none rounded-md shadow-lg transition-all duration-200 ease-in-out opacity-100 scale-100 origin-top">
+        <div className="absolute z-30 w-full mt-1 bg-card border-none rounded-md shadow-lg transition-all duration-200 ease-in-out opacity-100 scale-100 origin-top">
           <div className="p-2">
             <input
               ref={inputRef}
@@ -260,12 +292,13 @@ const ProductSelector = ({
                 if (e.key === "Enter") {
                   e.preventDefault();
 
+                  if (isCreating) return;
+
                   // Si hay resultados, seleccionamos el primero
                   if (options.length > 0) {
                     handleSelectProduct(options[0]);
                   } else if (!isSearchValueNumeric && inputValue.trim()) {
-                    // Si no hay resultados y no es un valor numérico, creamos el producto
-                    handleCreateProduct(inputValue.trim());
+                    handleOpenCreating();
                   } else {
                     toast("No se encontró ningún producto con ese nombre o código.");
                   }
@@ -336,28 +369,52 @@ const ProductSelector = ({
 
             )}
 
-            <li
-              className={` ${(!isSearchExactMatch && !isSearchValueNumeric && inputValue) ? "flex" : "hidden"
-                } relative px-3 py-2 text-muted-foreground select-none hover:bg-muted focus:bg-muted`}
-            >
-              <button
-                onClick={() => {
-                  handleCreateProduct(inputValue);
-                }}
-                disabled={!inputValue || createProductMutation.isLoading || isSearching}
-                className={` flex
-                     cursor-pointer  gap-2 items-center `}
-              >
-                {createProductMutation.isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    <span>Agregando {inputValue}</span>
-                  </>
+            {(!isSearchExactMatch && !isSearchValueNumeric && inputValue) && (
+              <li className="relative px-3 py-2 select-none border-t border-border mt-1">
+                {!isCreating ? (
+                  <button
+                    onClick={handleOpenCreating}
+                    disabled={isSearching || createProductMutation.isLoading}
+                    className="flex cursor-pointer gap-2 items-center text-muted-foreground hover:text-foreground text-sm"
+                  >
+                    Agregar &quot;{inputValue}&quot; como nuevo producto
+                  </button>
                 ) : (
-                  `Agregar "${inputValue}" como nombre de un nuevo producto`
+                  <div className="flex flex-col gap-2 pt-1">
+                    <ShortCodeSelector
+                      value={isLoadingSuggestion ? null : newShortCode}
+                      onChange={(val) => setNewShortCode(val ?? null)}
+                      onStatusChange={setShortCodeStatus}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleCreateProduct(inputValue, newShortCode ?? undefined)}
+                        disabled={createProductMutation.isLoading || !newShortCode || shortCodeStatus !== "available"}
+                        className="flex-1 text-xs px-2 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
+                      >
+                        {createProductMutation.isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                        Crear con código corto
+                      </button>
+                      <button
+                        onClick={() => handleCreateProduct(inputValue)}
+                        disabled={createProductMutation.isLoading || !!newShortCode}
+                        className="flex-1 text-xs px-2 py-1.5 rounded-md border border-input hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
+                      >
+                        {createProductMutation.isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                        Crear sin código corto
+                      </button>
+                      <button
+                        onClick={handleCancelCreating}
+                        disabled={createProductMutation.isLoading}
+                        className="text-xs px-2 py-1.5 rounded-md text-muted-foreground hover:text-foreground"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
                 )}
-              </button>
-            </li>
+              </li>
+            )}
 
           </ul>
         </div>

@@ -1,22 +1,31 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { checkIfShortCodeIsAvailable } from "@/service/products";
+
+type ShortCodeStatus = "idle" | "loading" | "available" | "unavailable" | "error";
 
 type Props = {
     value: number | null;
     onChange: (value: number | undefined) => void;
     productId?: number;
+    onStatusChange?: (status: ShortCodeStatus) => void;
 };
 
-const ShortCodeSelector = ({ value, onChange, productId }: Props) => {
-    const [status, setStatus] = useState<"idle" | "loading" | "available" | "unavailable" | "error">("idle");
+const ShortCodeSelector = ({ value, onChange, productId, onStatusChange }: Props) => {
+    const [status, setStatus] = useState<ShortCodeStatus>("idle");
     const [helpText, setHelpText] = useState<string | null>(null);
     const [currentProductName, setCurrentProductName] = useState<string | null>(null);
+    const requestIdRef = useRef(0);
+
+    useEffect(() => {
+        onStatusChange?.(status);
+    }, [status, onStatusChange]);
 
     useEffect(() => {
         // Reset when empty/invalid
         if (value === null || Number.isNaN(value)) {
+            requestIdRef.current++;
             setStatus("idle");
             setHelpText(null);
             setCurrentProductName(null);
@@ -27,9 +36,14 @@ const ShortCodeSelector = ({ value, onChange, productId }: Props) => {
         setHelpText(null);
         setCurrentProductName(null);
 
+        const currentRequestId = ++requestIdRef.current;
+
         const timer = setTimeout(async () => {
             try {
                 const { isAvailable, products } = await checkIfShortCodeIsAvailable(Number(value), productId);
+
+                if (currentRequestId !== requestIdRef.current) return;
+
                 const productNames = products.map((p: { product_name: string }) => p.product_name).join(", ");
                 setCurrentProductName(productNames ?? null);
 
@@ -38,15 +52,14 @@ const ShortCodeSelector = ({ value, onChange, productId }: Props) => {
                     setHelpText("El código corto está disponible");
                 } else {
                     setStatus("unavailable");
-                    setHelpText(
-                        "Código asignado a: "
-                    );
+                    setHelpText("Código asignado a: ");
                 }
             } catch {
+                if (currentRequestId !== requestIdRef.current) return;
                 setStatus("error");
                 setHelpText("Error al verificar la disponibilidad del código corto");
             }
-        }, 500); // debounced 500ms
+        }, 500);
 
         return () => clearTimeout(timer);
     }, [value, productId]);
