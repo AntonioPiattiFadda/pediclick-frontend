@@ -4,7 +4,7 @@ SET session_replication_role = replica;
 -- PostgreSQL database dump
 --
 
--- \restrict JupgVyAJreoGUMOvZb1VJazuiEyhCrHLz8bQE0D6iNpDUCv4vYanUyZ3o3PjVI1
+-- \restrict nR4aXeBLNAGxEkWZ2ByjbXeHJUhsEJh48BKw8Xc4l1dGdIHAV4B3R36ps3eRSC0
 
 -- Dumped from database version 15.8
 -- Dumped by pg_dump version 17.6
@@ -3361,8 +3361,8 @@ COPY "public"."lot_containers_movements" ("lot_container_movement_id", "created_
 --
 
 COPY "public"."lots" ("lot_id", "provider_id", "expiration_date", "expiration_date_notification", "created_at", "updated_at", "initial_stock_quantity", "is_sold_out", "is_expired", "load_order_id", "product_id", "purchase_cost_per_unit", "download_cost_per_unit", "final_cost_per_unit", "delivery_cost_per_unit", "productor_commission_type", "productor_commission_percentage", "productor_commission_unit_value", "purchasing_agent_id", "purchasing_agent_commision_type", "purchasing_agent_commision_percentage", "purchasing_agent_commision_unit_value", "is_finished", "extra_cost_per_unit") FROM stdin;
-1	\N	\N	f	2026-03-11 13:29:46.179718	2026-03-11 13:29:46.179718	100	f	f	\N	20	0	0	0	0	NONE	\N	\N	\N	NONE	\N	\N	\N	0
-2	\N	\N	f	2026-03-11 13:31:01.538637	2026-03-11 13:31:01.538637	50	\N	\N	\N	20	\N	\N	\N	\N	NONE	\N	\N	\N	NONE	\N	\N	\N	\N
+1	\N	\N	f	2026-03-11 13:48:55.45011	2026-03-11 13:48:55.45011	100	f	f	\N	20	0	0	0	0	NONE	\N	\N	\N	NONE	\N	\N	\N	0
+2	\N	\N	f	2026-03-11 13:49:29.144625	2026-03-11 13:49:29.144625	50	\N	\N	\N	20	\N	\N	\N	\N	NONE	\N	\N	\N	NONE	\N	\N	\N	\N
 \.
 
 
@@ -3371,8 +3371,8 @@ COPY "public"."lots" ("lot_id", "provider_id", "expiration_date", "expiration_da
 --
 
 COPY "public"."stock" ("stock_id", "created_at", "updated_at", "lot_id", "quantity", "min_notification", "max_notification", "transformed_from_product_id", "transformed_to_product_id", "stock_type", "product_id", "reserved_for_transferring_quantity", "reserved_for_selling_quantity", "location_id", "is_closed", "over_sell_quantity", "product_presentation_id") FROM stdin;
-a2445fee-75f9-4cdb-ae42-661710e3241c	2026-03-11 13:29:46.179718+00	2026-03-11 13:31:01.538637+00	1	50.000	\N	\N	\N	\N	\N	20	\N	\N	6	f	\N	\N
-03da572d-e84e-40d1-855a-7028b5ede797	2026-03-11 13:31:01.538637+00	2026-03-11 13:31:01.538637+00	2	50.000	0.000	0.000	\N	\N	STORE	20	\N	\N	6	f	\N	\N
+79cdadc0-309c-448c-9cae-88b74099e96b	2026-03-11 13:48:55.45011+00	2026-03-11 13:49:29.144625+00	1	50.000	\N	\N	\N	\N	\N	20	\N	\N	6	f	\N	\N
+1d21e7f2-d1ef-413b-8150-0b539ed9e4d1	2026-03-11 13:49:29.144625+00	2026-03-11 13:49:29.144625+00	2	50.000	0.000	0.000	\N	\N	STORE	20	\N	\N	6	f	\N	35
 \.
 
 
@@ -3396,6 +3396,7 @@ COPY "public"."transformations" ("transformation_id", "created_at", "transformat
 8	2026-03-11 13:20:45.745982+00	0		FRACTION	41a9d74e-4349-445d-8e23-d236cb2fade6	3a145754-a901-46e1-8ad2-480f8968d8be
 9	2026-03-11 13:26:45.479071+00	0		FRACTION	41a9d74e-4349-445d-8e23-d236cb2fade6	3a145754-a901-46e1-8ad2-480f8968d8be
 10	2026-03-11 13:31:01.538637+00	50		FRACTION	41a9d74e-4349-445d-8e23-d236cb2fade6	3a145754-a901-46e1-8ad2-480f8968d8be
+11	2026-03-11 13:49:29.144625+00	500		FRACTION	41a9d74e-4349-445d-8e23-d236cb2fade6	3a145754-a901-46e1-8ad2-480f8968d8be
 \.
 
 
@@ -3404,7 +3405,7 @@ COPY "public"."transformations" ("transformation_id", "created_at", "transformat
 --
 
 COPY "public"."lot_traces" ("lot_trace_id", "lot_from_id", "lot_to_id", "created_at", "transformation_id") FROM stdin;
-1	1	2	2026-03-11 13:31:01.538637+00	\N
+1	1	2	2026-03-11 13:49:29.144625+00	\N
 \.
 
 
@@ -3481,8 +3482,8 @@ COPY "public"."transfer_order_items" ("transfer_order_item_id", "created_at", "t
 --
 
 COPY "public"."transformation_items" ("transformation_item_id", "created_at", "product_id", "product_presentation_id", "lot_id", "stock_id", "is_origin", "quantity", "max_quantity", "bulk_quantity_equivalence", "final_cost_per_unit", "location_id", "transformation_id", "qty_in_base_units") FROM stdin;
-1	2026-03-11 13:31:01.538637+00	20	34	1	a2445fee-75f9-4cdb-ae42-661710e3241c	t	5	\N	10	\N	6	10	50
-2	2026-03-11 13:31:01.538637+00	20	35	2	03da572d-e84e-40d1-855a-7028b5ede797	f	100	\N	0.5	50	6	10	50
+1	2026-03-11 13:49:29.144625+00	20	34	1	79cdadc0-309c-448c-9cae-88b74099e96b	t	5	\N	10	\N	6	11	50
+2	2026-03-11 13:49:29.144625+00	20	35	2	1d21e7f2-d1ef-413b-8150-0b539ed9e4d1	f	100	\N	0.5	500	6	11	50
 \.
 
 
@@ -3752,13 +3753,13 @@ SELECT pg_catalog.setval('"public"."transformation_items_transformation_item_id_
 -- Name: trasnformations_transformation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"public"."trasnformations_transformation_id_seq"', 10, true);
+SELECT pg_catalog.setval('"public"."trasnformations_transformation_id_seq"', 11, true);
 
 
 --
 -- PostgreSQL database dump complete
 --
 
--- \unrestrict JupgVyAJreoGUMOvZb1VJazuiEyhCrHLz8bQE0D6iNpDUCv4vYanUyZ3o3PjVI1
+-- \unrestrict nR4aXeBLNAGxEkWZ2ByjbXeHJUhsEJh48BKw8Xc4l1dGdIHAV4B3R36ps3eRSC0
 
 RESET ALL;
