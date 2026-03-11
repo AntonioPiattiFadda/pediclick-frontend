@@ -1691,6 +1691,29 @@ $$;
 ALTER FUNCTION "public"."get_lot_wastes"("p_lot_id" bigint) OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."get_next_product_short_code"("p_organization_id" "uuid") RETURNS bigint
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+declare
+  v_next bigint;
+begin
+  select min(s.gap)
+  into v_next
+  from (
+    select generate_series(1, (select coalesce(max(short_code), 0) + 1 from products where organization_id = p_organization_id)) as gap
+    except
+    select short_code from products where organization_id = p_organization_id and short_code is not null
+  ) s;
+
+  return coalesce(v_next, 1);
+end;
+$$;
+
+
+ALTER FUNCTION "public"."get_next_product_short_code"("p_organization_id" "uuid") OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."get_or_create_stock_with_location_pi_and_pi"("p_product_id" bigint, "p_location_id" bigint) RETURNS "uuid"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
@@ -6531,6 +6554,12 @@ GRANT ALL ON FUNCTION "public"."get_lot_transformations"("p_lot_id" bigint) TO "
 GRANT ALL ON FUNCTION "public"."get_lot_wastes"("p_lot_id" bigint) TO "anon";
 GRANT ALL ON FUNCTION "public"."get_lot_wastes"("p_lot_id" bigint) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_lot_wastes"("p_lot_id" bigint) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."get_next_product_short_code"("p_organization_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."get_next_product_short_code"("p_organization_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_next_product_short_code"("p_organization_id" "uuid") TO "service_role";
 
 
 
