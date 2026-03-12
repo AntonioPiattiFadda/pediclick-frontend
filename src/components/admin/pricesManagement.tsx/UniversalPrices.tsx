@@ -51,7 +51,7 @@ function QtyInput({ value, disabled, onChange }: {
 }
 
 const UniversalPrices = ({
-    productPresentationId, finalCost, disabled, productPrices, bulkQuantityEquivalence, sellUnit, stacked
+    productPresentationId, finalCost, disabled, productPrices, bulkQuantityEquivalence, sellUnit
 }: {
     productPresentationId: number;
     finalCost: {
@@ -63,7 +63,6 @@ const UniversalPrices = ({
     productPrices: Price[];
     bulkQuantityEquivalence?: number | null;
     sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
-    stacked?: boolean;
 }) => {
     const queryClient = useQueryClient();
 
@@ -75,10 +74,7 @@ const UniversalPrices = ({
 
     // Sync with server data only when there are no pending local edits
     useEffect(() => {
-        if (!hasPendingRef.current) {
-            valueRef.current = productPrices;
-            onChange(productPrices);
-        }
+        if (!hasPendingRef.current) onChange(productPrices);
     }, [productPrices]);
 
     // Save on unmount (safety net for sheet close)
@@ -103,11 +99,20 @@ const UniversalPrices = ({
         mutationFn: async ({ prices, toDelete }: { prices: Price[]; toDelete: number[] }) => {
             return await createPrices(prices, toDelete);
         },
+        onError: (error: { message: string }) => {
+            toast.error(error.message || "Error al guardar precios");
+        },
+    });
+
+    const addPriceMutation = useMutation({
+        mutationFn: async (newPrice: Price) => {
+            return await createPrices(pricesAdapter([newPrice], null), []);
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId, null] });
         },
         onError: (error: { message: string }) => {
-            toast.error(error.message || "Error al guardar precios");
+            toast.error(error.message || "Error al agregar precio");
         },
     });
 
@@ -367,7 +372,7 @@ const UniversalPrices = ({
                 })}
                 <Button
                     variant="outline"
-                    disabled={disabled}
+                    disabled={disabled || addPriceMutation.isLoading}
                     onClick={() => {
                         const maxQty = value
                             .filter((p) => p.logic_type === logic_type)
@@ -386,7 +391,8 @@ const UniversalPrices = ({
                             valid_from: null,
                             valid_until: null,
                         };
-                        markAndSet([...value, newPrice]);
+                        onChange([...value, newPrice]);
+                        addPriceMutation.mutate(newPrice);
                     }}
                 >
                     <Plus className="w-4 h-4" /> Agregar precio
@@ -397,7 +403,7 @@ const UniversalPrices = ({
 
     return (
         <TabsContent value="all-stores">
-            <div className={stacked ? "flex flex-col gap-4" : "grid grid-cols-3 gap-4"}>
+            <div className="grid grid-cols-3 gap-4">
                 <div>
                     <h3 className="font-semibold mb-2">Por cantidad</h3>
                     {renderCategory(value, "QUANTITY_DISCOUNT")}
