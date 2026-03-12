@@ -745,6 +745,7 @@ export function AddLotBtn({
                 <p className="text-sm font-medium">Precios</p>
                 {selectedProductPresentation?.product_presentation_id ? (
                   <ManageProductPrices
+                    key={selectedProductPresentation.product_presentation_id}
                     mode="inline"
                     productPresentationId={selectedProductPresentation.product_presentation_id}
                     finalCost={{

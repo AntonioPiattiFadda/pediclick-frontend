@@ -51,7 +51,7 @@ function QtyInput({ value, disabled, onChange }: {
 }
 
 const UniversalPrices = ({
-    productPresentationId, finalCost, disabled, productPrices, bulkQuantityEquivalence, sellUnit
+    productPresentationId, finalCost, disabled, productPrices, bulkQuantityEquivalence, sellUnit, stacked
 }: {
     productPresentationId: number;
     finalCost: {
@@ -63,6 +63,7 @@ const UniversalPrices = ({
     productPrices: Price[];
     bulkQuantityEquivalence?: number | null;
     sellUnit?: 'BY_UNIT' | 'BY_WEIGHT' | null;
+    stacked?: boolean;
 }) => {
     const queryClient = useQueryClient();
 
@@ -99,6 +100,9 @@ const UniversalPrices = ({
         mutationFn: async ({ prices, toDelete }: { prices: Price[]; toDelete: number[] }) => {
             return await createPrices(prices, toDelete);
         },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId, null] });
+        },
         onError: (error: { message: string }) => {
             toast.error(error.message || "Error al guardar precios");
         },
@@ -108,7 +112,19 @@ const UniversalPrices = ({
         mutationFn: async (newPrice: Price) => {
             return await createPrices(pricesAdapter([newPrice], null), []);
         },
-        onSuccess: () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onSuccess: (data: any, newPrice: Price) => {
+            // Replace temp price_id with the real server-assigned one to prevent duplication on blur-save
+            const serverPriceId = Array.isArray(data) && data[0]?.price_id;
+            if (serverPriceId != null) {
+                const patch = (prices: Price[]) => prices.map(p =>
+                    p.price_id === newPrice.price_id
+                        ? { ...p, price_id: serverPriceId, is_new: false }
+                        : p
+                );
+                valueRef.current = patch(valueRef.current);
+                onChange(prev => patch(prev));
+            }
             queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId, null] });
         },
         onError: (error: { message: string }) => {
@@ -403,7 +419,7 @@ const UniversalPrices = ({
 
     return (
         <TabsContent value="all-stores">
-            <div className="grid grid-cols-3 gap-4">
+            <div className={stacked ? "flex flex-col gap-4" : "grid grid-cols-3 gap-4"}>
                 <div>
                     <h3 className="font-semibold mb-2">Por cantidad</h3>
                     {renderCategory(value, "QUANTITY_DISCOUNT")}

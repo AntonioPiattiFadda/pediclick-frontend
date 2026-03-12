@@ -105,6 +105,9 @@ const StorePricesTab = ({
         mutationFn: async ({ prices, toDelete }: { prices: Price[]; toDelete: number[] }) => {
             return await createPrices(prices, toDelete);
         },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId, locationId] });
+        },
         onError: (error: { message: string }) => {
             toast.error(error.message || "Error al guardar precios");
         },
@@ -114,7 +117,18 @@ const StorePricesTab = ({
         mutationFn: async (newPrice: Price) => {
             return await createPrices(pricesAdapter([newPrice], locationId), []);
         },
-        onSuccess: () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onSuccess: (data: any, newPrice: Price) => {
+            const serverPriceId = Array.isArray(data) && data[0]?.price_id;
+            if (serverPriceId != null) {
+                const patch = (prices: Price[]) => prices.map(p =>
+                    p.price_id === newPrice.price_id
+                        ? { ...p, price_id: serverPriceId, is_new: false }
+                        : p
+                );
+                valueRef.current = patch(valueRef.current);
+                onChange(prev => patch(prev));
+            }
             queryClient.invalidateQueries({ queryKey: ["prices", productPresentationId, locationId] });
         },
         onError: (error: { message: string }) => {
