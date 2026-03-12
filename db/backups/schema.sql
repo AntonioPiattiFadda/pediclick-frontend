@@ -5630,40 +5630,6 @@ CREATE POLICY "clients_update" ON "public"."clients" FOR UPDATE TO "authenticate
 
 
 
-ALTER TABLE "public"."disabled_prices" ENABLE ROW LEVEL SECURITY;
-
-
-CREATE POLICY "disabled_prices_delete" ON "public"."disabled_prices" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
-   FROM ("public"."prices" "p"
-     JOIN "public"."locations" "loc" ON (("loc"."location_id" = "p"."location_id")))
-  WHERE (("p"."price_id" = "disabled_prices"."price_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
-
-
-
-CREATE POLICY "disabled_prices_insert" ON "public"."disabled_prices" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
-   FROM ("public"."prices" "p"
-     JOIN "public"."locations" "loc" ON (("loc"."location_id" = "p"."location_id")))
-  WHERE (("p"."price_id" = "disabled_prices"."price_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
-
-
-
-CREATE POLICY "disabled_prices_select" ON "public"."disabled_prices" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
-   FROM ("public"."prices" "p"
-     JOIN "public"."locations" "loc" ON (("loc"."location_id" = "p"."location_id")))
-  WHERE (("p"."price_id" = "disabled_prices"."price_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
-
-
-
-CREATE POLICY "disabled_prices_update" ON "public"."disabled_prices" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
-   FROM ("public"."prices" "p"
-     JOIN "public"."locations" "loc" ON (("loc"."location_id" = "p"."location_id")))
-  WHERE (("p"."price_id" = "disabled_prices"."price_id") AND ("loc"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
-   FROM ("public"."prices" "p"
-     JOIN "public"."locations" "loc" ON (("loc"."location_id" = "p"."location_id")))
-  WHERE (("p"."price_id" = "disabled_prices"."price_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
-
-
-
 ALTER TABLE "public"."enabled_prices_clients" ENABLE ROW LEVEL SECURITY;
 
 
@@ -6011,29 +5977,29 @@ CREATE POLICY "payments_update" ON "public"."payments" FOR UPDATE TO "authentica
 ALTER TABLE "public"."prices" ENABLE ROW LEVEL SECURITY;
 
 
-CREATE POLICY "prices_delete" ON "public"."prices" FOR DELETE TO "authenticated" USING ((EXISTS ( SELECT 1
+CREATE POLICY "prices_delete" ON "public"."prices" FOR DELETE TO "authenticated" USING ((("location_id" IS NULL) OR (EXISTS ( SELECT 1
    FROM "public"."locations" "loc"
-  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"()))))));
 
 
 
-CREATE POLICY "prices_insert" ON "public"."prices" FOR INSERT TO "authenticated" WITH CHECK ((EXISTS ( SELECT 1
+CREATE POLICY "prices_insert" ON "public"."prices" FOR INSERT TO "authenticated" WITH CHECK ((("location_id" IS NULL) OR (EXISTS ( SELECT 1
    FROM "public"."locations" "loc"
-  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"()))))));
 
 
 
-CREATE POLICY "prices_select" ON "public"."prices" FOR SELECT TO "authenticated" USING ((EXISTS ( SELECT 1
+CREATE POLICY "prices_select" ON "public"."prices" FOR SELECT TO "authenticated" USING ((("location_id" IS NULL) OR (EXISTS ( SELECT 1
    FROM "public"."locations" "loc"
-  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"()))))));
 
 
 
-CREATE POLICY "prices_update" ON "public"."prices" FOR UPDATE TO "authenticated" USING ((EXISTS ( SELECT 1
+CREATE POLICY "prices_update" ON "public"."prices" FOR UPDATE TO "authenticated" USING ((("location_id" IS NULL) OR (EXISTS ( SELECT 1
    FROM "public"."locations" "loc"
-  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
+  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))))) WITH CHECK ((("location_id" IS NULL) OR (EXISTS ( SELECT 1
    FROM "public"."locations" "loc"
-  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"())))));
+  WHERE (("loc"."location_id" = "prices"."location_id") AND ("loc"."organization_id" = "public"."current_organization_id"()))))));
 
 
 
