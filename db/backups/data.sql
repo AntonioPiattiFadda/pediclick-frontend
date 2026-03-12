@@ -4,7 +4,7 @@ SET session_replication_role = replica;
 -- PostgreSQL database dump
 --
 
--- \restrict sglZdMHMJfL1HyFe5khJdhk6Wd4rdWx7CN82oJKMMCGeY5XMCgbMS44Fh14L8MF
+-- \restrict YIZjeuA8p36rlDTsJMzgMVtodgwhNB51cSSjJR32AiypadREYSicd2nWjn2IG8l
 
 -- Dumped from database version 15.8
 -- Dumped by pg_dump version 17.6
@@ -3344,10 +3344,13 @@ COPY "public"."product_presentations" ("product_presentation_id", "created_at", 
 --
 
 COPY "public"."prices" ("price_number", "valid_from", "valid_until", "created_at", "updated_at", "price_id", "price", "logic_type", "qty_per_price", "profit_percentage", "observations", "product_presentation_id", "location_id", "deleted_at") FROM stdin;
-3	\N	\N	2026-03-12 20:35:25.848698+00	2026-03-12 20:42:49.888846+00	7	13	SPECIAL	0	0	\N	20	\N	\N
-3	\N	\N	2026-03-12 20:34:37.017524+00	2026-03-12 20:42:49.888846+00	4	30	QUANTITY_DISCOUNT	3	0	\N	20	\N	\N
-4	\N	\N	2026-03-12 20:34:37.415753+00	2026-03-12 20:42:49.888846+00	5	40	QUANTITY_DISCOUNT	4	0	\N	20	\N	\N
 1	\N	\N	2026-03-12 20:41:37.185636+00	2026-03-12 20:43:12.465771+00	8	6560	QUANTITY_DISCOUNT	1	0	\N	2	6	\N
+1	\N	\N	2026-03-12 20:43:54.47487+00	2026-03-12 20:45:09.47699+00	9	750	QUANTITY_DISCOUNT	1	-88.57	\N	2	\N	\N
+1	\N	\N	2026-03-12 20:46:44.513519+00	2026-03-12 20:46:44.513519+00	10	0	QUANTITY_DISCOUNT	1	0	\N	3	6	\N
+1	\N	\N	2026-03-12 20:46:46.47801+00	2026-03-12 20:46:46.47801+00	11	0	QUANTITY_DISCOUNT	1	0	\N	3	\N	\N
+3	\N	\N	2026-03-12 20:35:25.848698+00	2026-03-12 20:50:09.727222+00	7	13	SPECIAL	0	0	\N	20	\N	\N
+3	\N	\N	2026-03-12 20:34:37.017524+00	2026-03-12 20:50:09.727222+00	4	30	QUANTITY_DISCOUNT	12	0	\N	20	\N	\N
+4	\N	\N	2026-03-12 20:34:37.415753+00	2026-03-12 20:50:09.727222+00	5	50	QUANTITY_DISCOUNT	4	0	\N	20	\N	\N
 1	\N	\N	2026-03-12 20:34:52.26223+00	2026-03-12 20:34:52.26223+00	6	0	SPECIAL	1	0	\N	20	6	\N
 \.
 
@@ -3419,6 +3422,7 @@ COPY "public"."lots" ("lot_id", "provider_id", "expiration_date", "expiration_da
 5	\N	\N	f	2026-03-11 18:02:46.511724+00	2026-03-11 18:02:46.511724+00	2080	f	f	\N	2	0	0	0	0	NONE	\N	\N	\N	NONE	\N	\N	\N	0	\N
 6	\N	\N	f	2026-03-11 20:36:43.907149+00	2026-03-11 20:36:43.907149+00	1600	f	f	11	2	0	0	0	0	NONE	\N	\N	\N	NONE	\N	\N	\N	0	\N
 7	\N	\N	f	2026-03-11 20:37:15.688122+00	2026-03-11 20:37:15.688122+00	450456	f	f	12	14	0	0	0	0	NONE	\N	\N	\N	NONE	\N	\N	\N	0	\N
+8	\N	\N	f	2026-03-12 20:45:28.323967+00	2026-03-12 20:45:28.323967+00	1920	f	f	\N	2	41	0	41	0	NONE	\N	\N	\N	NONE	\N	\N	\N	0	\N
 \.
 
 
@@ -3434,6 +3438,8 @@ COPY "public"."stock" ("stock_id", "created_at", "updated_at", "lot_id", "quanti
 a2df4220-df13-452d-a299-8babe23e2a1e	2026-03-11 18:02:46.511724+00	2026-03-11 18:02:46.511724+00	5	480.000	\N	\N	\N	\N	NOT_ASSIGNED	2	\N	\N	\N	f	\N	\N	\N
 daef1cfb-1ca1-4bd5-8ccb-2fc677342654	2026-03-11 20:36:43.907149+00	2026-03-11 20:36:43.907149+00	6	1600.000	\N	\N	\N	\N	NOT_ASSIGNED	2	\N	\N	\N	f	\N	\N	\N
 04cea841-6a67-4587-8d61-927f1ffa919a	2026-03-11 20:37:15.688122+00	2026-03-11 20:37:15.688122+00	7	450456.000	\N	\N	\N	\N	NOT_ASSIGNED	14	\N	\N	\N	f	\N	\N	\N
+f584cb75-0897-40f3-8618-0dec23d850e4	2026-03-12 20:45:28.323967+00	2026-03-12 20:45:28.323967+00	8	1600.000	\N	\N	\N	\N	\N	2	\N	\N	6	f	\N	\N	\N
+992e415e-1895-4001-8ddb-a7115d7bdabc	2026-03-12 20:45:28.323967+00	2026-03-12 20:45:28.323967+00	8	320.000	\N	\N	\N	\N	NOT_ASSIGNED	2	\N	\N	\N	f	\N	\N	\N
 \.
 
 
@@ -3653,7 +3659,7 @@ SELECT pg_catalog.setval('"public"."categories_category_id_seq"', 18, true);
 -- Name: disabled_prices_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"public"."disabled_prices_id_seq"', 11, true);
+SELECT pg_catalog.setval('"public"."disabled_prices_id_seq"', 12, true);
 
 
 --
@@ -3737,14 +3743,14 @@ SELECT pg_catalog.setval('"public"."presentations_presentation_id_seq"', 44, tru
 -- Name: product_lots_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"public"."product_lots_id_seq"', 7, true);
+SELECT pg_catalog.setval('"public"."product_lots_id_seq"', 8, true);
 
 
 --
 -- Name: product_prices_product_price_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('"public"."product_prices_product_price_id_seq"', 8, true);
+SELECT pg_catalog.setval('"public"."product_prices_product_price_id_seq"', 11, true);
 
 
 --
@@ -3828,6 +3834,6 @@ SELECT pg_catalog.setval('"public"."trasnformations_transformation_id_seq"', 11,
 -- PostgreSQL database dump complete
 --
 
--- \unrestrict sglZdMHMJfL1HyFe5khJdhk6Wd4rdWx7CN82oJKMMCGeY5XMCgbMS44Fh14L8MF
+-- \unrestrict YIZjeuA8p36rlDTsJMzgMVtodgwhNB51cSSjJR32AiypadREYSicd2nWjn2IG8l
 
 RESET ALL;
