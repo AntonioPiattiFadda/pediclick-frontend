@@ -194,7 +194,7 @@ const UniversalPrices = ({
 
     function recalcFromPrice(row: Price): Price {
         if (!costPerPresentation) return row;
-        const profit_percentage = (row.price / costPerPresentation - 1) * 100;
+        const profit_percentage = round2((row.price / costPerPresentation - 1) * 100);
         return { ...row, profit_percentage };
     }
 
@@ -209,7 +209,7 @@ const UniversalPrices = ({
 
             if (field === "profit_percentage") {
                 const pct = toNumber(val);
-                next.profit_percentage = Number.isFinite(pct) ? pct : 0;
+                next.profit_percentage = Number.isFinite(pct) ? round2(pct) : 0;
                 next = recalcFromPercentage(next);
             }
             if (field === "price") {
@@ -248,17 +248,20 @@ const UniversalPrices = ({
                     return (
                         <div key={index} className="flex flex-col gap-1" onBlur={saveOnRowBlur}>
                             <div className="grid grid-cols-[auto_auto_auto_40px] gap-2 items-center">
-                                {finalCost?.final_cost_per_unit && (
+                                {(finalCost?.final_cost_per_unit !== 0 && finalCost?.final_cost_per_unit || null) && (
                                     <div className="relative">
                                         <Percent className="absolute w-3 h-3 left-2 top-1/2 -translate-y-1/2 opacity-50" />
                                         <Input
-                                            type="number"
+                                            type="text"
+                                            inputMode="decimal"
                                             placeholder="Ganancia %"
                                             className="pl-5"
-                                            value={price.profit_percentage || undefined}
+                                            value={price.profit_percentage ?? ""}
                                             disabled={disabled}
                                             onChange={(e) => {
-                                                markAndSet(updatePriceField(value, price.price_id!, "profit_percentage", e.target.value));
+                                                const v = e.target.value.replace(",", ".");
+                                                if (v !== "" && !/^-?\d*\.?\d{0,2}$/.test(v)) return;
+                                                markAndSet(updatePriceField(value, price.price_id!, "profit_percentage", v));
                                             }}
                                         />
                                     </div>
