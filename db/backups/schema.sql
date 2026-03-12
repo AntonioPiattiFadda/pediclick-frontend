@@ -1533,6 +1533,100 @@ $$;
 ALTER FUNCTION "public"."generate_order_number"("p_location_id" bigint) OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."get_integration_credentials"("p_organization_id" "uuid", "p_provider" "text") RETURNS "jsonb"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+DECLARE
+    v_key    text;
+    v_role   user_role_enum;
+    v_result jsonb;
+BEGIN
+    SELECT role INTO v_role
+    FROM users WHERE id = auth.uid();
+
+    IF v_role NOT IN ('OWNER', 'MANAGER') THEN
+        RAISE EXCEPTION 'Acceso denegado: usar get_integration_credentials_safe';
+    END IF;
+
+    SELECT decrypted_secret INTO v_key
+    FROM vault.decrypted_secrets
+    WHERE name = 'integration_credentials_key';
+
+    IF v_key IS NULL THEN
+        RAISE EXCEPTION 'Encryption key not found in vault';
+    END IF;
+
+    SELECT extensions.pgp_sym_decrypt(credentials_encrypted, v_key)::jsonb
+    INTO v_result
+    FROM integration_credentials
+    WHERE organization_id = p_organization_id
+      AND provider = p_provider
+      AND is_active = true;
+
+    RETURN v_result;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_integration_credentials"("p_organization_id" "uuid", "p_provider" "text") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."get_integration_credentials_safe"("p_organization_id" "uuid", "p_provider" "text") RETURNS "jsonb"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+DECLARE
+    v_key            text;
+    v_full           jsonb;
+    v_safe           jsonb := '{}'::jsonb;
+    v_sensitive_keys text[];
+    v_k              text;
+    v_v              text;
+BEGIN
+    SELECT decrypted_secret INTO v_key
+    FROM vault.decrypted_secrets
+    WHERE name = 'integration_credentials_key';
+
+    IF v_key IS NULL THEN
+        RAISE EXCEPTION 'Encryption key not found in vault';
+    END IF;
+
+    SELECT extensions.pgp_sym_decrypt(credentials_encrypted, v_key)::jsonb
+    INTO v_full
+    FROM integration_credentials
+    WHERE organization_id = p_organization_id
+      AND provider = p_provider
+      AND is_active = true;
+
+    IF v_full IS NULL THEN
+        RETURN NULL;
+    END IF;
+
+    CASE p_provider
+        WHEN 'MERCADOPAGO' THEN
+            v_sensitive_keys := ARRAY['access_token'];
+        WHEN 'AFIP' THEN
+            v_sensitive_keys := ARRAY['private_key', 'cert'];
+        ELSE
+            v_sensitive_keys := ARRAY[]::text[];
+    END CASE;
+
+    FOR v_k, v_v IN SELECT * FROM jsonb_each_text(v_full)
+    LOOP
+        IF NOT (v_k = ANY(v_sensitive_keys)) THEN
+            v_safe := v_safe || jsonb_build_object(v_k, v_v);
+        END IF;
+    END LOOP;
+
+    RETURN v_safe;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_integration_credentials_safe"("p_organization_id" "uuid", "p_provider" "text") OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) RETURNS "record"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
@@ -3471,6 +3565,44 @@ $$;
 ALTER FUNCTION "public"."update_transfer_order_with_items"("p_transfer_order" "jsonb", "p_transfer_order_items" "jsonb") OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."upsert_integration_credentials"("p_organization_id" "uuid", "p_provider" "text", "p_credentials" "jsonb") RETURNS bigint
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+DECLARE
+    v_key text;
+    v_id  bigint;
+BEGIN
+    SELECT decrypted_secret INTO v_key
+    FROM vault.decrypted_secrets
+    WHERE name = 'integration_credentials_key';
+
+    IF v_key IS NULL THEN
+        RAISE EXCEPTION 'Encryption key not found in vault';
+    END IF;
+
+    INSERT INTO integration_credentials (
+        organization_id, provider, credentials_encrypted
+    )
+    VALUES (
+        p_organization_id,
+        p_provider,
+        extensions.pgp_sym_encrypt(p_credentials::text, v_key)
+    )
+    ON CONFLICT (organization_id, provider)
+    DO UPDATE SET
+        credentials_encrypted = extensions.pgp_sym_encrypt(p_credentials::text, v_key),
+        updated_at = now()
+    RETURNING credential_id INTO v_id;
+
+    RETURN v_id;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."upsert_integration_credentials"("p_organization_id" "uuid", "p_provider" "text", "p_credentials" "jsonb") OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."validate_rpc_schema_compatibility"() RETURNS TABLE("function_name" "text", "suspicious_columns" "text"[], "recommendation" "text")
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
@@ -3675,6 +3807,33 @@ ALTER TABLE "public"."enabled_prices_clients" OWNER TO "postgres";
 
 ALTER TABLE "public"."enabled_prices_clients" ALTER COLUMN "id" ADD GENERATED ALWAYS AS IDENTITY (
     SEQUENCE NAME "public"."enabled_prices_clients_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."integration_credentials" (
+    "credential_id" bigint NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "provider" "text" NOT NULL,
+    "credentials_encrypted" "bytea" NOT NULL,
+    "is_active" boolean DEFAULT true,
+    "created_at" timestamp with time zone DEFAULT "now"(),
+    "updated_at" timestamp with time zone DEFAULT "now"()
+);
+
+ALTER TABLE ONLY "public"."integration_credentials" FORCE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."integration_credentials" OWNER TO "postgres";
+
+
+ALTER TABLE "public"."integration_credentials" ALTER COLUMN "credential_id" ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME "public"."integration_credentials_credential_id_seq"
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -4534,6 +4693,11 @@ ALTER TABLE ONLY "public"."enabled_prices_clients"
 
 
 
+ALTER TABLE ONLY "public"."integration_credentials"
+    ADD CONSTRAINT "integration_credentials_pkey" PRIMARY KEY ("credential_id");
+
+
+
 ALTER TABLE ONLY "public"."iva"
     ADD CONSTRAINT "iva_pkey" PRIMARY KEY ("iva_id");
 
@@ -4694,6 +4858,11 @@ ALTER TABLE ONLY "public"."transformations"
 
 
 
+ALTER TABLE ONLY "public"."integration_credentials"
+    ADD CONSTRAINT "uq_org_provider" UNIQUE ("organization_id", "provider");
+
+
+
 ALTER TABLE ONLY "public"."users"
     ADD CONSTRAINT "user_profiles_pkey" PRIMARY KEY ("id");
 
@@ -4717,6 +4886,14 @@ CREATE INDEX "idx_foi_product_id" ON "public"."transfer_order_items" USING "btre
 
 
 CREATE INDEX "idx_foi_transfer_order_id" ON "public"."transfer_order_items" USING "btree" ("transfer_order_id");
+
+
+
+CREATE INDEX "idx_integration_credentials_lookup" ON "public"."integration_credentials" USING "btree" ("organization_id", "provider", "is_active");
+
+
+
+CREATE INDEX "idx_integration_credentials_org_id" ON "public"."integration_credentials" USING "btree" ("organization_id");
 
 
 
@@ -4884,6 +5061,11 @@ ALTER TABLE ONLY "public"."transfer_order_items"
 
 ALTER TABLE ONLY "public"."transfer_order_items"
     ADD CONSTRAINT "foi_transfer_order_fk" FOREIGN KEY ("transfer_order_id") REFERENCES "public"."transfer_orders"("transfer_order_id") ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."integration_credentials"
+    ADD CONSTRAINT "integration_credentials_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("organization_id");
 
 
 
@@ -5509,6 +5691,9 @@ CREATE POLICY "enabled_prices_clients_update" ON "public"."enabled_prices_client
    FROM "public"."clients" "c"
   WHERE (("c"."client_id" = "enabled_prices_clients"."client_id") AND ("c"."organization_id" = "public"."current_organization_id"())))));
 
+
+
+ALTER TABLE "public"."integration_credentials" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."iva" ENABLE ROW LEVEL SECURITY;
@@ -6612,6 +6797,18 @@ GRANT ALL ON FUNCTION "public"."generate_order_number"("p_location_id" bigint) T
 
 
 
+GRANT ALL ON FUNCTION "public"."get_integration_credentials"("p_organization_id" "uuid", "p_provider" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."get_integration_credentials"("p_organization_id" "uuid", "p_provider" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_integration_credentials"("p_organization_id" "uuid", "p_provider" "text") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."get_integration_credentials_safe"("p_organization_id" "uuid", "p_provider" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."get_integration_credentials_safe"("p_organization_id" "uuid", "p_provider" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_integration_credentials_safe"("p_organization_id" "uuid", "p_provider" "text") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) TO "anon";
 GRANT ALL ON FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_last_lot_costs"("p_product_presentation_id" bigint, OUT "final_cost_per_unit" numeric, OUT "final_cost_per_bulk" numeric) TO "service_role";
@@ -6816,6 +7013,12 @@ GRANT ALL ON FUNCTION "public"."update_transfer_order_with_items"("p_transfer_or
 
 
 
+GRANT ALL ON FUNCTION "public"."upsert_integration_credentials"("p_organization_id" "uuid", "p_provider" "text", "p_credentials" "jsonb") TO "anon";
+GRANT ALL ON FUNCTION "public"."upsert_integration_credentials"("p_organization_id" "uuid", "p_provider" "text", "p_credentials" "jsonb") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."upsert_integration_credentials"("p_organization_id" "uuid", "p_provider" "text", "p_credentials" "jsonb") TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."validate_rpc_schema_compatibility"() TO "anon";
 GRANT ALL ON FUNCTION "public"."validate_rpc_schema_compatibility"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."validate_rpc_schema_compatibility"() TO "service_role";
@@ -6894,6 +7097,18 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public".
 GRANT ALL ON SEQUENCE "public"."enabled_prices_clients_id_seq" TO "anon";
 GRANT ALL ON SEQUENCE "public"."enabled_prices_clients_id_seq" TO "authenticated";
 GRANT ALL ON SEQUENCE "public"."enabled_prices_clients_id_seq" TO "service_role";
+
+
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."integration_credentials" TO "anon";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."integration_credentials" TO "authenticated";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."integration_credentials" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."integration_credentials_credential_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."integration_credentials_credential_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."integration_credentials_credential_id_seq" TO "service_role";
 
 
 
