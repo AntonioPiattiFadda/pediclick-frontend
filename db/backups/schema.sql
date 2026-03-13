@@ -1785,6 +1785,118 @@ $$;
 ALTER FUNCTION "public"."get_lot_wastes"("p_lot_id" bigint) OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."get_mp_credentials_for_terminal"("p_organization_id" "uuid", "p_terminal_id" bigint) RETURNS "jsonb"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+DECLARE
+    v_key     text;
+    v_account jsonb;
+    v_pos     record;
+BEGIN
+    IF (SELECT role FROM users WHERE id = auth.uid()) NOT IN ('OWNER', 'MANAGER') THEN
+        RAISE EXCEPTION 'Acceso denegado: se requiere rol OWNER o MANAGER';
+    END IF;
+
+    SELECT decrypted_secret INTO v_key
+    FROM vault.decrypted_secrets
+    WHERE name = 'integration_credentials_key';
+
+    IF v_key IS NULL THEN
+        RAISE EXCEPTION 'Encryption key not found in vault';
+    END IF;
+
+    SELECT extensions.pgp_sym_decrypt(credentials_encrypted, v_key)::jsonb
+    INTO v_account
+    FROM integration_credentials
+    WHERE organization_id = p_organization_id
+      AND provider = 'MERCADOPAGO'
+      AND is_active = true;
+
+    IF v_account IS NULL THEN
+        RETURN NULL;
+    END IF;
+
+    SELECT
+        mp_store_id, mp_store_external_id,
+        mp_pos_id, mp_pos_external_id,
+        mp_qr_uuid, mp_qr_image_url,
+        mp_point_device_id
+    INTO v_pos
+    FROM mp_pos_config
+    WHERE terminal_id = p_terminal_id
+      AND is_active = true
+      AND deleted_at IS NULL;
+
+    IF v_pos IS NULL THEN
+        RETURN v_account;
+    END IF;
+
+    RETURN v_account || jsonb_build_object(
+        'store_id',          v_pos.mp_store_id,
+        'store_external_id', v_pos.mp_store_external_id,
+        'pos_id',            v_pos.mp_pos_id,
+        'pos_external_id',   v_pos.mp_pos_external_id,
+        'qr_uuid',           v_pos.mp_qr_uuid,
+        'qr_image_url',      v_pos.mp_qr_image_url,
+        'point_device_id',   v_pos.mp_point_device_id
+    );
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_mp_credentials_for_terminal"("p_organization_id" "uuid", "p_terminal_id" bigint) OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."get_mp_pos_config_for_terminal"("p_organization_id" "uuid", "p_terminal_id" bigint) RETURNS "jsonb"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+DECLARE
+    v_pos record;
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM users
+        WHERE id = (SELECT auth.uid()) AND organization_id = p_organization_id
+    ) THEN
+        RAISE EXCEPTION 'Acceso denegado';
+    END IF;
+
+    SELECT
+        mp.mp_store_id, mp.mp_store_external_id,
+        mp.mp_pos_id, mp.mp_pos_external_id,
+        mp.mp_qr_uuid, mp.mp_qr_image_url,
+        mp.mp_point_device_id,
+        mp.location_id,
+        l.name AS location_name
+    INTO v_pos
+    FROM mp_pos_config mp
+    JOIN locations l ON l.location_id = mp.location_id
+    WHERE mp.terminal_id = p_terminal_id
+      AND mp.organization_id = p_organization_id
+      AND mp.is_active = true
+      AND mp.deleted_at IS NULL;
+
+    IF v_pos IS NULL THEN RETURN NULL; END IF;
+
+    RETURN jsonb_build_object(
+        'store_id',          v_pos.mp_store_id,
+        'store_external_id', v_pos.mp_store_external_id,
+        'pos_id',            v_pos.mp_pos_id,
+        'pos_external_id',   v_pos.mp_pos_external_id,
+        'qr_uuid',           v_pos.mp_qr_uuid,
+        'qr_image_url',      v_pos.mp_qr_image_url,
+        'point_device_id',   v_pos.mp_point_device_id,
+        'location_id',       v_pos.location_id,
+        'location_name',     v_pos.location_name
+    );
+END;
+$$;
+
+
+ALTER FUNCTION "public"."get_mp_pos_config_for_terminal"("p_organization_id" "uuid", "p_terminal_id" bigint) OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."get_next_product_short_code"("p_organization_id" "uuid") RETURNS bigint
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
@@ -3573,6 +3685,10 @@ DECLARE
     v_key text;
     v_id  bigint;
 BEGIN
+    IF (SELECT role FROM users WHERE id = auth.uid()) NOT IN ('OWNER', 'MANAGER') THEN
+        RAISE EXCEPTION 'Acceso denegado';
+    END IF;
+
     SELECT decrypted_secret INTO v_key
     FROM vault.decrypted_secrets
     WHERE name = 'integration_credentials_key';
@@ -3581,9 +3697,7 @@ BEGIN
         RAISE EXCEPTION 'Encryption key not found in vault';
     END IF;
 
-    INSERT INTO integration_credentials (
-        organization_id, provider, credentials_encrypted
-    )
+    INSERT INTO integration_credentials (organization_id, provider, credentials_encrypted)
     VALUES (
         p_organization_id,
         p_provider,
@@ -3601,6 +3715,52 @@ $$;
 
 
 ALTER FUNCTION "public"."upsert_integration_credentials"("p_organization_id" "uuid", "p_provider" "text", "p_credentials" "jsonb") OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" bigint, "p_location_id" bigint, "p_mp_pos_external_id" "text", "p_mp_store_id" "text" DEFAULT NULL::"text", "p_mp_store_external_id" "text" DEFAULT NULL::"text", "p_mp_pos_id" "text" DEFAULT NULL::"text", "p_mp_qr_uuid" "text" DEFAULT NULL::"text", "p_mp_qr_image_url" "text" DEFAULT NULL::"text", "p_mp_point_device_id" "text" DEFAULT NULL::"text") RETURNS bigint
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+DECLARE
+    v_id bigint;
+BEGIN
+    IF (SELECT role FROM users WHERE id = auth.uid()) NOT IN ('OWNER', 'MANAGER') THEN
+        RAISE EXCEPTION 'Acceso denegado';
+    END IF;
+
+    INSERT INTO mp_pos_config (
+        organization_id, terminal_id, location_id,
+        mp_store_id, mp_store_external_id,
+        mp_pos_id, mp_pos_external_id,
+        mp_qr_uuid, mp_qr_image_url, mp_point_device_id
+    )
+    VALUES (
+        p_organization_id, p_terminal_id, p_location_id,
+        p_mp_store_id, p_mp_store_external_id,
+        p_mp_pos_id, p_mp_pos_external_id,
+        p_mp_qr_uuid, p_mp_qr_image_url, p_mp_point_device_id
+    )
+    ON CONFLICT (terminal_id)
+    DO UPDATE SET
+        location_id            = p_location_id,
+        mp_store_id            = p_mp_store_id,
+        mp_store_external_id   = p_mp_store_external_id,
+        mp_pos_id              = p_mp_pos_id,
+        mp_pos_external_id     = p_mp_pos_external_id,
+        mp_qr_uuid             = p_mp_qr_uuid,
+        mp_qr_image_url        = p_mp_qr_image_url,
+        mp_point_device_id     = p_mp_point_device_id,
+        is_active              = true,
+        updated_at             = now(),
+        deleted_at             = NULL
+    RETURNING mp_pos_config_id INTO v_id;
+
+    RETURN v_id;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" bigint, "p_location_id" bigint, "p_mp_pos_external_id" "text", "p_mp_store_id" "text", "p_mp_store_external_id" "text", "p_mp_pos_id" "text", "p_mp_qr_uuid" "text", "p_mp_qr_image_url" "text", "p_mp_point_device_id" "text") OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."validate_rpc_schema_compatibility"() RETURNS TABLE("function_name" "text", "suspicious_columns" "text"[], "recommendation" "text")
@@ -4062,6 +4222,41 @@ ALTER TABLE "public"."lots" OWNER TO "postgres";
 
 ALTER TABLE "public"."lot_containers_stock" ALTER COLUMN "lot_containers_stock_id" ADD GENERATED BY DEFAULT AS IDENTITY (
     SEQUENCE NAME "public"."lots_lot_containers_lots_lot_containers_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."mp_pos_config" (
+    "mp_pos_config_id" bigint NOT NULL,
+    "organization_id" "uuid" NOT NULL,
+    "terminal_id" bigint NOT NULL,
+    "location_id" bigint NOT NULL,
+    "mp_store_id" "text",
+    "mp_store_external_id" "text",
+    "mp_pos_id" "text",
+    "mp_pos_external_id" "text" NOT NULL,
+    "mp_qr_uuid" "text",
+    "mp_qr_image_url" "text",
+    "mp_point_device_id" "text",
+    "is_active" boolean DEFAULT true NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "updated_at" timestamp with time zone DEFAULT "now"(),
+    "deleted_at" timestamp with time zone
+);
+
+ALTER TABLE ONLY "public"."mp_pos_config" FORCE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."mp_pos_config" OWNER TO "postgres";
+
+
+ALTER TABLE "public"."mp_pos_config" ALTER COLUMN "mp_pos_config_id" ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME "public"."mp_pos_config_mp_pos_config_id_seq"
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -4733,6 +4928,11 @@ ALTER TABLE ONLY "public"."lot_containers_stock"
 
 
 
+ALTER TABLE ONLY "public"."mp_pos_config"
+    ADD CONSTRAINT "mp_pos_config_pkey" PRIMARY KEY ("mp_pos_config_id");
+
+
+
 ALTER TABLE ONLY "public"."notifications"
     ADD CONSTRAINT "notifications_pkey" PRIMARY KEY ("notification_id");
 
@@ -4863,6 +5063,11 @@ ALTER TABLE ONLY "public"."integration_credentials"
 
 
 
+ALTER TABLE ONLY "public"."mp_pos_config"
+    ADD CONSTRAINT "uq_terminal_mp_pos" UNIQUE ("terminal_id");
+
+
+
 ALTER TABLE ONLY "public"."users"
     ADD CONSTRAINT "user_profiles_pkey" PRIMARY KEY ("id");
 
@@ -4910,6 +5115,18 @@ CREATE INDEX "idx_lot_containers_org" ON "public"."lot_containers" USING "btree"
 
 
 CREATE INDEX "idx_lot_containers_stock_org" ON "public"."lot_containers_stock" USING "btree" ("organization_id");
+
+
+
+CREATE INDEX "idx_mp_pos_config_location" ON "public"."mp_pos_config" USING "btree" ("location_id");
+
+
+
+CREATE INDEX "idx_mp_pos_config_org" ON "public"."mp_pos_config" USING "btree" ("organization_id");
+
+
+
+CREATE INDEX "idx_mp_pos_config_terminal" ON "public"."mp_pos_config" USING "btree" ("terminal_id");
 
 
 
@@ -5191,6 +5408,21 @@ ALTER TABLE ONLY "public"."lots"
 
 ALTER TABLE ONLY "public"."lots"
     ADD CONSTRAINT "lots_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "public"."products"("product_id");
+
+
+
+ALTER TABLE ONLY "public"."mp_pos_config"
+    ADD CONSTRAINT "mp_pos_config_location_id_fkey" FOREIGN KEY ("location_id") REFERENCES "public"."locations"("location_id");
+
+
+
+ALTER TABLE ONLY "public"."mp_pos_config"
+    ADD CONSTRAINT "mp_pos_config_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("organization_id");
+
+
+
+ALTER TABLE ONLY "public"."mp_pos_config"
+    ADD CONSTRAINT "mp_pos_config_terminal_id_fkey" FOREIGN KEY ("terminal_id") REFERENCES "public"."terminals"("terminal_id");
 
 
 
@@ -5846,6 +6078,35 @@ CREATE POLICY "lots_update" ON "public"."lots" FOR UPDATE TO "authenticated" USI
   WHERE (("p"."product_id" = "lots"."product_id") AND ("p"."organization_id" = "public"."current_organization_id"()))))) WITH CHECK ((EXISTS ( SELECT 1
    FROM "public"."products" "p"
   WHERE (("p"."product_id" = "lots"."product_id") AND ("p"."organization_id" = "public"."current_organization_id"())))));
+
+
+
+ALTER TABLE "public"."mp_pos_config" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "mp_pos_org_members_select" ON "public"."mp_pos_config" FOR SELECT TO "authenticated" USING (("organization_id" IN ( SELECT "u"."organization_id"
+   FROM "public"."users" "u"
+  WHERE ("u"."id" = ( SELECT "auth"."uid"() AS "uid")))));
+
+
+
+CREATE POLICY "mp_pos_owner_manager_delete" ON "public"."mp_pos_config" FOR DELETE TO "authenticated" USING (("organization_id" IN ( SELECT "u"."organization_id"
+   FROM "public"."users" "u"
+  WHERE (("u"."id" = ( SELECT "auth"."uid"() AS "uid")) AND ("u"."role" = ANY (ARRAY['OWNER'::"public"."user_role_enum", 'MANAGER'::"public"."user_role_enum"]))))));
+
+
+
+CREATE POLICY "mp_pos_owner_manager_insert" ON "public"."mp_pos_config" FOR INSERT TO "authenticated" WITH CHECK (("organization_id" IN ( SELECT "u"."organization_id"
+   FROM "public"."users" "u"
+  WHERE (("u"."id" = ( SELECT "auth"."uid"() AS "uid")) AND ("u"."role" = ANY (ARRAY['OWNER'::"public"."user_role_enum", 'MANAGER'::"public"."user_role_enum"]))))));
+
+
+
+CREATE POLICY "mp_pos_owner_manager_update" ON "public"."mp_pos_config" FOR UPDATE TO "authenticated" USING (("organization_id" IN ( SELECT "u"."organization_id"
+   FROM "public"."users" "u"
+  WHERE (("u"."id" = ( SELECT "auth"."uid"() AS "uid")) AND ("u"."role" = ANY (ARRAY['OWNER'::"public"."user_role_enum", 'MANAGER'::"public"."user_role_enum"])))))) WITH CHECK (("organization_id" IN ( SELECT "u"."organization_id"
+   FROM "public"."users" "u"
+  WHERE (("u"."id" = ( SELECT "auth"."uid"() AS "uid")) AND ("u"."role" = ANY (ARRAY['OWNER'::"public"."user_role_enum", 'MANAGER'::"public"."user_role_enum"]))))));
 
 
 
@@ -6805,6 +7066,18 @@ GRANT ALL ON FUNCTION "public"."get_lot_wastes"("p_lot_id" bigint) TO "service_r
 
 
 
+GRANT ALL ON FUNCTION "public"."get_mp_credentials_for_terminal"("p_organization_id" "uuid", "p_terminal_id" bigint) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_mp_credentials_for_terminal"("p_organization_id" "uuid", "p_terminal_id" bigint) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_mp_credentials_for_terminal"("p_organization_id" "uuid", "p_terminal_id" bigint) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."get_mp_pos_config_for_terminal"("p_organization_id" "uuid", "p_terminal_id" bigint) TO "anon";
+GRANT ALL ON FUNCTION "public"."get_mp_pos_config_for_terminal"("p_organization_id" "uuid", "p_terminal_id" bigint) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."get_mp_pos_config_for_terminal"("p_organization_id" "uuid", "p_terminal_id" bigint) TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."get_next_product_short_code"("p_organization_id" "uuid") TO "anon";
 GRANT ALL ON FUNCTION "public"."get_next_product_short_code"("p_organization_id" "uuid") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_next_product_short_code"("p_organization_id" "uuid") TO "service_role";
@@ -6982,6 +7255,12 @@ GRANT ALL ON FUNCTION "public"."update_transfer_order_with_items"("p_transfer_or
 GRANT ALL ON FUNCTION "public"."upsert_integration_credentials"("p_organization_id" "uuid", "p_provider" "text", "p_credentials" "jsonb") TO "anon";
 GRANT ALL ON FUNCTION "public"."upsert_integration_credentials"("p_organization_id" "uuid", "p_provider" "text", "p_credentials" "jsonb") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."upsert_integration_credentials"("p_organization_id" "uuid", "p_provider" "text", "p_credentials" "jsonb") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" bigint, "p_location_id" bigint, "p_mp_pos_external_id" "text", "p_mp_store_id" "text", "p_mp_store_external_id" "text", "p_mp_pos_id" "text", "p_mp_qr_uuid" "text", "p_mp_qr_image_url" "text", "p_mp_point_device_id" "text") TO "anon";
+GRANT ALL ON FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" bigint, "p_location_id" bigint, "p_mp_pos_external_id" "text", "p_mp_store_id" "text", "p_mp_store_external_id" "text", "p_mp_pos_id" "text", "p_mp_qr_uuid" "text", "p_mp_qr_image_url" "text", "p_mp_point_device_id" "text") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" bigint, "p_location_id" bigint, "p_mp_pos_external_id" "text", "p_mp_store_id" "text", "p_mp_store_external_id" "text", "p_mp_pos_id" "text", "p_mp_qr_uuid" "text", "p_mp_qr_image_url" "text", "p_mp_point_device_id" "text") TO "service_role";
 
 
 
@@ -7165,6 +7444,18 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public".
 GRANT ALL ON SEQUENCE "public"."lots_lot_containers_lots_lot_containers_seq" TO "anon";
 GRANT ALL ON SEQUENCE "public"."lots_lot_containers_lots_lot_containers_seq" TO "authenticated";
 GRANT ALL ON SEQUENCE "public"."lots_lot_containers_lots_lot_containers_seq" TO "service_role";
+
+
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."mp_pos_config" TO "anon";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."mp_pos_config" TO "authenticated";
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."mp_pos_config" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."mp_pos_config_mp_pos_config_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."mp_pos_config_mp_pos_config_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."mp_pos_config_mp_pos_config_id_seq" TO "service_role";
 
 
 
