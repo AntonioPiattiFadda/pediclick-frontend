@@ -3717,50 +3717,89 @@ $$;
 ALTER FUNCTION "public"."upsert_integration_credentials"("p_organization_id" "uuid", "p_provider" "text", "p_credentials" "jsonb") OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" bigint, "p_location_id" bigint, "p_mp_pos_external_id" "text", "p_mp_store_id" "text" DEFAULT NULL::"text", "p_mp_store_external_id" "text" DEFAULT NULL::"text", "p_mp_pos_id" "text" DEFAULT NULL::"text", "p_mp_qr_uuid" "text" DEFAULT NULL::"text", "p_mp_qr_image_url" "text" DEFAULT NULL::"text", "p_mp_point_device_id" "text" DEFAULT NULL::"text") RETURNS bigint
+CREATE OR REPLACE FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" integer, "p_location_id" integer, "p_name" "text", "p_mp_pos_external_id" "text", "p_mp_store_id" "text" DEFAULT NULL::"text", "p_mp_store_external_id" "text" DEFAULT NULL::"text", "p_mp_pos_id" "text" DEFAULT NULL::"text", "p_mp_qr_uuid" "text" DEFAULT NULL::"text", "p_mp_qr_image_url" "text" DEFAULT NULL::"text", "p_mp_point_device_id" "text" DEFAULT NULL::"text", "p_mp_pos_config_id" integer DEFAULT NULL::integer) RETURNS integer
     LANGUAGE "plpgsql" SECURITY DEFINER
-    SET "search_path" TO 'public'
     AS $$
 DECLARE
-    v_id bigint;
+  v_id integer;
 BEGIN
-    IF (SELECT role FROM users WHERE id = auth.uid()) NOT IN ('OWNER', 'MANAGER') THEN
-        RAISE EXCEPTION 'Acceso denegado';
-    END IF;
 
-    INSERT INTO mp_pos_config (
-        organization_id, terminal_id, location_id,
-        mp_store_id, mp_store_external_id,
-        mp_pos_id, mp_pos_external_id,
-        mp_qr_uuid, mp_qr_image_url, mp_point_device_id
-    )
-    VALUES (
-        p_organization_id, p_terminal_id, p_location_id,
-        p_mp_store_id, p_mp_store_external_id,
-        p_mp_pos_id, p_mp_pos_external_id,
-        p_mp_qr_uuid, p_mp_qr_image_url, p_mp_point_device_id
-    )
-    ON CONFLICT (terminal_id)
-    DO UPDATE SET
-        location_id            = p_location_id,
-        mp_store_id            = p_mp_store_id,
-        mp_store_external_id   = p_mp_store_external_id,
-        mp_pos_id              = p_mp_pos_id,
-        mp_pos_external_id     = p_mp_pos_external_id,
-        mp_qr_uuid             = p_mp_qr_uuid,
-        mp_qr_image_url        = p_mp_qr_image_url,
-        mp_point_device_id     = p_mp_point_device_id,
-        is_active              = true,
-        updated_at             = now(),
-        deleted_at             = NULL
+  IF p_mp_pos_config_id IS NOT NULL THEN
+
+    UPDATE public.mp_pos_config SET
+      name                 = p_name,
+      location_id          = p_location_id,
+      mp_pos_external_id   = p_mp_pos_external_id,
+      mp_store_id          = p_mp_store_id,
+      mp_store_external_id = p_mp_store_external_id,
+      mp_pos_id            = p_mp_pos_id,
+      mp_qr_uuid           = p_mp_qr_uuid,
+      mp_qr_image_url      = p_mp_qr_image_url,
+      mp_point_device_id   = p_mp_point_device_id,
+      updated_at           = now()
+    WHERE mp_pos_config_id = p_mp_pos_config_id
+      AND organization_id  = p_organization_id
     RETURNING mp_pos_config_id INTO v_id;
 
-    RETURN v_id;
+  ELSE
+
+    INSERT INTO public.mp_pos_config (
+      organization_id,
+      terminal_id,
+      location_id,
+      name,
+      mp_pos_external_id,
+      mp_store_id,
+      mp_store_external_id,
+      mp_pos_id,
+      mp_qr_uuid,
+      mp_qr_image_url,
+      mp_point_device_id,
+      is_default,
+      is_active,
+      created_at
+    )
+    VALUES (
+      p_organization_id,
+      p_terminal_id,
+      p_location_id,
+      p_name,
+      p_mp_pos_external_id,
+      p_mp_store_id,
+      p_mp_store_external_id,
+      p_mp_pos_id,
+      p_mp_qr_uuid,
+      p_mp_qr_image_url,
+      p_mp_point_device_id,
+      false,
+      true,
+      now()
+    )
+
+    ON CONFLICT (organization_id, terminal_id)
+    DO UPDATE SET
+      name                 = EXCLUDED.name,
+      location_id          = EXCLUDED.location_id,
+      mp_pos_external_id   = EXCLUDED.mp_pos_external_id,
+      mp_store_id          = EXCLUDED.mp_store_id,
+      mp_store_external_id = EXCLUDED.mp_store_external_id,
+      mp_pos_id            = EXCLUDED.mp_pos_id,
+      mp_qr_uuid           = EXCLUDED.mp_qr_uuid,
+      mp_qr_image_url      = EXCLUDED.mp_qr_image_url,
+      mp_point_device_id   = EXCLUDED.mp_point_device_id,
+      updated_at           = now()
+
+    RETURNING mp_pos_config_id INTO v_id;
+
+  END IF;
+
+  RETURN v_id;
+
 END;
 $$;
 
 
-ALTER FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" bigint, "p_location_id" bigint, "p_mp_pos_external_id" "text", "p_mp_store_id" "text", "p_mp_store_external_id" "text", "p_mp_pos_id" "text", "p_mp_qr_uuid" "text", "p_mp_qr_image_url" "text", "p_mp_point_device_id" "text") OWNER TO "postgres";
+ALTER FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" integer, "p_location_id" integer, "p_name" "text", "p_mp_pos_external_id" "text", "p_mp_store_id" "text", "p_mp_store_external_id" "text", "p_mp_pos_id" "text", "p_mp_qr_uuid" "text", "p_mp_qr_image_url" "text", "p_mp_point_device_id" "text", "p_mp_pos_config_id" integer) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."validate_rpc_schema_compatibility"() RETURNS TABLE("function_name" "text", "suspicious_columns" "text"[], "recommendation" "text")
@@ -4069,7 +4108,13 @@ CREATE TABLE IF NOT EXISTS "public"."locations" (
     "name" "text",
     "deleted_at" timestamp with time zone,
     "organization_id" "uuid",
-    "updated_at" timestamp with time zone DEFAULT "now"()
+    "updated_at" timestamp with time zone DEFAULT "now"(),
+    "street_name" "text",
+    "street_number" "text",
+    "city_name" "text",
+    "state_name" "text",
+    "latitude" double precision,
+    "longitude" double precision
 );
 
 
@@ -4246,7 +4291,9 @@ CREATE TABLE IF NOT EXISTS "public"."mp_pos_config" (
     "is_active" boolean DEFAULT true NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"(),
-    "deleted_at" timestamp with time zone
+    "deleted_at" timestamp with time zone,
+    "is_default" boolean,
+    "name" "text"
 );
 
 ALTER TABLE ONLY "public"."mp_pos_config" FORCE ROW LEVEL SECURITY;
@@ -4929,6 +4976,11 @@ ALTER TABLE ONLY "public"."lot_containers_stock"
 
 
 ALTER TABLE ONLY "public"."mp_pos_config"
+    ADD CONSTRAINT "mp_pos_config_org_terminal_unique" UNIQUE ("organization_id", "terminal_id");
+
+
+
+ALTER TABLE ONLY "public"."mp_pos_config"
     ADD CONSTRAINT "mp_pos_config_pkey" PRIMARY KEY ("mp_pos_config_id");
 
 
@@ -5060,11 +5112,6 @@ ALTER TABLE ONLY "public"."transformations"
 
 ALTER TABLE ONLY "public"."integration_credentials"
     ADD CONSTRAINT "uq_org_provider" UNIQUE ("organization_id", "provider");
-
-
-
-ALTER TABLE ONLY "public"."mp_pos_config"
-    ADD CONSTRAINT "uq_terminal_mp_pos" UNIQUE ("terminal_id");
 
 
 
@@ -7258,9 +7305,9 @@ GRANT ALL ON FUNCTION "public"."upsert_integration_credentials"("p_organization_
 
 
 
-GRANT ALL ON FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" bigint, "p_location_id" bigint, "p_mp_pos_external_id" "text", "p_mp_store_id" "text", "p_mp_store_external_id" "text", "p_mp_pos_id" "text", "p_mp_qr_uuid" "text", "p_mp_qr_image_url" "text", "p_mp_point_device_id" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" bigint, "p_location_id" bigint, "p_mp_pos_external_id" "text", "p_mp_store_id" "text", "p_mp_store_external_id" "text", "p_mp_pos_id" "text", "p_mp_qr_uuid" "text", "p_mp_qr_image_url" "text", "p_mp_point_device_id" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" bigint, "p_location_id" bigint, "p_mp_pos_external_id" "text", "p_mp_store_id" "text", "p_mp_store_external_id" "text", "p_mp_pos_id" "text", "p_mp_qr_uuid" "text", "p_mp_qr_image_url" "text", "p_mp_point_device_id" "text") TO "service_role";
+GRANT ALL ON FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" integer, "p_location_id" integer, "p_name" "text", "p_mp_pos_external_id" "text", "p_mp_store_id" "text", "p_mp_store_external_id" "text", "p_mp_pos_id" "text", "p_mp_qr_uuid" "text", "p_mp_qr_image_url" "text", "p_mp_point_device_id" "text", "p_mp_pos_config_id" integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" integer, "p_location_id" integer, "p_name" "text", "p_mp_pos_external_id" "text", "p_mp_store_id" "text", "p_mp_store_external_id" "text", "p_mp_pos_id" "text", "p_mp_qr_uuid" "text", "p_mp_qr_image_url" "text", "p_mp_point_device_id" "text", "p_mp_pos_config_id" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."upsert_mp_pos_config"("p_organization_id" "uuid", "p_terminal_id" integer, "p_location_id" integer, "p_name" "text", "p_mp_pos_external_id" "text", "p_mp_store_id" "text", "p_mp_store_external_id" "text", "p_mp_pos_id" "text", "p_mp_qr_uuid" "text", "p_mp_qr_image_url" "text", "p_mp_point_device_id" "text", "p_mp_pos_config_id" integer) TO "service_role";
 
 
 
