@@ -367,6 +367,7 @@ export const getProductCountByCategory = async () => {
 
   console.log(products?.length);
 
+
   if (error) throw new Error(error.message);
 
   const aggregated: Record<string, number> = {};
